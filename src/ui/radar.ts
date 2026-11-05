@@ -213,7 +213,7 @@ export class Radar {
       for (const wp of world.seenPlaces()) {
         const [x, y, out] = to(wp.x, wp.z);
         if (out) continue;
-        g.strokeStyle = wp.kind === 'port' ? INK.teal : INK.amber; g.lineWidth = 1.5 * dpr;
+        g.strokeStyle = wp.kind === 'port' && world.portMood !== 'alert' && world.portMood !== 'shut' ? INK.teal : INK.amber; g.lineWidth = 1.5 * dpr;
         g.beginPath(); g.moveTo(x, y - 5 * dpr); g.lineTo(x + 5 * dpr, y); g.lineTo(x, y + 5 * dpr); g.lineTo(x - 5 * dpr, y); g.closePath(); g.stroke();
         g.beginPath(); g.arc(x, y, Math.max(3 * dpr, wp.r * k), 0, Math.PI * 2); g.stroke();
       }

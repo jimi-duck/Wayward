@@ -1,6 +1,6 @@
 import { TANK_MAX } from './purse';
 import { clamp, lerp } from '../core/math';
-import { BASE_PRICES, type Prices, type SystemKind } from '../content/systems';
+import { BASE_PRICES, type Holder, type Prices, type SystemKind } from '../content/systems';
 import type { Levels } from './build';
 import type { JobDef, Standing } from './comms';
 import type { EncounterId } from './encounters';
@@ -175,6 +175,8 @@ export interface SortieDef {
   lane: number;
   /** The port, if there is one: its name and today's prices. */
   port: { name: string; prices: Prices } | null;
+  /** Who holds the system: the port's look follows it (sim/site.ts `portStyleOf`). Frontier Supply's plain depot where absent. */
+  holder?: Holder;
   /** The first system past Cerro (sim/postjump.ts): the company's audit dock stands off the course under this name, and the port is the supply depot on the way to the Jump Gate. */
   audit?: string;
   first?: boolean;

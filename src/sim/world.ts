@@ -36,6 +36,7 @@ import { Stage, makeStage } from './stage';
 import { DEPOT_LINE, lockLifted, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
 import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
+import { BUSY_R, SiteBrain, type Mood } from './site';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
 import {
@@ -202,6 +203,8 @@ export class World implements EncounterHost {
   dockHeld = false;
   /** The depot's shield is up: a fight is on, so nobody outside gets in and no enemy fire crosses it. Never up while the ship is inside the ring. */
   shield = false;
+  /** How the port stands: calm, busy, alert or shut (sim/site.ts). The renderer and the scope read it. */
+  readonly portSite = new SiteBrain();
   private shieldHold = 0;
   private deniedT = 0;
   private wasInPlace = false;
@@ -867,6 +870,7 @@ export class World implements EncounterHost {
     // the clamps stay open while a fight is on: slow at the ring and under attack, the port says no
     const ready = !!b.port && !b.castOff && dp < b.port.r && speed < DOCK_SPEED && this.phase === 'play';
     this.stepShield(dt, dp);
+    this.stepSite(dt);
     const nearDepot = !!b.port && dp < SAFE_R + SHIELD_NEAR;
     const held = (ready && this.inDanger()) || (this.shield && nearDepot);
     if (this.dockHeld && !held && (ready || nearDepot)) this.events.push({ type: 'dockCleared' });
@@ -1324,6 +1328,21 @@ export class World implements EncounterHost {
    * that reaches the edge is absorbed. It never comes up while the ship is
    * already inside, and it drops a moment after the fight is over.
    */
+  /** The port's mood from what is going on round its ring. */
+  private stepSite(dt: number): void {
+    const port = this.bk?.port;
+    if (!port) { this.portSite.reset(); return; }
+    let fight = 0, ships = 0;
+    for (const a of this.aliens) {
+      if (Math.hypot(a.x - port.x, a.z - port.z) > BUSY_R) continue;
+      if (a.ward) ships++; else if (this.committed(a)) fight++;
+    }
+    this.portSite.step(dt, { shield: this.shield, fight, heat: this.bk!.heat, ships });
+  }
+
+  /** The port's mood now (calm when there is none). */
+  get portMood(): Mood { return this.portSite.mood; }
+
   private stepShield(dt: number, dp: number): void {
     const port = this.bk?.port;
     if (!port) { this.shield = false; return; }

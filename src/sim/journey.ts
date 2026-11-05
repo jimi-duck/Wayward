@@ -239,6 +239,7 @@ export function sortieDef(j: Journey): SortieDef {
   const def: SortieDef = {
     survival: j.survival, threat: threatAt(j.chart, s.id), pay: bountyAt(j.chart, s.id), system: s.id, region: tierOf(j.chart, regionOf(s)), sky: R.sky, name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
     port: prices ? { name: s.port!.name, prices } : null,
+    holder: s.holder,
     heat: Math.max(0, Math.min(0.6, t.heat + (net ? 0.25 : 0) + echo.heat)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
     rich: quiet ? Math.max(QUIET_RICH, t.rich * (0.6 + s.cyrite * 0.8)) : t.rich * (0.6 + s.cyrite * 0.8), density: quiet ? Math.max(QUIET_DENSITY, t.density) : t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls, pace: t.pace, quiet,
     ahead: raid ? undefined : AHEAD[s.holder], thren: threnAt(j.chart, s.id), here: presence(j.chart, s.id),
