@@ -163,6 +163,8 @@ export interface Outcome {
   /** Chits for the bay (Story), from wrecks and finds: Krail in the Arcade's old words, one purse now. Kept as the name the content uses. */
   krail?: number;
   plates?: number;
+  /** Plating charges and high-yield torpedoes into the racks (never past what they hold): a stall's goods. */
+  stock?: { shield?: number; yield?: number };
   heat?: number;
   score?: number;
   flag?: string | string[];

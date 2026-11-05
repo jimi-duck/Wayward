@@ -75,6 +75,23 @@ It sits 320 units off the course at 45% of the way and sways about its berth.
 - **Seen.** A teal tether line to the rock on the hook; a lamp that goes amber
   while it runs.
 
+## Dust Market
+
+A raft of Dust Traders (`sim/market.ts`, `buildMarket`) in every system the
+Traders hold that has a port (not the opening, the first system past Cerro,
+or a Thren sky): 30% of the way, 300 units off the line.
+
+- **Trades on the fly.** Slow (under 14) inside its 16-unit ring for 2 s and
+  the stalls call: a card (`market_stall`, the Decision template) with Buy
+  warheads (8 high-yield torpedoes, 30 Cyrite), Buy plating (3 charges, 24
+  Cyrite) and Fly on. Stock goes into the racks up to their usual caps
+  (`Outcome.stock`). Two sales a system, then it is sold out. One call per
+  visit: it asks again only after you have left and come back.
+- **Fights.** A committed hostile within 220 units shuts the stalls and the raft
+  moves off from it (never more than 260 units from its berth), then drifts home.
+- **Seen.** A round raft with awnings and lantern posts, a cyan ring, a small
+  teal square on the scope; amber lamps while shut, dim when sold out.
+
 ## Repair gantry
 
 A small mend point (`sim/gantry.ts`, `buildGantry`) on the lane of every transit
@@ -100,8 +117,8 @@ fight is near the port before you can see it.
 
 ## Next (plan: "Living stations and space objects")
 
-The Dust Market (trade on the fly) and the lantern buoys read the same signals
-and add their own behaviour on top.
+The Raider Den (a hideout in a rock field) and the Thren Seed are not built: both
+need a new kind of enemy behaviour and a pilot run, and are left for a go-ahead.
 
 ## Not measured
 
