@@ -200,7 +200,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #t-brk { --n: 5; width: 56%; height: 4px; }
 @keyframes tap-flash { from { scale: .88; } }
 /* pause: small, low and in the middle, out of both thumbs' way */
-#pause-b { position: absolute; left: 50%; bottom: calc(var(--safe-b) + 6px); translate: -50% 0; width: 44px; height: 32px;
+#pause-b { position: absolute; left: 50%; bottom: calc(var(--safe-b) + 6px); translate: -50% 0; width: 48px; height: 40px;
   place-content: center; grid-auto-flow: column; gap: 5px; border: 0; padding: 0; background: none; opacity: .55; pointer-events: auto; touch-action: none; }
 #pause-b i { width: 3px; height: 12px; background: var(--ink-2); }
 
