@@ -40,6 +40,9 @@ export const POSTJUMP: Record<string, string> = {
   // living traffic: patrols that look you over (sim/traffic.ts)
   'Custody patrol': 'Custody-Patrouille',
   'Routine check': 'Routinekontrolle',
+  'Relay post': 'Relaisposten',
+  '“Relay post offline. Signal lost.”': '„Relaisposten aus. Signal weg.“',
+  '“Flagged hull in range. Patrol routed.”': '„Markierter Rumpf in Reichweite. Patrouille unterwegs.“',
   '“Routine check. Hold your course.”': '„Routinekontrolle. Kurs halten.“',
   '“Your hull is flagged. Stand down.”': '„Dein Rumpf ist markiert. Stopp.“',
 };
