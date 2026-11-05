@@ -22,7 +22,9 @@ is one of four kinds.
 - The floor (`src/sim/floor.ts`) lets one line out at a time: never over a
   card, 10 s between radio lines, 15 s of quiet after a card, 20 s between
   cards unless one answers the last. A card waits for a story line still
-  queued or on screen.
+  queued or on screen. A reply to the answer just given (a voice made within
+  3 s of the card closing: the raiders to a refusal, Sam to a fitted
+  launcher) skips the quiet and the gap and waits only for the line on screen.
 - What lasts is Ambient: the pursuit in days, Wanted, the recovery's status.
   One-off explainers (Wanted, the launcher) are hint lines under the
   objective, never pop-ups.

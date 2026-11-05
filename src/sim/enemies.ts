@@ -293,6 +293,10 @@ export interface Style {
   skulk: boolean;
   /** Chance to break out of the line of fire when the ship's nose is on it. */
   peel: number;
+  /** A raider: comes in round the beam and takes the side its mates have not. */
+  flank: boolean;
+  /** A scout that runs when hurt and brings help. */
+  coward: boolean;
 }
 
 /** A stable fraction in [0, 1) from an id and a salt. */
@@ -315,6 +319,8 @@ export function styleFor(id: number, kind: AlienKind, variant: string): Style {
     weave: w[0] + frac(id, 1) * (w[1] - w[0]), period: 2.2 + frac(id, 2) * 2.4, phase: frac(id, 3) * Math.PI * 2,
     skulk: light && frac(id, 4) < (sneaky ? 0.65 : 0.3),
     peel: light ? 0.2 + frac(id, 5) * 0.4 : 0,
+    flank: (kind === 'scout' || kind === 'raptor' || kind === 'stalker') && frac(id, 6) < 0.6,
+    coward: kind === 'scout' && frac(id, 7) < 0.45,
   };
 }
 
@@ -371,6 +377,8 @@ export interface Alien {
   lead: number; slot: number;
   /** Peeks from cover so far, and seconds before it may break out of a line of fire again. */
   peeks: number; peelT: number;
+  /** Ran from the fight to call for help: the world sends the reinforcements when it is out of sight. */
+  help: boolean;
   xp: number;
   /** How it closes on the ship before it fights (sim/pacing.ts). */
   approach: Approach;
@@ -488,7 +496,7 @@ export function spawnAlien(kind: AlienKind, ship: ShipState, t: number, rng: Rng
     spK: F.speed * (E?.speed ?? 1), cdK, rgK: F.range, shotK: E?.shotSpeed ?? 1,
     shots: (v.kind === kind ? v.shots : undefined) ?? T.shots + (E?.extraShots ?? 0), split: !!(v.kind === kind && v.split),
     cloak: canCloak && !at ? 1 : 0, canCloak, burn: 0, burnDps: 0, mark: 0, snare: 0, calm: 99, bumpT: 0,
-    style: styleFor(id, kind, v.kind === kind ? v.id : kind), pass: { ahead: 30, side: 28, off: 4 }, dodge: 0, lead: 0, slot: 0, peeks: 0, peelT: 0,
+    style: styleFor(id, kind, v.kind === kind ? v.id : kind), pass: { ahead: 30, side: 28, off: 4 }, dodge: 0, lead: 0, slot: 0, peeks: 0, peelT: 0, help: false,
     xp: Math.round(T.xp * (E ? 2 : 1)), approach: T.tactic === 'cross' ? 'direct' : o.approach ?? 'direct',
   };
 }
@@ -590,14 +598,47 @@ function weaveOff(al: Alien, ux: number, uz: number, d: number): [number, number
   return [-uz * w, ux * w];
 }
 
+/**
+ * Pickets fly as a line: they pick up the nearest picket as their leader, then
+ * make their runs on its side and its line, a few units apart, not in a heap.
+ */
+function holdFormation(al: Alien, arena: Arena): void {
+  let lead = al.lead ? arena.aliens.find((o) => o.id === al.lead) : undefined;
+  if (!lead) {
+    al.lead = 0;
+    let best = 80;
+    for (const o of arena.aliens) {
+      if (o === al || o.variant !== 'picket' || o.id > al.id || o.lead === al.id) continue;
+      const d = Math.hypot(o.x - al.x, o.z - al.z);
+      if (d < best) { best = d; lead = o; }
+    }
+    if (!lead) return;
+    al.lead = lead.id;
+    al.slot = 1 + arena.aliens.filter((o) => o.lead === lead!.id && o !== al).length;
+  }
+  al.slide = lead.slide;
+  al.pass.ahead = lead.pass.ahead; al.pass.side = lead.pass.side;
+  al.pass.off = lead.pass.off + al.slot * 5;
+}
+
 /** Choose the next attack run: from the side, from astern, or head-on, near or wide. */
-function rollPass(al: Alien, rng: Rng): void {
+function rollPass(al: Alien, rng: Rng, arena: Arena | null = NAV): void {
   const r = rng.next();
   const p = al.pass;
   if (r < 0.2) { p.ahead = -rng.range(24, 38); p.side = rng.range(14, 28); }
   else if (r < 0.35) { p.ahead = rng.range(42, 58); p.side = rng.range(6, 14); }
   else { p.ahead = rng.range(22, 40); p.side = rng.range(18, 34); }
   p.off = rng.range(2, 7);
+  // raiders pincer: take the side the nearest mate in a run is not on
+  if (al.style.flank && al.variant !== 'picket' && arena) {
+    let mate: Alien | null = null, md = 90;
+    for (const o of arena.aliens) {
+      if (o === al || o.faction !== al.faction || ALIEN_TYPES[o.kind].role !== 'interceptor' || (o.mode !== 'setup' && o.mode !== 'run' && o.mode !== 'extend')) continue;
+      const d = Math.hypot(o.x - al.x, o.z - al.z);
+      if (d < md) { md = d; mate = o; }
+    }
+    if (mate) al.slide = mate.slide === 1 ? -1 : 1;
+  }
 }
 
 /** Keep clear of bulwarks, rock and each other. Bulwarks are solid: a hull is never inside one. */
@@ -790,6 +831,8 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
   if (al.peelT > 0) al.peelT = Math.max(0, al.peelT - dt);
   if (al.roll >= 0 && (al.roll += dt) >= JINK_ROLL) al.roll = -1;
   if (T.ttl > 0 && !al.fleeing && !al.ward && (al.ttl -= dt) <= 0) leave(al);
+  // a coward runs from a fight it is losing, and calls for help
+  if (al.style.coward && !al.fleeing && !al.escort && !al.extra && !al.ward && !al.job && !al.help && al.hp <= al.maxHp * 0.4 && al.mode !== 'cross') { al.help = true; leave(al); }
   const regen = al.elite ? ELITES[al.elite].regen : 0;
   if (regen && al.calm > 2 && al.hp < al.maxHp) al.hp = Math.min(al.maxHp, al.hp + al.maxHp * regen * dt);
   if (al.canCloak) {
@@ -815,7 +858,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
     case 'approach': {
       // close to fighting range on the plane: by default from the side it came in on
       let gx = s.x - ux * range, gz = s.z - uz * range;
-      const ap = al.approach;
+      const ap = al.style.flank && al.faction === 'gutter' && al.approach === 'direct' ? 'flank' : al.approach;
       if (ap === 'investigate' || ap === 'circle') {
         // to the edge of gun range, to look the ship over
         gx = s.x - ux * PACING.standoff; gz = s.z - uz * PACING.standoff;
@@ -895,6 +938,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
 
     // interceptors: swing out to one side (or round astern, or out ahead), come in, pass, break away
     case 'setup': {
+      if (al.variant === 'picket') holdFormation(al, arena);
       const gx = s.x + fx * al.pass.ahead + rx * al.slide * al.pass.side + wx * 0.5, gz = s.z + fz * al.pass.ahead + rz * al.slide * al.pass.side + wz * 0.5;
       steer(al, gx, cy, gz, speed * 1.3, acc, dt, 4);
       if (Math.hypot(gx - al.x, gz - al.z) < 9 || al.modeT <= 0) { al.mode = 'run'; al.modeT = 3.5; }

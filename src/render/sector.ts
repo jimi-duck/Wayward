@@ -5,6 +5,7 @@ import { HOLD_MAX, JUMP_T } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
 import { setLiveryBlend, setLiverySweep, SWEEP_SPAN } from './wayward';
 import { RenameReveal } from './reveal';
+import { SceneArc } from './scenes';
 import type { Faction } from '../sim/enemies';
 import { inFight } from '../sim/guide';
 import { newShip, topSpeed, type ShipState } from '../sim/ship';
@@ -123,6 +124,9 @@ export class Sector {
   private pinned = false;
   reduceMotion = false;
   private readonly reveal = new RenameReveal();
+  /** A story scene that holds the camera on her flank while it plays ('ending': the Threshold panel; render/scenes.ts). */
+  storyScene: 'ending' | null = null;
+  private readonly sceneArc = new SceneArc();
   private seenWorld: World | null = null;
   /** An opaque panel (the refit bay) is over the whole view. */
   covered = false;
@@ -276,6 +280,12 @@ export class Sector {
   private dyingT = 0;
   /** The low tier or a phone that cannot spare it: the calm effects. */
   lowFx = false;
+  /** A big kill asks the loop for a beat of slow motion (main.ts reads and clears it); never with reduced motion. */
+  slow: { scale: number; secs: number } | null = null;
+
+  private slowFor(scale: number, secs: number): void {
+    if (!this.reduceMotion) this.slow = { scale, secs };
+  }
 
   /** The hull coming apart: three blasts stern to bow, then the break-up. Reduced motion gets one fade. */
   private dyingBlasts(x: number, z: number): void {
@@ -387,11 +397,14 @@ export class Sector {
           this.fx.streakBurst(e.x, e.y, e.z, 4, 14, 0.4, 1.2);
           this.fx.flash(e.x, e.y, e.z, 0.8, [1.6, 0.5, 0.12], 0.3);
           this.fx.rubble('metal', e.x, e.y, e.z, 1, 0.12, 6);
+          this.rig.shake(0.1);
           break;
         case 'alienDestroyed':
           this.fx.explode(e.x, e.y, e.z, e.r * (e.elite ? 1.4 : 1), rgb(e.faction), 'metal');
           this.rig.shake(0.22 + e.r * 0.06);
           hold = Math.max(hold, e.elite ? 0.07 : 0.05);
+          // a cruiser or an elite going up is worth watching: the clock drops for a moment
+          if (e.elite || e.r >= 2.4) this.slowFor(e.r >= 3 ? 0.3 : 0.4, e.r >= 3 ? 0.35 : 0.25);
           break;
         case 'plasmaDown':
           this.fx.flash(e.x, e.y, e.z, 3, [0.5, 3, 1.4], 0.2);
@@ -438,6 +451,7 @@ export class Sector {
           this.fx.burst(e.x, e.y, e.z, 8, FIRE, 12, 0.3, 0.4);
           this.fx.burst(e.x, e.y, e.z, 5, LANCE_SPARK, 16, 0.14, 0.25);
           this.fx.rubble('metal', e.x, e.y, e.z, 1, 0.2, 7);
+          this.rig.shake(0.14);
           break;
         case 'bossPhase':
           this.fx.explode(e.x + 2, e.y + 1, e.z - 1, 3, rgb(e.faction), 'metal');
@@ -460,6 +474,7 @@ export class Sector {
           this.fx.light(e.x, e.y, e.z, [1, 0.6, 0.3], 3000, 1.2);
           this.rig.shake(1);
           hold = Math.max(hold, 0.11);
+          this.slowFor(0.25, 0.6);
           break;
         }
         case 'ore':
@@ -593,7 +608,7 @@ export class Sector {
     }, uiDt);
     setLiverySweep(rv.sweep === null ? null : -rv.sweep * SWEEP_SPAN);
     if (rv.sweep === null) setLiveryBlend(rv.livery);
-    this.rig.reveal = rv.arc;
+    this.rig.reveal = Math.max(rv.arc, this.sceneArc.update(this.storyScene !== null, uiDt, this.reduceMotion));
     this.ship.update(s, dt, this.reduceMotion);
     this.rocks.update(world.field.rocks, world.field.bulwarks, alpha, dt, this.rig.target.x, this.rig.target.z);
     this.streaks.begin();

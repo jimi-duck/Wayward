@@ -48,6 +48,19 @@ describe('the floor', () => {
     expect(f.mayMoment(5 + FLOOR.moments)).toBe(true);
   });
 
+  it('lets a reply to the answer just given out at once, but not a voice made later', () => {
+    const f = new Floor();
+    f.opened(0, 'card');
+    f.closed(5);
+    // made 1 s after the card closed: a reply. Made 5 s after: not.
+    f.take([voice('reply')], 6);
+    const [[t, id]] = play(f, 6, 3) as [[number, string]];
+    expect([id, t]).toEqual(['reply', 6]);
+    f.take([voice('later')], 10);
+    const out = play(f, 10, 30);
+    expect(out[0]![0]).toBeGreaterThanOrEqual(5 + FLOOR.quiet);
+  });
+
   it('drops chatter that waited too long, never a story line', () => {
     const f = new Floor();
     f.take([voice(CHATTER[0]!.id), voice('story_1')], 0);
@@ -98,8 +111,9 @@ describe('the first system past Cerro, by the floor', () => {
       else {
         expect(open, `${l.id} over a card`).toBe(false);
         if (l.kind === 'voice') {
-          expect(l.t - lastVoice, `${l.id} too soon after the last voice`).toBeGreaterThanOrEqual(FLOOR.gap - 1e-6);
-          expect(l.t - closed, `${l.id} inside the quiet after a card`).toBeGreaterThanOrEqual(FLOOR.quiet - 1e-6);
+          // a reply to the card just answered (FLOOR.reply) waits only for the line on screen
+          expect(l.t - lastVoice, `${l.id} too soon after the last voice`).toBeGreaterThanOrEqual((l.reply ? FLOOR.hold : FLOOR.gap) - 1e-6);
+          if (!l.reply) expect(l.t - closed, `${l.id} inside the quiet after a card`).toBeGreaterThanOrEqual(FLOOR.quiet - 1e-6);
           lastVoice = l.t;
         }
       }
@@ -107,5 +121,26 @@ describe('the first system past Cerro, by the floor', () => {
     // nothing of the story left waiting, and every line the player heard went through the floor
     expect(w.floor.holding).toBe(false);
     expect(said.length).toBe(log.filter((l) => l.kind === 'voice' || l.kind === 'signal').length);
+  }, 30000);
+});
+
+describe('the opening answers at once (tuning, 2026-11-05)', () => {
+  const idle = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' as const };
+  it('has the raiders and Sam answer a refusal within 10 s, not after the quiet window', () => {
+    const j = newJourney(7);
+    const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
+    w.train(); w.field.step = () => {};
+    w.setLevels({ ...w.levels, tp_bay: 1 });
+    w.tutor!.i = 3; w.tutor!.begun = false; w.tutor!.onboard = 1000; w.tutor!.said.push('dispatch'); w.events.length = 0;
+    let at = -1;
+    for (let i = 0; i < 60 * 60 && w.runTime < 40; i++) {
+      if (w.phase === 'comms') { at = w.runTime; w.answer('refuse'); continue; }
+      w.ship.invuln = 1; w.step(1 / 60, idle);
+    }
+    expect(at).toBeGreaterThan(0);
+    const voices = w.floor.log.filter((l) => l.kind === 'voice' && l.t > at);
+    expect(voices.length).toBeGreaterThanOrEqual(2);
+    expect(voices[0]!.t - at, 'the raiders').toBeLessThan(3);
+    expect(voices[1]!.t - at, 'Sam on the hold').toBeLessThan(FLOOR.hold + 3);
   }, 30000);
 });

@@ -62,7 +62,7 @@ shipped. Code: `src/sim/enemies.ts` (`moveAlien`), `src/sim/world.ts`
 
 ## Result
 
-`npm run pilot:arcade`, 12 seeded runs per strategy, before and after:
+`npm run pilot:arcade`, 12 seeded runs per strategy, before and after the flight work (the personalities left it at 10 of 48 reaching the cap again, mean time 7:20 to 8:58):
 mean time 7:21 to 8:47 before, 7:37 to 8:10 after; runs that reached the cap
 10 of 48 before and 10 of 48 after; refits 13 to 20 against 15 to 21; first
 refit 0:50 against 0:56. About neutral, a little harder in the longer runs
@@ -74,6 +74,19 @@ pursuit) are 0 now; `dodgeRock` is gone; `tests/enemies.test.ts` holds its two
 "above the plane" gunnery tests with a `cross` hull (the one mode that keeps
 its height), and the stationary-ship laser test in `tests/world.test.ts` is
 made immortal because on-plane hulls now kill a ship that sits still sooner.
+
+## Personalities
+
+Built on the same style (a roll of the id, no draws), hostile hulls only:
+
+- **Raiders flank.** Six in ten Gutter scouts, raptors and hunters come in
+  round the beam, and raiders in a run take opposite sides (a pincer).
+- **Pickets hold formation.** A picket takes the nearest picket as leader and
+  makes its runs on the leader's side and line, a few units apart.
+- **Scouts run for help.** Nearly half of scouts break off at 40% hull and
+  run; when the runner is out of sight one more scout (sometimes a raptor,
+  once unlocked) comes in from its side. Event crews (`extra`) never run, so
+  skirmishes still end.
 
 ## Not measured
 
