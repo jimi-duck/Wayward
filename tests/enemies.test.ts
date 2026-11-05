@@ -249,10 +249,10 @@ describe('the 3D sky', () => {
   it('the gunnery computer lifts a lance onto a hull flying above the plane', () => {
     const w = immortal();
     w.pace.until = 1e9;
-    const al = spawnAlien('lancer', w.ship, 0, w.rng, { x: 0, y: 7, z: -40 });
+    const al = spawnAlien('lancer', w.ship, 0, w.rng, { x: 0, y: 0, z: -40 });
     al.escort = false;
-    al.mode = 'hold';
-    al.modeT = 99;
+    al.mode = 'cross'; // held where it is, off the plane (hulls no longer leave it; capital ships and wrecks can)
+    al.y = 7;
     w.aliens.push(al);
     let hits = 0;
     for (let i = 0; i < 60; i++) {
@@ -268,9 +268,10 @@ describe('the 3D sky', () => {
     const w = immortal();
     w.setLevels({ tp_bay: 1 });
     w.pace.until = 1e9;
-    const al = spawnAlien('scout', w.ship, 0, w.rng, { x: 4, y: 9, z: -45 });
+    const al = spawnAlien('scout', w.ship, 0, w.rng, { x: 4, y: 0, z: -45 });
     al.escort = false;
-    al.mode = 'hold';
+    al.mode = 'cross'; // held where it is, off the plane
+    al.y = 9;
     w.aliens.push(al);
     w.step(STEP, { ...idle, torpedo: true });
     let blast: { y: number } | undefined;

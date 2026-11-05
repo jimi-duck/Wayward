@@ -1030,13 +1030,14 @@ export class World implements EncounterHost {
       const home = Math.atan2(-(s.z - b.lane.z), s.x - b.lane.x);
       const a = (pick.ahead ? home + Math.PI : home) + this.rng.range(-0.7, 0.7);
       const d = this.rng.range(115, 145);
-      const at = { x: s.x + Math.cos(a) * d, y: ALIEN_TYPES[v.kind].role === 'cruiser' ? this.rng.range(-3, 8) : this.rng.range(-4, 16), z: s.z - Math.sin(a) * d };
+      const at = { x: s.x + Math.cos(a) * d, y: 0, z: s.z - Math.sin(a) * d };
       const elite = this.rng.next() < pursuitElite(b.heat) * this.survival.pursuit.elite + b.def.notice.elite ? pickElite(v.kind, v.faction, this.rng) : null;
       const lead = this.spawnHostile(v.id, at, elite);
       // a pair, once the heat is up
       if (b.heat > 0.35 && regular + 1 < cap && ALIEN_TYPES[v.kind].role === 'interceptor' && this.rng.next() < 0.5) {
         const wing = this.spawnHostile(v.id, { x: at.x + Math.sin(a) * 5, y: at.y + 1.5, z: at.z + Math.cos(a) * 5 });
         wing.modeT = lead.modeT + 0.6;
+        wing.lead = lead.id; wing.slot = 1;
       }
     }
     // hunters: a faction that has marked you sends its pursuit oftener
@@ -2098,7 +2099,7 @@ export class World implements EncounterHost {
     // interceptors past the opening often come in pairs: a wingman in echelon
     if (T.role === 'interceptor' && t > 90 && pc.left > 0 && regular + 1 < p.enemyCap && this.rng.next() < 0.6) {
       const wing = this.spawnHostile(v.id, { x: lead.x + Math.sin(lead.face) * 5, y: lead.y + 1.5, z: lead.z + Math.cos(lead.face) * 5 });
-      Object.assign(wing, { approach: lead.approach, mode: lead.mode, ax: lead.ax, az: lead.az, slide: lead.slide, modeT: lead.modeT + 0.6 });
+      Object.assign(wing, { approach: lead.approach, mode: lead.mode, ax: lead.ax, az: lead.az, slide: lead.slide, modeT: lead.modeT + 0.6, lead: lead.id, slot: 1 });
       pc.ids.add(wing.id);
       pc.left--;
     }
@@ -2108,8 +2109,7 @@ export class World implements EncounterHost {
   private sendHostile(variant: string, approach: Approach, elite: EliteId | null = null, opening = false): Alien {
     const v = VARIANTS[variant] ?? VARIANTS.scout!, s = this.ship;
     const at = arrival(s, approach, this.rng, opening ? this.rng.range(ARCADE_OPENING.near, ARCADE_OPENING.far) : this.rng.range(SPAWN_NEAR, SPAWN_FAR));
-    const y = ALIEN_TYPES[v.kind].role === 'cruiser' ? this.rng.range(-4, 9) : this.rng.range(-6, 18);
-    const al = this.spawnHostile(v.id, { x: at.x, y, z: at.z }, elite);
+    const al = this.spawnHostile(v.id, { x: at.x, y: 0, z: at.z }, elite);
     al.approach = approach;
     // it flanks on the side it came in, and patrols cross from that side to the other
     al.slide = at.off > 0 ? -1 : 1;
@@ -2140,7 +2140,7 @@ export class World implements EncounterHost {
       const a = (i / q.members.length) * Math.PI * 2;
       const m = this.spawnHostile(q.members[i]!, { x: first.x + Math.cos(a) * 8, y: first.y + this.rng.range(-2, 3), z: first.z + Math.sin(a) * 8 });
       // the squad closes as one: the leader's way, its waypoint, its side
-      Object.assign(m, { approach: first.approach, mode: first.mode, ax: first.ax, az: first.az, slide: first.slide, modeT: first.modeT + i * 0.4 });
+      Object.assign(m, { approach: first.approach, mode: first.mode, ax: first.ax, az: first.az, slide: first.slide, modeT: first.modeT + i * 0.4, lead: first.id, slot: i });
       out.push(m);
     }
     this.events.push({ type: 'squad', label: q.label });
