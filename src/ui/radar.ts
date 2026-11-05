@@ -224,6 +224,12 @@ export class Radar {
       const [x, y, out] = to(rp.x, rp.z);
       if (!out) { g.strokeStyle = INK.amber; g.lineWidth = dpr; g.strokeRect(x - 2.5 * dpr, y - 2.5 * dpr, 5 * dpr, 5 * dpr); }
     }
+    // the Dust Market: a small teal square while it has stock
+    const mk = world.market;
+    if (bk && mk && mk.deals > 0) {
+      const [x, y, out] = to(mk.x, mk.z);
+      if (!out) { g.strokeStyle = INK.teal; g.lineWidth = dpr; g.strokeRect(x - 2.5 * dpr, y - 2.5 * dpr, 5 * dpr, 5 * dpr); }
+    }
     // the repair gantry: a small teal square until it is spent
     const gn = world.gantry;
     if (bk && gn && gn.uses > 0) {

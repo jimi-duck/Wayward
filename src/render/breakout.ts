@@ -8,6 +8,7 @@ import { AUDIT_R, SAFE_R, relayOf } from '../sim/breakout';
 import { RELAY_JAM_R, RELAY_R } from '../sim/traffic';
 import { setBuoyMood } from './monuments';
 import { GANTRY_R } from '../sim/gantry';
+import { MARKET_R } from '../sim/market';
 import { MOOD_AMBER, MOOD_LIGHT, portStyleOf, type Mood, type PortStyle } from '../sim/site';
 import type { Effects, RGB } from './fx';
 import { Kit, metal, seeded, type V3 } from './kit';
@@ -334,6 +335,26 @@ function styleParts(k: Kit, rnd: () => number, st: PortStyle): void {
   }
 }
 
+/** The Dust Market: a round raft deck with a ring of awnings and lantern posts round a mast hung with a banner, two moored skiffs. */
+export function buildMarket(lamp: Material): Group {
+  const k = new Kit(), rnd = seeded(37);
+  k.cyl('dark', 8.5, 9, 0.5, [0, 0, 0], 'y', 16);
+  k.cyl('hull', 7.8, 8, 0.25, [0, 0.35, 0], 'y', 16);
+  k.box('dark', [0.5, 9, 0.5], [0, 4.8, 0]);
+  k.box('paint', [0.1, 3.4, 2.6], [0.4, 7.2, 1.4]);
+  k.box('lamp', [0.5, 0.5, 0.5], [0, 9.6, 0]);
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * TAU, x = Math.cos(a) * 5.8, z = Math.sin(a) * 5.8;
+    k.box('paint', [3.2, 0.14, 2.2], [x, 3.3, z], [0, -a, 0]);
+    for (const e of [-1, 1]) k.box('dark', [0.1, 3, 0.1], [x + Math.sin(a) * e * 1.4, 1.8, z - Math.cos(a) * e * 1.4]);
+    k.box('hull', [1.6, 0.9, 1.1], [x * 0.85, 0.9, z * 0.85], [0, -a, 0]);
+    k.box('lamp', [0.18, 0.18, 0.18], [x, 3.0, z]);
+  }
+  for (const e of [-1, 1]) { k.box('slate', [4, 0.8, 1.4], [e * 11, 0.3, e * 3], [0, 0.5 * e, 0]); k.box('win', [0.3, 0.14, 0.06], [e * 11, 0.9, e * 3 + 0.75]); }
+  k.greebles('hull', rnd, -5, 5, -5, 5, 0.9, 10, 0.5);
+  return k.build({ ...materials(), lamp, win: windowMaterial() }, 0.5);
+}
+
 /** The repair gantry: a hex cradle pad with two pylons and an overhead arm of clamp pads, hazard stripes on the pad. */
 export function buildGantry(lamp: Material): Group {
   const k = new Kit(), rnd = seeded(29);
@@ -592,6 +613,9 @@ export class BreakoutView {
   private readonly gantry = new Group();
   private readonly gantryLamp = (materials().lamp as MeshBasicMaterial).clone();
   private readonly gantryRing: Mesh;
+  /** The Dust Market raft (sim/market.ts) and its lamp. */
+  private readonly market = new Group();
+  private readonly marketLamp = (materials().lamp as MeshBasicMaterial).clone();
   private moodLight = 0.8;
   /** The company's audit dock, where the system has one. */
   private readonly audit = new Group();
@@ -676,13 +700,18 @@ export class BreakoutView {
     this.gantryRing.position.y = 1.2;
     this.gantry.add(this.gantryRing);
     this.gantry.visible = false;
+    this.market.add(buildMarket(this.marketLamp));
+    const mring = flatRing(MARKET_R, 0.25, CYAN, 0.3);
+    mring.position.y = 0.6;
+    this.market.add(mring);
+    this.market.visible = false;
     const tg = new BufferGeometry();
     tg.setAttribute('position', new Float32BufferAttribute(new Float32Array(6), 3));
     this.tether = new Line(tg, new LineBasicMaterial({ color: new Color(0.1, 0.5, 0.62), transparent: true, opacity: 0.5, toneMapped: false, fog: false }));
     this.tether.frustumCulled = false;
     this.tether.visible = false;
     this.lane.visible = this.port.visible = this.audit.visible = false;
-    scene.add(this.lane, this.port, this.audit, this.mast, this.relay, this.barge, this.tether, this.gantry);
+    scene.add(this.lane, this.port, this.audit, this.mast, this.relay, this.barge, this.tether, this.gantry, this.market);
 
   }
 
@@ -726,6 +755,13 @@ export class BreakoutView {
       const off = world.runTime < rp.jammedUntil;
       this.relayLamp.color.copy(off ? CYAN : AMBER).multiplyScalar(off ? 0.12 : 0.55 + 0.35 * Math.sin(this.time * 3) + 0.4 * Math.min(1, rp.lock / 3));
       (this.relayScan.material as MeshBasicMaterial).opacity = off ? 0.01 : 0.05 + 0.2 * Math.min(1, rp.lock / 3);
+    }
+    const mk = world.market;
+    this.market.visible = !!b && !!mk;
+    if (b && mk) {
+      this.market.position.set(mk.x, -2, mk.z);
+      this.market.rotation.y += dt * 0.05;
+      this.marketLamp.color.copy(mk.state === 'shut' ? AMBER : new Color(3.2, 2.4, 1.5)).multiplyScalar(mk.state === 'sold' ? 0.2 : 0.8);
     }
     const gn = world.gantry;
     this.gantry.visible = !!b && !!gn;

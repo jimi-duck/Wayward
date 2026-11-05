@@ -40,6 +40,7 @@ import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_
 import { LOOSE } from './pickups';
 import { Barge, bargeBerth } from './barge';
 import { Gantry, gantryBerth } from './gantry';
+import { Market, marketBerth } from './market';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
 import {
@@ -187,6 +188,8 @@ export class World implements EncounterHost {
   barge: Barge | null = null;
   /** A transit system's repair gantry (sim/gantry.ts), if it has one. */
   gantry: Gantry | null = null;
+  /** A Dust Traders system's market raft (sim/market.ts), if it has one. */
+  market: Market | null = null;
   /** The target a torpedo launched now would lock, for the HUD. */
   lock: number | null = null;
   score = 0;
@@ -483,6 +486,11 @@ export class World implements EncounterHost {
       if (d && d.kind === 'mining' && !d.home && !d.first && !d.situation && !(d.thren && d.thren > 0.3)) {
         const side = this.seed & 1 ? -1 : 1, at = bargeBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, side);
         this.barge = new Barge(at.x, at.z, at.dir);
+      }
+      // a system the Dust Traders hold has a market raft; not the opening, the first system past Cerro, or a Thren sky
+      if (d && d.holder === 'guild' && d.port !== undefined && !d.home && !d.first && !d.situation && !(d.thren && d.thren > 0.3)) {
+        const at = marketBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, this.seed & 4 ? -1 : 1);
+        this.market = new Market(at.x, at.z);
       }
       // a transit system has a repair gantry on its lane; not where the Custody keeps the road clear of repairs (a safe system) or the first system past Cerro
       if (d && d.kind === 'transit' && !d.home && !d.first && !d.situation && !d.safe && !(d.thren && d.thren > 0.3)) {
@@ -852,7 +860,7 @@ export class World implements EncounterHost {
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (!this.alive || b.jumpT >= 0) return;
     this.stage?.step(this, dt);
-    if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); }
+    if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); }
     const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
     if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
     if (!b.def.quiet) this.events.push(...this.watch.step({
@@ -1965,6 +1973,7 @@ export class World implements EncounterHost {
     this.desk.closed(this.runTime);
     this.floor.closed(this.runTime);
     this.applyOutcome(res.outcome, o.fee, o.brought);
+    if (o.def.id === 'market_stall' && key !== 'on') this.market?.sold();
     this.rest();
     this.run.cards.push({ id: o.def.id, choice: res.choice.id, won: res.won, t: Math.round(this.runTime) });
     this.events.push({ type: 'commsAnswer', id: o.def.id, choice: res.choice.id, text: res.outcome.text, won: res.won });
@@ -1994,6 +2003,7 @@ export class World implements EncounterHost {
     if (out.stall) this.stall += out.stall;
     if (b && out.calm) b.nextSwarm = Math.max(b.nextSwarm, this.runTime + out.calm);
     if (out.plates && out.plates > 0) this.repair(out.plates);
+    if (out.stock) for (const k of ['shield', 'yield'] as const) { const n = out.stock[k]; if (n) this.powers[k] = Math.min(POWER_STOCK_MAX[k]!, this.powers[k] + n); }
     if (out.score) this.addScore(out.score, 'events');
     if (b && out.heat) b.heat = Math.min(1, Math.max(0, b.heat + out.heat));
     if (out.hostile) for (const al of this.aliens) if (al.ward) provoke(al, this.events);
