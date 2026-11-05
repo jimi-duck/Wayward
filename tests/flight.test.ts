@@ -131,7 +131,7 @@ describe('enemy flight: no two alike', () => {
       w.field.rocks.push(rock);
       const al = spawnAlien('scout', w.ship, 0, w.rng, { x: 60, y: 0, z: -90 });
       al.escort = false;
-      al.style.skulk = true;
+      al.style.skulk = true; al.style.flank = false;
       w.aliens.push(al);
       let peeked = false;
       for (let i = 0; i < 30 * 60 && !peeked; i++) {
@@ -157,5 +157,56 @@ describe('enemy flight: no two alike', () => {
       if (i > 60 && lead.mode === 'approach' && wing.mode === 'approach') far = Math.max(far, Math.hypot(lead.x - wing.x, lead.z - wing.z));
     }
     expect(far).toBeLessThan(25);
+  });
+});
+
+describe('enemy personalities', () => {
+  it('a hurt coward runs, and its friends come once it is gone', () => {
+    let helped = 0;
+    for (const seed of [1, 2, 3, 4]) {
+      const w = calm(seed);
+      w.runTime = 200;
+      const al = spawnAlien('scout', w.ship, 0, w.rng, { x: 0, y: 0, z: -60 });
+      al.escort = false; al.style.coward = true; al.extra = false;
+      w.aliens.push(al);
+      al.hp = al.maxHp * 0.3;
+      let ran = false;
+      for (let i = 0; i < 30 * 60; i++) {
+        w.ship.invuln = 1;
+        w.step(STEP, idle);
+        if (al.fleeing) ran = true;
+        if (ran && !w.aliens.includes(al)) break;
+      }
+      expect(ran).toBe(true);
+      if (w.aliens.some((a) => a !== al && !a.escort)) helped++;
+    }
+    expect(helped).toBeGreaterThanOrEqual(3);
+  });
+
+  it('pickets make their runs on one side and one line, apart', () => {
+    const w = calm(8);
+    const ps = [0, 1, 2].map((i) => {
+      const a = spawnAlien('scout', w.ship, 0, w.rng, { x: -40 + i * 8, y: 0, z: -70 }, { variant: 'picket' });
+      a.escort = false; a.mode = 'setup'; a.modeT = 6; w.aliens.push(a);
+      return a;
+    });
+    for (let i = 0; i < 60; i++) { w.ship.invuln = 1; w.step(STEP, idle); }
+    expect(new Set(ps.map((a) => a.slide)).size).toBe(1);
+    expect(new Set(ps.map((a) => a.pass.off.toFixed(1))).size).toBeGreaterThan(1);
+  });
+
+  it('raiders in a run split to opposite sides', () => {
+    let split = 0;
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
+      const w = calm(seed);
+      const a = spawnAlien('scout', w.ship, 0, w.rng, { x: -30, y: 0, z: -60 });
+      const b = spawnAlien('scout', w.ship, 0, w.rng, { x: 30, y: 0, z: -60 });
+      for (const h of [a, b]) { h.escort = false; h.style.flank = true; w.aliens.push(h); }
+      a.mode = 'run'; a.slide = 1; a.modeT = 3;
+      b.mode = 'extend'; b.modeT = 0.01; b.runs = 0; b.slide = 1;
+      for (let i = 0; i < 40; i++) { w.ship.invuln = 1; w.step(STEP, idle); }
+      if (a.slide !== b.slide) split++;
+    }
+    expect(split).toBeGreaterThanOrEqual(5);
   });
 });

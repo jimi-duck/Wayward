@@ -2268,7 +2268,14 @@ export class World implements EncounterHost {
       if (!this.aliens.includes(al)) continue;
       // gone: off the far side of the sky, or away after leaving
       const d = Math.hypot(al.x - s.x, al.z - s.z);
-      if (!al.ward && !al.job && (d > CULL || (al.fleeing && al.age > 3 && d > 160))) this.aliens.splice(this.aliens.indexOf(al), 1);
+      if (!al.ward && !al.job && (d > CULL || (al.fleeing && al.age > 3 && d > 160))) {
+        this.aliens.splice(this.aliens.indexOf(al), 1);
+        // a scout that ran from a losing fight is out of sight: its friends come, once, from its side
+        if (al.help && this.alive && !safe && !this.sortie.quiet && this.aliens.filter((a) => !a.escort && !a.extra).length < p.enemyCap + 1) {
+          const help = this.sendHostile(this.runTime >= VARIANTS.raptor!.at && this.rng.next() < 0.4 ? 'raptor' : 'scout', 'flank');
+          help.slide = al.slide;
+        }
+      }
     }
   }
 
