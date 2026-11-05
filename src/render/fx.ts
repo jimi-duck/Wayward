@@ -156,6 +156,9 @@ class Debris {
   private readonly a = new Float32Array(MAX_DEBRIS * 4); // axis + angle
   private readonly s = new Float32Array(MAX_DEBRIS * 2); // size, spin
   private readonly life = new Float32Array(MAX_DEBRIS);
+  /** Per fragment: how fast its life runs out, and how much of its speed it keeps each 1/60 s. Big hull pieces drift on and last. */
+  private readonly fade = new Float32Array(MAX_DEBRIS);
+  private readonly drag = new Float32Array(MAX_DEBRIS);
   private next = 0;
   private readonly m = new Matrix4();
   private readonly q = new Quaternion();
@@ -169,14 +172,16 @@ class Debris {
     for (let i = 0; i < MAX_DEBRIS; i++) this.mesh.setMatrixAt(i, this.m.makeScale(0, 0, 0));
   }
 
-  emit(x: number, y: number, z: number, vx: number, vy: number, vz: number, size: number): void {
+  emit(x: number, y: number, z: number, vx: number, vy: number, vz: number, size: number, drift = false): void {
     const i = this.next;
+    this.fade[i] = drift ? 0.22 : 0.45;
+    this.drag[i] = drift ? 0.997 : 0.985;
     this.next = (this.next + 1) % MAX_DEBRIS;
     this.p.set([x, y, z], i * 3);
     this.v.set([vx, vy, vz], i * 3);
     const ax = Math.random() - 0.5, ay = Math.random() - 0.5, az = Math.random() - 0.5, n = Math.hypot(ax, ay, az) || 1;
     this.a.set([ax / n, ay / n, az / n, Math.random() * 6], i * 4);
-    this.s.set([size, (Math.random() - 0.5) * 10], i * 2);
+    this.s.set([size, (Math.random() - 0.5) * (drift ? 3.5 : 10)], i * 2);
     this.life[i] = 1;
   }
 
@@ -190,9 +195,9 @@ class Debris {
   update(dt: number): void {
     for (let i = 0; i < MAX_DEBRIS; i++) {
       if (this.life[i]! <= 0) continue;
-      const l = (this.life[i] = this.life[i]! - dt * 0.45);
+      const l = (this.life[i] = this.life[i]! - dt * this.fade[i]!);
       if (l <= 0) { this.mesh.setMatrixAt(i, this.m.makeScale(0, 0, 0)); continue; }
-      const d = Math.pow(0.985, dt * 60);
+      const d = Math.pow(this.drag[i]!, dt * 60);
       for (let k = 0; k < 3; k++) { this.v[i * 3 + k]! *= d; this.p[i * 3 + k] = this.p[i * 3 + k]! + this.v[i * 3 + k]! * dt; }
       this.a[i * 4 + 3] = this.a[i * 4 + 3]! + this.s[i * 2 + 1]! * dt;
       this.q.setFromAxisAngle(this.ax.set(this.a[i * 4]!, this.a[i * 4 + 1]!, this.a[i * 4 + 2]!), this.a[i * 4 + 3]!);
@@ -326,11 +331,11 @@ export class Effects {
     this.sparks.emit(x, y, z, vx, vy, vz, this.c, size, life, 0.94);
   }
 
-  rubble(kind: 'rock' | 'metal', x: number, y: number, z: number, n: number, size: number, speed: number): void {
+  rubble(kind: 'rock' | 'metal', x: number, y: number, z: number, n: number, size: number, speed: number, drift = false): void {
     const pool = kind === 'rock' ? this.rock : this.plating;
     for (let i = 0; i < n; i++) {
       const u = Math.random() * 2 - 1, a = Math.random() * Math.PI * 2, r = Math.sqrt(1 - u * u), sp = speed * (0.3 + Math.random());
-      pool.emit(x, y, z, Math.cos(a) * r * sp, u * sp * 0.6, Math.sin(a) * r * sp, size * (0.4 + Math.random() * 0.8));
+      pool.emit(x, y, z, Math.cos(a) * r * sp, u * sp * 0.6, Math.sin(a) * r * sp, size * (0.4 + Math.random() * 0.8), drift);
     }
   }
 
@@ -457,7 +462,7 @@ export class Effects {
     if (kind !== 'metal' || size < 1.2) return;
     // a hull does not die in one frame: pieces tear off burning, and what is left cooks off
     const hulk = size < 2.5 ? 2 : size < 4.5 ? 3 : 4;
-    this.rubble('metal', x, y, z, hulk, 0.55 + size * 0.12, 3 + size * 1.2);
+    this.rubble('metal', x, y, z, hulk, 0.55 + size * 0.12, 3 + size * 1.2, true);
     const pops = size < 2.5 ? 1 : size < 4.5 ? 3 : 5;
     for (let i = 0; i < pops; i++) {
       const o = size * 0.8, px = x + (Math.random() - 0.5) * o, py = y + (Math.random() - 0.5) * o * 0.4, pz = z + (Math.random() - 0.5) * o;

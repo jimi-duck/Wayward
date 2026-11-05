@@ -1,6 +1,7 @@
 import WebGL from 'three/addons/capabilities/WebGL.js';
 import { clamp } from './core/math';
 import { FixedStepLoop } from './core/loop';
+import { SlowMo } from './core/slowmo';
 import { Input } from './input/input';
 import { PAUSE_KEYS } from './input/keyboard';
 import { ZOOMS } from './render/camera';
@@ -631,6 +632,7 @@ function boot(review: typeof import('./review') | null): void {
 
   let lastRun: unknown = null, lastSystem = '', wasPaused = true, veil = 0;
 
+  const slowmo = new SlowMo();
   const loop = new FixedStepLoop({
     step(dt) {
       world.step(dt, input.sample());
@@ -650,6 +652,10 @@ function boot(review: typeof import('./review') | null): void {
       // a kill lands harder for a beat of stillness (never with reduced motion)
       const hold = sector.react(events);
       if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);
+      // a big kill slows the clock for a moment; a pause, a pop-up or reduced motion lets it go at once
+      if (sector.slow) { slowmo.request(sector.slow.scale, sector.slow.secs); sector.slow = null; }
+      if (loop.paused || sector.reduceMotion || !world.alive) slowmo.clear();
+      loop.timeScale = slowmo.step(dt);
       hud.events(events, world);
       // a job paid at the port says so, in a pop-up that holds the world (the lane's are a quiet notice, hud.ts)
       for (const e of events) if (e.type === 'jobDone' && e.at === 'port') jobsPaid.push(e);
