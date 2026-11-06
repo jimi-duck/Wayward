@@ -1,5 +1,5 @@
 import { CAPTAINS } from '../../src/content/captains';
-import { CONTACTS, BAYBANNERS, DEBRIEFS, EMBLEMS, FLEET, PLANETS, PLACES, SPECS, regionSlug, SLOTS, type SlotId } from '../../src/content/art';
+import { CONTACTS, BAYBANNERS, DEBRIEFS, EMBLEMS, FLEET, PLACE_SCENES, PLANETS, PLACES, SPECS, regionSlug, SLOTS, type SlotId } from '../../src/content/art';
 import { ENDINGS } from '../../src/content/endings';
 import { REGIONS_LONG } from '../../src/content/regions';
 import { OBSERVATIONS } from '../../src/content/situations';
@@ -24,7 +24,7 @@ export function artIds(): Record<SlotId, string[]> {
     file: FRAGMENTS_ALL.map((f) => f.flag),
     region: [...new Set(REGIONS_LONG.map((r) => regionSlug(r.name)))],
     fleet: [...FLEET],
-    job: MISSION_CARDS.map((c) => c.id),
+    job: [...MISSION_CARDS.map((c) => c.id), ...Object.values(PLACE_SCENES)],
     phenomenon: [...FEATURE_ORDER],
     gate: [...new Set(REGIONS_LONG.map((r) => regionSlug(r.name)))],
     planet: [...PLANETS],

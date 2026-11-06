@@ -97,4 +97,12 @@ export const FLEET = [
   'wreck-scout', 'wreck-hauler', 'wreck-gunship', 'wreck-capital', 'wayward-scuffed', 'wayward-half', 'wayward-last', 'raider', 'hunter', 'custody-cruiser',
   // a card's first hull, drawn for its caller: `<variant>-<caller>` is used before the plain hull (ui/comms.ts)
   'enforcer-kellern', 'freighter-frontier', 'freighter-guild', 'freighter-miners', 'lancer-calloway', 'scout-guild',
+  // the repair gantry's rig, for the hull strip when a gantry calls
+  'gantry',
 ] as const;
+
+/**
+ * The cards that open at a place, and the place scene each shows (a `jobs` picture, tall like the job scenes):
+ * the depot, the audit dock, the Dust Market raft and Ned's yard.
+ */
+export const PLACE_SCENES: Record<string, string> = { depot_hail: 'sc_depot', audit_hail: 'sc_audit', market_stall: 'sc_market', story_yard_done: 'sc_yard' };

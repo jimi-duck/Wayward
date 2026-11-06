@@ -46,7 +46,7 @@ messages.
 | Ship profiles | `ships/` | 18 | 960×480 | comms call, above the strength bars | "Call signs for the ships": the player sees the hull a Custody blockade or a Gutter raid has, before choosing. On phones it stands in for the bars that are hidden there | built |
 | Port banners | `places/` | 7 | 1280×320 | port panel, above the title | Each holder's port has its own face (Kellern, Frontier, Guild, Gutter, Holdfast, free dock, and one under Continuance order) | built |
 | Endings | `endings/` | 6 | 1280×720 | the Threshold's epilogue, and the Archive beside a reached ending | The payoff of a 7 hour journey gets a picture | built |
-| Sightings | `sightings/` | 20 | 800×600 | Archive, beside a sighting once seen | Found photographs of the Voice and the Thren: a collection to complete, never shown before it is found | built |
+| Sightings | `sightings/` | 23 | 800×600 | Archive, beside a sighting once seen | Found photographs of the Voice and the Thren: a collection to complete, never shown before it is found | built |
 | The file | `file/` | 8 | 800×600 | Archive, beside a piece of the Severance once found | Each piece is an object you can picture | built |
 | Regions | `regions/` | 8 | 1280×480 | chart header, faint behind the title (`.ch-back`) | A banner for each region's chart | built |
 | Gates | `gates/` | 8 | 1280×720 | chart, a small thumbnail beside the goal (`.ch-gpic`) | The gate you are heading for | built |
@@ -192,7 +192,7 @@ Three more slots are ready, with prompts, for a second run
 | Slot | Folder | Count | Size | For |
 | --- | --- | --- | --- | --- |
 | Fleet | `fleet/` | 27 | 960×480 on black | the nine capital ships (`capital-<captain>`), eight neutral hulls (tanker, hauler, courier, gunship, barge, salvager, drifter, ferry), the Wayward as fitted (`wayward-stock`, `-guns`, `-rig`, `-signals`), and six hulls in their real owner's colours (`<hull>-<caller>`, such as `freighter-miners`), which the comms call already uses in place of the plain hull |
-| Jobs | `jobs/` | 25 | 960×1440 (2:3, the 25 in the game are still 1280×720 and are cropped to fit until redrawn: `docs/art/JOBS-BRIEF.md`) | one scene per job card (`sc_*`), drawn full height down the right side of the job offer card. all 25 are in |
+| Jobs | `jobs/` | 29 | 960×1440 (2:3, the 25 in the game are still 1280×720 and are cropped to fit until redrawn: `docs/art/JOBS-BRIEF.md`) | one scene per job card (`sc_*`), drawn full height down the right side of the job offer card. all 25 are in, plus four place scenes (`sc_depot`, `sc_audit`, `sc_market`, `sc_yard`) that the cards `depot_hail`, `audit_hail`, `market_stall` and `story_yard_done` show beside them (`PLACE_SCENES`; not on phones) |
 | Phenomena | `phenomena/` | 14 | 800×600 | the places on the chart (`veil` … `carrier`) |
 
 Left out on purpose, listed at the end of the brief: wrecks of each hull, damage
@@ -236,3 +236,4 @@ installed through `art:prep`.
 
 A better picture for any slot just overwrites its file. Whether the set reads on
 a real phone is for a device look.
+- New places (2026-11-06, `wayward-art.zip`, 10 pictures, brief `docs/art/NEXT-ART-BRIEF-2.md`): the four place scenes above; three station photographs in the Archive (`raider_den` once a den is seen, `thren_seed` within 220 units of a seed, `relay_post` when a survey relay appears: flags set in `sim/world.ts` and the `survey` situation); `fleet/gantry` (a hull with no card yet); `wayward-stock` and `wayward-guns` redone so they differ.
