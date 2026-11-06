@@ -269,6 +269,35 @@ function boot(review: typeof import('./review') | null): void {
   showStep('menu');
   /** The stocks and the day as this system began, to show what it changed. */
   let sortieStart: Tally | null = null;
+  /**
+   * A system after a jump brings rocks, hulls and stations whose shaders the opening never used. Linked on the first frames they would
+   * freeze the view for seconds on a phone, so the arrival stays behind the jump's veil, the world held, until they are ready (or a
+   * few seconds pass, whichever is first), and the veil then lifts as it always did.
+   */
+  let settling = false, lift = 0;
+  const settle = () => {
+    if (settling) return;
+    settling = true;
+    loop.paused = true;
+    input.reset();
+    const run = world.run;
+    // the system's rocks, hulls and station are made by the first steps of the sim, not by restart: take a few, still and unseen
+    const idle = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' } as const;
+    for (let i = 0; i < 12; i++) world.step(1 / 60, idle);
+    const done = () => {
+      if (!settling) return;
+      settling = false;
+      lift = 1;
+      if (world.run === run && !panelOpen()) { loop.paused = false; input.reset(); }
+    };
+    // A round is two frames, so the sector builds what the world holds (a station goes up a piece a frame), then every program it
+    // has is linked. Rounds go on while they find new programs, so what arrives a few frames late is covered too; the cap keeps a
+    // slow link from holding the view for long.
+    const round = (known: number, n: number): Promise<void> => new Promise<void>((next) => requestAnimationFrame(() => requestAnimationFrame(() => next())))
+      .then(() => sector.warm()).then(() => sector.warmFrame())
+      .then(() => { const now = renderer.info.programs?.length ?? 0; return now === known || n >= 4 ? undefined : round(now, n + 1); });
+    void Promise.race([round(-1, 0), new Promise((r) => setTimeout(r, 20000))]).then(done, done);
+  };
   /** Fly the journey's current system. */
   const startSortie = () => {
     const j = journey!;
@@ -281,6 +310,7 @@ function boot(review: typeof import('./review') | null): void {
     setPaused(false);
     const d = world.sortie;
     if (d.home) world.train(); // every new Story journey starts with the training
+    if (!d.home && started) settle();
     hud.note(world, d.home ? t('Clear the yards · head for the Jump Gate') : d.first && !lockLifted(j.carry.flags) ? t('Dock at the company port') : `${d.name} · ${t('Need {n} jump fluid to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
   };
   /** Between systems: the chart, to plot the next jump. */
@@ -636,7 +666,8 @@ function boot(review: typeof import('./review') | null): void {
       sector.frame(world, live ? alpha : 1, dt, frameDt);
       // the jump: the HUD steps back, and the view goes pale teal at the end of it; once the sortie is over the veil lifts again, off the chart
       el('app').classList.toggle('warping', sector.jumping);
-      veil = world.phase === 'over' ? Math.max(0, veil - frameDt / 0.9) : sector.warpVeil;
+      if (!settling && lift > 0) lift = Math.max(0, lift - frameDt / 0.7);
+      veil = settling ? 1 : lift > 0 ? Math.max(lift, sector.warpVeil) : world.phase === 'over' ? Math.max(0, veil - frameDt / 0.9) : sector.warpVeil;
       el('warp').style.opacity = veil.toFixed(3);
       tour?.frame();
       hud.update(world, sector, frameDt);
@@ -732,7 +763,7 @@ function boot(review: typeof import('./review') | null): void {
   paintSaver();
   loop.paused = true;
   // dev server only: a handle for tools/shots.mjs to put any screen up
-  if (import.meta.env.DEV) Object.assign(window, { wayward: { world, sector, loop, launch, openChart, chart, cut, get journey() { return journey; } } });
+  if (import.meta.env.DEV) Object.assign(window, { wayward: { world, sector, loop, launch, startSortie, openChart, chart, cut, get journey() { return journey; } } });
 
   // ── landscape only ─────────────────────────────────────────────────────
   // A phone held upright gets the turn screen over everything, and a run
