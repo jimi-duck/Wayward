@@ -77,6 +77,21 @@ export class YardView {
     this.bolt.visible = false;
     this.root.add(this.bolt);
     scene.add(this.root);
+    // The lights are not under `root`: the number of lights in the scene changing recompiles every lit material (a freeze of seconds on a
+    // phone), so all four exist from the start of the page, at no intensity until the hull is due, and the scene's light count never moves.
+    // A warm working light over the deck, and the arches' colour thrown on it during the work
+    this.lamp = new PointLight(0xffd9a0, 0, 40, 1.4);
+    this.lamp.position.set(0, 10, 9);
+    // fill: the sun is as often behind the rock as in front, and the station must read from every side
+    const fill = new PointLight(0xffe0b0, 0, 56, 1.4);
+    fill.position.set(-4, 15, -6);
+    const hangar = new PointLight(0x8fe8ff, 0, 26, 1.5);
+    hangar.position.set(6.6, 4, -15);
+    this.beaconLight = new PointLight(0xff9a40, 0, 34, 1.5);
+    this.beaconLight.position.set(26.5, 17.4, -9);
+    this.fill = fill; this.hangar = hangar;
+    this.lightsG.add(this.lamp, fill, hangar, this.beaconLight);
+    scene.add(this.lightsG);
   }
 
   // ── building, a piece a frame ──────────────────────────────────────────
@@ -288,21 +303,6 @@ export class YardView {
     this.pad = flatRing(8, 0.16, CYAN, 0.4);
     this.pad.position.y = 0.2;
     this.root.add(this.ring, this.pad);
-    // a warm working light over the deck, and the arches' colour thrown on it during the work
-    // the lights are not under `root`: the number of lights in the scene changing recompiles every lit material (a freeze), so they exist
-    // from the moment the yard is built to the time the system is left, at no intensity until the hull is due
-    this.lamp = new PointLight(0xffd9a0, 0, 40, 1.4);
-    this.lamp.position.set(0, 10, 9);
-    // fill: the sun is as often behind the rock as in front, and the station must read from every side
-    const fill = new PointLight(0xffe0b0, 0, 56, 1.4);
-    fill.position.set(-4, 15, -6);
-    const hangar = new PointLight(0x8fe8ff, 0, 26, 1.5);
-    hangar.position.set(6.6, 4, -15);
-    this.beaconLight = new PointLight(0xff9a40, 0, 34, 1.5);
-    this.beaconLight.position.set(26.5, 17.4, -9);
-    this.fill = fill; this.hangar = hangar;
-    this.lightsG.add(this.lamp, fill, hangar, this.beaconLight);
-    this.scene.add(this.lightsG);
     this.done = true;
   }
 
@@ -317,7 +317,8 @@ export class YardView {
     const y = world.bk?.yard;
     // build a piece a frame once the first system is entered, so the hitch is never one big one (and never at Sam's code)
     if (y && world.bk!.def.first && !this.done) { if (!this.staged) this.plan(); this.stages.shift()?.(); }
-    this.lightsG.visible = this.done && !!y && !!world.bk?.def.first;
+    // always visible: a hidden light is not counted, and the count changing relinks every lit material (intensity 0 does the work)
+    this.lightsG.visible = true;
     if (!this.done || !this.wanted(world) || !y) { this.root.visible = false; this.beaconLight && (this.beaconLight.intensity = 0); this.lamp && (this.lamp.intensity = 0); this.fill && (this.fill.intensity = 0); this.hangar && (this.hangar.intensity = 0); return; }
     this.root.position.set(y.x, FLOOR, y.z);
     // the open front faces the way she comes (the company's dock), and the rock stands behind
