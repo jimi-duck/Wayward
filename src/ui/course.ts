@@ -80,7 +80,7 @@ export class CoursePanel {
     // the breach debt, once the Account has called: what is left, or Draper's hold on it once he has shown himself
     const debt = $('co-debt');
     debt.hidden = !c.debt;
-    debt.textContent = !c.debt ? '' : c.debt.settled ? `${t('Debt · Settled')} · ${t('held by Director Draper')}` : t('Debt · {n} CR · Kellern Recovery', { n: c.debt.left });
+    debt.textContent = !c.debt ? '' : c.debt.settled ? t('Debt · Settled') : t('Debt · {n} CR · Kellern Recovery', { n: c.debt.left });
     const why = $('co-why');
     why.hidden = short <= 0;
     why.textContent = short > 0 ? t('Needs {n} more fluid', { n: short }) : '';

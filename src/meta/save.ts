@@ -15,7 +15,7 @@ import { survivalOf } from '../content/survival';
 import { atChapter } from '../sim/chapters';
 import { newJourney } from '../sim/journey';
 import { regionOf } from '../sim/chart';
-import { roadRegion } from '../sim/road';
+import { roadRegion, stopAt } from '../sim/road';
 import { LEGS } from '../content/road';
 
 // ── the journey save ──────────────────────────────────────────────────────
@@ -99,6 +99,9 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 22) authorRoad(j as Journey);
   // 22 → 23: the hull's wear (Carry.scars): a hull from before starts clean, its history unknown
   if (j.version < 23) j.carry.scars = 0;
+  // 23 → 24: the job rework (thirty road jobs, a thirteen-step spine): the stops not yet reached get their new jobs, and the two
+  // retired jobs' flags carry over to the ones that took their places
+  if (j.version < 24) reworkJobs(j as Journey);
   j.version = VERSION;
   return j as Journey;
 }
@@ -326,4 +329,30 @@ function authorRoad(j: Journey): void {
   fresh.seenNet = [...c.seenNet];
   fresh.seenDay = c.seenDay;
   j.chart = fresh;
+}
+
+/** The jobs retired in v24, and what took their flags over (Two Captains was the Account's last step; Recovery Order is now). */
+const RETIRED_JOBS: Record<string, string | null> = { two_captains: 'recovery_order', someone_answered: null };
+
+/** v24: re-pin the road's stops ahead to the reworked jobs and scenes (content/road.ts), and carry the retired jobs' flags over. */
+function reworkJobs(j: Journey): void {
+  const c = j.chart;
+  const q = c.situations ?? {};
+  const done = new Set([...c.visited, j.at]);
+  for (const s of c.systems) {
+    const sit = q[s.id];
+    if (sit && sit.id in RETIRED_JOBS && !done.has(s.id)) delete q[s.id];
+    if (c.regionSet !== 'road' || done.has(s.id) || !roadRegion(c, regionOf(s))) continue;
+    const stop = stopAt(c, s);
+    if (!stop || (stop.name && stop.name !== s.name)) continue;
+    const pin = stop.job ?? stop.scene;
+    if (pin) q[s.id] = { id: pin, seen: sit?.seen ?? false, done: false, arc: true };
+    else if (sit?.arc) delete q[s.id];
+  }
+  c.situations = q;
+  const f = j.carry.flags;
+  for (const [old, now] of Object.entries(RETIRED_JOBS)) {
+    if (!now) continue;
+    for (const end of ['won', 'lost', 'declined', 'ignored']) if (f.includes(`job_${old}_${end}`) && !f.includes(`job_${now}_${end}`)) f.push(`job_${now}_${end}`);
+  }
 }

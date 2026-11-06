@@ -29,7 +29,7 @@ export interface RoadStop {
   job?: string;
   /** The key of this stop's script (content/script/). */
   script: string;
-  /** A moment of the unknown (content/situations.ts ARC) pinned to a stop with no job: one meeting a leg, at a fixed stop. */
+  /** A moment of the unknown (content/situations.ts ARC) pinned to a stop with no job: one meeting a leg, at a fixed stop. A stop holds one or the other. */
   scene?: string;
 }
 
@@ -60,11 +60,11 @@ const stop = (role: RoadRole, name: string, kind: RoadStop['kind'], holder: Hold
 
 /** The Marches: who stands with you. */
 const MARCHES: RoadStop[] = [
-  stop('landfall', 'Wake', 'transit', 'none', 'm_wake', { purpose: 'past the charts', scene: 'thren_curious' }),
+  stop('landfall', 'Wake', 'transit', 'none', 'm_wake', { purpose: 'a lifeboat, and raiders', job: 'lifeboat_wake' }),
   stop('hub', 'Kessel Hold', 'port', 'holdfast', 'm_kessel', { port: 'The Claim Hall', purpose: 'the moot wants your file', job: 'keep_distance' }),
   stop('work', 'Tamsin Field', 'contested', 'gutter', 'm_tamsin', { purpose: 'someone offers to settle your debt', job: 'wanted' }),
   stop('turn', 'The Long Walk', 'transit', 'none', 'm_walk', { purpose: 'the Drift kept the names' }),
-  stop('breather', 'Low Harrow', 'transit', 'none', 'm_harrow', { purpose: 'rest, and listen to the Drift' }),
+  stop('breather', 'Low Harrow', 'transit', 'none', 'm_harrow', { purpose: 'rest, and listen to the Drift', scene: 'thren_curious' }),
   stop('pressure', 'Gannet Reach', 'mining', 'holdfast', 'm_gannet', { purpose: 'the rigs are boarded', job: 'missing_shift' }),
   stop('reckoning', 'Sallow Port', 'transit', 'guild', 'm_sallow', { port: 'Guild Hall', purpose: 'refit before the Rift', job: 'heavy_tanker' }),
 ];
@@ -72,7 +72,7 @@ const MARCHES: RoadStop[] = [
 /** The Salvage Belt: what things are worth. */
 const BELT: RoadStop[] = [
   stop('landfall', 'Breakwater', 'transit', 'none', 'b_breakwater', { purpose: 'listen to the wrecks', job: 'one_filter' }),
-  stop('hub', 'Scrap Exchange', 'port', 'guild', 'b_exchange', { port: 'Dust Traders Exchange', purpose: 'everyone knows what you carry' }),
+  stop('hub', 'Scrap Exchange', 'port', 'guild', 'b_exchange', { port: 'Dust Traders Exchange', purpose: 'everyone knows what you carry', job: 'ransom_crew' }),
   stop('work', 'The Graveyard', 'mining', 'guild', 'b_graveyard', { purpose: 'a wreck that remembers', job: 'wreck_remembered' }),
   stop('turn', 'Kessler’s Wreck', 'contested', 'guild', 'b_kessler', { purpose: 'a recorder that still runs', job: 'dead_drop' }),
   stop('breather', 'Saltmarsh', 'transit', 'none', 'b_saltmarsh', { purpose: 'something crosses the lane', scene: 'thren_swarm' }),
@@ -82,31 +82,31 @@ const BELT: RoadStop[] = [
 
 /** The Drift Deep: the ring. */
 const DEEP: RoadStop[] = [
-  stop('landfall', 'Longwater', 'transit', 'none', 'd_longwater', { purpose: 'ask the Drift where the closures run', scene: 'thren_shadow' }),
+  stop('landfall', 'Longwater', 'transit', 'none', 'd_longwater', { purpose: 'ask the Drift where the closures run', scene: 'lane_signal' }),
   stop('hub', 'The Quiet Ferry', 'transit', 'none', 'd_ferry', { port: 'Free Dock', purpose: 'a lane ahead, no questions', job: 'finders_keepers' }),
   stop('work', 'Lantern Mile', 'mining', 'none', 'd_lantern', { purpose: 'a warm object, moving', job: 'something_dark' }),
   stop('turn', 'Ninth Fold', 'transit', 'none', 'd_fold', { purpose: 'someone aboard is watching', job: 'missing_payroll' }),
-  stop('breather', 'Hushlight', 'transit', 'none', 'd_hush', { purpose: 'a quiet relay' }),
+  stop('breather', 'Hushlight', 'transit', 'none', 'd_hush', { purpose: 'a quiet relay', scene: 'thren_shadow' }),
   stop('pressure', 'Stillwater', 'mining', 'holdfast', 'd_still', { purpose: 'Hester’s own rig', job: 'last_shift' }),
-  stop('reckoning', 'Kindmere', 'port', 'holdfast', 'd_kindmere', { port: 'Holdfast Stores', purpose: 'a signal that answers', scene: 'lane_signal' }),
+  stop('reckoning', 'Kindmere', 'port', 'holdfast', 'd_kindmere', { port: 'Holdfast Stores', purpose: 'a lane only Tarik drew', job: 'tarik_bend' }),
 ];
 
 /** The Breaker Yards: who built it. */
 const YARDS: RoadStop[] = [
-  stop('landfall', 'Cutton', 'transit', 'none', 'y_cutton', { purpose: 'the yards remember', scene: 'yard_hulk' }),
+  stop('landfall', 'Cutton', 'transit', 'none', 'y_cutton', { purpose: 'forty sealed in a cradle', job: 'cradle_crew' }),
   stop('hub', 'Yard Nine', 'port', 'kellern', 'y_nine', { port: 'Kellern Claim Office', purpose: 'the first work order', job: 'needle' }),
   stop('work', 'Anvil Slip', 'mining', 'kellern', 'y_anvil', { purpose: 'a cargo train broke up here', job: 'drift_cache' }),
   stop('turn', 'Keelberth', 'contested', 'kellern', 'y_keel', { purpose: 'Sam, through the relays', job: 'voice_wire' }),
   stop('breather', 'Cradle Gap', 'transit', 'none', 'y_cradle', { purpose: 'a breaker still holds something' }),
   stop('pressure', 'Torchwall', 'contested', 'gutter', 'y_torch', { purpose: 'the crews may strike', job: 'kill_zone' }),
-  stop('reckoning', 'Davit Dock', 'port', 'frontier', 'y_davit', { port: 'Free Dock', purpose: 'who has been paying you' }),
+  stop('reckoning', 'Davit Dock', 'port', 'frontier', 'y_davit', { port: 'Free Dock', purpose: 'who has been paying you', scene: 'yard_hulk' }),
 ];
 
 /** The Free Ports: who was in the room. */
 const PORTS: RoadStop[] = [
   stop('landfall', 'Saltquay', 'transit', 'none', 'f_saltquay', { purpose: 'the free ports kept the names', scene: 'voice_guide' }),
   stop('hub', 'Duarte Harbour', 'port', 'guild', 'f_duarte', { port: 'Dust Traders Exchange', purpose: 'a berth, no questions' }),
-  stop('work', 'Penny Cross', 'mining', 'gutter', 'f_penny', { purpose: 'something answers a full tank', job: 'someone_answered' }),
+  stop('work', 'Penny Cross', 'mining', 'gutter', 'f_penny', { purpose: 'something answers a full tank' }),
   stop('turn', 'Mirren’s Pier', 'transit', 'none', 'f_mirren', { purpose: 'forty names in a box', job: 'be_bait' }),
   stop('breather', 'Lucky Haven', 'transit', 'none', 'f_haven', { purpose: 'people who live with them' }),
   stop('pressure', 'Gilt Market', 'contested', 'gutter', 'f_gilt', { purpose: 'everyone wants a copy', job: 'lose_prefect' }),
@@ -117,11 +117,11 @@ const PORTS: RoadStop[] = [
 const HOLLOWS: RoadStop[] = [
   stop('landfall', 'Ashdeep', 'transit', 'none', 'h_ashdeep', { purpose: 'where the lanes began', job: 'no_return' }),
   stop('hub', 'Hollowforge', 'mining', 'voice', 'h_forge', { purpose: 'a pattern on the scope' }),
-  stop('work', 'Coldvault', 'contested', 'voice', 'h_vault', { purpose: 'the ring’s centre', job: 'two_captains' }),
-  stop('turn', 'Palecairn', 'transit', 'thren', 'h_cairn', { purpose: 'two voices want something' }),
+  stop('work', 'Coldvault', 'contested', 'voice', 'h_vault', { purpose: 'a tug for your registry', job: 'recovery_order' }),
+  stop('turn', 'Palecairn', 'transit', 'thren', 'h_cairn', { purpose: 'two voices want something', job: 'sables_crossing' }),
   stop('breather', 'Mute Hall', 'transit', 'none', 'h_mute', { purpose: 'they line the lane', scene: 'thren_watch' }),
   stop('pressure', 'Ghostcinder', 'contested', 'thren', 'h_cinder', { purpose: 'the swarm lane', scene: 'foundry_both' }),
-  stop('reckoning', 'Gaunt Watch', 'mining', 'none', 'h_gaunt', { purpose: 'the Governor’s aide' }),
+  stop('reckoning', 'Gaunt Watch', 'mining', 'none', 'h_gaunt', { purpose: 'the Governor’s aide', job: 'ring_centre' }),
 ];
 
 /** The Last Lanes: what you do with it. The Threshold follows the last row. */
@@ -156,5 +156,4 @@ export const COLLISIONS: Record<string, { standing?: Partial<Record<'miners' | '
   heavy_tanker: { standing: { miners: -1 } },
   missing_payroll: { standing: { miners: -2 } },
   drift_cache: { unflag: 'wren_trust' },
-  two_captains: { standing: { frontier: -1 } },
 };

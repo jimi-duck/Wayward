@@ -15,6 +15,7 @@ import { UI } from './ui';
 import { VARIETY } from './variety';
 import { WORLD } from './world';
 import { OVERHAUL, OVERHAUL_KEEP } from './overhaul';
+import { REWORK, REWORK_KEEP } from './rework';
 
 // ── German ────────────────────────────────────────────────────────────────
 // English on the left, German on the right. Short and informal (du), like the
@@ -26,11 +27,12 @@ import { OVERHAUL, OVERHAUL_KEEP } from './overhaul';
 //   space  · the shared world's features and expanses (content/features.ts)
 //   scenes · situations: their calls, goals and the Archive's sightings (content/situations.ts)
 
-export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...REACH_DE, ...OVERHAUL, ...SIGNALS };
+export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...REACH_DE, ...OVERHAUL, ...SIGNALS, ...REWORK };
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([
   ...OVERHAUL_KEEP,
+  ...REWORK_KEEP,
   'Wayward', 'Calloway', 'OB-7731-A', 'Drifter', 'Ironmaw', '1.0 km',
   // captains and their ships
   'Isla Vance', 'Hale Sorensen', 'Brennan Kade', 'Ashgrove', 'Quiet Pell', 'CCV Reprimand', 'CCV Due Process', 'Last Mercy',

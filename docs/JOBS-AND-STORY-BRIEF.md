@@ -2,6 +2,8 @@
 
 *Written for someone who has never seen this project: an AI (or a person) asked to review the game's jobs (its missions, contracts and side quests) and rework them. Everything you need is here or linked below. It was written on 6 November 2026 from the code on `main` (commit `ef10311`, after #463), not from memory. Where the code and an older document disagree, the code is quoted and the disagreement is listed in section 10.*
 
+*Since then the jobs were reworked to the owner's v2 brief (30 jobs, 13 in four spine threads, a debt of 60; save v24). This brief describes the game before that: [MISSIONS.md](MISSIONS.md) has the current list.*
+
 ## 0. Read this first
 
 **What you are being asked.** WAYWARD has 25 jobs. They were written one at a time over several months, then pinned one to each stop of a fixed story road and grouped into four "threads". The owner wants a second look at all of them: do they fit the story, do they fit each other, are they fun, are they fair, are any missing, thin or in the wrong place? You can propose changes to any job (or add or cut jobs); section 11 says what you must not break and what shape the answer should take.

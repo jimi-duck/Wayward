@@ -56,7 +56,13 @@ export interface ActorSpec {
   hp?: number;
   /** Missions: when this ship goes down the rest scatter and the job is done for less (`goal.scatter`). */
   scatter?: boolean;
+  /** Only when this flag is set, or only when it is not (a toll that brings more scouts when the Gutter has gone cold on you). */
+  when?: string;
+  unless?: string;
 }
+
+/** Whether an actor is in this scene, by its `when` and `unless` flags. */
+export const cast = (a: ActorSpec, flags: ReadonlySet<string>): boolean => (!a.when || flags.has(a.when)) && (!a.unless || !flags.has(a.unless));
 
 /** What the sortie asks of the player once the call is taken. */
 export interface Goal {
@@ -147,7 +153,9 @@ export interface SituationDef {
   /** Missions: more foes in waves (defend): so many seconds into the goal, from out ahead. */
   waves?: Array<{ variant: string; n: number; at: number }>;
   /** Hostiles waiting on the straight line to the Jump Gate, sprung when the ship passes this far along it, unless the situation was won (the pickets the stranger led you round). */
-  trap?: { variant: string; n: number; at: number };
+  trap?: { variant: string; n: number; at: number; /** Sprung sooner when this flag is set (the route was sold). */ early?: { flag: string; at: number } };
+  /** Plays only when this flag is set (Sable's crossing waits for her to be taken on); otherwise the stop is quiet. */
+  needs?: string;
   /** What it does in the sortie when the goal is carried, or missed. */
   win?: Outcome;
   lose?: Outcome;

@@ -89,10 +89,11 @@ export const ENDINGS: EndingDef[] = [
     road: {
       open: 'The file goes out on every band the relays still know, all eight in a row, in Ada’s key.',
       lines: [
-        { slot: 'thread', if: { flags: ['field_line', 'thread_line_5'] }, text: 'It doesn’t leave on one ship. Quill and a hundred hulls carry copies into the core.' },
+        { slot: 'thread', if: { flags: ['field_line', 'thread_line_3'] }, text: 'It doesn’t leave on one ship. Quill and a hundred hulls carry copies into the core.' },
         { slot: 'person', if: { flags: ['frag_blackbox', 'ada_heard'] }, text: 'Ada’s voice goes first. “My name is Ada. I helped.”' },
         { slot: 'person', if: { flags: ['copy_warden'] }, text: 'Ilse Marrow reads the order aloud at Halden’s Reach. She stops twice. Not from age.' },
         { slot: 'person', if: { flags: ['brook_free'] }, text: 'Adam Brook reads Kellern’s real books on air, grandfather’s name and all.' },
+        { slot: 'person', if: { flags: ['sable_home'] }, text: 'In the swarm lane, Sable hears every word. She sends one pattern back.' },
         { slot: 'cost', text: 'Within a month the Scatter demands its lanes back. Somewhere past the ring, a relay lights without a key.' },
       ],
       close: 'Everyone knows. That was the easy part.',
@@ -150,6 +151,10 @@ export const ENDINGS: EndingDef[] = [
     road: {
       open: 'Val pays in full, in public, and smiles like she means it.',
       lines: [
+        { slot: 'thread', if: { flags: ['route_sold', 'witness_sold'] }, text: 'Owen Pike reads about the sale, and shuts the Quiet Line for good.' },
+        { slot: 'thread', if: { flags: ['key_taken', 'account_paid'] }, text: 'The registry is yours, so the buyer gets a clean hull, and pays for it.' },
+        { slot: 'person', if: { flags: ['sable_sold'] }, text: 'Somewhere in the Hollows, the Offices go looking for a swarm-raised pilot. You told them where.' },
+        { slot: 'person', if: { flags: ['ring_sold'] }, text: 'Calloway already has the ring’s centre. You sold it to her, and she uses it first.' },
         { slot: 'person', if: { flags: ['draper_revealed', 'broker'] }, text: 'Three days later the file turns up in Draper’s hands. It turns out Val has a buyer too.' },
         { slot: 'cost', text: 'The truth is an asset now. It comes out when it is useful, and stays in when it isn’t.' },
       ],
@@ -176,6 +181,8 @@ export const ENDINGS: EndingDef[] = [
       open: 'Calloway publishes a version. It is shorter than yours, and more honest than anything before it.',
       lines: [
         { slot: 'thread', if: { flags: ['draper_recorded', 'stalled'] }, text: 'Director Draper is reassigned to a desk with no accounts on it.' },
+        { slot: 'thread', if: { flags: ['key_taken', 'account_paid'] }, text: 'The registry is yours and clean. Kellern has nothing left to recover.' },
+        { slot: 'person', if: { flags: ['ring_sold'] }, text: 'She already has the ring’s centre. You sold it to her. She reads it before your file.' },
         { slot: 'person', if: { flags: ['sig_used'] }, text: 'It says her father asked for ten years. It does not say how many he got.' },
         { slot: 'cost', text: 'The lanes stay closed. The contracts are rewritten. Kellern’s rates drop by a third. People notice.' },
       ],
@@ -195,14 +202,14 @@ export const ENDINGS: EndingDef[] = [
   },
   {
     id: 'seal', name: 'Seal', pitch: 'Close the lanes for good. The Scatter stays free, and alone.',
-    needs: 'Needs: Guns or Rig 3, Guns and Rig 2, Calloway beaten and Guns 1, or the Voice’s keys.',
-    ways: [{ marks: { guns: 3 } }, { marks: { rig: 3 } }, { marks: { guns: 2, rig: 2 } }, { beaten: 1, marks: { guns: 1 } }, { flags: ['lane_keys'] }],
+    needs: 'Needs: Guns or Rig 3, Guns and Rig 2, Calloway beaten and Guns 1, the Voice’s keys, or the ring’s centre mapped.',
+    ways: [{ marks: { guns: 3 } }, { marks: { rig: 3 } }, { marks: { guns: 2, rig: 2 } }, { beaten: 1, marks: { guns: 1 } }, { flags: ['lane_keys'] }, { allFlags: ['ring_mapped', 'thread_survey_3'] }],
     file: 'SEVERANCE · burned; this is what was left',
     road: {
       open: 'You give the Voice one instruction. It says thank you, and then it says it to them.',
       lines: [
-        { slot: 'thread', if: { flags: ['thread_survey_3', 'survey_map'] }, text: 'Beyond the ring, the motes stop gathering. The lanes go quiet in a way they haven’t been for seventy years.' },
-        { slot: 'person', if: { flags: ['sable_trust'] }, text: 'Sable stays in the lane. She sends one pattern back. It might mean goodbye.' },
+        { slot: 'thread', if: { flags: ['thread_survey_3', 'survey_map', 'ring_mapped'] }, text: 'Beyond the ring, the motes stop gathering. The lanes go quiet in a way they haven’t been for seventy years.' },
+        { slot: 'person', if: { flags: ['sable_home', 'sable_trust'] }, text: 'Sable stays in the lane. She sends one pattern back. It might mean goodbye.' },
         { slot: 'cost', text: 'Nobody will cross again. Not the core’s pickets. Not the Ferry. Not anybody’s granddaughter.' },
       ],
       close: 'You decided for everyone. Somebody had to. That is what they said, too.',

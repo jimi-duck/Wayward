@@ -32,7 +32,7 @@ export interface Course {
   /** Dark lanes off the road: they lead nowhere. */
   lanes: number;
   pursuit: { who: 'custody' | 'calloway'; days: number; tone: Tone; hidden: boolean };
-  /** The breach debt Kellern Recovery holds, once its Accounts have called: what is left, and whether Draper now holds it as settled. */
+  /** The breach debt Kellern Recovery holds, once its Accounts have called: what is left, and whether it is settled (paid off, or its key taken). */
   debt: { left: number; settled: boolean } | null;
   /** The lane's cost against what is aboard. */
   fuel: { need: number; have: number };
@@ -81,7 +81,7 @@ export function courseView(j: Journey): Course | null {
   if (!o) return null;
   const days = halfDays(daysUntil(j.hunt, c, j.trail));
   const to = o.to;
-  const debt = accountCalled(j.carry.flags) ? { left: debtLeft(j.carry.flags), settled: j.carry.flags.includes('draper_revealed') } : null;
+  const debt = accountCalled(j.carry.flags) ? { left: debtLeft(j.carry.flags), settled: debtLeft(j.carry.flags) === 0 || j.carry.flags.includes('key_taken') || j.carry.flags.includes('account_paid') } : null;
   return {
     region: regionDef(c, leg)?.name ?? 'The Reach',
     day: Math.floor(j.day) + 1,
