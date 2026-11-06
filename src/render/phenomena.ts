@@ -1,5 +1,5 @@
 import {
-  AdditiveBlending, Color, DoubleSide, Group, Mesh, PlaneGeometry, ShaderMaterial, Sprite, SpriteMaterial, Vector3,
+  AdditiveBlending, Color, DoubleSide, Group, Mesh, Object3D, PlaneGeometry, ShaderMaterial, Sprite, SpriteMaterial, Vector3,
 } from 'three';
 import { dirOf, skyLayout, type Sky } from './sky';
 import { singularity } from './singularity';
@@ -165,6 +165,18 @@ export class Phenomena {
 
   constructor() {
     this.group.add(this.kept3);
+    // A disposed material takes its program with it, so a sky with a rift, a storm cell or a black hole would link it again
+    // in play, on its first frame. One hidden copy of each, kept for the page's life, holds the programs (render/environment.ts does the same for the planet).
+    const anchor = (m: Object3D) => { m.visible = false; m.frustumCulled = false; this.group.add(m); };
+    for (const f of [RIFT_F, BOLT_F]) {
+      const m = new Mesh(QUAD, new ShaderMaterial({
+        vertexShader: QUAD_V, fragmentShader: f,
+        uniforms: { uSize: { value: 1 }, uAspect: { value: 1 }, uTime: { value: 0 }, uFlash: { value: 0 }, uSeed: { value: 0 }, uA: { value: new Color() }, uB: { value: new Color() } },
+        transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false, side: DoubleSide,
+      }));
+      anchor(m);
+    }
+    anchor(singularity(1, new Color(), 0.2));
     for (let i = 0; i < 6; i++) {
       const mat = new ShaderMaterial({
         vertexShader: /* glsl */ `varying vec2 vUv; void main() { vUv = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,

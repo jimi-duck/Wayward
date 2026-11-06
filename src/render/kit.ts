@@ -304,7 +304,9 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
         normal = kitPerturb(-vViewPosition, normal, kitH * uKitStrength, faceDirection);`);
     if (worn > 0) wearShader(shader, painted, !!o.shade);
   };
-  m.customProgramCacheKey = () => `kit-metal6-${scale}-${strength}-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}-${o.shade ? 1 : 0}`;
+  // the scale and the bump strength are uniforms, not part of the shader text, so they stay out of the key: every hull size then shares
+  // one program, and none of them is first linked on the frame it comes into view
+  m.customProgramCacheKey = () => `kit-metal7-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}-${o.shade ? 1 : 0}`;
   return m;
 }
 

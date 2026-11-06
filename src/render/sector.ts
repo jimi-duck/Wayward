@@ -1,7 +1,7 @@
 import { Scene, Vector3, type Group, type InstancedMesh, type Object3D, type WebGLRenderer } from 'three';
 import { COSMETICS } from '../content/unlocks';
 import { clamp, lerp } from '../core/math';
-import { HOLD_MAX, JUMP_T } from '../sim/breakout';
+import { HOLD_MAX, JUMP_T, type SortieDef } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
 import { setLightLevel, setLiveryBlend, setLiverySweep, setMark, SWEEP_SPAN } from './wayward';
 import { RenameReveal } from './reveal';
@@ -682,17 +682,34 @@ export class Sector {
   stageSky(world: World): void { this.paintSky(world); }
 
   /**
-   * The Breakout's sky belongs to the system (the same one each visit, in its
-   * region's colours); the arcade's is new every run.
+   * The sky of a Story system, painted behind the title before the sortie starts: the sky bake, its cube map and the far
+   * works are the heaviest part of the first frame, and the Story's first system has a fixed sky. The system after a jump
+   * is skipped: its sky turns with the ship's heading, which is not known yet.
+   */
+  stageSortieSky(def: SortieDef): void {
+    if (this.pinned || def.first) return;
+    this.setBreakoutSky(def);
+  }
+
+  /** Paint a Breakout system's sky unless it is the one already up (the same one each visit, in its region's colours). */
+  private setBreakoutSky(def: SortieDef, heading = 0): void {
+    const key = `${def.system}:${def.region ?? 0}${def.first ? ':first' : ''}`;
+    if (key === this.skyFor) return;
+    this.skyFor = key;
+    const sky = skyFor(hashSeed(def.system), def.sky ?? def.region ?? 0);
+    this.env.setSky(def.first ? industrial(sky, heading) : sky);
+    this.post?.setMood(this.env.mood);
+  }
+
+  /**
+   * The Breakout's sky belongs to the system; the arcade's is new every run.
    */
   private paintSky(world: World): void {
     if (this.pinned) return;
-    const breakout = world.mode === 'breakout';
-    const key = breakout ? `${world.sortie.system}:${world.sortie.region ?? 0}${world.sortie.first ? ':first' : ''}` : world.run;
-    if (key === this.skyFor) return;
-    this.skyFor = key;
-    const sky = breakout ? skyFor(hashSeed(world.sortie.system), world.sortie.sky ?? world.sortie.region ?? 0) : skyFor(Math.floor(Math.random() * 1e9), null);
-    this.env.setSky(breakout && world.sortie.first ? industrial(sky, world.ship.heading) : sky);
+    if (world.mode === 'breakout') return this.setBreakoutSky(world.sortie, world.ship.heading);
+    if (world.run === this.skyFor) return;
+    this.skyFor = world.run;
+    this.env.setSky(skyFor(Math.floor(Math.random() * 1e9), null));
     this.post?.setMood(this.env.mood);
   }
 

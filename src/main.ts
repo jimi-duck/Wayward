@@ -134,7 +134,10 @@ function boot(review: typeof import('./review') | null): void {
     if (started) return;
     // Arcade is the title's first row and starts at a tap, so its run is made now: the world, then its sky
     if (world.mode !== 'arcade' || world.survival.id !== ARCADE_SURVIVAL) world.restart({ survival: ARCADE_SURVIVAL, mode: 'arcade', carry: null });
-    sector.stageSky(world);
+    // a saved journey is the title's first row: its system's sky is the one to have ready, the Arcade's is made on a tap
+    const saved = liveJourney();
+    if (saved && saved.status === 'sortie') sector.stageSortieSky(sortieDef(saved));
+    else sector.stageSky(world);
     sector.warmFrame();
   }), 60);
 
@@ -780,7 +783,12 @@ function boot(review: typeof import('./review') | null): void {
     el(id).addEventListener('pointerdown', (e) => e.stopPropagation());
   };
   press('m-continue', () => launch('breakout', true));
-  press('m-journey', () => { pick = 'breakout'; showStep('diff'); });
+  press('m-journey', () => {
+    pick = 'breakout';
+    showStep('diff');
+    // while the difficulty is chosen, paint the new journey's first sky (the same whatever the seed)
+    setTimeout(() => { if (!started && step === 'diff') sector.stageSortieSky(sortieDef(newJourney(1, false, NEW_SET, profile.survival))); }, 120);
+  });
   press('m-arcade', () => launch('arcade'));
   press('m-settings', () => showStep('set'));
   press('d-back', () => showStep('menu'));
