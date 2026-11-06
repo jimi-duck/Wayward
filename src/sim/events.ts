@@ -1,5 +1,5 @@
 // What happened in the simulation, for everything downstream of it: effects,
-// the mission log, the HUD, and later audio. The world appends to a list each
+// the mission log and the HUD. The world appends to a list each
 // step and the renderer drains it each frame. Nothing reads these back into
 // the simulation. Positions carry an altitude (y) wherever the thing could be
 // off the play plane.

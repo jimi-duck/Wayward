@@ -335,8 +335,6 @@ export const UI: Record<string, string> = {
   'Obedience class': 'Obedience-Klasse',
   'Plates': 'Platten',
   // the refit bay, second pass; the HUD's state and badge; the briefing
-  'Sound': 'Ton',
-  'Buzz': 'Vibration',
   'Briefing': 'Einweisung',
   'Fit the one before it first': 'Erst das davor einbauen',
   'New': 'Neu',
