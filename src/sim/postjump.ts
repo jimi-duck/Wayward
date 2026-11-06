@@ -41,16 +41,17 @@ export const paintDue = (flags: ReadonlySet<string> | readonly string[]): boolea
 /** Whose bay it is: Sam's friend, who does the work himself. */
 export const PAINTER = 'Ned Varga';
 /** Ned on the radio when the ship comes up on his yard: hold her in the ring and he does the rest. */
-export const PAINT_LINE = '“OB-7731, this is Ned. Sam said you’d come. Ease her into the ring and hold still. New paint, new name, no charge.”';
+export const PAINT_LINE = '“OB-7731, this is Ned. Sam said you’d come. Ease her into the ring and hold still. Then fly out the front. New paint, new name, no charge.”';
 /** The pop-up card once the work is done (content/story.ts `story_yard_done`). */
 export const YARD_DONE = 'story_yard_done';
 export const PAINT_NOTICE = ['Reprogrammed', 'Owner lock stripped'] as const;
-/** The special moment after the work (owner 2026-11-06): a second notice, then the title card, with a short fly-out under the camera's pan. Seconds since the work. */
+/** The special moment after the work (owner 2026-11-06): a second notice, then the title card, with the camera's pan as she flies out of the front. Seconds since she left the ring. */
 export const YARD_REPAINT_AT = 2.8;
 export const YARD_REPAINT = ['Repainted', 'Company grey to yellow'] as const;
 export const YARD_TITLE_AT = 4.2;
-/** She rolls out of the ring on her own between these (the helm is hers again after). */
-export const YARD_GLIDE = [2.4, 5.2] as const;
+/** How long she holds in the ring while the arches run (seconds), and how far past the ring she must fly before the moment starts. */
+export const YARD_HOLD = 4.5;
+export const YARD_OUT = 6;
 /** The explanation card comes this long after the work (the reveal has played by then), and the archive's message this long after the work. */
 export const PAINT_CARD = 9.5;
 export const PAINT_WAKE = 30;

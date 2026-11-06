@@ -1,6 +1,5 @@
 import { AdditiveBlending, BoxGeometry, Color, CylinderGeometry, Group, Mesh, MeshBasicMaterial, PointLight, SphereGeometry, type Material, type Scene } from 'three';
-import { DOCK_TIME } from '../sim/breakout';
-import { paintDue, RENAMED } from '../sim/postjump';
+import { paintDue, RENAMED, YARD_HOLD } from '../sim/postjump';
 import type { World } from '../sim/world';
 import { cable, crate, flatRing, materials, strut, stripes, tank, truss, windowMaterial, windowRow } from './breakout';
 import type { Effects } from './fx';
@@ -26,8 +25,8 @@ const WORK = new Color(3.4, 1.9, 0.5);
 const MARK = new Color(2.6, 2.7, 2.8);
 const CYAN = new Color(0.4, 2.4, 3.2);
 
-/** The sequence of lights after the work: scan, spray, mark (seconds since it was done). */
-const SEQ = { scan: [0, 2.2], spray: [1.8, 4.8], mark: [4.4, 6.6] } as const;
+/** The sequence of lights after the work: scan, spray, mark (seconds she has held in the ring). */
+const SEQ = { scan: [0, 1.7], spray: [1.4, 3.5], mark: [3.2, 4.5] } as const;
 
 const glowMat = (c: Color, opacity = 1): MeshBasicMaterial => new MeshBasicMaterial({ color: c.clone(), transparent: true, opacity, blending: AdditiveBlending, depthWrite: false, toneMapped: false, fog: false });
 const within = (e: number, r: readonly [number, number]): number => (e < r[0] || e > r[1] ? 0 : Math.min(1, (e - r[0]) / 0.25, (r[1] - e) / 0.4));
@@ -319,12 +318,12 @@ export class YardView {
     this.root.visible = true;
     this.time += dt;
     const waiting = paintDue(world.flags);
-    const e = world.runTime - world.yardAt;
+    const e = world.yardAt !== Infinity ? 99 : world.yardHeld ? YARD_HOLD : world.yardT;
     // the beacon pulses slowly while the hull waits for the yard, and is steady after
     this.beacon.opacity = waiting ? 0.6 + 0.4 * Math.sin(this.time * 2.4) : 0.55;
     this.beaconLight.intensity = waiting ? 5 + 5 * Math.sin(this.time * 2.4) : 2;
     // the ring: it pulses, and fills as she holds in it
-    const hold = Math.min(1, world.yardT / DOCK_TIME);
+    const hold = world.yardHeld ? 1 : Math.min(1, world.yardT / YARD_HOLD);
     (this.ring.material as MeshBasicMaterial).opacity = waiting ? 0.3 + 0.2 * Math.sin(this.time * 2.4) + 0.4 * hold : 0.12;
     (this.pad.material as MeshBasicMaterial).opacity = waiting ? 0.3 + 0.3 * hold : 0.1;
     // after the work, the three arches light in turn: scan teal, spray amber, mark white
@@ -337,7 +336,7 @@ export class YardView {
     this.lamp.color.setHex(k === 0 ? TEAL : k === 2 ? WHITE : AMBER);
     this.lamp.intensity = k < 0 ? 90 : 200;
     // vapour while she is sprayed, sparks while she is marked
-    if (dt > 0 && this.mist-- <= 0 && e >= 0 && e < 7) {
+    if (dt > 0 && this.mist-- <= 0 && e > 0 && e < YARD_HOLD) {
       this.mist = 4;
       if (k === 1) fx.burst(y.x + (Math.random() - 0.5) * 3, 1.2, y.z + (Math.random() < 0.5 ? -4 : 4), 3, [0.8, 0.72, 0.55], 1.6, 1.2, 1.4);
       if (k === 2) fx.burst(y.x + (Math.random() - 0.5) * 5, 1.4, y.z + (Math.random() - 0.5) * 3, 3, [2.4, 2.4, 2.6], 3, 0.2, 0.4);

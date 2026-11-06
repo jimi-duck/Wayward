@@ -6,7 +6,7 @@ import { World } from '../src/sim/world';
 import { guideTarget, sidePlaces } from '../src/sim/guide';
 import { places } from '../src/sim/breakout';
 import { paintHull } from './paint';
-import { lockLifted, painted, paintAt, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK } from '../src/sim/postjump';
+import { lockLifted, painted, paintAt, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK, YARD_HOLD } from '../src/sim/postjump';
 import { FIRST_SECURITY_MAX, SECURITY_FROM, SECURITY_TO, SECURITY_GAP, SECURITY_DELAY, TRAFFIC_CLEAR, TRAFFIC_N } from '../src/sim/traffic';
 import { goalOf } from '../src/sim/goal';
 import { CARD_BY_ID } from '../src/sim/comms';
@@ -280,7 +280,7 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(goalOf(w).goal).toBe('Fly to Ned’s yard: free reprogram, repaint and rename');
   });
 
-  it('Ned speaks once the ship comes up on his yard, then the work is done, with a notice', () => {
+  it('Ned speaks once the ship comes up on his yard, then the work is done in the ring and the notice comes as she flies out', () => {
     const w = afterCode();
     const said: string[] = [];
     const p = w.bk!.yard!;
@@ -289,7 +289,7 @@ describe('the paint bay (owner 2026-11-05)', () => {
       if (w.phase === 'comms') { w.answer(0); continue; }
       w.ship.invuln = 1;
       // Ned is heard on the way in; then she eases into the ring and holds
-      if (i > 3 / STEP) { w.ship.x = p.x; w.ship.z = p.z; } else { w.ship.x = p.x - 100; w.ship.z = p.z; }
+      if (i > 3 / STEP && !w.yardHeld) { w.ship.x = p.x; w.ship.z = p.z; } else { w.ship.x = p.x - 100; w.ship.z = p.z; }
       w.ship.vx = w.ship.vz = 0;
       w.step(STEP, input());
       for (const e of w.events) {
@@ -305,12 +305,16 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(paintAt(w)).toBe(false);
   });
 
-  it('the yard is a place to dock: no work while she is fast in the ring, the work at once when she holds, then a card says what happened', () => {
+  it('the yard is a place to dock: no work while she is fast in the ring, the work done when she holds, the moment as she leaves, then a card says what happened', () => {
     const w = afterCode();
     const p = w.bk!.yard!;
     for (let i = 0; i < Math.round(3 / STEP); i++) { w.ship.invuln = 1; w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = 40; w.ship.vz = 0; w.step(STEP, input()); w.events.length = 0; }
     expect(w.flags.has('hull_repainted')).toBe(false);
-    for (let i = 0; i < Math.round(3 / STEP) && !w.flags.has('hull_repainted'); i++) { w.ship.invuln = 1; w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0; w.step(STEP, input()); w.events.length = 0; }
+    for (let i = 0; i < Math.round(YARD_HOLD / STEP + 30) && !w.yardHeld; i++) { w.ship.invuln = 1; w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0; w.step(STEP, input()); w.events.length = 0; }
+    // the work is done in the ring, but the moment waits for the way out
+    expect(w.yardHeld).toBe(true);
+    expect(w.flags.has('hull_repainted')).toBe(false);
+    w.ship.x = p.x - 60; w.ship.vx = 0; w.step(STEP, input()); w.events.length = 0;
     expect(w.flags.has('hull_repainted')).toBe(true);
     expect(w.flags.has('ship_renamed')).toBe(true);
     expect(w.phase).toBe('play');
@@ -321,18 +325,18 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(CARD_BY_ID.story_sam!.text).toContain('Ned Varga’s yard');
   });
 
-  it('the work is a moment: a notice, a second notice, the name as a title, a short roll out under her own thrust, then the card', () => {
+  it('the work is a moment: a notice, a second notice, the name as a title, all as she flies out, then the card', () => {
     const w = afterCode();
     const p = w.bk!.yard!;
     const heard: string[] = [];
     const note = () => { for (const e of w.events) { if (e.type === 'yardDone') heard.push(['reprogrammed', 'repainted', 'title'][e.n]!); } w.events.length = 0; };
-    for (let i = 0; i < Math.round(3 / STEP) && !w.flags.has('hull_repainted'); i++) { w.ship.invuln = 1; w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0; w.step(STEP, input()); note(); }
-    const at = { x: w.ship.x, z: w.ship.z };
+    for (let i = 0; i < Math.round(YARD_HOLD / STEP + 30) && !w.yardHeld; i++) { w.ship.invuln = 1; w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0; w.step(STEP, input()); note(); }
+    expect(heard).toEqual([]);
+    // she flies out of the front (the helm is hers throughout)
+    w.ship.x = p.x - 40; w.ship.vx = w.ship.vz = 0;
     for (let i = 0; i < Math.round(9 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); note(); }
     for (let i = 0; i < Math.round(8 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); note(); }
     expect(heard).toEqual(['reprogrammed', 'repainted', 'title']);
-    // she has rolled out of the ring by herself
-    expect(Math.hypot(w.ship.x - at.x, w.ship.z - at.z)).toBeGreaterThan(8);
   });
 
   it('nothing attacks and no swarm comes between the code and the paint, however long she takes', () => {
