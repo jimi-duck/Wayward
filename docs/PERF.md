@@ -363,3 +363,17 @@ Reported: much worse in Chrome than Safari, worst in the first minute. Nothing i
 - `derive()` (`sim/evidence.ts`), run every step on the road, copied the flag set dozens of times: 100 to 360 us a step, now 20 to 34 us (`sim/threads.ts` reads a set as it is).
 
 **Not measured:** Chrome's GPU time. If it is still slow, try `?quality=low`, `?nospace` and `?classic` in the address bar and a DevTools Performance recording of the first 60 s.
+
+## Pass 10: the Story's first system (2026-11-06)
+
+Reported: "the first system loading isn't working great" in Story mode. Measured by launching a new Story journey in headless Chromium (software GL, 568x320, Medium): the first frame took 580 to 770 ms and linked three shader programs. Causes, all in the first frame after Begin (Arcade was already staged, the Story was not):
+
+| Cause | Change | After |
+|---|---|---|
+| The Story's sky (bake, cube map, far works) was painted on the first frame | `Sector.stageSortieSky`: while the difficulty is chosen after "New journey", and behind the title when a saved journey is the first row; not for the system after a jump (its sky turns with the ship's heading) | `setSky` is off the first frame (was 150 to 165 ms of JS) |
+| The storm cell, rift and black hole shaders are made per sky and freed with it, so a sky with one linked it again, in play | `Phenomena` keeps one hidden copy of each for the page's life | 0 programs linked after Begin from these |
+| `kit.ts` put the hull scale and bump strength in the program cache key, though they are uniforms: every hull size (the company's big ships and yard) was a new program, first linked when it came into view | scale and strength left the key | programs 97 to 82; 0 linked after Begin |
+
+First frame 580 to 770 ms became about 150 ms; no program is linked after Begin.
+
+**Not measured:** a real phone or GPU, and the Continue path on a saved journey (same code, not timed).
