@@ -377,7 +377,7 @@ export const WORLD: Record<string, string> = {
   'Transponder spoofer': 'Transponder-Fälscher',
   'Forged codes, every system.': 'Gefälschte Codes, in jedem System.',
   'Ghost echo': 'Geisterecho',
-  'Slows Calloway at every jump. Mk 2 hides your route.': 'Bremst Calloway bei jedem Sprung. Mk 2 versteckt deine Route.',
+  'Slows Calloway at every jump. Mk 2 leaves her a false trail.': 'Bremst Calloway bei jedem Sprung. Mk 2 legt ihr eine falsche Spur.',
   'Guild ledger': 'Gildenbuch',
   'Ports cost 10% less.': 'Häfen kosten 10% weniger.',
   'Names in the Gutter': 'Namen im Gutter',
