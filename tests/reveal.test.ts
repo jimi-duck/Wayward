@@ -68,8 +68,9 @@ describe('rename reveal', () => {
   it('takes its time: a long, wide arc, and no card over it (owner 2026-10-31)', () => {
     expect(ARC_END).toBeGreaterThanOrEqual(5);
     expect(HOLD_END).toBeGreaterThan(ARC_END);
-    // the archive follows the paint, not the code (owner 2026-11-05), and never as a quick card over the arc
-    expect(PAINT_WAKE).toBeGreaterThanOrEqual(20);
+    // the archive follows the paint, not the code (owner 2026-11-05), shortly after the reboot (owner 2026-11-06), and never over the arc
+    expect(PAINT_WAKE).toBeGreaterThan(HOLD_END + 4);
+    expect(PAINT_WAKE).toBeLessThanOrEqual(20);
     expect(CARD_BY_ID.story_sam!.choices.find((c) => c.id === 'code')!.win?.follow).toBeUndefined();
     // mid-arc the camera is still moving
     const r = new RenameReveal();

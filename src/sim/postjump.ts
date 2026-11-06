@@ -61,8 +61,8 @@ export const YARD_AUTO_END = 5.6;
 export const YARD_DARK = 1.0;
 export const YARD_BOOT = 1.9;
 /** The explanation card comes this long after the work (the reveal has played by then), and the archive's message this long after the work. */
-export const PAINT_CARD = 9.5;
-export const PAINT_WAKE = 30;
+export const PAINT_CARD = 7.5;
+export const PAINT_WAKE = 13;
 
 /** The straight run from the arrival to the Jump Gate, in units: 10 km, about 25 s flat out. */
 const POSTJUMP_LANE = 1000;

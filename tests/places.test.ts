@@ -15,6 +15,8 @@ const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, t
 const run = (w: World, seconds: number) => {
   for (let i = 0; i < Math.round(seconds / STEP); i++) {
     if (w.phase === 'comms') w.answer(0, true);
+    // the story's own quiet in the first system (the breach, the lifted lock) is not what this asks
+    w.flags.delete('recovery_flag'); w.flags.delete('ship_stolen');
     w.step(STEP, input());
   }
 };
@@ -86,7 +88,6 @@ describe('a place in a sortie', () => {
     const def = sortieDef(j);
     expect(def.place?.name).toBe(PLACES[j.chart.places[j.at]!.id].name);
     const w = new World(5, { mode: 'breakout', sortie: def, carry: j.carry });
-    w.flags.add('ship_stolen'); w.flags.add('hull_repainted');
     run(w, PLACE_AT - 2);
     expect(w.encounter).toBeNull();
     run(w, 4);
