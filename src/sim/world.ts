@@ -893,6 +893,9 @@ export class World implements EncounterHost {
     // (owner, 6 November 2026: no distress signal or raider there)
     if (!(b.def.first && (recovering(this.flags) || lockLifted(this.flags)))) this.stage?.step(this, dt);
     if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); this.den?.step(this, dt); this.thrSeed?.step(this, dt); }
+    // the Archive keeps a photograph of a den once it has been seen, and of a seed once she has come near it
+    if (this.den && this.den.state !== 'dark') this.flags.add('raider_den');
+    if (this.thrSeed && Math.hypot(this.ship.x - this.thrSeed.x, this.ship.z - this.thrSeed.z) < 220) this.flags.add('thren_seed');
     const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
     if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
     // Calloway's route lines ("change your route") are for the free chart: the road is one fixed line, so only Wanted speaks there

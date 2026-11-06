@@ -108,6 +108,13 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 .ns-stack { display: grid; gap: clamp(24px, 6vh, 90px); width: min(680px, 100%); min-height: 0; }
 .ns-wrap[data-lay="col"] .ns-stack { width: min(560px, 100%); }
 .ns-wrap[data-lay="doc"] .ns-stack { width: min(600px, 100%); }
+/* a card that opens at a place: the place's own picture beside the card, as tall as it, in a thin teal rim (as the job offer's) */
+.ns-wrap .ns-stack.scened { display: flex; align-items: stretch; width: min(880px, 100%); gap: 16px; }
+.ns-stack.scened > .ns-p { flex: 1 1 0; min-width: 0; }
+.ns-scene { flex: 0 0 min(260px, 30%); margin: 0; padding: 1.5px; background: rgba(var(--teal-bright-rgb), .9); overflow: hidden; min-height: 0;
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px); }
+.ns-scene-img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%;
+  clip-path: polygon(8.5px 0, calc(100% - 8.5px) 0, 100% 8.5px, 100% calc(100% - 8.5px), calc(100% - 8.5px) 100%, 8.5px 100%, 0 calc(100% - 8.5px), 0 8.5px); }
 .ns-p { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--ng-gap); align-content: start; min-width: 0; padding: var(--ng-pad); color: var(--ink); }
 .ns-h { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(var(--halo), .4); }
 #comms .ns-h .tx-wave { width: 22px; height: 10px; background: var(--rim); opacity: .85; }

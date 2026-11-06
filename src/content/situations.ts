@@ -268,7 +268,7 @@ export const SITUATIONS: SituationDef[] = [
     id: 'survey', name: 'A survey relay', blurb: 'A survey relay, close to finishing.', group: 'corporate',
     kinds: ['mining', 'transit', 'contested'], regions: [0, 5], weight: 1.1,
     prop: 'relay', actors: [act('picket', 1, 'hold', 'wary', 'Survey picket', { from: 'site', ring: 60 })],
-    card: 'sc_survey', at: 25, hail: 480, accept: ['cut', 'jam'],
+    card: 'sc_survey', at: 25, hail: 480, accept: ['cut', 'jam'], seen: ['relay_post'],
     goal: { kind: 'reach', hold: 8, limit: 170, line: 'Cut the survey relay', give: { supplies: 2 } },
     win: { text: 'The relay goes dark · the Net slows round here', stall: 4, notice: { custody: 1 } },
     lose: { text: 'The relay finished its survey', stall: -3 },
@@ -538,5 +538,8 @@ export const OBSERVATIONS: Observation[] = [
   { flag: 'saw_hulk', name: 'The hulk', line: 'The Continuance was cutting up a Thren hulk.', theory: 'Not a ship at all, say the yard crews. A lane breaker, says the Voice.' },
   { flag: 'both_seen', name: 'The foundry', line: 'The Voice’s machines let the Thren through their gates.', theory: 'They are not enemies. Perhaps they never were.' },
   { flag: 'saw_signal', name: 'The signal', line: 'A pattern in the noise that changed when you listened.', theory: 'Cyrite sings, the old miners say, if you carry enough of it.' },
+  { flag: 'raider_den', name: 'The den', line: 'A hollowed rock with a launch bay lit amber, and ships tethered to it.', theory: 'The Gutter call it home. The Custody call it a clerical error.' },
+  { flag: 'thren_seed', name: 'The seed', line: 'A grey-violet growth fixed to a rock, shedding motes.', theory: 'Left alone it grows. Nobody agrees what it grows into.' },
+  { flag: 'relay_post', name: 'The relay post', line: 'A regulation mast with a patrol pair docked on its arms.', theory: 'It listens to every lane. It has not yet been told to stop.' },
   { flag: 'saw_pulse', name: 'The pulse', line: 'Every instrument disagreed for a few seconds.', theory: 'The lane breakers are still working, somewhere.' },
 ];

@@ -156,6 +156,7 @@ export const EXTRA_LOOK: Record<string, string> = {
   'wreck-hauler': 'a dead cargo hauler: long boxy hull, container racks half empty and bent, one engine pod gone, scorch marks',
   'wreck-gunship': 'a dead gunship: blunt armed hull, gun pods hanging by cables, armour plates peeled back, a red warning lamp long dead',
   'wreck-capital': 'a dead capital ship seen from far away: a kilometre of hull broken in two, tiny gantries and windows lit by nothing to show scale',
+  gantry: 'a repair gantry: a stationary repair rig seen as a ship-sized working frame: a girder cradle with hanging tool arms, welding lights in warm amber, a half-open hull plate being held, patched grey-black and yellow hazard paint',
   'wayward-scuffed': 'the Wayward scuffed: paint scraped, a few dents and scorch marks, everything still working, engines lit blue',
   'wayward-half': 'the Wayward at half hull: a hole in the plating showing ribs and cables, one engine pod sparking, a little vented gas trailing',
   'wayward-last': 'the Wayward on her last plate: barely holding together, large sections torn away, one engine out, a restrained red glow inside the breach',
@@ -202,6 +203,10 @@ export const DEBRIEF_LOOK: Record<string, string> = {
 
 /** What each job looks like as a scene: the moment, not the whole story. */
 export const JOB_SCENE: Record<string, string> = {
+  sc_depot: 'the Frontier Supply Depot, a yellow-orange industrial depot with a docking ring, a damping-field ring in teal, work lights, fuel tanks and cargo racks; one hauler berthed, the Wayward approaching the ring',
+  sc_audit: 'Kellern Audit Dock, an off-white company yard with an inspection arch, stencilled bay numbers and cold white work lights; a teal scanning beam sweeping a waiting hull; Custody grey-black and a thin red stripe on the arch',
+  sc_market: 'the Dust Market, a raft of Dust Traders\' stalls adrift on a lane: awnings, hanging lanterns in warm amber, crates of warheads and plating, tethered skiffs, the back deck open to space; the Wayward slowing alongside',
+  sc_yard: 'Ned\'s yard, a small independent paint yard built into the side of an asteroid: lit steel gantries and paint rigs bolted to the rock, a ring of teal light marking the work pad; the Wayward hangs in the ring, her hull just changed from company grey to clear yellow-orange, one panel still masked',
   sc_cache: 'four battered cargo cases drifting apart in a broken cargo-train field, the Wayward slowing beside one with its tractor lamp on, a distant crew ship just turning toward her',
   sc_toll: 'a toll beacon blinking over an asteroid lane, four raider ships holding station around it, the Wayward approaching',
   sc_tanker: 'a heavy tanker under hail of fire from the Wayward, two escorts wheeling, its engine pod venting',

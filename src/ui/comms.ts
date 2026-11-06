@@ -3,7 +3,7 @@ import type { Caller, GlassRole, Open } from '../sim/comms';
 import type { LedgerRow } from '../sim/contract';
 import { NEON_CSS } from './colors';
 import { artImg, artUrl } from './art';
-import { CALLOWAY_ID, CONTACTS } from '../content/art';
+import { CALLOWAY_ID, CONTACTS, PLACE_SCENES } from '../content/art';
 import { faceSvg } from './face';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { INK } from './palette';
@@ -77,7 +77,7 @@ export interface CommsView {
 }
 
 /** Which pictures a call could show: a portrait, the caller's emblem, the first hull on the read. */
-export interface ArtRef { portrait: ['captain' | 'contact', string] | null; emblem: string | null; ship: string | null; /** The hull drawn for this caller (`lancer-calloway`), tried before `ship`. */ owned?: string | null; scarred?: boolean }
+export interface ArtRef { /** The place scene a card that opens at a place shows beside it (a `jobs` picture, content/art.ts PLACE_SCENES). */ scene?: string | null; portrait: ['captain' | 'contact', string] | null; emblem: string | null; ship: string | null; /** The hull drawn for this caller (`lancer-calloway`), tried before `ship`. */ owned?: string | null; scarred?: boolean }
 const NO_ART: ArtRef = { portrait: null, emblem: null, ship: null };
 
 /** The pictures a card could show, worked out from the card alone. */
@@ -86,7 +86,7 @@ export function artOf(d: Open['def']): ArtRef {
   const contact = d.id in CONTACTS ? CONTACTS[d.id] ?? d.id : null;
   const emblem = d.caller === 'calloway' ? 'office' : d.caller !== 'unknown' && d.caller !== 'captain' ? d.caller
     : /^The Voice/.test(d.from) ? 'voice' : /^The Thren/.test(d.from) ? 'thren' : null;
-  return { portrait: person ? ['captain', person] : contact ? ['contact', contact] : null, emblem, ship: d.ships?.[0]?.variant ?? null, owned: d.ships?.[0] ? `${d.ships[0].variant}-${d.caller}` : null, scarred: (d.scars ?? 0) > 0 };
+  return { scene: PLACE_SCENES[d.id] ?? null, portrait: person ? ['captain', person] : contact ? ['contact', contact] : null, emblem, ship: d.ships?.[0]?.variant ?? null, owned: d.ships?.[0] ? `${d.ships[0].variant}-${d.caller}` : null, scarred: (d.scars ?? 0) > 0 };
 }
 
 const CALLER_CSS: Record<Caller, string> = {
@@ -584,7 +584,9 @@ export class CommsPanel {
     // a voice on the radio sits beside the card, to its left; a status line sits under it
     const lay = sd ? (sd.title ? 'row' : 'col') : tpl ? 'col' : 'one';
     $('cm-ng').dataset.lay = lay;
-    $('cm-ng').replaceChildren(...(lay === 'row' ? [side!, panel] : [h('div', 'ns-stack', '', panel, side)]));
+    // a card that opens at a place shows the place beside it, as tall as the card; phones on their side and upright phones go without it
+    const scene = lay !== 'row' && view.art.scene && !matchMedia('(max-height: 520px), (max-width: 600px)').matches ? artImg('job', view.art.scene, 'ns-scene-img') : null;
+    $('cm-ng').replaceChildren(...(lay === 'row' ? [side!, panel] : [h('div', `ns-stack${scene ? ' scened' : ''}`, '', panel, side, scene ? h('figure', 'ns-scene', '', scene) : null)]));
     // the arrows walk the actions in reading order; the selection starts on the first answer
     this.items.sort((a, b) => (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
     this.sel = Math.max(0, this.items.findIndex((x) => x.n === 1));

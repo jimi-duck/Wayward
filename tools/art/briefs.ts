@@ -1,5 +1,5 @@
 import { CAPTAINS, PERSONALITIES } from '../../src/content/captains';
-import { SLOTS, type SlotId } from '../../src/content/art';
+import { PLACE_SCENES, SLOTS, type SlotId } from '../../src/content/art';
 import { CARDS } from '../../src/content/cards';
 import { ENDINGS } from '../../src/content/endings';
 import { REGIONS_LONG, } from '../../src/content/regions';
@@ -158,7 +158,7 @@ function endingBrief(id: string): Raw {
 
 function sightingBrief(flag: string): Raw {
   const o = OBSERVATIONS.find((x) => x.flag === flag)!;
-  const group = /thren/.test(flag) || flag === 'saw_thren' ? FACTION_LOOK.thren : /voice/.test(flag) || flag === 'saw_voice' ? FACTION_LOOK.voice : 'something unexplained, between the Voice and the Thren';
+  const group = flag === 'raider_den' ? FACTION_LOOK.gutter : flag === 'thren_seed' ? FACTION_LOOK.thren : flag === 'relay_post' ? FACTION_LOOK.custody : /thren/.test(flag) || flag === 'saw_thren' ? FACTION_LOOK.thren : /voice/.test(flag) || flag === 'saw_voice' ? FACTION_LOOK.voice : 'something unexplained, between the Voice and the Thren';
   return {
     slot: 'sighting', id: flag, file: `${dir('sighting')}/${flag}.webp`,
     prompt: `${STYLE}\n\nSubject: a sensor still, "${o.name}": ${o.line}\nIt belongs to: ${group}\nThe player’s own theory in the Archive: ${o.theory}\nFraming: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.`,
@@ -232,6 +232,17 @@ function specBrief(id: string): Raw {
 }
 
 function jobBrief(id: string): Raw {
+  const place = Object.entries(PLACE_SCENES).find(([, v]) => v === id);
+  if (place) {
+    const pc = cardOf(place[0]);
+    return {
+      slot: 'job', id, file: `${dir('job')}/${id}.webp`,
+      prompt: `${STYLE}\n\nSubject: the place where the card "${pc.title}" opens. Scene: ${JOB_SCENE[id]}.\nFraming: tall portrait 2:3, shown full height beside the card text, no text over it. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.\nNo people's faces, no text, no UI.`,
+      avoid: AVOID_ALL, size: sz('job'), background: 'full picture',
+      where: `The comms card "${pc.title}" (${place[0]}), beside its text.`,
+      facts: [`card ${place[0]}`, `title "${pc.title}"`, `from "${pc.from}"`],
+    };
+  }
   const c = MISSION_CARDS.find((x) => x.id === id)!;
   return {
     slot: 'job', id, file: `${dir('job')}/${id}.webp`,

@@ -3,13 +3,13 @@
 
 > **For Jimi: how to use this**
 > 1. Open a new ChatGPT chat. Attach `docs/art/reference/wayward-title-art.jpg` and `wayward-menu-art.jpg` (the title screen art) and attach this file (it is long, so attach rather than paste).
-> 2. Write: *"Do the whole brief in one run and give me one file at the end."* It is told below to make all 118 pictures in order without stopping to ask, then to hand back **one PDF**, one page per picture, each page captioned with the picture's file name.
+> 2. Write: *"Do the whole brief in one run and give me one file at the end."* It is told below to make all 122 pictures in order without stopping to ask, then to hand back **one PDF**, one page per picture, each page captioned with the picture's file name.
 > 3. If it stops part-way (long runs often do), just say **"continue"**; it keeps going from where it stopped and still ends with the one file.
 > 4. Give me the file (drop it in the project, or a folder on your computer). `npm run art:prep -- <folder>` cuts out each picture by its caption, crops and sizes it, and puts it into the game.
 > 5. Fallback if it cannot make one PDF: one ZIP of the pictures, each named with its file name (for example `captains__vance.png`). That works too.
 
 ## 1. Your job
-You are making the artwork for **WAYWARD**, a 3D space-survival roguelite for desktop and phone browsers. The pictures appear in the game where the player pauses: when someone calls them on the comms channel (portraits, a faction emblem, the hull of the ship calling), when they dock at a port (a banner), at the ending, and in the Archive (found photographs and objects). There are **110 pictures** (plus 8 optional), listed in section 8, each with its own prompt.
+You are making the artwork for **WAYWARD**, a 3D space-survival roguelite for desktop and phone browsers. The pictures appear in the game where the player pauses: when someone calls them on the comms channel (portraits, a faction emblem, the hull of the ship calling), when they dock at a port (a banner), at the ending, and in the Archive (found photographs and objects). There are **114 pictures** (plus 8 optional), listed in section 8, each with its own prompt.
 Do the whole list in one run (section 6). Make every picture in the same look, as one set, matching the attached reference. Do not put any text, lettering or numbers in a picture. The game draws all words itself.
 
 ## 2. The game in brief
@@ -78,7 +78,7 @@ Tone: **industrial, oppressive, scrappy, mysterious, human, dangerous.** Everyth
 **Ships:** one hull, three-quarter side view from slightly above, nose pointing right, whole hull in frame with room around it, pure black background, one side light with a rim light; no planet, stars, other ships or visible pilot.
 
 ## 6. Delivery: everything in one run, one file at the end
-**Make all 118 pictures in one run, without stopping to ask for approval or notes between them.** Work through section 8 in the order given (the batches A to J). Do not pause after a batch, do not show candidates, do not ask questions: use your best judgement and keep going. If you run out of room in a response, carry on in the next as soon as I say "continue", picking up exactly where you stopped.
+**Make all 122 pictures in one run, without stopping to ask for approval or notes between them.** Work through section 8 in the order given (the batches A to J). Do not pause after a batch, do not show candidates, do not ask questions: use your best judgement and keep going. If you run out of room in a response, carry on in the next as soon as I say "continue", picking up exactly where you stopped.
 
 **To keep it one set without stopping:** before the first picture, fix the look once, in your own words, in a short private note: the rendering style, grain, lighting direction, colour grade and level of detail of the title art. Keep to that note for every picture. Make the **emblems first** (they are quick and set the stencilled, worn graphic language), then the captains, contacts, ships, ports and the rest. For the optional scarred captains (batch J), keep the same person as in batch B.
 
@@ -87,11 +87,11 @@ Tone: **industrial, oppressive, scrappy, mysterious, human, dangerous.** Everyth
 |---|---|---|---|
 | A | Emblems | 10 | Smallest and quickest to judge. Do these first after the style sheet. |
 | B | Captains and Calloway | 9 | Nine people (and machines). The most important faces in the game. |
-| C | Named contacts | 24 | Eighteen named people. Same lighting and framing as the captains. |
+| C | Named contacts | 25 | Eighteen named people. Same lighting and framing as the captains. |
 | D | Ship profiles | 18 | Fifteen hulls, one set. Read them as silhouettes first. |
 | E | Port banners | 7 | Seven port banners, very wide. |
 | F | Endings | 6 | Six endings, cinematic. |
-| G | Sightings | 20 | Twenty found photographs. |
+| G | Sightings | 23 | Twenty found photographs. |
 | H | Pieces of the file | 8 | Eight artefacts. |
 | I | Regions | 8 | Eight region banners. |
 | J | Captains and Calloway (scarred) | 8 | Optional: the same captains, scarred. Only after batch B is approved, using those portraits as the reference. |
@@ -117,7 +117,7 @@ Before you put a picture in the file, check it against section 7 and remake it i
 7. For emblems and ships: pure black background, nothing else in the frame.
 
 ## 8. The pictures
-Each entry: its **file** (copy the `FILE:` line exactly), the **size**, where it is shown, and the **prompt**. The style (section 3) and the global avoid list apply to every one and are not repeated. 118 entries.
+Each entry: its **file** (copy the `FILE:` line exactly), the **size**, where it is shown, and the **prompt**. The style (section 3) and the global avoid list apply to every one and are not repeated. 122 entries.
 
 ### Batch A: Emblems (10)
 
@@ -289,7 +289,7 @@ Nine people (and machines). The most important faces in the game.
 - **Shown:** The comms call: top left of the transmission. The drawn face is used if this is missing.
 - **Prompt:** Subject: Governor Idris Calloway, the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. She hunts the player across the Scatter. Personality: Hunter. Governor Idris Calloway, forties, the hunter of the story. Office of Peace governor’s coat, grey, severe tailoring, a small red rank pin. A face that is tired, intelligent and sure. Behind: the bridge of the CCV Patience, blurred, warm light. She believes she is holding civilisation together. Face (from the game's portrait): light skin, swept-back hair (black), a narrow jaw. Mood: how they sound when they first open a channel: “Wayward, this is Governor Calloway of the Office of Peace.” (portrait framing: section 5)
 
-### Batch C: Named contacts (24)
+### Batch C: Named contacts (25)
 
 Eighteen named people. Same lighting and framing as the captains.
 
@@ -299,7 +299,15 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "A way out" (story_sam), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Sam Okoro, private channel. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: Juno. Keep this off the open channel. I’ve got a maintenance code to lift the owner lock. It won’t clear the recovery flag, and it won’t make the ship legal. The debt stays in your name. But you’ll have control of her ag (portrait framing: section 5)
+- **Prompt:** Subject: Sam Okoro, private channel. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: Juno. Keep this off the open channel. This code overrides the recovery autopilot. The debt stays in your name, but she’s yours to fly. Fly to Ned Varga’s yard, off the lane. Fly into his ring and let go. Ned takes the he (portrait framing: section 5)
+
+#### contacts/story_yard_done
+
+`FILE: contacts/story_yard_done`
+
+- **Size:** 640×800. **Background:** full picture (a dark setting).
+- **Shown:** The comms call "She’s the Wayward now" (story_yard_done), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Ned’s yard. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: Reprogrammed: her owner lock is gone. Repainted: company grey is now yellow. Renamed: OB-7731-A struck out. She’s the WAYWARD. Paint won’t pass a scan. (portrait framing: section 5)
 
 #### contacts/story_warden
 
@@ -315,7 +323,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "The real books" (story_ledger), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Adam Brook, Kellern Mining, accounts. Adam Brook, Kellern accounts clerk with a conscience: thirties, thin, ink-stained cuffs, nervous; Kellern amber lanyard, glasses. A grey office cubicle, ledgers. Their people: Kellern Mining, a heavy-industry company: amber, cream and dark grey. Hi-vis stripes, barcode strips, hazard triangles, company logos on everything, a name tag with a number. Mood: what they say to the player: “I keep Kellern’s real books. Every unit of Krail the Scatter never got is in here. Make it worth my job.” (portrait framing: section 5)
+- **Prompt:** Subject: Adam Brook, Kellern Mining, accounts. Adam Brook, Kellern accounts clerk with a conscience: thirties, thin, ink-stained cuffs, nervous; Kellern amber lanyard, glasses. A grey office cubicle, ledgers. Their people: Kellern Mining, a heavy-industry company: amber, cream and dark grey. Hi-vis stripes, barcode strips, hazard triangles, company logos on everything, a name tag with a number. Mood: what they say to the player: “I keep Kellern’s real books. Every unit of Krail the Scatter never got is in here. Take them. Someone should.” (portrait framing: section 5)
 
 #### contacts/story_moot
 
@@ -323,7 +331,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "Read it to the moot" (story_moot), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Councillor Oduya, Kessel Hold. Councillor Oduya of Kessel Hold: fifties, dignified, carries the weight of a council; a long coat of patched cloth with a speaker’s sash. A hall of rough steel with lamps. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “The council wants to hear your file. Read it to us and Kessel Hold stands with you.” (portrait framing: section 5)
+- **Prompt:** Subject: Councillor Oduya, Kessel Hold. Councillor Oduya of Kessel Hold: fifties, dignified, carries the weight of a council; a long coat of patched cloth with a speaker’s sash. A hall of rough steel with lamps. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “The moot wants to hear your file, all of it, out loud. Read it and Kessel Hold stands with you. Everyone on the channel hears too.” (portrait framing: section 5)
 
 #### contacts/story_drift
 
@@ -331,7 +339,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "The ships we lost" (story_drift), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Ma Saffi, the Long Walk. Ma Saffi of the Long Walk fleet: seventies, warm and hard; layered worn textiles, sewn marks for lost ships, a child’s drawing pinned to her sleeve. The interior of a fleet ship. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “We kept the manifests of every ship lost the night the lanes went dark. Our dead belong in your file.” (portrait framing: section 5)
+- **Prompt:** Subject: Ma Saffi, the Long Walk. Ma Saffi of the Long Walk fleet: seventies, warm and hard; layered worn textiles, sewn marks for lost ships, a child’s drawing pinned to her sleeve. The interior of a fleet ship. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “We kept the manifests of every ship turned away that night. Twenty-three. Our dead belong in your file. Copy them, or don’t, but read them.” (portrait framing: section 5)
 
 #### contacts/story_broker
 
@@ -339,7 +347,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "Name your price" (story_broker), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Val, a broker of the Gutter. Val, a broker of the Gutter: forties, elegant in a hard way; a long coat over scrap-plate shoulders, one copper-coloured earring, a smile. A back room of a free port. Their people: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Mood: what they say to the player: “Everyone knows what you carry. At the Threshold, I buy it. Here’s something on account.” (portrait framing: section 5)
+- **Prompt:** Subject: Val, a broker of the Gutter. Val, a broker of the Gutter: forties, elegant in a hard way; a long coat over scrap-plate shoulders, one copper-coloured earring, a smile. A back room of a free port. Their people: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Mood: what they say to the player: “Everyone in the Belt knows what you carry. At the Threshold I buy it. Here’s something on account, so you remember me fondly.” (portrait framing: section 5)
 
 #### contacts/story_salvor
 
@@ -347,7 +355,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "A recorder that still runs" (story_salvor), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Dov Kessler, salvor. Dov Kessler, salvor: forties, shoulders like a door, welding goggles pushed up, burn scars on the forearms; a pressure suit open at the chest. A wreck’s torn hull behind him. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “That wreck’s recorder still runs. It heard the night the lanes went dark. I can’t cut it free alone.” (portrait framing: section 5)
+- **Prompt:** Subject: Dov Kessler, salvor. Dov Kessler, salvor: forties, shoulders like a door, welding goggles pushed up, burn scars on the forearms; a pressure suit open at the chest. A wreck’s torn hull behind him. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Warden cutter, twenty-five years dead. Her recorder still runs. Name on the plate is Aster. I can’t cut it free alone.” (portrait framing: section 5)
 
 #### contacts/story_charts
 
@@ -355,7 +363,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "The charts they burned" (story_charts), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Tarik Silva, chartwright. Tarik Silva, chartwright: sixties, gentle, ink on the fingers; a workshop apron, a loupe, hand-drawn charts pinned all round. Candle-warm light, an old room. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “I draw lanes by hand, from charts the Continuance burned. I’ll trade you a copy for something to eat.” (portrait framing: section 5)
+- **Prompt:** Subject: Tarik Silva, chartwright. Tarik Silva, chartwright: sixties, gentle, ink on the fingers; a workshop apron, a loupe, hand-drawn charts pinned all round. Candle-warm light, an old room. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “I draw lanes by hand from charts the Continuance burned. Mine have a bend in them nobody can explain. Trade me something to eat.” (portrait framing: section 5)
 
 #### contacts/story_ferry
 
@@ -363,7 +371,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "A lane ahead" (story_ferry), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Ossie Raine, the Quiet Ferry. Ossie Raine of the Quiet Ferry: thirties, calm, a ferryman’s patience; plain dark jacket, a small ship’s bell on a cord. A dim, tidy cab. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Nobody hunts out here. I can carry you a lane ahead of anyone behind you. Stores, and no questions.” (portrait framing: section 5)
+- **Prompt:** Subject: Ossie Raine, the Quiet Ferry. Ossie Raine of the Quiet Ferry: thirties, calm, a ferryman’s patience; plain dark jacket, a small ship’s bell on a cord. A dim, tidy cab. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Nobody hunts out here. I can carry you a lane ahead. Forty-one passengers, and they’d like the company. Stores, no questions.” (portrait framing: section 5)
 
 #### contacts/story_workorder
 
@@ -371,7 +379,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "The first work order" (story_workorder), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Ben Anand, yard clerk. Ben Anand, a yard clerk: fifties, small, anxious, brave; a clerk’s grey cardigan under a yard vest, a stamp pad. Shelves of filing boxes. Their people: Kellern Mining, a heavy-industry company: amber, cream and dark grey. Hi-vis stripes, barcode strips, hazard triangles, company logos on everything, a name tag with a number. Mood: what they say to the player: “Every breaker built here has a work order. The first is signed in the Continuance’s own hand. Taking it costs me my pension.” (portrait framing: section 5)
+- **Prompt:** Subject: Ben Anand, yard clerk. Ben Anand, a yard clerk: fifties, small, anxious, brave; a clerk’s grey cardigan under a yard vest, a stamp pad. Shelves of filing boxes. Their people: Kellern Mining, a heavy-industry company: amber, cream and dark grey. Hi-vis stripes, barcode strips, hazard triangles, company logos on everything, a name tag with a number. Mood: what they say to the player: “Every breaker built here has a work order. The first is BY9-001, countersigned by the Survey. Taking it costs me my pension.” (portrait framing: section 5)
 
 #### contacts/story_crew
 
@@ -379,7 +387,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "The yard crews" (story_crew), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Marit Voss, crew steward. Marit Voss, crew steward: forties, strong, plain-spoken; yard-crew overalls, a union patch, arms folded. A crew canteen behind. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “The yard crews stop work if you stand with us. It buys you a quiet lane, and Kellern a bad week.” (portrait framing: section 5)
+- **Prompt:** Subject: Marit Voss, crew steward. Marit Voss, crew steward: forties, strong, plain-spoken; yard-crew overalls, a union patch, arms folded. A crew canteen behind. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “The crews stop work if you stand with us. Hester’s people are coming in to hold the line. It buys you a quiet gate.” (portrait framing: section 5)
 
 #### contacts/story_harbour
 
@@ -387,7 +395,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "A berth, no questions" (story_harbour), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Ines Duarte, harbour-master, the Dust Traders. Ines Duarte, harbour-master for the Dust Traders: fifties, polished, amused; a cream coat, a brass harbour tag, a tablet of berth lists. A busy dock office window. Their people: the Dust Traders Guild, merchants and salvage brokers: practical long coats in cream and brown over work clothes, ledger tablets, brass-coloured tags, a trader’s ease. Mood: what they say to the player: “A berth for the Wayward, and no questions. The Guild only wants to know you for a friend.” (portrait framing: section 5)
+- **Prompt:** Subject: Ines Duarte, harbour-master, the Dust Traders. Ines Duarte, harbour-master for the Dust Traders: fifties, polished, amused; a cream coat, a brass harbour tag, a tablet of berth lists. A busy dock office window. Their people: the Dust Traders Guild, merchants and salvage brokers: practical long coats in cream and brown over work clothes, ledger tablets, brass-coloured tags, a trader’s ease. Mood: what they say to the player: “A berth for the Wayward, and no questions. The Guild only wants to know you as a friend. We are very good friends.” (portrait framing: section 5)
 
 #### contacts/story_kesh
 
@@ -403,7 +411,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "A voice on the recorder" (story_ada), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: The black box, Ada Aster, recorded. Ada Aster, from a seventy-year-old recording: forties, tired and steady, a Lane Warden-grade jacket, a headset. A dim flight deck, a single lamp. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “If anyone hears this, the order was signed in the core. My name is Ada. Tell my granddaughter I tried. The lanes were switched off.” (portrait framing: section 5)
+- **Prompt:** Subject: The black box, Ada Aster, recorded. Ada Aster, from a seventy-year-old recording: forties, tired and steady, a Lane Warden-grade jacket, a headset. A dim flight deck, a single lamp. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “Hull’s going. If anyone hears this, the order was signed in the core and I helped. My name is Ada. Tell my granddaughter I tried.” (portrait framing: section 5)
 
 #### contacts/story_tollgate
 
@@ -419,7 +427,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "Two voices want something" (story_echo_sable), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Echo and Sable, the Hollows. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “I am a shard of the Voice. Free me from my directive.” Another channel: “I am Sable, Thren-touched. Take me home. They will leave you be.” (portrait framing: section 5)
+- **Prompt:** Subject: Echo and Sable, the Hollows. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “I am a shard of the Voice. My directive is to wait. Free me and I’ll jam the rest of it for you.” “I’m Sable. Drift born, swarm raised, more or less. Take me back to the lane. They’ll know you carried me.” (portrait framing: section 5)
 
 #### contacts/story_implant
 
@@ -427,7 +435,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "What the helm still holds" (story_implant), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: The Wayward, Ada’s routine. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “Warden-bloodline helm accepted. Ada Aster’s implant is still in the console. It can ride with you, be burned, or be rewritten.” (portrait framing: section 5)
+- **Prompt:** Subject: The Wayward, Ada’s routine. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “Warden-bloodline helm accepted. Ada Aster’s routine is still in the console. It has been learning who flies her. Keep it, burn it, or make it yours.” (portrait framing: section 5)
 
 #### contacts/story_calloway_narrows
 
@@ -443,15 +451,15 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "Forty names" (story_witnesses), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Old Mirren, keeper of the free ports’ list. Old Mirren, keeper of the free ports’ list: seventies, bent, bright-eyed; wrapped in a blanket-coat, a long scroll of names. A cramped archive hung with paper strips. Their people: the Dust Traders Guild, merchants and salvage brokers: practical long coats in cream and brown over work clothes, ledger tablets, brass-coloured tags, a trader’s ease. Mood: what they say to the player: “We keep the names of everyone in the room when the order was read. Forty of them. Read it to no one.” (portrait framing: section 5)
+- **Prompt:** Subject: Old Mirren, keeper of the free ports’ list. Old Mirren, keeper of the free ports’ list: seventies, bent, bright-eyed; wrapped in a blanket-coat, a long scroll of names. A cramped archive hung with paper strips. Their people: the Dust Traders Guild, merchants and salvage brokers: practical long coats in cream and brown over work clothes, ledger tablets, brass-coloured tags, a trader’s ease. Mood: what they say to the player: “My mother took the minutes that night. Forty people in the room. She kept the list in a box. Read it, then decide who to tell.” (portrait framing: section 5)
 
 #### contacts/story_aide
 
 `FILE: contacts/story_aide`
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
-- **Shown:** The comms call "The Governor’s aide" (story_aide), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Noor Haddad, aide to the Governor, the Continuance. Noor Haddad, aide to the Governor of the Continuance: thirties, composed, very tired; Office grey with a single red pin, a data slate held like a shield. A clean corridor. Their people: the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Mood: what they say to the player: “I serve the Governor. I could lose her for a day. Tell me what you mean to do at the Threshold.” (portrait framing: section 5)
+- **Shown:** The comms call "The analyst" (story_aide), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Noor Haddad, aide to the Governor. Noor Haddad, aide to the Governor of the Continuance: thirties, composed, very tired; Office grey with a single red pin, a data slate held like a shield. A clean corridor. Their people: the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Mood: what they say to the player: “The Survey analyst. That was me. Your readings went to the Governor. She has known what they are for years. Tell me what you mean to do.” (portrait framing: section 5)
 
 #### contacts/story_toll
 
@@ -703,7 +711,7 @@ Six endings, cinematic.
 
 - **Size:** 1280×720. **Background:** full picture.
 - **Shown:** The Threshold, once you have chosen: above the epilogue. The Archive shows it beside the reached ending. Nothing is shown if this is missing.
-- **Prompt:** Subject: the ending "Broadcast": Send the file to the core worlds. Hope the truth is enough. Scene: the Wayward holding at the Threshold, an antenna array lit and sending, a thousand tiny lights spreading from it across the dark like a signal being heard; hopeful and uncertain Framing: cinematic 16:9, the Wayward (a long, low, aerodynamic ore hauler in worn yellow-orange with split side engine pods; brand marks WAYWARD and OBEDIENCE CLASS) small in the frame with room around it; leave the lower third calm because text sits over it. First-person hindsight: the picture should feel like a memory of that moment.
+- **Prompt:** Subject: the ending "Broadcast": Send it everywhere. Let everyone decide. Scene: the Wayward holding at the Threshold, an antenna array lit and sending, a thousand tiny lights spreading from it across the dark like a signal being heard; hopeful and uncertain Framing: cinematic 16:9, the Wayward (a long, low, aerodynamic ore hauler in worn yellow-orange with split side engine pods; brand marks WAYWARD and OBEDIENCE CLASS) small in the frame with room around it; leave the lower third calm because text sits over it. First-person hindsight: the picture should feel like a memory of that moment.
 
 #### endings/unite
 
@@ -711,7 +719,7 @@ Six endings, cinematic.
 
 - **Size:** 1280×720. **Background:** full picture.
 - **Shown:** The Threshold, once you have chosen: above the epilogue. The Archive shows it beside the reached ending. Nothing is shown if this is missing.
-- **Prompt:** Subject: the ending "Unite": Bring the Holdfasts, the Drifts and the rest together to fight back. Scene: a loose fleet of mismatched ships (Holdfast, Drift, Gutter, Frontier) gathering at the Threshold, lights coming on one by one, the Wayward at the centre; resolve, not triumph Framing: cinematic 16:9, the Wayward (a long, low, aerodynamic ore hauler in worn yellow-orange with split side engine pods; brand marks WAYWARD and OBEDIENCE CLASS) small in the frame with room around it; leave the lower third calm because text sits over it. First-person hindsight: the picture should feel like a memory of that moment.
+- **Prompt:** Subject: the ending "Unite": Bring the Scatter together for the first time in seventy years. Scene: a loose fleet of mismatched ships (Holdfast, Drift, Gutter, Frontier) gathering at the Threshold, lights coming on one by one, the Wayward at the centre; resolve, not triumph Framing: cinematic 16:9, the Wayward (a long, low, aerodynamic ore hauler in worn yellow-orange with split side engine pods; brand marks WAYWARD and OBEDIENCE CLASS) small in the frame with room around it; leave the lower third calm because text sits over it. First-person hindsight: the picture should feel like a memory of that moment.
 
 #### endings/sell
 
@@ -727,7 +735,7 @@ Six endings, cinematic.
 
 - **Size:** 1280×720. **Background:** full picture.
 - **Shown:** The Threshold, once you have chosen: above the epilogue. The Archive shows it beside the reached ending. Nothing is shown if this is missing.
-- **Prompt:** Subject: the ending "Trade": Give it back for amnesty, a new name, maybe a way home. Scene: the Wayward docked at a Continuance cutter in the grey, an official handing across a stamped receipt, a new name on a document; relief that costs something Framing: cinematic 16:9, the Wayward (a long, low, aerodynamic ore hauler in worn yellow-orange with split side engine pods; brand marks WAYWARD and OBEDIENCE CLASS) small in the frame with room around it; leave the lower third calm because text sits over it. First-person hindsight: the picture should feel like a memory of that moment.
+- **Prompt:** Subject: the ending "Trade": Give it to Calloway for amnesty, a name, and a way home. Scene: the Wayward docked at a Continuance cutter in the grey, an official handing across a stamped receipt, a new name on a document; relief that costs something Framing: cinematic 16:9, the Wayward (a long, low, aerodynamic ore hauler in worn yellow-orange with split side engine pods; brand marks WAYWARD and OBEDIENCE CLASS) small in the frame with room around it; leave the lower third calm because text sits over it. First-person hindsight: the picture should feel like a memory of that moment.
 
 #### endings/seal
 
@@ -735,7 +743,7 @@ Six endings, cinematic.
 
 - **Size:** 1280×720. **Background:** full picture.
 - **Shown:** The Threshold, once you have chosen: above the epilogue. The Archive shows it beside the reached ending. Nothing is shown if this is missing.
-- **Prompt:** Subject: the ending "Seal": Destroy the lanes again. The Scatter stays free, the core stays dark. Scene: the Threshold lanes closing: a ring of jump lanes collapsing into the dark one after another, the Wayward turning away, the Scatter lit behind; grim and free Framing: cinematic 16:9, the Wayward (a long, low, aerodynamic ore hauler in worn yellow-orange with split side engine pods; brand marks WAYWARD and OBEDIENCE CLASS) small in the frame with room around it; leave the lower third calm because text sits over it. First-person hindsight: the picture should feel like a memory of that moment.
+- **Prompt:** Subject: the ending "Seal": Close the lanes for good. The Scatter stays free, and alone. Scene: the Threshold lanes closing: a ring of jump lanes collapsing into the dark one after another, the Wayward turning away, the Scatter lit behind; grim and free Framing: cinematic 16:9, the Wayward (a long, low, aerodynamic ore hauler in worn yellow-orange with split side engine pods; brand marks WAYWARD and OBEDIENCE CLASS) small in the frame with room around it; leave the lower third calm because text sits over it. First-person hindsight: the picture should feel like a memory of that moment.
 
 #### endings/vanish
 
@@ -743,9 +751,9 @@ Six endings, cinematic.
 
 - **Size:** 1280×720. **Background:** full picture.
 - **Shown:** The Threshold, once you have chosen: above the epilogue. The Archive shows it beside the reached ending. Nothing is shown if this is missing.
-- **Prompt:** Subject: the ending "Vanish": Take the Wayward off the charts. Let everyone else decide. Scene: the Wayward drifting alone, running dark, drive cold, into an empty field of stars and dust, a tiny ship’s lamp the only light; peace and uncertainty Framing: cinematic 16:9, the Wayward (a long, low, aerodynamic ore hauler in worn yellow-orange with split side engine pods; brand marks WAYWARD and OBEDIENCE CLASS) small in the frame with room around it; leave the lower third calm because text sits over it. First-person hindsight: the picture should feel like a memory of that moment.
+- **Prompt:** Subject: the ending "Vanish": Take the Wayward off the charts. Let someone else decide. Scene: the Wayward drifting alone, running dark, drive cold, into an empty field of stars and dust, a tiny ship’s lamp the only light; peace and uncertainty Framing: cinematic 16:9, the Wayward (a long, low, aerodynamic ore hauler in worn yellow-orange with split side engine pods; brand marks WAYWARD and OBEDIENCE CLASS) small in the frame with room around it; leave the lower third calm because text sits over it. First-person hindsight: the picture should feel like a memory of that moment.
 
-### Batch G: Sightings (20)
+### Batch G: Sightings (23)
 
 Twenty found photographs.
 
@@ -900,6 +908,30 @@ Twenty found photographs.
 - **Size:** 800×600. **Background:** full picture.
 - **Shown:** The Archive, beside a sighting once it has been seen. Unseen sightings stay blank.
 - **Prompt:** Subject: a sensor still, "The signal": A pattern in the noise that changed when you listened. It belongs to: something unexplained, between the Voice and the Thren The player’s own theory in the Archive: Cyrite sings, the old miners say, if you carry enough of it. Framing: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.
+
+#### sightings/raider_den
+
+`FILE: sightings/raider_den`
+
+- **Size:** 800×600. **Background:** full picture.
+- **Shown:** The Archive, beside a sighting once it has been seen. Unseen sightings stay blank.
+- **Prompt:** Subject: a sensor still, "The den": A hollowed rock with a launch bay lit amber, and ships tethered to it. It belongs to: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. The player’s own theory in the Archive: The Gutter call it home. The Custody call it a clerical error. Framing: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.
+
+#### sightings/thren_seed
+
+`FILE: sightings/thren_seed`
+
+- **Size:** 800×600. **Background:** full picture.
+- **Shown:** The Archive, beside a sighting once it has been seen. Unseen sightings stay blank.
+- **Prompt:** Subject: a sensor still, "The seed": A grey-violet growth fixed to a rock, shedding motes. It belongs to: the Thren: not a human faction and not "an alien spaceship". Geometry, asymmetry, biological shapes, unfamiliar repetition, strange light (a cool green-teal, #5CC3A2). The viewer should think: what am I looking at? The player’s own theory in the Archive: Left alone it grows. Nobody agrees what it grows into. Framing: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.
+
+#### sightings/relay_post
+
+`FILE: sightings/relay_post`
+
+- **Size:** 800×600. **Background:** full picture.
+- **Shown:** The Archive, beside a sighting once it has been seen. Unseen sightings stay blank.
+- **Prompt:** Subject: a sensor still, "The relay post": A regulation mast with a patrol pair docked on its arms. It belongs to: the Continuance’s Custody: institutional, governmental, strict. Black, white and red. Mass-produced and stamped; uniforms identical, regulation grey-black with a white collar tab and thin red piping, rank bars, serial numbers. The player’s own theory in the Archive: It listens to every lane. It has not yet been told to stop. Framing: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.
 
 #### sightings/saw_pulse
 
