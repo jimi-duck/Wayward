@@ -49,3 +49,18 @@ describe('solid places', () => {
     expect(solidsOf(w).every((s) => Math.hypot(s.x - w.bk!.lane.x, s.z - w.bk!.lane.z) > 20)).toBe(true);
   });
 });
+
+describe("Ned's yard", () => {
+  it('lets the ship into the ring and onto the pad, and keeps only the rock behind solid', () => {
+    const j = newJourney(7);
+    const def = { ...sortieDef(j), home: false, first: true, safe: false, situation: undefined, kind: 'transit' as const, thren: 0 };
+    const w = new World(5, { mode: 'breakout', sortie: def, carry: j.carry });
+    w.skipTraining();
+    const y = w.bk!.yard!;
+    const k = solidsOf(w);
+    // nothing solid on the pad or inside its ring's front half
+    expect(k.every((s) => Math.hypot(s.x - y.x, s.z - y.z) - s.r > 8)).toBe(true);
+    // but the rock is there, behind
+    expect(k.filter((s) => Math.hypot(s.x - y.x, s.z - y.z) < 45).length).toBeGreaterThanOrEqual(3);
+  });
+});
