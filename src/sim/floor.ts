@@ -40,10 +40,12 @@ export const SCAN_LINE = 'Scanning for transmissions';
 
 export type Kind = 'voice' | 'signal';
 type Held = Extract<GameEvent, { type: 'ping' }> | Extract<GameEvent, { type: 'storyNotice' }>;
-interface Line { ev: Held; kind: Kind; at: number; keep: boolean; reply: boolean; live: boolean }
+interface Line { ev: Held; kind: Kind; at: number; keep: boolean; reply: boolean; live: boolean; hot: boolean }
 
 /** Lines said because something just happened (sim/traffic, stage, mission, den, gantry, claim rules), not because the story reached them. */
 const REACTIVE = /^(relay_|patrol|traffic_|say_|warn_|mis_|gantry_|den_|claim_|seed_studied)/;
+/** The opening lesson's lines (sim/tutor.ts, `train_`): each is said when the lesson reaches its step or the raiders strike, so it goes ahead of the gap; a story line is never dropped. A later beat of the same voice (`_1`) waits its turn. */
+const LESSON = /^train_.*[^\d]$/;
 const reactive = (e: Held): boolean => e.type === 'ping' && REACTIVE.test(e.id);
 
 const CHATTER_IDS = new Set(CHATTER.map((c) => c.id));
@@ -71,7 +73,7 @@ export class Floor {
       if (!kind || this.out.has(e)) continue;
       const ev = e as Held;
       const reply = kind === 'voice' && !this.momentOpen && now - this.momentClosed < FLOOR.reply;
-      this.q.push({ ev, kind, at: now, keep: kind === 'signal' || !(ev.type === 'ping' && (CHATTER_IDS.has(ev.id) || reactive(ev))), reply, live: reactive(ev) });
+      this.q.push({ ev, kind, at: now, keep: kind === 'signal' || !(ev.type === 'ping' && (CHATTER_IDS.has(ev.id) || reactive(ev))), reply, live: reactive(ev), hot: reactive(ev) || (ev.type === 'ping' && LESSON.test(ev.id)) });
       events.splice(i--, 1);
     }
   }
@@ -81,10 +83,10 @@ export class Floor {
     this.q = this.q.filter((l) => (l.live ? now - l.at < FLOOR.live : l.keep || now - l.at < FLOOR.stale));
     if (!free || this.momentOpen || now < this.floorUntil || !this.q.length) return null;
     // a line tied to an event goes ahead of the queue, and ahead of the gap: it names what is happening now
-    const hot = this.hush ? undefined : this.q.find((l) => l.live && now >= this.quietUntil);
+    const hot = this.hush ? undefined : this.q.find((l) => l.hot && now >= this.quietUntil);
     const pick = hot ?? (this.hush ? this.q.find((l) => l.ev.type === 'storyNotice' && l.ev.headline === SCAN_LINE) : this.q[0]!);
     if (!pick) return null;
-    if (pick.kind === 'voice' && !pick.reply && (now < this.quietUntil || (!pick.live && now - this.lastVoice < FLOOR.gap))) return null;
+    if (pick.kind === 'voice' && !pick.reply && (now < this.quietUntil || (!pick.hot && now - this.lastVoice < FLOOR.gap))) return null;
     this.q.splice(this.q.indexOf(pick), 1);
     if (pick.kind === 'voice') { this.lastVoice = now; this.floorUntil = now + FLOOR.hold; }
     else this.floorUntil = now + FLOOR.signal;
