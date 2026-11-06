@@ -122,6 +122,10 @@ export interface ReviewState {
   bk: Breakout | null;
 }
 
+/** Ten rolls pay out; a roll counts if the last was no more than this many seconds ago (a roll takes 0.45 s, its cooldown is 1). */
+export const ROLL_CHAIN = 10;
+export const ROLL_CHAIN_GAP = 2.5;
+export const ROLL_CHAIN_PAY = 1000;
 const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false };
 const BOSS_PLATES = 1;
 
@@ -277,6 +281,9 @@ export class World implements EncounterHost {
   private timeScore = 0;
   private nextSample = 0;
   private wasRolling = false;
+  /** The secret: barrel rolls in a row in the Story, each within ROLL_CHAIN_GAP seconds of the last. */
+  private rollChain = 0;
+  private rollChainAt = -Infinity;
   private wasBreaking = false;
   readonly events: GameEvent[] = [];
 
@@ -755,6 +762,7 @@ export class World implements EncounterHost {
     const cold = !!this.safe;
     if (rolling && !this.wasRolling && st.rollBurst && !cold) plasmaRing(this.sys, s, st);
     if (rolling && !this.wasRolling && st.rollCloak > 0) { this.cloakT = st.rollCloak; this.events.push({ type: 'cloak', x: s.x, z: s.z }); }
+    if (rolling && !this.wasRolling && this.bk) this.chainRoll();
     this.wasRolling = rolling;
     const breaking = s.breakT >= 0;
     if (breaking && !this.wasBreaking) this.events.push({ type: 'break', x: s.x, z: s.z });
@@ -2702,6 +2710,16 @@ export class World implements EncounterHost {
     }
     if (!this.alive) return;
     for (const pk of stepPickups(this.pickups, s, this.stats.tractor, dt)) this.collect(pk);
+  }
+
+  /** The Story's secret (owner, 6 November 2026): ten barrel rolls in a row pay 1,000 Cyrite, once per run of rolls. */
+  private chainRoll(): void {
+    this.rollChain = this.runTime - this.rollChainAt <= ROLL_CHAIN_GAP ? this.rollChain + 1 : 1;
+    this.rollChainAt = this.runTime;
+    if (this.rollChain < ROLL_CHAIN) return;
+    this.rollChain = 0;
+    this.cyrite += ROLL_CHAIN_PAY;
+    this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Secret found', reason: '+1,000 Cyrite' });
   }
 
   private collect(pk: Pickup): void {

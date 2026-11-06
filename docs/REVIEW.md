@@ -36,6 +36,22 @@ The background is one of the ten sky palettes (the eight regions and the
 arcade's two extras), switched from the menu or with `V`. Another sky re-rolls
 the seed in the same palette, so the planet and the nebulae change.
 
+## Playing the Story from a chapter
+
+The menu's last section lists the eight chapters of the road. Picking one asks
+first, then saves a new Story journey standing at the gate that opens that
+chapter (`sim/skip.ts`, `journeyAtChapter`), and reloads into the game with
+`?chapter`, which resumes it at once. It replaces the saved journey (the old
+one stays as the safety copy, so Settings can restore it). The chapters before
+it are not played: only the opening's flags (`ship_stolen`, `codes_passed`) are
+set, so the story takes the branch where their choices were not made.
+
+## The roll secret
+
+In the Story, ten barrel rolls in a row (each within 2.5 s of the last) pay
+1,000 Cyrite and show a "Secret found" notice (`World.chainRoll`). The hold
+holds 999 at the next jump, so spend it in the same system.
+
 ## Where it lives
 
 - `sim/world.ts`: `WorldOptions.review` and `stepReview`, the whole of the

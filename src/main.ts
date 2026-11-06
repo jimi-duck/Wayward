@@ -830,6 +830,8 @@ function boot(review: typeof import('./review') | null): void {
 
   // the review world has no title: it opens in the gallery, flying
   if (dev) { launch('arcade'); setPaused(false); }
+  // `?chapter` is the review menu's "Play the Story from a chapter": the journey it saved, resumed at once
+  else if (params.has('chapter') && journey) launch('breakout', true);
   loop.start();
 }
 
