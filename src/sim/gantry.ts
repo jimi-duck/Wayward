@@ -59,5 +59,5 @@ export class Gantry {
 /** Where a transit system's gantry stands: past the middle of the course, well off the line. */
 export function gantryBerth(x0: number, z0: number, heading: number, lane: number, side: number): { x: number; z: number } {
   const fx = Math.cos(heading), fz = -Math.sin(heading), rx = Math.sin(heading), rz = Math.cos(heading);
-  return { x: x0 + fx * lane * 0.65 + rx * side * 260, z: z0 + fz * lane * 0.65 + rz * side * 260 };
+  return { x: x0 + fx * lane * 0.65 + rx * side * 130, z: z0 + fz * lane * 0.65 + rz * side * 130 };
 }

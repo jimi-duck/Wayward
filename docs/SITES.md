@@ -155,6 +155,28 @@ Numbers from `npm run pilot:sites` (docs/BALANCE-SITES.md): a stock hull flown b
 plain script, which does not dodge. Of the dens it reached it crushed a third in
 150 s, and lost the ship about as often as the same flight does with no den.
 
+## Which stop gets what (`sim/living.ts`)
+
+Sites follow what a stop is, not whether it has a set piece (an earlier rule left
+out every stop with a situation, which on the road is nearly all of them, so
+most stops had nothing):
+
+| Stop | Gets |
+|---|---|
+| mining | barge, and a raider den on the other side of the course |
+| contested | a den if the Gutter holds it, otherwise a gantry |
+| transit | a gantry (not a safe stop) |
+| port, Dust Traders | a market raft |
+| port, anyone else | a gantry, if it has no other site |
+| Thren 0.07 or more | a Thren seed as well (a sky over 0.3 gets only the seed) |
+| the opening, the first system past Cerro, a gate | nothing (hand-laid or a set piece) |
+
+Distances off the course were cut so they can be met on the way: barge 170,
+gantry 130, market 150, seed 120, den 300 (second den 380, still hidden).
+Where this lands on the road: `tests/living.test.ts` (at least 9 stops in 10 get
+a site, and at least four kinds show). Ports still repeat their holder's look;
+five of the first nine stops are Kellern.
+
 ## Solid places
 
 Every built thing is solid to the player (`sim/solids.ts`, `World.stepSolids`): the

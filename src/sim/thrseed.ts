@@ -105,7 +105,7 @@ export class ThrenSeed {
 /** Where a Thren sky's seed grows: off the course, past the middle. */
 export function seedBerth(x0: number, z0: number, heading: number, lane: number, side: number): { x: number; z: number } {
   const fx = Math.cos(heading), fz = -Math.sin(heading), rx = Math.sin(heading), rz = Math.cos(heading);
-  return { x: x0 + fx * lane * 0.5 + rx * side * 220, z: z0 + fz * lane * 0.5 + rz * side * 220 };
+  return { x: x0 + fx * lane * 0.5 + rx * side * 120, z: z0 + fz * lane * 0.5 + rz * side * 120 };
 }
 
 export const seedLine = () => t('“Growth stilled. It answers to nothing here. Logged.”');

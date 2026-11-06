@@ -37,6 +37,7 @@ import { LOOSE } from './pickups';
 import { Barge, bargeBerth } from './barge';
 import { Gantry, gantryBerth } from './gantry';
 import { ThrenSeed, seedBerth, seedLine, SEED_CYRITE, SEED_PARTS } from './thrseed';
+import { livingOf } from './living';
 import { BUMP_QUIET, BUMP_SPEED, solidsOf } from './solids';
 import { Den, denBerth, DEN_BOUNTY, DEN_CYRITE, DEN_HP, DEN_PARTS, DEN_R } from './den';
 import { Market, marketBerth } from './market';
@@ -492,32 +493,34 @@ export class World implements EncounterHost {
     { const plan = trafficPlan(this); if (plan) this.traffic = new Traffic(this, plan); }
     {
       const d = this.bk?.def;
-      // a mining system has a refinery barge on its field; the opening, the first system past Cerro and a Thren sky do not
-      if (d && d.kind === 'mining' && !d.home && !d.first && !d.situation && !(d.thren && d.thren > 0.3)) {
-        const side = this.seed & 1 ? -1 : 1, at = bargeBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, side);
-        this.barge = new Barge(at.x, at.z, at.dir);
-        // and, on the other side of the course, a raider den hidden in a ring of rock
-        const dn = denBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, -side);
-        this.den = new Den(dn.x, dn.z, dn.second);
-        for (let i = 0; i < 7; i++) {
-          const a = (i / 7) * Math.PI * 2 + 0.3;
-          this.field.spawn(i % 3 === 0 ? 0 : 1, dn.x + Math.cos(a) * 30, dn.z + Math.sin(a) * 30, 0, 0, 'iron', 1, 0);
+      const live = d ? livingOf(d) : null;
+      // a mining system has a refinery barge on its field and, on the other side of the course, a raider den hidden in a ring of rock
+      if (d && live) {
+        const side = this.seed & 1 ? -1 : 1;
+        if (live.barge) {
+          const at = bargeBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, side);
+          this.barge = new Barge(at.x, at.z, at.dir);
         }
-      }
-      // a system the Dust Traders hold has a market raft; not the opening, the first system past Cerro, or a Thren sky
-      if (d && d.holder === 'guild' && d.port !== undefined && !d.home && !d.first && !d.situation && !(d.thren && d.thren > 0.3)) {
-        const at = marketBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, this.seed & 4 ? -1 : 1);
-        this.market = new Market(at.x, at.z);
-      }
-      // a Thren sky grows a seed on a rock off the course (not the opening or the first system past Cerro)
-      if (d && d.thren && d.thren > 0.3 && !d.home && !d.first && !d.situation) {
-        const at = seedBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, this.seed & 8 ? -1 : 1);
-        this.thrSeed = new ThrenSeed(at.x, at.z);
-      }
-      // a transit system has a repair gantry on its lane; not where the Custody keeps the road clear of repairs (a safe system) or the first system past Cerro
-      if (d && d.kind === 'transit' && !d.home && !d.first && !d.situation && !d.safe && !(d.thren && d.thren > 0.3)) {
-        const at = gantryBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, this.seed & 2 ? -1 : 1);
-        this.gantry = new Gantry(at.x, at.z);
+        if (live.den) {
+          const dn = denBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, live.barge ? -side : side);
+          this.den = new Den(dn.x, dn.z, dn.second);
+          for (let i = 0; i < 7; i++) {
+            const a = (i / 7) * Math.PI * 2 + 0.3;
+            this.field.spawn(i % 3 === 0 ? 0 : 1, dn.x + Math.cos(a) * 30, dn.z + Math.sin(a) * 30, 0, 0, 'iron', 1, 0);
+          }
+        }
+        if (live.market) {
+          const at = marketBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, this.seed & 4 ? -1 : 1);
+          this.market = new Market(at.x, at.z);
+        }
+        if (live.seed) {
+          const at = seedBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, this.seed & 8 ? -1 : 1);
+          this.thrSeed = new ThrenSeed(at.x, at.z);
+        }
+        if (live.gantry) {
+          const at = gantryBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, this.seed & 2 ? -1 : 1);
+          this.gantry = new Gantry(at.x, at.z);
+        }
       }
     }
     if (this.carryIn) this.bringAboard(this.carryIn);

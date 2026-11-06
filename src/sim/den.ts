@@ -136,5 +136,5 @@ export class Den {
 export function denBerth(x0: number, z0: number, heading: number, lane: number, side: number): { x: number; z: number; second: { x: number; z: number } } {
   const fx = Math.cos(heading), fz = -Math.sin(heading), rx = Math.sin(heading), rz = Math.cos(heading);
   const at = (f: number, o: number) => ({ x: x0 + fx * lane * f + rx * side * o, z: z0 + fz * lane * f + rz * side * o });
-  return { ...at(0.55, 480), second: at(0.78, 560) };
+  return { ...at(0.55, 300), second: at(0.78, 380) };
 }

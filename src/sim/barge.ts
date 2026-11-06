@@ -93,5 +93,5 @@ export class Barge {
 /** Where a mining system's barge works: a good way along the course, well off the line (the flight path stays clear). */
 export function bargeBerth(x0: number, z0: number, heading: number, lane: number, side: number): { x: number; z: number; dir: number } {
   const fx = Math.cos(heading), fz = -Math.sin(heading), rx = Math.sin(heading), rz = Math.cos(heading);
-  return { x: x0 + fx * lane * 0.45 + rx * side * 320, z: z0 + fz * lane * 0.45 + rz * side * 320, dir: Math.atan2(-fz, fx) };
+  return { x: x0 + fx * lane * 0.45 + rx * side * 170, z: z0 + fz * lane * 0.45 + rz * side * 170, dir: Math.atan2(-fz, fx) };
 }
