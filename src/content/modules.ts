@@ -139,7 +139,7 @@ export const MODULES: ModuleDef[] = [
   },
   {
     id: 'md_ghost', name: 'Ghost echo', system: 'signals', max: 2,
-    text: 'Slows Calloway at every jump. Mk 2 hides your route.',
+    text: 'Slows Calloway at every jump. Mk 2 leaves her a false trail.',
     echo: 1,
   },
 
