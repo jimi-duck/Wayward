@@ -282,6 +282,10 @@ export class Sector {
 
   /** Seconds the dying hull is still shown after the last plate (render/sector.ts hides her at the last blast). */
   private dyingT = 0;
+  /** The hull is gone: set by the final blast itself, so the two happen on one beat. */
+  private hullGone = false;
+  /** Seconds since the breach, a safety so a dropped blast cannot leave a hull hanging. */
+  private deathAge = 0;
   /** The low tier or a phone that cannot spare it: the calm effects. */
   lowFx = false;
   /** A big kill asks the loop for a beat of slow motion (main.ts reads and clears it); never with reduced motion. */
@@ -300,7 +304,7 @@ export class Sector {
     const cx = this.lerped.x, cz = this.lerped.z;
     const at = (f: number): [number, number, number] => [cx + (sx - cx) * f, sy, cz + (sz - cz) * f];
     if (this.reduceMotion) {
-      this.fx.after(DEATH_HOLD * 0.5, () => this.fx.explode(cx, 0.3, cz, 3.2, ALERT, 'metal'));
+      this.fx.after(DEATH_HOLD * 0.5, () => { this.hullGone = true; this.fx.explode(cx, 0.3, cz, 3.2, ALERT, 'metal'); });
       return;
     }
     // the stern goes first (the engines), then the middle, then the bow; the lamps stutter as it does
@@ -310,6 +314,7 @@ export class Sector {
       this.fx.after(t, () => { this.fx.pop(px, py, pz, size, ALERT); this.rig.shake(0.35); });
     }
     this.fx.after(DEATH_HOLD - 0.05, () => {
+      this.hullGone = true; // the hull vanishes on the same frame the blast begins
       this.fx.explode(cx, 0.3, cz, 4, ALERT, 'metal');
       this.fx.ring(cx, 0.1, cz, 18, ALERT, 0.9);
       this.fx.light(cx, 1, cz, [1, 0.6, 0.3], 900, 0.8);
@@ -506,7 +511,7 @@ export class Sector {
           break;
         case 'breach':
           this.dyingT = DEATH_HOLD;
-          this.fx.explode(e.x, 0.2, e.z, 2.2, ALERT, 'metal');
+          this.hullGone = false; this.deathAge = 0;
           this.fx.ring(e.x, 0, e.z, 9, ALERT, 0.6);
           this.rig.shake(this.reduceMotion ? 0 : 0.7);
           hold = Math.max(hold, this.reduceMotion ? 0 : 0.11);
@@ -596,7 +601,8 @@ export class Sector {
     // Ned's yard, built into its rock (render/yard.ts)
     this.yard.update(world, dt, this.fx);
     if (this.dyingT > 0) this.dyingT = Math.max(0, this.dyingT - dt);
-    this.ship.root.visible = (world.alive || this.dyingT > 0) && (wt < 0 || whiteout(wt) < 0.97);
+    if (!world.alive) this.deathAge += dt; else this.hullGone = false;
+    this.ship.root.visible = (world.alive || (!this.hullGone && this.deathAge < DEATH_HOLD + 0.3)) && (wt < 0 || whiteout(wt) < 0.97);
     this.fx.calm = this.reduceMotion || this.lowFx;
     this.ship.stretch(wt >= 0 && !this.reduceMotion ? stretch(wt) : 1);
     // the shield stands at the rim as it fills, and fully once a charge is up
