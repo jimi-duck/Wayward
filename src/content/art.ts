@@ -46,6 +46,12 @@ export const SLOTS: Record<SlotId, SlotDef> = {
 
 /** The planets the fuel stops hang over, and the two debrief scenes. */
 export const PLANETS = ['rocky', 'ice', 'gas', 'dead'] as const;
+/** The planet a system hangs over, worked out from its name (the same one every visit): the port banner shows it. */
+export function planetOf(system: string): (typeof PLANETS)[number] {
+  let n = 0;
+  for (const c of system) n = (n * 31 + c.charCodeAt(0)) >>> 0;
+  return PLANETS[n % PLANETS.length]!;
+}
 export const DEBRIEFS = ['castoff', 'limping'] as const;
 /** One painted backdrop per refit bay tab (Suggested plus the nine in `content/web.ts`). */
 /** The refit bay's 24 specialisations and 5 salvaged techs: each has an inspector picture (a node id in `content/web.ts`). */

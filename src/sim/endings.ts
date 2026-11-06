@@ -1,4 +1,5 @@
 import { OBSERVATIONS } from '../content/situations';
+import { FEATURE_ORDER, metFlag } from '../content/features';
 import { CHITS_PER_CYRITE } from './purse';
 import { t } from '../i18n';
 import { ENDING_BY_ID, ENDINGS, FRIEND, OREN_LINES, SCATTER, type EndingDef, type EndingId, type Need } from '../content/endings';
@@ -147,6 +148,6 @@ export function journeyRecord(j: Journey): JourneyRecord {
     seed: j.seed, end: j.end ?? 'wrecked', ending, days: Math.round(j.day), jumps: j.legs.filter((l) => l.ended === 'jumped').length,
     wrecks: j.wrecks, score: j.score, hardcore: j.hardcore, people, file: ending ? ENDING_BY_ID[ending].file : null,
     records: fragmentsFound(f),
-    sightings: OBSERVATIONS.map((o) => o.flag).filter((x) => f.has(x)),
+    sightings: [...OBSERVATIONS.map((o) => o.flag), ...FEATURE_ORDER.map(metFlag)].filter((x) => f.has(x)),
   };
 }

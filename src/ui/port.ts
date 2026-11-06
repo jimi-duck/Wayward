@@ -1,5 +1,5 @@
 import { artImg } from './art';
-import { placeOfPort } from '../content/art';
+import { placeOfPort, planetOf } from '../content/art';
 import { affordable, cheapest } from '../sim/bay';
 import { needsTorpedoFit } from '../sim/tutor';
 import type { World } from '../sim/world';
@@ -96,7 +96,9 @@ export class PortPanel {
     // a banner of the place, where the build has one for who holds it
     const banner = world.bk?.port ? (hurt && artImg('debrief', 'limping', 'port-pic')) || artImg('place', placeOfPort(world.bk.port.name, !!world.bk.def.netted), 'port-pic') : null;
     $('port-art').hidden = !banner;
-    $('port-art').replaceChildren(...(banner ? [banner] : []));
+    // and, in its corner, the planet this system hangs over
+    const planet = banner && world.bk?.def.name ? artImg('planet', planetOf(world.bk.def.name), 'port-planet') : null;
+    $('port-art').replaceChildren(...(banner ? [banner] : []), ...(planet ? [planet] : []));
     // where this is (the system) and what the port asks of the crew
     $('port-s').textContent = [world.bk?.def.name ? t(world.bk.def.name) : '', t(world.bk?.def.netted ? 'Implant scans required' : 'No implant checks')].filter(Boolean).join(' · ');
     const x = $('port-x');

@@ -442,4 +442,8 @@ export const SCENES: Record<string, string> = {
   '“Contacts ahead, closing fast.”': '„Kontakte voraus, kommen schnell näher.“',
   '“Hold position. This is a controlled area. Turn away.”': '„Position halten. Das ist Sperrgebiet. Dreh ab.“',
   'Sightings': 'Sichtungen',
+  'Phenomena': 'Phänomene',
+  'Not met yet.': 'Noch nicht erlebt.',
+  'met': 'erlebt',
+  'not met': 'unbekannt',
 };
