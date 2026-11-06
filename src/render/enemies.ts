@@ -623,6 +623,12 @@ export class EnemyView {
 
     // enemy fire: a hot slug in a glow of its faction's colour; plasma is a pulsing orb
     for (const b of shots) {
+      if (b.from === 'tutor-missile') {
+        // the opening's torpedo: a long hot body with a white-orange head, so it reads from across the screen
+        this.c.setRGB(3.4, 1.5, 0.5);
+        this.streaks.push(b.x - b.vx * back, b.y - b.vy * back + 0.1, b.z - b.vz * back, b.vx, b.vy, b.vz, 1.5, 0.5, STREAK.slug, this.c, 1.3, this.time * 2 + b.id * 0.31);
+        continue;
+      }
       const plasma = b.hp > 0, r = plasma ? b.r * (1.1 + Math.sin(this.time * 14 + b.id) * 0.15) : b.r;
       this.c.copy(NEON[b.faction]).multiplyScalar(plasma ? 0.7 : 0.55);
       this.streaks.push(b.x - b.vx * back, b.y - b.vy * back + 0.1, b.z - b.vz * back, b.vx, b.vy, b.vz,

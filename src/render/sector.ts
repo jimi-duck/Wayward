@@ -322,6 +322,68 @@ export class Sector {
     });
   }
 
+  /** The opening's torpedo in flight: a hot tail of sparks and a thin smoke line behind it, and a glow at the head. */
+  private missileTrail(world: World): void {
+    for (const m of world.shots) {
+      if (m.from !== 'tutor-missile') continue;
+      const sp = Math.hypot(m.vx, m.vz) || 1;
+      this.fx.flash(m.x, 0.2, m.z, 2.4, [3.4, 1.8, 0.8], 0.06);
+      if (this.lowFx && Math.random() < 0.5) continue;
+      this.fx.mote(m.x - (m.vx / sp) * 0.8, 0.2, m.z - (m.vz / sp) * 0.8, (Math.random() - 0.5) * 2, 0.4, (Math.random() - 0.5) * 2, [3.4, 1.4, 0.4], 0.32, 0.5);
+      this.fx.dust(m.x - (m.vx / sp) * 1.2, 0.2, m.z - (m.vz / sp) * 1.2, 0.5, [0.2, 0.19, 0.18], 1, 0.4, 1.4, 0.3);
+    }
+  }
+
+  /**
+   * The raiders' torpedo lands on the cargo deck (the opening, once): a blast on the deck, the boxes tearing away burning,
+   * Cyrite spilling into the dark, and the ship rocked. Reduced motion keeps the blast and drops the slow-down and most shake.
+   */
+  private holdBlast(e: Extract<GameEvent, { type: 'cargoLost' }>): number {
+    const rm = this.reduceMotion;
+    const s = this.lerped, hx = Math.cos(s.heading), hz = -Math.sin(s.heading);
+    // the deck lies astern of the middle, along her axis: three runs, stern first
+    const at = (f: number, side = 0): [number, number, number] => [s.x + hx * f - hz * side, 0.5, s.z + hz * f + hx * side];
+    const [px, py, pz] = at(-0.6);
+    this.fx.flash(px, py, pz, 8, [3.6, 3, 2.3], 0.08);
+    this.fx.flash(px, py, pz, 11, [3, 1.2, 0.4], 0.4);
+    this.fx.light(px, py, pz, [1, 0.6, 0.3], 600, 0.7);
+    this.fx.ring(px, 0.1, pz, 12, [2.6, 1.3, 0.5], 0.7);
+    this.fx.explode(px, py, pz, 1.9, FIRE, 'metal');
+    this.fx.streakBurst(px, py, pz, 40, 26, 0.9, 2.2);
+    // the load itself: boxes torn off in three runs, tumbling away burning
+    for (const f of [-1.6, -0.2, 1.2]) {
+      const [x, y, z] = at(f);
+      this.fx.rubble('metal', x, y, z, 5, 0.42, 9, true);
+      this.fx.after(0.08 + Math.random() * 0.18, () => this.fx.pop(x, y, z, 1.4, FIRE));
+    }
+    // the hold cooks off: more blasts walking down the deck, and smoke that stays
+    for (let i = 0; i < 4; i++) {
+      const [x, y, z] = at(-2 + i * 1.3, (Math.random() - 0.5) * 1.2);
+      this.fx.after(0.3 + i * 0.28, () => { this.fx.pop(x, y, z, 1.1, FIRE); if (!rm) this.rig.shake(0.3); });
+    }
+    for (let i = 0; i < 6; i++) {
+      const [x, y, z] = at(-2.4 + i * 0.9, (Math.random() - 0.5) * 1.4);
+      this.fx.after(0.2 + i * 0.35, () => this.fx.dust(x, y, z, 1.2, [0.1, 0.095, 0.09], 2, 0.9, 3, 0.35));
+    }
+    for (let k = 0; k < 14; k++) this.fx.after(0.2 + k * 0.22, () => { const [x, y, z] = at(-2 + Math.random() * 3.4); this.fx.burning(x, y, z, 0.7); });
+    // the Cyrite: violet motes thrown out and drifting on, in waves for a couple of seconds
+    for (let w = 0; w < 7; w++) {
+      this.fx.after(w * 0.3, () => {
+        for (let i = 0; i < 14; i++) {
+          const [x, y, z] = at(-2 + Math.random() * 3.4, (Math.random() - 0.5) * 1.2);
+          const a = Math.random() * Math.PI * 2, v = 1.5 + Math.random() * 5;
+          this.fx.mote(x, y, z, Math.cos(a) * v - s.vx * 0.2, 0.5 + Math.random() * 1.5, Math.sin(a) * v - s.vz * 0.2, VIOLET, 0.5 + Math.random() * 0.5, 2.5 + Math.random() * 2);
+        }
+      });
+    }
+    // the ship takes it: shaken, rocked back, the light dies down over a second
+    this.rig.shake(rm ? 0.2 : 1);
+    this.rig.kick(rm ? 0 : 0.5);
+    this.flash = Math.max(this.flash, rm ? 0 : 0.5);
+    this.slowFor(0.25, 0.7);
+    return rm ? 0 : 0.12;
+  }
+
   /**
    * Turn simulation events into light and motion. Returns how long the
    * simulation should hold still (a hit-stop), in seconds: kills land harder
@@ -340,6 +402,9 @@ export class Sector {
           this.rig.kick(0.05);
           break;
         }
+        case 'cargoLost':
+          hold = Math.max(hold, this.holdBlast(e));
+          break;
         case 'break':
           this.fx.ring(e.x, 0.2, e.z, 5, OURS, 0.4);
           this.rig.shake(0.18);
@@ -634,6 +699,7 @@ export class Sector {
     this.weapons.update(world.bolts, world.torps, alpha, this.fx, dt, this.time);
     this.enemies.eye.copy(this.rig.camera.position);
     this.enemies.update(world.aliens, world.review ? world.review.bosses : world.command.boss ? [world.command.boss] : [], world.shots, world.webs, alpha, dt);
+    this.missileTrail(world);
     this.fx.drawStreaks(this.streaks);
     this.streaks.end();
     this.pickups.update(world.pickups, alpha, dt, this.fx);

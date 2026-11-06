@@ -156,7 +156,7 @@ function parley(w: World, tu: Tutor): void {
 }
 
 /** Seconds from the missile's launch to its hit. */
-const MISSILE_T = 1.5;
+const MISSILE_T = 2.6;
 /** Marks the scripted missile among the shots. */
 const MISSILE = 'tutor-missile';
 
@@ -169,25 +169,36 @@ function missile(w: World, tu: Tutor): void {
     .sort((a, b) => Math.hypot(a.x - w.ship.x, a.z - w.ship.z) - Math.hypot(b.x - w.ship.x, b.z - w.ship.z))[0];
   if (!from) return;
   const s = w.ship, d = Math.hypot(s.x - from.x, s.z - from.z) || 1, sp = d / MISSILE_T;
-  w.shots.push({ id: newId(), x: from.x, y: from.y, z: from.z, vx: ((s.x - from.x) / d) * sp, vy: 0, vz: ((s.z - from.z) / d) * sp, life: MISSILE_T + 1, r: 0.02, faction: from.faction, hp: 99, seek: 0, split: 0, from: MISSILE });
+  w.shots.push({ id: newId(), x: from.x, y: from.y, z: from.z, vx: ((s.x - from.x) / d) * sp, vy: 0, vz: ((s.z - from.z) / d) * sp, life: MISSILE_T + 1, r: 0.02, faction: from.faction, hp: 0, seek: 0, split: 0, from: MISSILE });
   w.events.push({ type: 'plasma', x: from.x, z: from.z });
   tu.missile = MISSILE_T;
 }
 
+/** The torpedo steers onto the ship's present place, so its last second is the same however she flies; the hit is the timer's. */
+function missileFly(w: World, tu: Tutor, dt: number): void {
+  const sh = w.shots.find((x) => x.from === MISSILE);
+  if (!sh) return;
+  const s = w.ship, d = Math.hypot(s.x - sh.x, s.z - sh.z) || 1, sp = d / Math.max(tu.missile, dt);
+  sh.vx = ((s.x - sh.x) / d) * sp; sh.vz = ((s.z - sh.z) / d) * sp; sh.life = tu.missile + 1;
+}
+
 /** The scripted missile arrives: it is gone, and the pod with it. */
 function missileHit(w: World, tu: Tutor): void {
+  const sh = w.shots.find((x) => x.from === MISSILE);
+  const v = sh ? Math.hypot(sh.vx, sh.vz) || 1 : 0;
+  const at = sh ? { x: sh.x, z: sh.z, fx: sh.vx / v, fz: sh.vz / v } : undefined;
   w.shots = w.shots.filter((x) => x.from !== MISSILE);
-  loseCargo(w, tu);
+  loseCargo(w, tu, at);
 }
 
 /** The hold is torn open by the raiders' fire: once, and it is gone. */
-function loseCargo(w: World, tu: Tutor): void {
+function loseCargo(w: World, tu: Tutor, at?: { x: number; z: number; fx: number; fz: number }): void {
   if (tu.lost || !story(w, tu)) return;
   const n = tu.onboard;
   tu.lost = true;
   tu.onboard = 0;
   w.cyrite = Math.min(w.cyrite, tu.credit);
-  w.events.push({ type: 'cargoLost', n });
+  w.events.push({ type: 'cargoLost', n, x: at?.x ?? w.ship.x, z: at?.z ?? w.ship.z, fx: at?.fx ?? 0, fz: at?.fz ?? 0 });
   sam(w, tu, 'hold', ['“The hold’s gone, Juno. There’s nothing left to deliver.”']);
   // the hit rings on the hull (the shield ripple; the Wayward has no bubble)
   w.events.push({ type: 'shieldHit', x: w.ship.x, z: w.ship.z, left: Math.floor(w.shields), source: 'missile' });
@@ -331,7 +342,7 @@ export function stepTutor(w: World, dt: number): void {
   if (id === 'shoot' && story(w, tu) && !tu.lost) {
     // the raiders turn hostile when the offer is refused; their first hit on the ship, or the first one down, opens the hold
     if (tu.parley === 1 && w.phase === 'play' && tu.pirates.every((p) => { const a = w.aliens.find((x) => x.id === p); return !a || !a.ward; })) { tu.parley = 2; missile(w, tu); }
-    if (tu.missile > 0 && (tu.missile -= dt) <= 0) { tu.missile = 0; missileHit(w, tu); }
+    if (tu.missile > 0) { missileFly(w, tu, dt); if ((tu.missile -= dt) <= 0) { tu.missile = 0; missileHit(w, tu); } }
   }
   if (id === 'shoot' && story(w, tu) && tu.parley === 0 && tu.pirates.length) parley(w, tu);
   if (id === 'shoot' && !w.safe && (tu.alienId < 0 || (tu.t > 2 && tu.pirates.some((p) => !w.aliens.some((a) => a.id === p)))) && w.kills < tu.base + PIRATES) layShip(w, tu);

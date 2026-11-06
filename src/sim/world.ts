@@ -2993,6 +2993,7 @@ export class World implements EncounterHost {
       // enemy fire
       for (let i = this.shots.length - 1; i >= 0; i--) {
         const sh = this.shots[i]!;
+        if (sh.from === 'tutor-missile') continue; // the opening's torpedo lands on the tutor's timer, not here
         if ((sh.x - s.x) ** 2 + sh.y ** 2 + (sh.z - s.z) ** 2 < (sh.r + SHIP_R) ** 2) {
           this.shots.splice(i, 1);
           this.impactAt = [sh.x, sh.z];
