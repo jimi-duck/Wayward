@@ -199,7 +199,7 @@ function loseCargo(w: World, tu: Tutor, at?: { x: number; z: number; fx: number;
   tu.onboard = 0;
   w.cyrite = Math.min(w.cyrite, tu.credit);
   w.events.push({ type: 'cargoLost', n, x: at?.x ?? w.ship.x, z: at?.z ?? w.ship.z, fx: at?.fx ?? 0, fz: at?.fz ?? 0 });
-  sam(w, tu, 'hold', ['“Juno, the hold’s gone. I’m sorry. There’s nothing left to deliver.”']);
+  sam(w, tu, 'hold', ['“Juno, the hold’s gone. All of it. There’s nothing left to deliver. I’m so sorry.”']);
   // the hit rings on the hull (the shield ripple; the Wayward has no bubble)
   w.events.push({ type: 'shieldHit', x: w.ship.x, z: w.ship.z, left: Math.floor(w.shields), source: 'missile' });
 }
@@ -227,19 +227,19 @@ function begin(w: World, tu: Tutor): void {
     const port = w.bk?.port;
     if (port) { const p = ahead(w, DEPOT_AT, -DEPOT_SIDE); port.x = p.x; port.z = p.z; }
     if (w.bk) { const p = ahead(w, TRAIN_LANE); w.bk.def = { ...w.bk.def, lane: TRAIN_LANE }; w.bk.lane.x = p.x; w.bk.lane.z = p.z; }
-    if (story(w, tu)) sam(w, tu, 'dispatch', ['“Two hundred more and you’re full, Juno. Then it’s home.”']);
+    if (story(w, tu)) sam(w, tu, 'dispatch', ['“Two hundred more and you’re full, Juno. Then home, and maybe a night’s sleep for once.”']);
     else say(w, tu, 'dispatch', t('Contract desk · 08-441'), 'office', t('“08-441, the Work Bay is open for supplies. Take the upgrade you need and get back to the field. A late return comes out of your allocation.”'));
   } else if (id === 'bay') {
     tu.base = fitted(w);
     // the Arcade's upgrade is a press away; the Story's is bought from the settlement, at the bay
     if (!w.bk) w.cyrite = Math.max(w.cyrite, 6);
     // the money, as she heads for the bay that shows it (one line at a time: owner 2026-10-31)
-    if (story(w, tu)) sam(w, tu, 'bay', ['“A thousand Cyrite out of Cerro, and after their charges you clear two credits. Two.”']);
+    if (story(w, tu)) sam(w, tu, 'bay', ['“A thousand Cyrite out of Cerro, and after their charges you clear two credits. Two. That’s the company for you.”']);
   } else if (id === 'haul') {
     tu.base = stock(w);
     // out past the depot's damping field: the lasers are cold inside it
     layRock(w, tu, HAUL_AT);
-    if (story(w, tu)) sam(w, tu, 'tam', ['“Launcher’s on. Just the last two hundred to go. Keep the torpedoes for anyone who comes for the hold.”']);
+    if (story(w, tu)) sam(w, tu, 'tam', ['“Launcher’s on. Last two hundred and you’re done. If anyone comes for that hold, don’t hesitate.”']);
     else say(w, tu, 'tam', t('Sam Okoro'), 'miners', t('“Juno, I’ve heard raiders are working past the field. Eyes up, and don’t take risks for a contract that would never take one for you.”'));
   } else {
     // the hull waits: it comes once the ship is out past the depot's field
@@ -365,7 +365,7 @@ function finish(w: World, tu: Tutor): void {
     loseCargo(w, tu);
     w.events.push({ type: 'inbound' });
     // if the hold went only now, Sam's word on it comes first
-    sam(w, tu, 'reinforce', ['“More ships are coming. Don’t stay and fight it out. Get to the jump gate, Juno. Just get out.”'], fresh ? RADIO_GAP : 0);
+    sam(w, tu, 'reinforce', ['“More ships coming in. Forget the ore, it’s gone. Get to the jump gate, Juno. Just get out of there.”'], fresh ? RADIO_GAP : 0);
   }
   if (!story(w, tu) || tu.skipped) say(w, tu, 'escort', t('Contract desk · 08-441'), 'office', t('“Escort cover is not included in Contract 08-441. Continue at operator discretion.”'));
 }

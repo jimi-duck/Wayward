@@ -335,7 +335,7 @@ describe('the paint bay (owner 2026-11-05)', () => {
     for (let i = 0; i < Math.round(15 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); w.events.length = 0; }
     if (w.comms) seen = w.comms.def.id;
     expect(seen).toBe('story_yard_done');
-    expect(CARD_BY_ID.story_sam!.text).toContain('Ned Varga’s yard');
+    expect(CARD_BY_ID.story_sam!.text).toContain('Ned’s yard');
   });
 
   it('the work is a moment: a notice, a second notice, the name as a title, as the autopilot flies her out, then the card', () => {

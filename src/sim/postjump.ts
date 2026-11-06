@@ -41,7 +41,7 @@ export const paintDue = (flags: ReadonlySet<string> | readonly string[]): boolea
 /** Whose bay it is: Sam's friend, who does the work himself. */
 export const PAINTER = 'Ned Varga';
 /** Ned on the radio when the ship comes up on his yard: hold her in the ring and he does the rest. */
-export const PAINT_LINE = '“You must be Juno. Ned here, Sam said you’d come. Ease her into the ring and I’ll take it from there. Paint, name, the lot. No charge.”';
+export const PAINT_LINE = '“You must be Juno. Ned here. Sam said you’d come, and I owe him one. Ease her into the ring and I’ll do the rest. No charge.”';
 /** The pop-up card once the work is done (content/story.ts `story_yard_done`). */
 export const YARD_DONE = 'story_yard_done';
 export const PAINT_NOTICE = ['Reprogrammed', 'Owner lock stripped'] as const;
@@ -106,8 +106,8 @@ export function postJump(def: SortieDef): SortieDef {
  */
 export const STOLEN = { sam: 20, notice: 38, explain: 4, pursuit: 70 } as const;
 /** Sam's line once the registry card is closed: the short tank and where to fill it (the depot, or the rock when she cannot pay). */
-export const STOLEN_SAM = '“Your tank’s nearly dry, too. Buy fluid at the Frontier depot, or mine some Cyrite on the way. Fill up, then the gate.”';
-export const STOLEN_SAM_POOR = '“Your tank’s nearly dry, and you can’t pay for fluid. Mine the veined rock on the way. The refinery fills the tank first.”';
+export const STOLEN_SAM = '“One more thing, your tank’s nearly dry. Buy fluid at the Frontier depot or mine some Cyrite on the way. Fill up, then the gate.”';
+export const STOLEN_SAM_POOR = '“One more thing, your tank’s nearly dry and you can’t pay for fluid. Mine the veined rock on the way. The refinery fills the tank first.”';
 /** The amber notice that tells her the pursuit has started, and why. */
 /** The depot's word on the approach, on the radio (no card): what it sells, and how to dock. */
 export const DEPOT_LINE = '“Depot control. Fuel, plating and stores at posted prices. Slow into the ring to dock.”';
