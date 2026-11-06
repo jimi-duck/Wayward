@@ -88,11 +88,13 @@ export class PortPanel {
     this.opened = performance.now();
     this.sel = 'bay';
     // the yard mends the hull while the ship is docked
+    // arriving hurt (half the plates or fewer, before the yard mends them) shows the limping scene in place of the place's banner
+    const hurt = world.plates * 2 <= world.stats.maxPlates;
     const mended = world.mendAtDock();
     this.msg = mended ? t('Hull mended at the dock · {n} plates', { n: mended }) : '';
     $('port-t').textContent = world.bk?.port?.name ?? t('Port');
     // a banner of the place, where the build has one for who holds it
-    const banner = world.bk?.port ? artImg('place', placeOfPort(world.bk.port.name, !!world.bk.def.netted), 'port-pic') : null;
+    const banner = world.bk?.port ? (hurt && artImg('debrief', 'limping', 'port-pic')) || artImg('place', placeOfPort(world.bk.port.name, !!world.bk.def.netted), 'port-pic') : null;
     $('port-art').hidden = !banner;
     $('port-art').replaceChildren(...(banner ? [banner] : []));
     // where this is (the system) and what the port asks of the crew

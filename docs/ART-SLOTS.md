@@ -237,3 +237,4 @@ installed through `art:prep`.
 A better picture for any slot just overwrites its file. Whether the set reads on
 a real phone is for a device look.
 - New places (2026-11-06, `wayward-art.zip`, 10 pictures, brief `docs/art/NEXT-ART-BRIEF-2.md`): the four place scenes above; three station photographs in the Archive (`raider_den` once a den is seen, `thren_seed` within 220 units of a seed, `relay_post` when a survey relay appears: flags set in `sim/world.ts` and the `survey` situation); `fleet/gantry` (a hull with no card yet); `wayward-stock` and `wayward-guns` redone so they differ.
+- Debrief scenes wired (2026-11-06): `castoff` runs along the top of the run summary when the run escaped (`ui/panels.ts`); `limping` replaces the port banner when she docks with half her plates or fewer, before the yard mends them (`ui/port.ts`). Still no screen: phenomena (14) and planets (4); nothing records which feature a run met or which planet a system hangs over.

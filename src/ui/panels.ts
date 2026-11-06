@@ -88,6 +88,10 @@ export class SummaryPanel {
     const breakout = r.mode === 'breakout';
     $('summary').classList.toggle('alert', !r.escaped);
     $('summary').querySelector('.kick')!.textContent = t(r.escaped ? 'Escaped' : 'Hull breach');
+    // a run that got out shows the calm cast-off scene along the top of the panel; a breach shows none
+    const pic = r.escaped ? artImg('debrief', 'castoff', 'sum-pic') : null;
+    $('summary').querySelector('.sum-pic')?.remove();
+    if (pic) $('summary').querySelector('.panel')!.prepend(pic);
     $('sum-t').textContent = t(r.escaped ? 'Into the lane' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run complete');
     // what did it: the kicker already says hull breach
     $('sum-s').textContent = r.escaped ? t('Escaped with {n} Cyrite remaining', { n: r.cyriteLeft }) : damageWord(r.cause || 'rock');
