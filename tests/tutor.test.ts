@@ -124,7 +124,7 @@ describe('the first minutes', () => {
     expect(w.shots.some((s) => s.from === 'tutor-missile')).toBe(false);
     expect(w.tutor!.lost).toBe(true);
     expect(cargoOf(w)!.onboard).toBe(0);
-    expect(w.events.some((e) => e.type === 'cargoLost' && e.n === FIRST_LOAD)).toBe(true);
+    expect(w.events.some((e) => e.type === 'cargoLost' && e.n === FIRST_LOAD && Math.hypot(e.fx, e.fz) > 0.9)).toBe(true);
     expect(w.events.some((e) => e.type === 'shieldHit')).toBe(true);
     w.aliens = [];
     w.kills++;
