@@ -257,6 +257,8 @@
         <section class="st-step" id="st-set" aria-labelledby="st-set-t" hidden>
           <h2 class="st-h" id="st-set-t">Settings</h2>
           <div class="st-list" id="st-sw">
+            <button type="button" id="s-saver" class="st-row st-sw" aria-pressed="false"><span class="st-t">Battery saver</span><b class="st-v" id="s-saver-v">Off</b></button>
+            <button type="button" id="s-lefty" class="st-row st-sw" aria-pressed="false" hidden><span class="st-t">Left-handed</span><b class="st-v" id="s-lefty-v">Off</b></button>
             <div id="lang" class="st-row st-lang" role="group" aria-label="Language"></div>
             <button type="button" id="s-review" class="st-row"><span class="st-t">Dev review</span></button>
           </div>
@@ -573,6 +575,8 @@
         <section class="term-s set-only" id="settings">
           <h3 class="th">Settings</h3>
           <ol class="swl">
+            <li id="p-lefty-r" hidden><button type="button" id="p-lefty" aria-pressed="false"><span class="l">Left-handed</span><b id="p-lefty-v">Off</b></button></li>
+            <li><button type="button" id="p-saver" aria-pressed="false"><span class="l">Battery saver</span><b id="p-saver-v">Off</b></button></li>
             <li class="paintrow" id="p-paint-r" aria-label="Engine colour" hidden><span class="l">Engine</span><span id="paint" class="mods"></span></li>
           </ol>
         </section>

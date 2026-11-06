@@ -199,6 +199,11 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #brk.wait { --fill: rgba(var(--glass-ink-rgb), .4); opacity: .7; }
 #t-brk { --n: 5; width: 56%; height: 4px; }
 @keyframes tap-flash { from { scale: .88; } }
+/* left-handed: the stick and the buttons trade sides */
+.lefty #stick { left: auto; right: var(--in-l); }
+.lefty #fire { right: auto; left: var(--in-r); }
+.lefty #torp { right: auto; left: calc(var(--in-r) + var(--fw) + 10px); }
+.lefty #brk { right: auto; left: calc(var(--in-r) + var(--fw) * .22); }
 /* pause: small, low and in the middle, out of both thumbs' way */
 #pause-b { position: absolute; left: 50%; bottom: calc(var(--safe-b) + 6px); translate: -50% 0; width: 48px; height: 40px;
   place-content: center; grid-auto-flow: column; gap: 5px; border: 0; padding: 0; background: none; opacity: .55; pointer-events: auto; touch-action: none; }
