@@ -54,11 +54,18 @@ export class QualityGovernor {
   private jitter = 0;
   private samples = 0;
   private grace = 0;
-  private readonly locked: boolean;
+  private locked: boolean;
 
   constructor(start: number, locked = false) {
     this.index = Math.max(0, Math.min(TIERS.length - 1, start));
     this.locked = locked;
+  }
+
+  /** Pin a tier and stop the governor judging (battery saver), or `null` to let it judge again from where it is. */
+  pin(index: number | null): void {
+    if (index !== null) this.index = Math.max(0, Math.min(TIERS.length - 1, index));
+    this.locked = index !== null;
+    this.samples = 0;
   }
 
   get tier(): QualityTier {

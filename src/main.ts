@@ -73,6 +73,11 @@ function boot(review: typeof import('./review') | null): void {
   const pinned = tierIndex(params.get('quality'));
   const coarse = matchMedia('(pointer: coarse)').matches;
   const quality = new QualityGovernor(pinned >= 0 ? pinned : tierIndex(coarse ? 'medium' : 'high'), pinned >= 0);
+  // Battery saver (a switch on the title's Settings and the pause card): the low tier and 30 frames a second. Kept per device.
+  const SAVER_KEY = 'wayward.saver';
+  let saver = false;
+  try { saver = localStorage.getItem(SAVER_KEY) === '1'; } catch { /* no storage: off */ }
+  if (saver && pinned < 0) quality.pin(0);
 
   // The pilot's record between runs: bests, unlocks, the survival mode chosen for the next run.
   const profile = loadProfile();
@@ -681,6 +686,48 @@ function boot(review: typeof import('./review') | null): void {
       }
     },
   });
+  loop.minInterval = saver ? 1 / 30 : 0;
+  // Left-handed (touch only): the stick on the right, the buttons on the left. Kept per device.
+  const LEFTY_KEY = 'wayward.lefty';
+  let lefty = false;
+  try { lefty = localStorage.getItem(LEFTY_KEY) === '1'; } catch { /* no storage: off */ }
+  const paintLefty = () => {
+    document.documentElement.classList.toggle('lefty', lefty);
+    for (const id of ['s-lefty', 'p-lefty']) {
+      el(id).classList.toggle('on', lefty);
+      el(id).setAttribute('aria-pressed', String(lefty));
+      el(`${id}-v`).textContent = t(lefty ? 'On' : 'Off');
+    }
+    el('s-lefty').hidden = !coarse;
+    el('p-lefty-r').hidden = !coarse;
+  };
+  const setLefty = (on: boolean) => {
+    lefty = on;
+    try { localStorage.setItem(LEFTY_KEY, on ? '1' : '0'); } catch { /* not kept */ }
+    paintLefty();
+  };
+  paintLefty();
+  const paintSaver = () => {
+    for (const id of ['s-saver', 'p-saver']) {
+      el(id).classList.toggle('on', saver);
+      el(id).setAttribute('aria-pressed', String(saver));
+      el(`${id}-v`).textContent = t(saver ? 'On' : 'Off');
+    }
+  };
+  const setSaver = (on: boolean) => {
+    saver = on;
+    try { localStorage.setItem(SAVER_KEY, on ? '1' : '0'); } catch { /* not kept */ }
+    loop.minInterval = on ? 1 / 30 : 0;
+    // on: the low tier now. off: back to where a phone starts, and the governor judges again
+    quality.pin(on ? 0 : pinned >= 0 ? pinned : tierIndex(coarse ? 'medium' : 'high'));
+    if (!on && pinned < 0) quality.pin(null);
+    matchTier(renderer, quality.tier);
+    sector.setTier(quality.tier);
+    fit();
+    void sector.warm();
+    paintSaver();
+  };
+  paintSaver();
   loop.paused = true;
   // dev server only: a handle for tools/shots.mjs to put any screen up
   if (import.meta.env.DEV) Object.assign(window, { wayward: { world, sector, loop, launch, openChart, chart, cut, get journey() { return journey; } } });
@@ -739,6 +786,8 @@ function boot(review: typeof import('./review') | null): void {
   press('m-settings', () => showStep('set'));
   press('d-back', () => showStep('menu'));
   press('s-back', () => showStep('menu'));
+  press('s-saver', () => setSaver(!saver));
+  press('s-lefty', () => setLefty(!lefty));
   press('s-review', () => { location.search = '?dev'; });
   press('chapter', () => { const j = restartChapter(); if (j) { journey = j; showResume(); } });
   press('restore', () => { const j = restoreJourney(); if (j) { journey = j; showResume(); } });
@@ -814,6 +863,8 @@ function boot(review: typeof import('./review') | null): void {
   };
   act('p-set', () => showSettings(true));
   act('p-back', () => showSettings(false));
+  act('p-saver', () => setSaver(!saver));
+  act('p-lefty', () => setLefty(!lefty));
   act('p-go', () => setPaused(false));
   act('p-photo', () => setPhoto(true));
   // Story mode saves the journey as it stands (the last chart or dock); the arcade just leaves. Either way the page reloads to the title

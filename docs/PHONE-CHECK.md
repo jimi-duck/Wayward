@@ -22,3 +22,13 @@ Every answer is reachable, but they are not glanceable.
 4. Text on the glass is sharp (Chrome pause card and Safari blur were fixed blind).
 5. Notch and home-bar: nothing under them, in both landscape directions.
 6. Rotate to portrait: the rotate-screen notice shows.
+
+## Phone options (2026-11-06)
+
+- **Battery saver**: Settings on the title and the pause card. The low tier and 30 frames a second, kept per device.
+- **Left-handed** (touch only): the stick on the right, Laser, Torpedo and Turn on the left, kept per device.
+- Tall cards: tighter rows on phones, and an answer you cannot take shows its label and tag without the hint.
+- Numbers from a real phone: open the game with `?debug=1` for the fps, frame time, tier and draw-call readout.
+
+Not done on purpose: mid-flight resume (a run is saved at the gates, and the game already pauses when the
+page is left) and a time-to-next-stop line (no honest estimate until the pacing is playtested).

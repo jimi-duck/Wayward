@@ -151,7 +151,9 @@ export class TouchStick {
 
   /** What a new touch at (x, y) is for. */
   private pick(x: number, y: number): Role {
-    if (x < window.innerWidth / 2) return this.stickId === null ? 'stick' : 'roll';
+    // left-handed (the `lefty` class on the page, from Settings): the halves swap, the stick on the right
+    const stickSide = document.documentElement.classList.contains('lefty') ? x >= window.innerWidth / 2 : x < window.innerWidth / 2;
+    if (stickSide) return this.stickId === null ? 'stick' : 'roll';
     if (inside(this.el.fire, x, y, 0)) return 'fire';
     let best: Role = 'fire', bestD = SLACK;
     for (const [node, role] of [[this.el.torpedo, 'torpedo'], [this.el.brk, 'brk']] as const) {

@@ -806,10 +806,14 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-main { padding-left: 32px; padding-right: 32px; }
 }
 @media (max-height: 520px) {
-  .ns-acts .ns-c { grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; min-height: 46px; padding: 6px 10px 6px 8px; }
+  .ns-acts .ns-c { grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; min-height: 40px; padding: 4px 10px 4px 8px; }
   .ns-c kbd { min-width: 30px; height: 30px; font-size: 14px; }
   .ns-c .ns-l { font-size: 15.5px; }
-  .ns-c .ns-hint { font-size: 12.5px; line-height: 1.25; }
+  .ns-c .ns-hint { font-size: 12px; line-height: 1.2; }
+  .ns-c .ns-cb { gap: 1px; }
+  /* an answer you cannot take is a label and the tag that says why; its hint is not needed on a small screen */
+  .ns-c.off .ns-hint { display: none; }
+  .ns-acts { gap: 6px; }
   .ns-tag { font-size: 10px; padding: 4px 6px; white-space: normal; text-align: center; }
   .ns-t { font-size: 20px; }
 }

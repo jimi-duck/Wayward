@@ -67,4 +67,16 @@ describe('QualityGovernor', () => {
     expect(q.tier.name).toBe('high');
     expect(q.average).toBeCloseTo(1 / 25);
   });
+
+  it('pin(0) puts it on low and keeps it there whatever the load; pin(null) lets it judge again', () => {
+    const q = new QualityGovernor(HIGH);
+    q.pin(0);
+    expect(q.tier.name).toBe('low');
+    expect(feed(q, 1 / 20, 600)).toBe(0);
+    q.pin(tierIndex('medium'));
+    q.pin(null);
+    expect(q.tier.name).toBe('medium');
+    feed(q, 1 / 40, 180);
+    expect(q.tier.name).toBe('low');
+  });
 });

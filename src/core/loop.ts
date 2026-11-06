@@ -44,6 +44,8 @@ export class FixedStepLoop {
   timeScale = 1;
   /** While paused nothing is simulated, but frames are still drawn. */
   paused = false;
+  /** Seconds between drawn frames: 0 draws every display frame; 1/30 halves the draw rate on a 60 Hz screen (battery saver). */
+  minInterval = 0;
 
   private acc = 0;
   private hold = 0;
@@ -106,6 +108,8 @@ export class FixedStepLoop {
 
   private frame = (now: number): void => {
     this.raf = requestAnimationFrame(this.frame);
+    // a frame that comes early is not drawn, and the next one carries the whole interval
+    if (this.minInterval > 0 && this.last >= 0 && (now - this.last) / 1000 < this.minInterval - 0.004) return;
     const raw = this.last < 0 ? 0 : (now - this.last) / 1000;
     this.last = now;
     this.h.measure?.(raw);
