@@ -458,6 +458,8 @@ export class CommsPanel {
   /** Every action on the sheet, in reading order: what Enter, the arrows and the number keys reach. */
   private items: Array<{ el: HTMLElement; act: () => void; n: number }> = [];
   private docOpen = false;
+  /** Phones: the short card's "More" has been tapped, so every answer and the facts show. */
+  private moreOpen = false;
 
   private moveItem(d: number): void {
     const n = this.items.length;
@@ -529,7 +531,15 @@ export class CommsPanel {
       if (c.end) b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); };
       return b;
     };
-    const acts = view.choices.map((c, i) => {
+    // Phones on their side get the short card: the question, up to three answers that can be taken, and a More plate for the rest
+    // (the answers you cannot take, the facts and the note). The opening sheets are drawn as designed and never collapse.
+    const small = tpl && !this.moreOpen && matchMedia('(max-height: 520px)').matches;
+    const takeable = view.choices.map((_, i) => i).filter((i) => view.choices[i]!.ok);
+    const shown = small ? new Set((takeable.length ? takeable : view.choices.map((_, i) => i)).slice(0, 3)) : null;
+    const folded = small && (shown!.size < view.choices.length || m.rows.length > 0 || !!m.note);
+    if (folded) main.splice(0, main.length, ...(opener && !d!.row ? [opener] : []));
+    const acts = view.choices.flatMap((c, i) => (shown && !shown.has(i) ? [] : [i])).map((i) => {
+      const c = view.choices[i]!;
       if (tpl) {
         // a template's answer: the label, one consequence line, and at most two chips at the right
         const line = consequenceOf(c), chips = chipsOf(c);
@@ -537,6 +547,10 @@ export class CommsPanel {
       }
       return plate(c, i, c.hint ? [h('span', 'ns-hint', c.hint)] : [], c.tag ? [c.tag] : []);
     });
+    if (folded) {
+      acts.push(item(h('button', 'ns-c secondary more', '', h('kbd', '', '+'), h('span', 'ns-cb', '', h('span', 'ns-l', t('More')), h('span', 'ns-hint', t('Other answers and the facts')))),
+        () => { this.moreOpen = true; settle($('comms')); this.drawSheet(view, sv); }, 0));
+    }
     const keyRow = view.choices.length ? h('p', 'ns-keys', '', ...(view.choices.length > 1 ? [...view.choices.map((_, i) => h('kbd', '', String(i + 1))), h('span', '', t('choose'))] : []),
       h('kbd', '', 'Enter'), h('span', '', t('confirm')),
       ...view.choices.flatMap((c, i) => (c.end ? [h('kbd', '', t('Hold {n}', { n: String(i + 1) })), h('span', '', t('to confirm'))] : []))) : null;
@@ -561,7 +575,7 @@ export class CommsPanel {
         h('div', 'ns-letter', '', ...m.lines.map((l) => h('p', '', l)), h('p', 'ns-sign', m.letter.sign)),
       ] : [quotes(m.lines)]),
       main.length ? h('div', `ns-rows${m.facts ? ' ns-facts' : ''}`, '', ...main) : null,
-      m.note ? h('p', 'ns-note', m.note) : null,
+      m.note && !folded ? h('p', 'ns-note', m.note) : null,
       h('div', 'ns-acts', '', ...acts, ...(opener && d!.row ? [opener] : [])), keyRow);
     const sd = sv.side;
     const side = sd ? h('section', `ng ${sd.role} ns-p ns-side`, '', head(sd),
@@ -632,6 +646,7 @@ export class CommsPanel {
   close(): void {
     if (this.open) this.closedAt = performance.now();
     this.docOpen = false;
+    this.moreOpen = false;
     this.items = [];
     this.off?.();
     this.off = null;

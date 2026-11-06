@@ -723,3 +723,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
   #sys-fuel.cue .val, #sys-fuel.cue .bar, #obj-p.cue, #objective.cue #obj-t, #ptr-lane.ping i { animation: none; }
   #ptr-lane.ping i { scale: 1.4; }
 }
+
+/* Compact HUD (Settings, touch only): the log lines, the heading tape and the scope's sector text step back; the goal, the bars,
+   the notices and the scope itself stay. */
+html.compact-hud #log-lines, html.compact-hud #heading, html.compact-hud .sens-side { display: none; }

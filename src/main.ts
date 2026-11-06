@@ -581,10 +581,14 @@ function boot(review: typeof import('./review') | null): void {
 
   let lastRun: unknown = null, lastSystem = '', wasPaused = true, veil = 0;
 
+  let autoFire = false;
   const slowmo = new SlowMo();
   const loop = new FixedStepLoop({
     step(dt) {
-      world.step(dt, input.sample());
+      const frame = input.sample();
+      // auto-fire (Settings, touch only): the lasers fire while a ship (never rock or traffic) sits in the torpedo's sights
+      if (autoFire && world.lock !== null && (world.aliens.some((a) => a.id === world.lock) || world.command.targetable()?.id === world.lock)) frame.fire = true;
+      world.step(dt, frame);
       debug.step();
     },
     render(alpha, frameDt) {
@@ -654,6 +658,36 @@ function boot(review: typeof import('./review') | null): void {
   const LEFTY_KEY = 'wayward.lefty';
   let lefty = false;
   try { lefty = localStorage.getItem(LEFTY_KEY) === '1'; } catch { /* no storage: off */ }
+  // Auto-fire and button size (touch only). Kept per device.
+  const store = (k: string): string | null => { try { return localStorage.getItem(k); } catch { return null; } };
+  const keep = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* not kept */ } };
+  autoFire = store('wayward.autofire') === '1';
+  const SIZES = ['normal', 'large', 'small'] as const;
+  let size: (typeof SIZES)[number] = SIZES.find((x) => x === store('wayward.btnsize')) ?? 'normal';
+  const paintTouch = () => {
+    for (const x of SIZES) document.documentElement.classList.toggle(`btn-${x}`, size === x && x !== 'normal');
+    for (const [id, on, label] of [['autofire', autoFire, 'On'], ['btnsize', size !== 'normal', size === 'large' ? 'Large' : size === 'small' ? 'Small' : 'Normal']] as const) {
+      for (const pre of ['s-', 'p-']) {
+        const e = el(pre + id);
+        e.classList.toggle('on', on);
+        e.setAttribute('aria-pressed', String(on));
+        el(`${pre}${id}-v`).textContent = t(id === 'autofire' ? (autoFire ? 'On' : 'Off') : label);
+      }
+    }
+    for (const id of ['s-autofire', 's-btnsize']) el(id).hidden = !coarse;
+    for (const id of ['p-autofire-r', 'p-btnsize-r']) el(id).hidden = !coarse;
+  };
+  let compact = store('wayward.compact') === '1';
+  const paintCompact = () => {
+    document.documentElement.classList.toggle('compact-hud', compact);
+    for (const id of ['s-compact', 'p-compact']) {
+      el(id).classList.toggle('on', compact);
+      el(id).setAttribute('aria-pressed', String(compact));
+      el(`${id}-v`).textContent = t(compact ? 'On' : 'Off');
+    }
+    el('s-compact').hidden = !coarse;
+    el('p-compact-r').hidden = !coarse;
+  };
   const paintLefty = () => {
     document.documentElement.classList.toggle('lefty', lefty);
     for (const id of ['s-lefty', 'p-lefty']) {
@@ -670,6 +704,8 @@ function boot(review: typeof import('./review') | null): void {
     paintLefty();
   };
   paintLefty();
+  paintTouch();
+  paintCompact();
   const paintSaver = () => {
     for (const id of ['s-saver', 'p-saver']) {
       el(id).classList.toggle('on', saver);
@@ -828,6 +864,15 @@ function boot(review: typeof import('./review') | null): void {
   act('p-back', () => showSettings(false));
   act('p-saver', () => setSaver(!saver));
   act('p-lefty', () => setLefty(!lefty));
+  const toggleAuto = () => { autoFire = !autoFire; keep('wayward.autofire', autoFire ? '1' : '0'); paintTouch(); };
+  const nextSize = () => { size = SIZES[(SIZES.indexOf(size) + 1) % SIZES.length]!; keep('wayward.btnsize', size); paintTouch(); };
+  const toggleCompact = () => { compact = !compact; keep('wayward.compact', compact ? '1' : '0'); paintCompact(); };
+  act('p-compact', toggleCompact);
+  press('s-compact', toggleCompact);
+  act('p-autofire', toggleAuto);
+  act('p-btnsize', nextSize);
+  press('s-autofire', toggleAuto);
+  press('s-btnsize', nextSize);
   act('p-go', () => setPaused(false));
   act('p-photo', () => setPhoto(true));
   // Story mode saves the journey as it stands (the last chart or dock); the arcade just leaves. Either way the page reloads to the title
