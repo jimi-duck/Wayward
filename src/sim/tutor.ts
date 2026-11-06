@@ -367,7 +367,7 @@ function finish(w: World, tu: Tutor): void {
     // if the hold went only now, Sam's word on it comes first
     sam(w, tu, 'reinforce', ['“More ships coming in. Forget the ore, it’s gone. Get to the jump gate, Juno. Just get out of there.”'], fresh ? RADIO_GAP : 0);
   }
-  if (!story(w, tu) || tu.skipped) say(w, tu, 'escort', t('Contract desk · 08-441'), 'office', t('“Escort cover is not included in Contract 08-441. Continue at operator discretion.”'));
+  if (!story(w, tu) || tu.skipped) say(w, tu, 'escort', t('Contract desk · 08-441'), 'office', t('“Escort cover isn’t included in Contract 08-441. Continue at operator discretion.”'));
 }
 
 /** The player's skip: the torpedo bay is fitted all the same, so the ship is as the run expects it. */

@@ -59,7 +59,7 @@ export const REACH: Row[] = [
   notice('ml_notice', 'marlow', { on: 'arrive', delay: 2 }, 'teal', 'Marlow', 'Kellern accounts station'),
   objective('ml_objective', 'marlow', { on: 'arrive', delay: 2 }, 'Marlow · someone here keeps the real books'),
   card('ml_ledger', 'marlow', { on: 'free', after: 6 }, 'story_ledger', { main: true }),
-  { id: 'ml_brook', stop: 'marlow', on: { on: 'flag', flag: 'frag_ledger' }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“If anyone asks, I was never here. They will ask.”' } } },
+  { id: 'ml_brook', stop: 'marlow', on: { on: 'flag', flag: 'frag_ledger' }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“If anyone asks, I was never here. They’ll ask.”' } } },
   notice('ml_wall', 'marlow', { on: 'after', row: 'ml_brook' }, 'teal', 'The Wall', 'same initials on the transfers'),
   sam('ml_sam_1', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. again. On the order, and on the money.”', { if: { has: ['clue_order_sig'] } }),
   sam('ml_sam_2', 'marlow', { on: 'after', row: 'ml_sam_1' }, '“Whoever that is, they signed both.”'),

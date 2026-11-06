@@ -25,7 +25,7 @@ export const MISSIONS: Record<string, string> = {
   'Survey Office · open contract': 'Vermessungsamt · offener Auftrag',
   'Sell the drop': 'Übergabe verkaufen',
   '{n} left': '{n} übrig',
-  '“Engines out. We are dead in space.”': '„Triebwerke aus. Wir treiben im Leeren.“',
+  '“Engines out. We’re dead in space.”': '„Triebwerke aus. Wir treiben im Leeren.“',
   'Taking her in tow': 'Nimmt sie in Schlepp',
   'Disabled · close in and hold': 'Lahmgelegt · ran und halten',
   'Hull {n}% · cripple, do not destroy': 'Rumpf {n} % · lahmlegen, nicht zerstören',

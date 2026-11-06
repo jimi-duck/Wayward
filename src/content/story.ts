@@ -356,7 +356,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_warden', handover: true, kind: 'rumour', caller: 'miners',
     from: 'Ilse Marrow · retired Lane Warden', title: 'I was on the relay that night',
-    text: '“I heard about your file. Seventy years ago I ran the Narrows relay. The lanes didn’t fail. We were told to turn them off.”',
+    text: '“So you’re the one with the file. I ran the Narrows relay seventy years ago. The lanes never failed. We were told to switch them off.”',
     cargo: 'An old Warden’s skiff · no guns',
     // a key piece of the story is handed over, not haggled for: one answer (the owner, 31 October 2026)
     choices: [
@@ -389,12 +389,12 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_handwriting', kind: 'rumour', caller: 'miners', glass: 'cyan',
     from: 'Ilse Marrow · Her handwriting', title: 'Her handwriting',
-    text: '“That routine in your hull. I know its habits. Ada Aster ran the Narrows watch with me. You carry her name, don’t you?”',
+    text: '“That routine in your hull, I know how it thinks. Ada Aster ran the Narrows watch with me. You’ve got her name, haven’t you?”',
     cargo: 'An old Warden’s skiff · no guns',
     choices: [
       { id: 'grandmother', label: 'She was my grandmother', tone: 'help', hint: 'Your family only ever said she was lost in service.',
         win: { text: 'Ada Aster · the archive has a name', flag: 'ada_named',
-          radio: { from: 'Ilse Marrow', caller: 'miners', delay: 0.8, text: '“Lost in service. That’s all they told your family, or anyone. Go to the Narrows. Ada left it listening.”' } } },
+          radio: { from: 'Ilse Marrow', caller: 'miners', delay: 0.8, text: '“Lost in service. That’s all they ever told anyone. Go to the Narrows. Ada left it listening for you.”' } } },
     ],
   }),
   story({
@@ -403,7 +403,7 @@ export const STORY_CARDS: CardDef[] = [
     from: 'Ilse Marrow · recorded', title: 'The order',
     letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1'], ['Kept by', 'Ilse Marrow, seventy years']], sign: '— Authorised: L. C.' },
     text: 'Effective at once.\nThe outer relays at the Narrows and beyond are to be powered down.\nWardens on watch will surrender their keys to the attending officer.\nThe closure is to be recorded as a failure from neglect.',
-    side: { from: 'Ilse Marrow · recorded', lines: ['“You cut me off. Fair. I’m sending it anyway: the paper they made us sign. The routine in your hull is Ada Aster’s. Go to the Narrows.”'] },
+    side: { from: 'Ilse Marrow · recorded', lines: ['“You cut me off. Fair enough. I’m sending it anyway, the paper they made us sign. That routine in your hull is Ada Aster’s. Go to the Narrows.”'] },
     cargo: 'A recorded message · no reply',
     choices: [
       { id: 'take', label: 'Take the order', tone: 'help', hint: '', win: { text: 'The signed order · in the file · Ada Aster · the archive has a name', flag: ['frag_order', 'clue_order_sig', 'ada_named'] } },
@@ -413,14 +413,14 @@ export const STORY_CARDS: CardDef[] = [
     // Brook's arrest at Copperline, as the road plays it: one card for the player who bought or won the ledger, one for the player who did not
     id: 'story_brook_road', kind: 'warning', caller: 'custody',
     from: 'Adam Brook · in Custody transport', title: 'They took the clerk',
-    text: '“They traced the ledger to me. I am in a Custody transport, ten minutes from a cell. Please. You have the only copy.”',
+    text: '“They traced the ledger back to me. I’m in a Custody transport, ten minutes from a cell. Please. You’ve got the only copy.”',
     cargo: 'A Custody transport · one escort',
     choices: BROOK_CHOICES(),
   }),
   story({
     id: 'story_brook_declined', kind: 'warning', caller: 'custody',
     from: 'Adam Brook · in Custody transport', title: 'They took the clerk',
-    text: '“You turned my books down. They came for me anyway. I’m in a Custody transport. Please.”',
+    text: '“You turned my books down, and they came for me anyway. I’m in a Custody transport. Please. I’ve got nobody else.”',
     cargo: 'A Custody transport · one escort',
     choices: BROOK_CHOICES(),
   }),
@@ -430,7 +430,7 @@ export const STORY_CARDS: CardDef[] = [
     // Ashgrove at the Narrows' gate: the registry's answers, in his words
     id: 'narrows_checkpoint', kind: 'checkpoint', caller: 'custody',
     from: 'Inspector Ashgrove · Offices of Peace · Kind Regard', title: 'Checkpoint',
-    text: '“Good afternoon. Ashgrove, Offices of Peace, aboard the Kind Regard. Let’s avoid a messy hour. Transmit your registry.”',
+    text: '“Afternoon. Ashgrove, Offices of Peace, on the Kind Regard. Let’s not make this a long day for either of us. Send your registry, please.”',
     ships: [{ variant: 'lancer', n: 1 }, { variant: 'picket', n: 2 }], cargo: 'Custody blockade · the Kind Regard',
     choices: [
       { id: 'codes', label: 'Transmit Sam’s codes', tone: 'bluff', hint: 'A Kellern code on a Kellern hull. Likely, the first time.', odds: { base: 0.8, heat: -0.25 },
@@ -459,7 +459,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_calloway_narrows', kind: 'warning', caller: 'calloway',
     from: 'Governor Idris Calloway · CCV Patience', title: 'The Narrows',
-    text: '“I have read Ada Aster’s file too, Juno. Not all of it. Enough to want the rest. Tell me where you are going, and I will not stop you.”',
+    text: '“I’ve read Ada Aster’s file too, Juno. Not all of it. Enough to want the rest. Tell me where you’re going, and I won’t stop you.”',
     cargo: 'The Patience · weapons cold, for now',
     lines: [
       { if: { flag: 'relay_broadcast' }, text: '“Your grandmother’s relay just told the whole Reach who you are.”' },
@@ -475,7 +475,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_brook_arrest', kind: 'warning', caller: 'custody',
     from: 'Adam Brook · in Custody transport', title: 'They took the clerk',
-    text: '“They traced the ledger to me. I am in a Custody transport, ten minutes from a cell. Please. You have the only copy.”',
+    text: '“They traced the ledger back to me. I’m in a Custody transport, ten minutes from a cell. Please. You’ve got the only copy.”',
     cargo: 'A Custody transport · one escort',
     choices: [
       { id: 'rescue', label: 'Break him out', tone: 'fight', hint: 'Fight the escort. Custody hears of it.', win: { text: 'Brook is aboard the shuttle · Custody marks you', flag: 'brook_free', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }], standing: { custody: -1 } } },
@@ -543,7 +543,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_kesh', kind: 'trade', caller: 'gutter',
     from: 'Kesh · a fixer of the Gutter', title: 'Val talks too much',
-    text: '“I work for Val. I also have ears. She is shopping your heading to the Offices. Pay my debt and I look the other way.”',
+    text: '“I work for Val, but I’ve got ears. She’s selling your heading to the Offices. Clear my debt and I’ll look the other way.”',
     cargo: 'A fixer’s skiff · patched, fast',
     choices: [
       { id: 'pay', label: 'Settle his debt', tone: 'pay', hint: 'Six Cyrite. He warns you when Val moves.', cost: { chits: 30 }, win: { text: 'Kesh is square · he will warn you', flag: ['kesh_trust', 'kesh_warned'], standing: { gutter: 1 } } },
@@ -554,7 +554,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_vell_betray', kind: 'warning', caller: 'gutter',
     from: 'Val · a broker of the Gutter', title: 'Your heading, sold',
-    text: '“Business, pilot. The Offices pay better than I do. They know where you are going. I wish you luck.”',
+    text: '“Nothing personal, pilot. The Offices pay better than I do. They know where you’re headed. Good luck. I mean that.”',
     cargo: 'A broker’s yacht · leaving fast',
     choices: [
       { id: 'pay', label: 'Pay her to forget', tone: 'pay', hint: 'Eight Cyrite. She sells the next heading to you instead.', cost: { chits: 40 }, win: { text: 'Val takes the money · the trail goes cold', flag: 'vell_paid', hunt: 1 } },
@@ -574,7 +574,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_ferry_agent', kind: 'warning', caller: 'office',
     from: 'Ossie Raine · the Quiet Ferry', title: 'There is an agent aboard',
-    text: '“One of mine is Offices. Corin Ashe. Young. He has watched you since we left. He looks sick about it. Your call.”',
+    text: '“One of my passengers is Offices. Corin Ashe, just a kid. He’s been watching you since we left, and he looks sick about it. Your call.”',
     cargo: 'The Quiet Ferry · forty passengers',
     choices: [
       { id: 'expose', label: 'Expose him', tone: 'fight', hint: 'The passengers put him off. The Offices lose a day.', win: { text: 'The agent is put off · the Offices lose a day', flag: ['agent_exposed', 'clue_agent'], hunt: 1 } },
@@ -605,7 +605,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_ferry', kind: 'trade', caller: 'miners',
     from: 'Ossie Raine · the Quiet Ferry', title: 'A lane ahead',
-    text: '“Nobody hunts out here. I can carry you a lane ahead. Forty-one passengers, and they’d like the company. Stores, no questions.”',
+    text: '“Nobody hunts out here. I can take you a lane ahead. Forty-one passengers, and they’d like the company. Bring some stores and I won’t ask questions.”',
     cargo: 'A slow ferry · forty-one passengers',
     choices: [
       { id: 'ride', label: 'Ride the ferry', tone: 'trade', hint: 'Four food. Calloway loses a day.', cost: { supplies: 4 }, win: { text: 'The ferry carries you ahead', flag: 'ferry_met', hunt: 1, standing: { miners: 1 } } },
@@ -637,7 +637,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_tam_brother', kind: 'plea', caller: 'miners',
     from: 'Sam Okoro · patched through the relays', title: 'My brother is on that crew',
-    text: '“Juno, it’s me. The relays carry voices now. My brother Eben works the Breaker Yards. The hulls they bring in are scarred. He thinks claws. Check?”',
+    text: '“Juno, it’s me. The relays carry voices now, can you believe it? My brother Eben works the Breaker Yards. The hulls coming in are scarred. He thinks claws. Take a look?”',
     cargo: 'Sam’s voice · carried relay to relay',
     choices: [
       { id: 'warn', label: 'Warn the crew', tone: 'help', hint: 'The scarred hulls go in the file.', win: { text: 'Eben has the warning · the scarred hulls go in the file', flag: ['tam_brother', 'eben_warned', 'clue_scarred'], standing: { frontier: 1 } } },
@@ -648,7 +648,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_ines_offer', kind: 'trade', caller: 'guild',
     from: 'Ines Duarte · harbour-master, the Dust Traders', title: 'A very good price',
-    text: '“The Guild would like a copy. For safekeeping. Line twelve is my family, and I would rather read it first. The price is generous.”',
+    text: '“The Guild wants a copy, for safekeeping. Line twelve is my family, and I’d rather read it first. The price is generous, I promise.”',
     cargo: 'The harbour-master’s launch · an open case',
     choices: [
       { id: 'sell', label: 'Sell a copy', tone: 'trade', hint: 'Twelve Cyrite. The Guild reads it, and so may others.', win: { text: 'Twelve Cyrite · a copy leaves your hands', chits: 60, flag: 'ines_copy', heat: 0.1, standing: { guild: 1 } } },
@@ -658,7 +658,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_vell_reckoning', kind: 'trade', caller: 'gutter',
     from: 'Val · a broker of the Gutter', title: 'We should settle',
-    text: '“Pilot. We have unfinished business. I would rather settle it here, where there are witnesses.”',
+    text: '“Pilot. We’ve got unfinished business. I’d rather settle it here, where there are witnesses.”',
     cargo: 'A broker’s yacht · docked, guns cold',
     choices: [
       { id: 'collect', label: 'Collect what she owes', tone: 'pay', hint: 'Needs proof she sold your heading. Eight Cyrite, and the Gutter hears.', needs: { flag: 'vell_betrayed' }, win: { text: 'Val pays · the Gutter watches her do it', chits: 40, flag: 'vell_collected', standing: { gutter: -1 } } },
@@ -685,7 +685,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_harbour', kind: 'trade', caller: 'guild',
     from: 'Ines Duarte · harbour-master, the Dust Traders', title: 'A berth, no questions',
-    text: '“A berth for the Wayward, and no questions. The Guild only wants to know you as a friend. We are very good friends.”',
+    text: '“A berth for the Wayward, and no questions. The Guild only wants to know you as a friend. We make very good friends.”',
     cargo: 'The harbour-master’s launch · very good manners',
     choices: [
       { id: 'berth', label: 'Take the berth', tone: 'trade', hint: 'Supplies for the stay. The Guild takes note.', win: { text: 'A berth, stores and a friend in the Guild', flag: 'ines_berth', supplies: 6, heat: 0.05, standing: { guild: 1 } } },
@@ -777,7 +777,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_oren_why', kind: 'plea', caller: 'guild',
     from: 'Oren Lisle · archivist, the Last Toll', title: 'Third question: what for',
-    text: '“Third: what is it for? Truth, mercy or freedom. The Threshold will hold you to it.”',
+    text: '“Third: what’s it for? Truth, mercy or freedom. The Threshold will hold you to it.”',
     cargo: 'A toll platform · one lit window',
     choices: [
       { id: 'truth', label: 'Truth', tone: 'help', hint: 'Say it aloud to everyone.', win: { text: '“Then say it.” · the answer is logged', flag: ['oren_asked', 'oren_truth'] } },
