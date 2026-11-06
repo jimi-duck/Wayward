@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { it } from 'vitest';
-import { LEGS, ROAD } from '../src/content/road';
+import { LEGS } from '../src/content/road';
 import { SCRIPT } from '../src/content/script';
 import { regionOf, sysById } from '../src/sim/chart';
 import { choices } from '../src/sim/endings';
@@ -60,7 +60,7 @@ it('flies the whole road', { timeout: 7_200_000 }, () => {
   for (const strat of STRATEGIES) for (const policy of POLICIES) for (let i = 0; i < RUNS; i++) all.push({ ...fly(5000 + i * 17, strat, policy), strat: stratName(strat), policy });
   const runRows = all.map((r) => `| ${r.strat} | ${r.policy} | ${r.reached ? 'yes' : r.stuck ? 'stuck' : 'no'} | ${Math.round(r.minutes)} | ${r.j.wrecks} | ${r.open.join(', ') || '—'} | ${r.dropped.join(', ') || 'none'} | ${r.twice.join(', ') || 'none'} |`);
   const legRows = LEG_NAMES.map((nm, i) => `| ${nm} | ${Math.round(mean(all.map((r) => r.legTime[i]! / 60)))} | ${mean(all.map((r) => r.legWrecks[i]!)).toFixed(1)} |`);
-  const jobs = [...new Set(ROAD.flatMap((st) => (st.job ? [st.job] : [])))];
+  const jobs = [...new Set(LEGS.flat().flatMap((st) => (st.job ? [st.job] : [])))];
   const ends = ['won', 'lost', 'declined', 'ignored'] as const;
   const jobRows = jobs.map((id) => `| ${id} | ${ends.map((e) => all.filter((r) => r.j.carry.flags.includes(`job_${id}_${e}`)).length).join(' | ')} |`);
   const md = `# The narrative overhaul: whole-road report

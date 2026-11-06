@@ -220,7 +220,10 @@ function ramNow(w: World): number {
 const REACT = 0.2;
 
 /** What the pilot remembers between steps: when each shot was first seen, and the current plan. */
-interface Memo { seen: Map<number, number>; plan: { heading: number; thrust: number; until: number } | null }
+interface Memo { seen: Map<number, number>; plan: { heading: number; thrust: number; until: number } | null; portWait?: number }
+
+/** Seconds near a port without docking before the pilot gives it up for the sortie (a crowd at the clamps can hold it off for good). */
+const PORT_PATIENCE = 60;
 
 const PLAN_DT = 0.1, PLAN_STEPS = 12, PLAN_EVERY = 5;
 const OFFSETS = [0, 0.4, -0.4, 0.8, -0.8, 1.25, -1.25, 1.7, -1.7, 2.3, -2.3, Math.PI];
@@ -330,10 +333,13 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   // the purse is what the port and the bay can have; the tank is the jump's
   const over = bk ? w.cyrite : 0;
   const hungry = !!bk && w.supplies < 9 && over >= pr.supplies * 3;
-  // Sam's friend paints the hull at the depot and the first Jump Gate waits for it (sim/postjump.ts): the pilot goes there first
-  const goPort = !!bk && !!bk.port && (paintAt(w) || (bk.docks === 0
-    && (hungry || over >= 24 || (w.plates < st.maxPlates && w.supplies < PATCH_COST + 2 && over >= pr.plate))));
-  const dest = bk ? (goPort ? bk.port : !need ? bk.lane : null) : null;
+  // Ned's yard paints the hull and the first Jump Gate waits for it (sim/postjump.ts): the pilot goes there first
+  const paint = !!bk?.yard && paintAt(w);
+  const nearPort = !!bk?.port && Math.hypot(bk.port.x - s.x, bk.port.z - s.z) < 120;
+  if (nearPort && bk!.docks === 0) memo.portWait = (memo.portWait ?? 0) + STEP;
+  const goPort = !!bk && !!bk.port && !paint && bk.docks === 0 && (memo.portWait ?? 0) < PORT_PATIENCE
+    && (hungry || over >= 24 || (w.plates < st.maxPlates && w.supplies < PATCH_COST + 2 && over >= pr.plate));
+  const dest = bk ? (paint ? bk.yard : goPort ? bk.port : !need ? bk.lane : null) : null;
   if (bk) {
     const wp = dest ?? bk.lane, dx = wp.x - s.x, dz = wp.z - s.z, d = Math.hypot(dx, dz) || 1;
     push(dx / d, dz / d, dest ? 3 : 0.5);
