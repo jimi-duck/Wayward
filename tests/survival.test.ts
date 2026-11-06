@@ -4,7 +4,7 @@ import { STEP } from '../src/core/loop';
 import { DEFAULT_SURVIVAL, SURVIVAL, SURVIVAL_IDS, survivalOf, type SurvivalId } from '../src/content/survival';
 import type { InputFrame } from '../src/input/types';
 import { loadProfile, migrate as migrateProfile, saveProfile } from '../src/meta/profile';
-import { exportJourney, importJourney, loadJourney, migrate, saveJourney } from '../src/meta/save';
+import { loadJourney, migrate, saveJourney } from '../src/meta/save';
 import { lanesFrom, layQuiet, makeChart, netted, spreadNet } from '../src/sim/chart';
 import { pressure } from '../src/sim/director';
 import { ENCOUNTER_ORDER, pickEncounter, startEncounter, type EncounterId } from '../src/sim/encounters';
@@ -204,10 +204,9 @@ describe('saving the mode', () => {
     expect(migrate(j)!.survival).toBe('prospector');
   });
 
-  it('exports and imports the mode with the journey', () => {
+  it('saves and loads the mode with the journey', () => {
     const j = newJourney(9, false, 'three', 'raider');
-    const back = importJourney(exportJourney(j))!;
-    expect(back.survival).toBe('raider');
+    saveJourney(j);
     expect(loadJourney()!.survival).toBe('raider');
   });
 

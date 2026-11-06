@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  clearJourney, exportJourney, hasBackup, importJourney, loadJourney, migrate, restoreJourney, saveJourney, saveUnreadable,
+  clearJourney, hasBackup, loadJourney, migrate, restoreJourney, saveJourney, saveUnreadable,
 } from '../src/meta/save';
 import { newJourney, VERSION } from '../src/sim/journey';
 import { TANK_MAX } from '../src/sim/purse';
@@ -55,17 +55,6 @@ describe('the journey save', () => {
     localStorage.setItem('wayward.journey', JSON.stringify({ version: 99 }));
     expect(loadJourney()).toBeNull();
     expect(saveUnreadable()).toBe(true);
-  });
-
-  it('exports to text and imports it back as the current save', () => {
-    const j = newJourney(5);
-    j.day = 4;
-    const text = exportJourney(j);
-    clearJourney();
-    expect(importJourney('not a save')).toBeNull();
-    expect(importJourney(JSON.stringify({ version: 99 }))).toBeNull();
-    expect(importJourney(text)?.day).toBe(4);
-    expect(loadJourney()?.seed).toBe(5);
   });
 });
 

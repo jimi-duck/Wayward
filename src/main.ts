@@ -11,7 +11,7 @@ import { Sector } from './render/sector';
 import { lockLifted } from './sim/postjump';
 import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
-import { chapterSave, clearJourney, exportJourney, hasBackup, importJourney, loadJourney, restartChapter, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
+import { chapterSave, clearJourney, hasBackup, loadJourney, restartChapter, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
 import { recap } from './sim/chapters';
 import { bounty } from './sim/mission';
 import { cy } from './sim/purse';
@@ -256,43 +256,6 @@ function boot(review: typeof import('./review') | null): void {
     el('save-problem').textContent = t('Your saved journey could not be read.');
     el('save-problem').hidden = !bad;
     el('restore').hidden = !bad || !hasBackup();
-    renderSaves(live);
-  };
-  /** Export the saved journey to a file, or bring one back from a file. */
-  const renderSaves = (live: Journey | null) => {
-    const box = el('saves');
-    const btn = (label: string, f: () => void) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'st-row';
-      b.append(Object.assign(document.createElement('span'), { className: 'st-t', textContent: t(label) }));
-      b.addEventListener('pointerdown', (e) => e.stopPropagation());
-      b.addEventListener('click', (e) => { e.stopPropagation(); f(); });
-      return b;
-    };
-    const out: HTMLElement[] = [];
-    if (live) {
-      out.push(btn('Export save', () => {
-        const url = URL.createObjectURL(new Blob([exportJourney(live)], { type: 'application/json' }));
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `wayward-day-${Math.floor(live.day) + 1}.json`;
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }));
-    }
-    out.push(btn('Import save', () => {
-      const pickFile = document.createElement('input');
-      pickFile.type = 'file';
-      pickFile.accept = 'application/json,.json';
-      pickFile.addEventListener('change', async () => {
-        const text = await pickFile.files?.[0]?.text();
-        const j = text ? importJourney(text) : null;
-        if (j) { journey = j; showResume(); startOpts.render(); } else el('save-problem').textContent = t('That file is not a Wayward save.'), el('save-problem').hidden = false;
-      });
-      pickFile.click();
-    }));
-    box.replaceChildren(...out);
   };
   el('st-ver').textContent = `WAYWARD · ${__BUILD__}`;
   showStep('menu');
