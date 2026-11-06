@@ -144,3 +144,20 @@ describe('the opening answers at once (tuning, 2026-11-05)', () => {
     expect(voices[1]!.t - at, 'Sam on the hold').toBeLessThan(FLOOR.hold + 3);
   }, 30000);
 });
+
+describe('lines tied to an event', () => {
+  it('go out at once, ahead of the gap and the queue, and are dropped when stale', () => {
+    const f = new Floor();
+    f.take([voice('story_1')], 0);
+    play(f, 0, 1);
+    f.take([voice('story_2'), voice('patrol_1')], 2);
+    const out = play(f, 2, 8);
+    expect(out[0]![1]).toBe('patrol_1');
+    expect(out[0]![0]).toBeLessThanOrEqual(FLOOR.hold + 0.1);
+    const g = new Floor();
+    g.opened(0, 'card');
+    g.take([voice('warn_x')], 0);
+    g.closed(1);
+    expect(play(g, 1, 30).map(([, id]) => id)).toEqual([]);
+  });
+});
