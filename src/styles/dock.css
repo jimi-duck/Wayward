@@ -78,7 +78,7 @@
 #port .pl-m { display: grid; gap: 3px; min-width: 0; }
 #port .pl-t { font: 700 calc(var(--fs) * 1.25 * 1.18)/1.1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: var(--dk-ink); }
 #port .pl-d { font: 400 13px/1.3 var(--font-display); color: var(--dk-ink2); }
-#port .pl-p { font: 600 calc(var(--fs) * 1.15 * 1.18)/1.1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--dk-amber); }
+
 #port .pl-badge { font: 600 12px/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--dk-ink2); }
 #port .pl-badge.ok { color: var(--dk-info); }
 #port .pl-badge.short { color: var(--dk-amber); }
@@ -286,8 +286,7 @@
   /* the world is held while a job is open, so the card takes the top of a short screen: all its answers stay on it */
   #rd-call .rd-prio { font-size: 11px; letter-spacing: .12em; }
 }
-@media (max-width: 700px) {
-}
+
 /* the wider face on phones on their side: three buy cards are narrow, so rows wrap instead of running into the next card */
 @media (max-height: 460px) and (max-width: 900px) {
   #port .pl-t { overflow-wrap: break-word; }

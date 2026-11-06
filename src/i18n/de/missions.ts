@@ -52,7 +52,6 @@ export const MISSIONS: Record<string, string> = {
   'Search the wreck': 'Wrack absuchen',
   'A prospector': 'Eine Schürferin',
   'She leads the way': 'Sie führt den Weg',
-  'Buy her chart': 'Ihre Karte kaufen',
   'Survey Office': 'Vermessungsamt',
   'Keep clear': 'Abstand halten',
   'Salvage broker': 'Bergungsmakler',

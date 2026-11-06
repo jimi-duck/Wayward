@@ -249,7 +249,6 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 #boss.inbound #boss-hp { --on: transparent; animation: hud-blink 1s ease-in-out infinite; }
 #boss.cloaked #boss-hp { opacity: .35; }
 
-
 /* the target: what it is, how far, what it yields, how much is left; the capital ship and the alert take the stage first */
 #tgt-card { display: none; width: clamp(200px, 18vw, 260px); padding: 7px 13px 8px; --lit: var(--cy); }
 #tgt-card.on { display: block; }
@@ -432,8 +431,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 #heat[data-lit="4"] .ht-b, .ht-b[data-lit="4"] { --on: var(--alert); }
 #heat[data-lit="1"] .ht-b i:nth-child(-n+1), #heat[data-lit="2"] .ht-b i:nth-child(-n+2), #heat[data-lit="3"] .ht-b i:nth-child(-n+3), #heat[data-lit="4"] .ht-b i,
 .ht-b[data-lit="2"] i:nth-child(-n+2) { background: var(--on); }
-.hn-bar { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
-.hn-bar .ht-b i { width: 30px; height: 4px; }
+
 #cond { display: grid; gap: 2px; justify-items: end; font: 600 calc(var(--fs) * 1.2)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--cy); text-shadow: 0 1px 2px var(--black); }
 #cond[hidden] { display: none; }
 #cond .warn { color: var(--caution); }
@@ -678,7 +676,6 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 #heat[data-lit="3"] .ht-b { --on: var(--caution); }
 #log { width: max-content; min-width: clamp(220px, 17vw, 280px); max-width: calc(100vw - var(--left) - var(--right) - 24px); box-sizing: border-box; }
 #upg { align-self: end; }
-.hn-bar .ht-b i { width: 30px; height: 3px; }
 
 /* a phone: the stick and the buttons own the bottom, so the readouts stay up and the munitions are on the buttons */
 .touch-ui #systems { border-right-width: 1px; }

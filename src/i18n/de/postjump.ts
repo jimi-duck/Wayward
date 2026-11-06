@@ -1,7 +1,6 @@
 // ── German: the first system past Cerro (sim/postjump.ts, sim/traffic.ts, docs/POSTJUMP.md) ──
 
 export const POSTJUMP: Record<string, string> = {
-  'Head for the audit dock': 'Ab zum Audit-Dock',
   'Audit dock': 'Audit-Dock',
   'Civilian': 'Zivilschiff',
   'Not hostile': 'Nicht feindlich',
