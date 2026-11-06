@@ -27,6 +27,8 @@ function inFirstSystem(seed = 7): Journey {
 /** Fly a sortie with the ship idle (and unhurt): whether any hostile came, whether a card or hail stopped the world, and the heat at the end. */
 function fly(j: Journey, seconds: number) {
   const w = new World(j.seed * 31 + 1, { mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
+  // the hull is already repainted: the first system's errand to Ned's yard keeps it free of chance events (owner 2026-11-06), which is not what this asks
+  w.flags.add('hull_repainted');
   let hostiles = 0, stopped = 0;
   for (let i = 0; i < Math.round(seconds / STEP); i++) {
     // kept alive: an idle hull in a rock field can be wrecked before the pursuit is due, which is not what this asks

@@ -62,7 +62,7 @@ Gate holds ("Jump Gate holding · Ned's yard first") until she has been. The dep
    notice "Reprogrammed" at once; "Repainted" at 2.8 s; the camera pans round her as she flies (the helm is hers throughout); at 4.2 s the arrival-style title
    card shows WAYWARD, "Ned's yard · work done", "Reprogrammed · Repainted · Renamed". At 9.5 s the plain card (`story_yard_done`, one tap)
    says it in words.
-   The first system stays quiet from the arrival until `story_yard_done` is answered (owner 2026-11-06): no distress signal, skirmish or
+   The first system stays quiet from Sam’s code until `story_yard_done` is answered (owner 2026-11-06): no distress signal, skirmish or
    other chance event, as well as no pursuit, swarm or jam.
 4. About 30 s after the work the archive unlocks: the herald "Hidden archive unlocked", then its message (`story_wake`), at a free moment.
 
