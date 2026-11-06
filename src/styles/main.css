@@ -199,6 +199,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #brk.wait { --fill: rgba(var(--glass-ink-rgb), .4); opacity: .7; }
 #t-brk { --n: 5; width: 56%; height: 4px; }
 @keyframes tap-flash { from { scale: .88; } }
+/* button size (Settings, touch only): the thumb buttons and the stick ring a step larger or smaller */
+html.btn-large #touch { --sw: clamp(120px, 34vh, 150px); --fw: clamp(96px, 29vh, 124px); --bw: clamp(70px, 20vh, 84px); }
+html.btn-small #touch { --sw: clamp(90px, 26vh, 116px); --fw: clamp(68px, 20vh, 88px); --bw: clamp(52px, 14vh, 62px); }
 /* left-handed: the stick and the buttons trade sides */
 .lefty #stick { left: auto; right: var(--in-l); }
 .lefty #fire { right: auto; left: var(--in-r); }

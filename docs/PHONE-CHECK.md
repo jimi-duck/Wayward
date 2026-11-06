@@ -28,6 +28,11 @@ Every answer is reachable, but they are not glanceable.
 - **Battery saver**: Settings on the title and the pause card. The low tier and 30 frames a second, kept per device.
 - **Left-handed** (touch only): the stick on the right, Laser, Torpedo and Turn on the left, kept per device.
 - Tall cards: tighter rows on phones, and an answer you cannot take shows its label and tag without the hint.
+- Short card (phones on their side, all cards except the opening sheets): the question, up to three answers you can take, and a **More** plate for the rest (answers you cannot take, the facts, the note). A channel's speaker shares the header line.
+- **Auto-fire** (touch only): the lasers fire while a ship sits in the torpedo's sights; never at rock or traffic.
+- **Button size** (touch only): Normal, Large, Small.
+- **Compact HUD** (touch only): the log lines, the heading tape and the scope's sector text step back.
+- Settings: the title's list scrolls on a 320px screen; the pause card's settings fit in two columns.
 - Numbers from a real phone: open the game with `?debug=1` for the fps, frame time, tier and draw-call readout.
 
 Not done on purpose: mid-flight resume (a run is saved at the gates, and the game already pauses when the

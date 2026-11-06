@@ -811,6 +811,15 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-c .ns-l { font-size: 15.5px; }
   .ns-c .ns-hint { font-size: 12px; line-height: 1.2; }
   .ns-c .ns-cb { gap: 1px; }
+  /* the short card on a phone: the template cards (not the opening sheets) close up a little so three answers and More fit */
+  .ns-wrap .ns-p.ns-channel, .ns-wrap .ns-p.ns-decision { gap: 6px; padding-top: 8px; padding-bottom: 8px; }
+  .touch-ui .ns-keys { display: none; }
+  /* a channel's speaker shares the header's line: the status chip, then their face and name */
+  .ns-wrap .ns-p.ns-channel { grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; }
+  .ns-wrap .ns-p.ns-channel > * { grid-column: 1 / -1; }
+  .ns-wrap .ns-p.ns-channel > .ns-h { grid-column: 1; grid-row: 1; padding-bottom: 0; border-bottom: 0; align-self: center; }
+  .ns-wrap .ns-p.ns-channel > .ns-who { grid-column: 2; grid-row: 1; }
+  .ns-channel .ns-h .ns-from, .ns-channel .ns-h .rx-bars { display: none; }
   /* an answer you cannot take is a label and the tag that says why; its hint is not needed on a small screen */
   .ns-c.off .ns-hint { display: none; }
   .ns-acts { gap: 6px; }

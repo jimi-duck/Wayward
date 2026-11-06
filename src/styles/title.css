@@ -119,6 +119,8 @@
   .st-foot { gap: 6px 14px; }
   .st-foot .records { font-size: 10px; gap: 12px; }
   .st-lang button { min-height: 40px; }
+  /* the settings list is longer on a phone (the touch options): it scrolls inside its step rather than past the screen */
+  #st-set { max-height: calc(100dvh - 104px); overflow-y: auto; overscroll-behavior: contain; }
 }
 @media (max-height: 420px) {
   .st-col { margin-top: 14px; gap: 6px; }
