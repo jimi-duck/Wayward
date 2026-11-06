@@ -886,11 +886,12 @@ export class World implements EncounterHost {
     if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); this.den?.step(this, dt); this.thrSeed?.step(this, dt); }
     const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
     if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
+    // Calloway's route lines ("change your route") are for the free chart: the road is one fixed line, so only Wanted speaks there
     if (!b.def.quiet) this.events.push(...this.watch.step({
       t: this.runTime, heat: b.heat, cap: Math.max(1, Math.round(pursuitCap(b.heat) * this.survival.pursuit.cap)),
       elite: this.aliens.some((a) => !!a.elite), inbound: this.aliens.some((a) => !a.ward && !a.fleeing && a.kind !== 'freighter' && Math.hypot(a.x - s.x, a.z - s.z) < 260),
       hunch: this.sortie.nemesis.hunch, was: this.sortie.nemesis.was, behind: this.behind,
-    }));
+    }).filter((e) => !(this.flags.has(ON_ROAD) && e.type.startsWith('calloway'))));
 
     if (this.mineT > 0) this.mineT -= dt;
 
