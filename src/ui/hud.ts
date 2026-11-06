@@ -22,7 +22,7 @@ import { damageWord } from './panels';
 import { Notifier, NoticePlates, type Notice } from './notify';
 import { blockOf, cheapest, quickPicks } from '../sim/bay';
 import { BREAK_COOLDOWN } from '../sim/tuning';
-import { lockLifted, paintAt, refuelAt } from '../sim/postjump';
+import { lockLifted, paintAt, PAINT_NOTICE, refuelAt, YARD_REPAINT } from '../sim/postjump';
 import { recovering } from '../sim/recovery';
 import { wantedPips } from '../sim/pressure';
 
@@ -248,6 +248,11 @@ export class Hud {
           // the arrival scan, while the title card is up, is the card's last line, not a second message
           if (this.titleT > 0 && e.headline === SCAN_LINE) { text($('tc-s'), t(e.headline)); break; }
           this.notify(world, { type: e.tone === 'amber' ? 'warning' : e.tone === 'red' ? 'denied' : 'arrival', headline: e.headline, reason: e.reason, key: `story:${e.headline}` }); break;
+        case 'yardDone':
+          // the special moment: the new name, like a film's title, as she rolls out of Ned's yard
+          if (e.n === 2) this.nameCard();
+          else this.notify(world, { type: 'arrival', headline: e.n === 0 ? PAINT_NOTICE[0] : YARD_REPAINT[0], reason: e.n === 0 ? PAINT_NOTICE[1] : YARD_REPAINT[1], key: `yard:${e.n}` });
+          break;
         case 'jobDone':
           this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain');
           // at the port the pop-up says it (ui/jobdone.ts); at the Jump Gate a quiet notice does
@@ -925,6 +930,19 @@ export class Hud {
     el.style.setProperty('--tc-secs', `${TITLE_SECS}s`);
     el.classList.add('on');
     this.titleT = TITLE_SECS;
+  }
+
+  /** Ned's yard is done (sim/postjump.ts YARD_TITLE_AT): the new name in the arrival title card's style, with what was done as its last line. */
+  private nameCard(): void {
+    text($('tc-k'), t('Ned’s yard · work done'));
+    text($('tc-t'), 'WAYWARD');
+    text($('tc-s'), t('Reprogrammed · Repainted · Renamed'));
+    const el = $('title-card');
+    el.classList.remove('on');
+    void el.offsetWidth;
+    el.style.setProperty('--tc-secs', `${TITLE_SECS + 1}s`);
+    el.classList.add('on');
+    this.titleT = TITLE_SECS + 1;
   }
 
   private banner(kicker: string, title: string, sub: string, secs: number, tone = ''): void {

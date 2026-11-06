@@ -107,6 +107,8 @@ export type GameEvent =
   | { type: 'ping'; id: string; from: string; caller: string; text: string; moment: string; system: string }
   /** A story row's notice, low centre (ui/notify.ts): teal, amber, red or white. */
   | { type: 'storyNotice'; tone: 'teal' | 'amber' | 'red' | 'white'; headline: string; reason?: string }
+  /** Ned's yard, the beats of the work done (outside the floor: the moment is timed by the work): 0 reprogrammed, 1 repainted, 2 the name as a title card. */
+  | { type: 'yardDone'; n: 0 | 1 | 2 }
   | { type: 'commsAnswer'; id: string; choice: string; text: string; won: boolean }
   | { type: 'jobDone'; id: string; text: string; job: string; at: 'port' | 'lane'; cyrite: number; supplies: number }
   | { type: 'jobShort'; id: string; text: string }
