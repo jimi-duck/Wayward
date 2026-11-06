@@ -44,6 +44,8 @@ export const DESK = {
   gap: { major: 180, important: 150, routine: 220, ambient: 0 } as Record<Weight, number>,
   /** What an eager (scene) call waits instead: seconds since the last card closed, and seconds of clear sky after the last hostile. A job rings after the arrival has settled (the floor, sim/floor.ts, keeps it off the story). */
   eager: 20,
+  /** A card that follows another closely (the archive's message after the paint card): seconds since the last card closed. */
+  chain: 4,
   eagerSettle: 3,
   /** Seconds a call stays up unanswered, then lapses. */
   window: { important: 30, routine: 22 },
@@ -99,6 +101,9 @@ export class Desk {
     this.nextPing = now + rng.range(...DESK.ping.between);
   }
 
+  /** Cards that follow the last one closely, by id (see DESK.chain). */
+  readonly chain = new Set<string>();
+
   /** Ask to be heard. Offered twice, heard once. */
   offer(def: CardDef, tier: Weight, now: number, port = false, eager = false): void {
     if (this.queue.some((a) => a.def.id === def.id)) return;
@@ -121,12 +126,12 @@ export class Desk {
   }
 
   /** Whether a card of this weight may open now. */
-  may(tier: Weight, busy: Busy, now: number, eager = false): boolean {
+  may(tier: Weight, busy: Busy, now: number, eager = false, chain = false): boolean {
     if (busy === 'transit' || busy === 'fight') return false;
     if (tier === 'ambient') return true;
     if (busy !== 'free' || (tier !== 'major' && now - this.arrived < (eager ? DESK.arriveCall : DESK.arrive))) return false;
     if (now - this.lastThreat < (eager ? DESK.eagerSettle : DESK.settle[tier]) || now - this.lastMine < DESK.mineSettle) return false;
-    return now - this.lastClose >= (eager ? Math.min(DESK.eager, DESK.gap[tier]) : DESK.gap[tier]);
+    return now - this.lastClose >= (chain ? DESK.chain : eager ? Math.min(DESK.eager, DESK.gap[tier]) : DESK.gap[tier]);
   }
 
   /** Drop what has waited too long (or was bound to a place the ship has left). */
@@ -138,7 +143,7 @@ export class Desk {
   next(busy: Busy, now: number): Ask | null {
     const order = [...this.queue].sort((a, b) => RANK[b.tier] - RANK[a.tier] || a.at - b.at);
     const top = order[0] && RANK[order[0].tier];
-    const pick = order.find((a) => (RANK[a.tier] === top || a.eager) && this.may(a.tier, busy, now, a.eager));
+    const pick = order.find((a) => (RANK[a.tier] === top || a.eager) && this.may(a.tier, busy, now, a.eager, this.chain.has(a.def.id)));
     if (!pick) return null;
     this.queue.splice(this.queue.indexOf(pick), 1);
     return pick;

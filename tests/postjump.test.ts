@@ -384,6 +384,28 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(w.stage?.rangAt ?? null).toBeNull();
   });
 
+  it('the archive is found first, then the paint card says what happened, and the archive message follows that card closely (owner 2026-11-06)', () => {
+    const w = afterCode();
+    const p = w.bk!.yard!;
+    w.ship.x = p.x - p.r * 0.8; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
+    const log: string[] = [];
+    let yardClosed = -1, wakeAt = -1;
+    for (let i = 0; i < Math.round(90 / STEP) && wakeAt < 0; i++) {
+      w.ship.invuln = 1;
+      if (w.phase === 'comms') {
+        const id = w.comms!.def.id;
+        if (id === 'story_yard_done') { log.push('paint card'); w.answer(0); yardClosed = w.runTime; continue; }
+        if (id === 'story_wake') { log.push('archive'); wakeAt = w.runTime; continue; }
+        w.answer(0); continue;
+      }
+      w.step(STEP, input());
+      for (const e of w.events) if (e.type === 'storyNotice' && e.headline === 'Hidden archive unlocked') log.push('found');
+      w.events.length = 0;
+    }
+    expect(log).toEqual(['found', 'paint card', 'archive']);
+    expect(wakeAt - yardClosed).toBeLessThanOrEqual(8);
+  });
+
   it('the pursuit clock starts at the paint, not at the code', () => {
     const w = afterCode();
     play(w, 120);

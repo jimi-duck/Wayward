@@ -450,7 +450,7 @@ export class World implements EncounterHost {
     this.follows = [];
     this.portCalled = false;
     this.auditCalled = false;
-    this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0;
+    this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
     this.radioQ = [];
     this.floor = new Floor();
@@ -1138,6 +1138,8 @@ export class World implements EncounterHost {
   private stolenSaid = 0;
   /** Ned's yard (sim/postjump.ts): Ned has been heard. */
   private paintCalled = false;
+  /** The archive's herald has been shown (it comes before the paint card; the archive's message follows that card's answer). */
+  private wakeHerald = false;
   /** Ned's yard: how long she has held in its ring (the ring fills as it goes), and when the work was done (runTime; Infinity: not yet). */
   yardT = 0;
   yardAt = Infinity;
@@ -1909,9 +1911,14 @@ export class World implements EncounterHost {
       const def = CARD_BY_ID[f!.card];
       if (def && !this.cardsSeen.has(def.id)) {
         if (f!.quick) this.openComms(def);
-        else {
+        else if (def.id === WAKE_BEAT && this.yardAt !== Infinity && !this.cardsSeen.has(YARD_DONE)) {
+          // the archive is found first (the herald), then the paint card says what happened; the archive's message follows its answer
+          if (!this.wakeHerald && def.herald) { this.wakeHerald = true; this.events.push({ type: 'storyNotice', tone: 'teal', headline: def.herald.headline, reason: def.herald.reason }); this.floor.take(this.events, t); }
+          this.follows.push({ card: WAKE_BEAT, at: t + 1 });
+        } else {
           // the herald goes to the floor at once, so the card (offered below) waits for it, whatever else is quiet
-          if (def.herald) { this.events.push({ type: 'storyNotice', tone: 'teal', headline: def.herald.headline, reason: def.herald.reason }); this.floor.take(this.events, t); }
+          if (def.herald && !this.wakeHerald) { this.events.push({ type: 'storyNotice', tone: 'teal', headline: def.herald.headline, reason: def.herald.reason }); this.floor.take(this.events, t); }
+          if (def.id === WAKE_BEAT && this.wakeHerald) d.chain.add(def.id);
           d.offer(def, weightOf(def), t, false, def.trigger === 'story');
         }
       }
@@ -1961,7 +1968,9 @@ export class World implements EncounterHost {
     }
 
     // deliver the one that is next, if the moment is right: a story line still waiting goes first, and a card is FLOOR.moments after the last
-    if (!this.call && !this.floor.busy(t) && this.floor.mayMoment(t)) {
+    // ...but the archive's message follows the paint card closely, once the herald has said it was found
+    const chained = this.wakeHerald && this.cardsSeen.has(YARD_DONE) && !this.cardsSeen.has(WAKE_BEAT);
+    if (!this.call && !this.floor.busy(t) && this.floor.mayMoment(t, chained ? 4 : undefined)) {
       const a = d.next(busy, t);
       if (a) {
         const pre = a.def.trigger === 'chance' || a.def.trigger === 'follow' || a.def.trigger === 'port' || a.def.trigger === undefined;
