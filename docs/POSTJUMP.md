@@ -65,7 +65,7 @@ Gate holds ("Jump Gate holding · Ned's yard first") until she has been. The dep
 4. The special moment, seconds after the reboot: a teal notice "Reprogrammed" at once; "Repainted" at 2.8 s; at 4.2 s the arrival-style title
    card shows WAYWARD, "Ned's yard · work done", "Reprogrammed · Repainted · Renamed". At 7.5 s the plain card (`story_yard_done`, one tap)
    says it in words.
-   The first system stays quiet from the breach (the recovery autopilot) to the jump (owner 2026-11-06): no distress signal, skirmish or
+   The first system stays quiet from the breach (the recovery autopilot) to the jump (owner 2026-11-06): no situation (a distress call and its raider, a patrol, a toll), no distress signal, skirmish or
    other chance event, as well as no pursuit, swarm or jam.
 5. About 13 s after the reboot the archive unlocks: the herald "Hidden archive unlocked", then its message (`story_wake`), at a free moment.
 

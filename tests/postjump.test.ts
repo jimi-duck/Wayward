@@ -368,6 +368,22 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(w.sortie.calm).toBe(true);
   });
 
+  it('no situation (a distress call and its raider) plays in the first system after the paint either (owner 2026-11-06)', () => {
+    const j = past();
+    const def = sortieDef(j);
+    def.situation = 'missing_shift';
+    const w = new World(5, { mode: 'breakout', sortie: def, carry: j.carry });
+    w.skipTraining();
+    w.flags.add('ship_stolen'); w.flags.add('paint_due');
+    expect(w.stage?.def.card).toBe('sc_missing');
+    paintHull(w);
+    for (let i = 0; i < Math.round(240 / STEP); i++) {
+      if (w.phase === 'comms') { w.answer(0); continue; }
+      w.ship.invuln = 1; w.step(STEP, input()); w.events.length = 0;
+    }
+    expect(w.stage?.rangAt ?? null).toBeNull();
+  });
+
   it('the pursuit clock starts at the paint, not at the code', () => {
     const w = afterCode();
     play(w, 120);

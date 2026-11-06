@@ -889,8 +889,9 @@ export class World implements EncounterHost {
     if (b.nagT > 0) b.nagT -= dt;
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (!this.alive || b.jumpT >= 0) return;
-    // a situation (a patrol's sweep, a toll) waits in the first system until the paint is on (owner, 5 November 2026: nothing comes between the code and the depot)
-    if (!(b.def.first && paintDue(this.flags))) this.stage?.step(this, dt);
+    // a situation (a patrol's sweep, a toll, a distress call) never plays in the first system once the story has it: from the breach to the jump
+    // (owner, 6 November 2026: no distress signal or raider there)
+    if (!(b.def.first && (recovering(this.flags) || lockLifted(this.flags)))) this.stage?.step(this, dt);
     if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); this.den?.step(this, dt); this.thrSeed?.step(this, dt); }
     const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
     if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
