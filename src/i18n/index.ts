@@ -38,16 +38,15 @@ const listeners: Array<() => void> = [];
 /** The language on now. */
 export const current = (): Lang => lang;
 
-/** The language to start in: ?lang=, then the player's last choice, then the browser's. */
+/** The language to start in: ?lang=, then the player's last choice, else English (the owner, 6 November 2026: never the browser's). */
 export function detect(): Lang {
   try {
     const q = new URLSearchParams(location.search).get('lang');
     if (q === 'en' || q === 'de') return q;
     const saved = localStorage.getItem(KEY);
     if (saved === 'en' || saved === 'de') return saved;
-  } catch { /* no storage: fall through to the browser */ }
-  const prefs = typeof navigator === 'undefined' ? [] : navigator.languages?.length ? navigator.languages : [navigator.language];
-  return prefs.some((l) => /^de\b/i.test(l ?? '')) ? 'de' : 'en';
+  } catch { /* no storage: English */ }
+  return 'en';
 }
 
 /** Switch language (remembered unless `save` is false), and tell whoever draws text. */

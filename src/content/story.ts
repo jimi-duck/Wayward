@@ -270,9 +270,9 @@ export const STORY_CARDS: CardDef[] = [
     from: 'Account system · Contract 08-441', title: 'Contract summary',
     text: 'Payment on delivery · 1,000 Cyrite',
     ledger: 'bay',
-    doc: { kind: 'bay', open: 'View account summary', kick: 'Document · account summary', title: 'Contract 08-441', sub: 'Projected on delivery of 1,000 Cyrite.', note: 'The delivery is not complete. These figures are a projection, not an available account balance.', at: 3 },
+    doc: { kind: 'bay', open: 'View account summary', kick: 'Document · account summary', title: 'Contract 08-441', sub: 'Projected on delivery of 1,000 Cyrite.', note: 'The delivery is not complete yet. These figures are a projection, not money in your account.', at: 3 },
     side: { from: 'Work Bay · docked', status: '800 Cyrite', title: 'Service stop', label: 'Sam Okoro · radio',
-      lines: ['Raiders have been spotted out your way. I suggest fitting torpedoes before you head back.', 'The company will finance the launcher. You’ll owe them twenty credits. But I’d rather you make it back safely.'] },
+      lines: ['Heads up, Juno. There are raiders working out your way. Get torpedoes fitted before you head back.', 'The company will finance the launcher. It’ll cost you twenty credits, but I’d rather that than not see you back.'] },
     cargo: 'Cerro work bay · Contract 08-441',
     choices: [
       { id: 'install', label: 'Torpedo launcher', tone: 'pay', hint: 'Company-financed · 20 CR (deducted from your payout)',
@@ -282,19 +282,19 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_raiders', kind: 'warning', caller: 'unknown', glass: 'red', status: 'Hostile hail', facts: 'raid',
     from: 'Unregistered raider · 2 ships closing', title: 'Cut your main drive and open the hold.',
-    text: 'That ore isn’t reaching the company port. We’re taking it. Cut your drive and let us aboard, or we open the hold ourselves.',
+    text: 'That ore isn’t going to any company port. It’s ours now. Cut your drive and let us aboard, or we open the hold ourselves.',
     cargo: 'Two unknown ships · closing',
     choices: [
       { id: 'refuse', label: 'Refuse and fight', tone: 'fight', hint: 'They attack. You keep the ore if you win.', tag: 'Combat',
         win: { text: 'Weapons hot · the raiders turn on you', hostile: true, radio: { from: 'Unknown', text: '“Then we do it the hard way.”' } } },
-      { id: 'pay', label: 'Surrender', tone: 'pay', hint: 'You are captured and sold into slavery.', tag: 'Ends the run', end: true,
+      { id: 'pay', label: 'Surrender', tone: 'pay', hint: 'They take you and sell you into slavery.', tag: 'Ends the run', end: true,
         win: { text: 'You surrender · the raiders take everything', follow: { card: 'story_seized', after: 0.5, quick: true } } },
     ],
   }),
   story({
     id: 'story_seized', kind: 'warning', caller: 'unknown', glass: 'red', status: 'Run ended', ledger: 'seized',
     from: 'Unknown raider · boarding', title: 'Captured',
-    text: 'Cargo and hull seized. The pilot is sold into forced labour.',
+    text: 'They take the cargo and the ship. You’re sold into forced labour.',
     choices: [
       { id: 'again', label: 'Start the contract again', tone: 'run', hint: 'The opening begins from the top.',
         win: { text: 'The contract starts again', redo: true } },
@@ -303,7 +303,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_breach', kind: 'warning', caller: 'office', glass: 'red', status: 'Breach', ledger: 'breach',
     from: 'Contract notice', title: 'Contract 08-441 · Breach',
-    text: 'Required delivery not received. Outstanding charges remain immediately payable.\nVessel recovery and impound ordered.',
+    text: 'The delivery was not received. All outstanding charges are due now.\nThe vessel will be recovered and impounded.',
     doc: { kind: 'invoice', open: 'View breach invoice', kick: 'Document · breach invoice', title: 'Contract 08-441 · Outstanding charges', sub: 'Delivery not received.', note: 'Vessel recovery initiated.' },
     cargo: 'Contract 08-441 · short delivery',
     choices: [
@@ -311,20 +311,20 @@ export const STORY_CARDS: CardDef[] = [
       // radio, whose channel opens 2 km out from the dock. One plain acknowledgement (the owner, 23 October 2026).
       { id: 'proceed', label: 'Acknowledge', tone: 'run', hint: '',
         win: { text: 'Controls locked · recovery autopilot active', flag: RECOVERY_FLAG,
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 2.5, gap: 10, text: ['“They’re calling it a breach and want the hauler back. Let the autopilot fly.”', '“Hold on, Juno. I’m working on a way out.”'] } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 2.5, gap: 10, text: ['“They’re calling it a breach and they want the hauler back. Let the autopilot fly for now.”', '“Hang in there, Juno. I’m working on a way out of this.”'] } } },
     ],
   }),
   story({
     id: 'story_sam', kind: 'warning', caller: 'miners', glass: 'ochre', status: 'Private', rx: SAM_BEARING, quote: true,
     from: 'Sam Okoro · private channel', title: 'A way out',
-    text: 'Juno. Keep this off the open channel.\nThis code overrides the recovery autopilot. The debt stays in your name, but she’s yours to fly.\nFly to Ned Varga’s yard, off the lane. Fly into his ring and let go. Ned takes the helm, reprograms, repaints and renames her. Free.',
+    text: 'Juno, it’s me. Keep this off the open channel.\nThis code overrides the autopilot. The debt’s still in your name, but she’s yours to fly again.\nGo to Ned Varga’s yard, off the lane. Fly into his ring and let go. Ned will reprogram her, repaint her and give her a new name. He won’t charge you.',
     cargo: 'Ned’s yard · off the lane',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
         // the code overrides the autopilot and nothing more (owner 2026-11-05): she is still the company's grey hull; Ned's yard makes her hers (sim/postjump.ts PAINT_DUE)
         win: { text: 'Autopilot overridden · the helm is yours', flag: ['ship_stolen', 'paint_due', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
           signal: { tone: 'teal', headline: 'Autopilot overridden', reason: 'Lane Control shut out' },
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Don’t dock. Ned’s yard first. Go.”' } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Don’t dock. Ned’s yard first. Go, Juno.”' } } },
     ],
   }),
   story({
@@ -343,13 +343,13 @@ export const STORY_CARDS: CardDef[] = [
     herald: { headline: 'Hidden archive unlocked', reason: 'Found in the ship database' },
     from: 'Ship database · stored message', title: 'For whoever flies her next',
     letter: { head: [['To', 'Whoever flies her next'], ['From', 'No name given'], ['Kept in', 'Crew notes, hidden']], sign: '— No name. In case they read this before you do.' },
-    text: 'If you’re reading this, the owner lock is off and she answers to you. I hid this where the company’s audits never look.\nSeventy years ago the gates to the outer worlds went dark. We were told the Krail was running out. The worlds left outside became the Scatter.\nI pulled the reserve log for that day. Krail reserves: 94%. Logged the same day the order to close the gates was signed.\nI can’t tell you what that number leaves out. But it doesn’t fit the story we were told.\nStart at Halden’s Reach. Follow the record. The relays there still answer to the right key.',
+    text: 'If you’re reading this, the owner lock is off and she answers to you now. I hid this where the company’s audits never look.\nSeventy years ago the gates to the outer worlds went dark. We were told the Krail was running out, and the worlds left outside became the Scatter.\nI pulled the reserve log for that day. Krail reserves: 94%. Logged the same day someone signed the order to close the gates.\nI don’t know what that number leaves out. I only know it doesn’t fit what we were told.\nStart at Halden’s Reach and follow the record. The relays there still answer to the right key.',
     cargo: 'The Wayward · a stored message in the hull’s archive',
     choices: [
       { id: 'lead', label: 'Set course: Halden’s Reach', tone: 'help', hint: '',
         win: { text: 'The record is on the Wall · next lead: Halden’s Reach', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'],
           signal: { tone: 'amber', headline: 'Registry: unregistered', reason: 'Paint won’t pass a scan' },
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.5, text: '“A name of your own now, and a lead. Keep moving, Juno.”' } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.5, text: '“A name of your own now, and a lead to follow. Keep moving, Juno. I’m listening.”' } } },
     ],
   }),
   // ── Act II, the Reach ───────────────────────────────────────────────────
