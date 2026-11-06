@@ -41,7 +41,7 @@ export const paintDue = (flags: ReadonlySet<string> | readonly string[]): boolea
 /** Whose bay it is: Sam's friend, who does the work himself. */
 export const PAINTER = 'Ned Varga';
 /** Ned on the radio when the ship comes up on his yard: hold her in the ring and he does the rest. */
-export const PAINT_LINE = '“OB-7731, this is Ned. Sam said you’d come. Ease her into the ring and hold still. Then fly out the front. New paint, new name, no charge.”';
+export const PAINT_LINE = '“OB-7731, this is Ned. Sam said you’d come. Ease her into the ring. I’ll take the helm from there. New paint, new name, no charge.”';
 /** The pop-up card once the work is done (content/story.ts `story_yard_done`). */
 export const YARD_DONE = 'story_yard_done';
 export const PAINT_NOTICE = ['Reprogrammed', 'Owner lock stripped'] as const;
@@ -49,9 +49,17 @@ export const PAINT_NOTICE = ['Reprogrammed', 'Owner lock stripped'] as const;
 export const YARD_REPAINT_AT = 2.8;
 export const YARD_REPAINT = ['Repainted', 'Company grey to yellow'] as const;
 export const YARD_TITLE_AT = 4.2;
-/** How long she holds in the ring while the arches run (seconds), and how far past the ring she must fly before the moment starts. */
-export const YARD_HOLD = 4.5;
-export const YARD_OUT = 6;
+/**
+ * Ned's yard is done on autopilot (owner 2026-11-06): once she is in the ring the helm is taken, she is flown to the pad and held
+ * while lightning zaps the hull and the HUD glitches (`YARD_ZAP` seconds), then the screen goes dark, reboots with the new colours
+ * (the rename reveal), and the autopilot flies her out of the front, handing the helm back `YARD_AUTO_END` seconds after the reboot.
+ * She starts to move out `YARD_OUT_AT` seconds after it. The HUD is dark until `YARD_DARK`, then flickers back until `YARD_BOOT`.
+ */
+export const YARD_ZAP = 3.6;
+export const YARD_OUT_AT = 1.4;
+export const YARD_AUTO_END = 5.6;
+export const YARD_DARK = 1.0;
+export const YARD_BOOT = 1.9;
 /** The explanation card comes this long after the work (the reveal has played by then), and the archive's message this long after the work. */
 export const PAINT_CARD = 9.5;
 export const PAINT_WAKE = 30;

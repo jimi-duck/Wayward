@@ -29,8 +29,8 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_CARD, PAINT_LINE, PAINT_WAKE, YARD_HOLD, YARD_OUT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, YARD_DONE, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
-import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
+import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_CARD, PAINT_LINE, PAINT_WAKE, YARD_ZAP, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, YARD_DONE, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
+import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
 import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_EVERY_ALERT, FLAK_R, SiteBrain, type Mood } from './site';
 import { LOOSE } from './pickups';
@@ -450,7 +450,7 @@ export class World implements EncounterHost {
     this.follows = [];
     this.portCalled = false;
     this.auditCalled = false;
-    this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardHeld = false;
+    this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0;
     this.recoverT = 0;
     this.radioQ = [];
     this.floor = new Floor();
@@ -739,11 +739,16 @@ export class World implements EncounterHost {
     const p = pressure(this.clock, this.mods);
     // Lane Control's recovery has the helm until Sam's code lifts the owner lock
     const held = !!this.bk && recovering(this.flags);
-    let c = !this.alive || slowed || (this.bk && this.bk.jumpT >= 0) ? IDLE : held ? RECOVERY_CONTROLS : flightControls(input);
-    if (held && this.alive && !slowed) {
+    // ...and Ned's yard has it from the ring to the way out (sim/postjump.ts YARD_ZAP)
+    const yardAuto = !!this.bk && this.yardPhase > 0;
+    let c = !this.alive || slowed || (this.bk && this.bk.jumpT >= 0) ? IDLE : held || yardAuto ? RECOVERY_CONTROLS : flightControls(input);
+    if ((held || yardAuto) && this.alive && !slowed) {
       // Lane Control flies her on rails; everyone else keeps clear of a ship under recovery
       // she steers round the bulwarks only; loose rock in her lane drifts aside ahead of her
-      recoveryStep(s, this.bk!.audit, this.hull, this.field.bulwarks, dt);
+      const yd = this.bk!.yard, front = this.yardFront();
+      const yardTo = !yardAuto || !yd ? null : this.yardPhase === 1 ? yd : this.yardPhase === 4 && this.runTime - this.yardAt >= YARD_OUT_AT ? { x: yd.x + front.x * 70, z: yd.z + front.z * 70 } : null;
+      if (yardAuto) s.invuln = Math.max(s.invuln, 0.5);
+      recoveryStep(s, yardAuto ? yardTo : this.bk!.audit, this.hull, yardAuto ? [] : this.field.bulwarks, dt, yardAuto ? (this.yardPhase === 1 ? 1.5 : 6) : HOLD_R);
       const fx = Math.cos(s.heading), fz = -Math.sin(s.heading);
       for (const r of this.field.rocks) {
         const rx = r.x - s.x, rz = r.z - s.z, ahead = rx * fx + rz * fz, side = rx * -fz + rz * fx, clear = r.r + SHIP_R + 4;
@@ -965,7 +970,7 @@ export class World implements EncounterHost {
       this.events.push({ type: 'storyNotice', tone: 'teal', headline: SCAN_LINE, reason: this.sortie.name });
     }
 
-    if (beat && !this.storyMade && !(beat === WAKE_BEAT && (paintDue(this.flags) || ((this.yardAt !== Infinity || this.yardHeld) && !this.cardsSeen.has(YARD_DONE)))) && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
+    if (beat && !this.storyMade && !(beat === WAKE_BEAT && (paintDue(this.flags) || ((this.yardAt !== Infinity || this.yardPhase > 0) && !this.cardsSeen.has(YARD_DONE)))) && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.storyMade = true;
       const def = CARD_BY_ID[beat];
       // Sam's card is the recovery's to deal, at 2 km from the dock, even after a load mid-recovery
@@ -1135,8 +1140,16 @@ export class World implements EncounterHost {
   /** Ned's yard: how long she has held in its ring (the ring fills as it goes), and when the work was done (runTime; Infinity: not yet). */
   yardT = 0;
   yardAt = Infinity;
-  /** The work is done in the ring (the arches have run); the moment comes when she flies out of the front. */
-  yardHeld = false;
+  /** The autopilot's part in Ned's yard: 0 none, 1 flying to the pad, 2 held while the zaps run (yardT counts), 3 unused, 4 rebooted and flying out. */
+  yardPhase = 0;
+  /** How glitched the HUD is, 0 to 1 (1: dark): rising through the zaps, dark at the reboot, flickering back after. */
+  get yardGlitch(): number {
+    if (this.yardPhase === 2) return Math.min(1, this.yardT / YARD_ZAP) * 0.85;
+    if (this.yardAt === Infinity) return 0;
+    const e = this.runTime - this.yardAt;
+    if (e < YARD_DARK) return 1;
+    return e < YARD_BOOT ? 0.55 * (1 - (e - YARD_DARK) / (YARD_BOOT - YARD_DARK)) : 0;
+  }
   private yardBeat = 0;
   /** The first system past Cerro: the hull is not reported stolen yet, so nothing there explains Wanted yet (main.ts holds the note). */
   get beforeReport(): boolean { return !!this.bk?.def.first && this.runTime < this.stolenAt + STOLEN.notice + STOLEN.explain; }
@@ -1175,26 +1188,38 @@ export class World implements EncounterHost {
       if (this.yardBeat === 0 && e >= YARD_REPAINT_AT) { this.yardBeat = 1; this.events.push({ type: 'yardDone', n: 1 }); }
       else if (this.yardBeat === 1 && e >= YARD_TITLE_AT) { this.yardBeat = 2; this.events.push({ type: 'yardDone', n: 2 }); }
     }
-    if (!y || !paintDue(this.flags) || this.docked || this.phase !== 'play') { if (!this.yardHeld) this.yardT = 0; return; }
+    if (this.yardPhase === 4) { if (this.runTime - this.yardAt >= YARD_AUTO_END) this.yardPhase = 0; return; }
+    if (!y || !paintDue(this.flags) || this.docked || this.phase !== 'play') { this.yardPhase = 0; this.yardT = 0; return; }
     const d = Math.hypot(this.ship.x - y.x, this.ship.z - y.z);
-    if (this.yardHeld) {
-      // the work is done: the moment waits until she flies out of the front
-      if (d < y.r + YARD_OUT) return;
-      this.yardHeld = false;
-      this.yardT = 0;
-      this.yardAt = this.runTime;
-      this.yardBeat = 0;
-      this.flags.add(PAINTED);
-      this.flags.add(RENAMED);
-      this.events.push({ type: 'yardDone', n: 0 });
-      this.follows.push({ card: YARD_DONE, at: this.runTime + PAINT_CARD });
-      this.follows.push({ card: WAKE_BEAT, at: this.runTime + PAINT_WAKE });
+    if (this.yardPhase === 0) {
+      // in the ring: the autopilot takes her to the pad (no fight on)
+      if (d < y.r && !this.inDanger()) { this.yardPhase = 1; this.yardT = 0; }
       return;
     }
-    const ready = d < y.r && speed < DOCK_SPEED && !this.inDanger();
-    if (!ready) { this.yardT = Math.max(0, this.yardT - dt * 2); return; }
     this.yardT += dt;
-    if (this.yardT >= YARD_HOLD) this.yardHeld = true;
+    if (this.yardPhase === 1) {
+      if ((d < 4 && speed < 0.4) || this.yardT > 12) { this.yardPhase = 2; this.yardT = 0; }
+      return;
+    }
+    // held on the pad while the zaps run, then the reboot: the work is done
+    if (this.yardT < YARD_ZAP) return;
+    this.yardPhase = 4;
+    this.yardT = 0;
+    this.yardAt = this.runTime;
+    this.yardBeat = 0;
+    this.flags.add(PAINTED);
+    this.flags.add(RENAMED);
+    this.events.push({ type: 'yardDone', n: 0 });
+    this.follows.push({ card: YARD_DONE, at: this.runTime + PAINT_CARD });
+    this.follows.push({ card: WAKE_BEAT, at: this.runTime + PAINT_WAKE });
+  }
+
+  /** The way out of Ned's yard: the unit vector from the yard toward the company's dock, which its open front faces. */
+  yardFront(): { x: number; z: number } {
+    const y = this.bk?.yard, a = this.bk?.audit;
+    if (!y || !a) return { x: 0, z: 1 };
+    const dx = a.x - y.x, dz = a.z - y.z, n = Math.hypot(dx, dz) || 1;
+    return { x: dx / n, z: dz / n };
   }
 
   /** One wave of the opening chase: heavier and more of them each time, always from behind. */

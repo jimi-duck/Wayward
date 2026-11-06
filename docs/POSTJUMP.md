@@ -47,24 +47,27 @@ leads to it), and the depot stays on the strip throughout.
 ## Ned's yard (owner, 5 November 2026)
 
 Sam's code overrides the recovery autopilot and nothing more: the helm is hers, but she is still the company's grey hull. It also
-banks `paint_due`, and Sam's message says what to do: fly to Ned Varga's yard, hold her in his ring, and he reprograms, repaints and
+banks `paint_due`, and Sam's message says what to do: fly into Ned Varga's ring and let go; he takes the helm, reprograms, repaints and
 renames her, free. The yard is a site of its own (`yard` in `sim/breakout.ts`, `FIRST_YARD`), 0.58 of the way to the Jump Gate and 170
 units off the line, opposite the depot. It is a docking place like the depot, with no fly-by and no building to enter. Its own scope
 mark, edge pointer and objective ("Reach Ned's yard", "Make her yours · free") show only while the hull waits for it, and the Jump
 Gate holds ("Jump Gate holding · Ned's yard first") until she has been. The depot is untouched: fuel, plating and stores.
 
-1. She comes within 150 units: Ned's radio line ("ease her into the ring and hold still").
-2. She holds in the teal ring (`YARD_R`, slow like a dock, no fight on, `World.stepYard`) for `YARD_HOLD` (4.5 s) while the three arches light in turn (scan teal, spray amber with mist, mark white). The work is then done
-   (`World.yardHeld`, the HUD says "Work done · fly out"), but nothing is shown yet. When she flies out of the front, `YARD_OUT` (6) past
-   the ring, the moment starts: `hull_repainted` and `ship_renamed` are set and the rename reveal plays (render/reveal.ts): her lights go out and come back white,
-   one amber band takes the hull from grey to yellow, the registry is struck out and WAYWARD written.
-3. The special moment (owner 2026-11-06: fly in and out of the front, the animation as she flies out), seconds after she leaves: a teal
-   notice "Reprogrammed" at once; "Repainted" at 2.8 s; the camera pans round her as she flies (the helm is hers throughout); at 4.2 s the arrival-style title
+1. She comes within 150 units: Ned's radio line ("ease her into the ring, I'll take the helm").
+2. She flies into the teal ring (`YARD_R`, no fight on) and the autopilot takes the helm (owner 2026-11-06: the whole yard is on autopilot, no
+   paint animation). `World.yardPhase`: 1, it flies her to the pad (`recoveryStep`); 2, it holds her there for `YARD_ZAP` (3.6 s) while
+   lightning arcs from the arches to the hull (render/yard.ts, jagged lines new every 50 ms, sparks, a white flare) and the HUD tears
+   and flickers (`World.yardGlitch`, ui/hud.ts `glitch`; steady half-fade with reduced motion).
+3. The reboot (phase 4): `hull_repainted` and `ship_renamed` are set, the HUD goes dark for `YARD_DARK` (1 s) and flickers back until
+   `YARD_BOOT` (1.9 s), and the rename reveal plays (render/reveal.ts): her lights go out and come back white, one amber band takes the
+   hull from grey to yellow, the registry is struck out and WAYWARD written, the camera pans round her. From `YARD_OUT_AT` (1.4 s) the
+   autopilot flies her out of the front (toward the dock) and hands the helm back at `YARD_AUTO_END` (5.6 s).
+4. The special moment, seconds after the reboot: a teal notice "Reprogrammed" at once; "Repainted" at 2.8 s; at 4.2 s the arrival-style title
    card shows WAYWARD, "Ned's yard · work done", "Reprogrammed · Repainted · Renamed". At 9.5 s the plain card (`story_yard_done`, one tap)
    says it in words.
    The first system stays quiet from the breach (the recovery autopilot) until `story_yard_done` is answered (owner 2026-11-06): no distress signal, skirmish or
    other chance event, as well as no pursuit, swarm or jam.
-4. About 30 s after the work the archive unlocks: the herald "Hidden archive unlocked", then its message (`story_wake`), at a free moment.
+5. About 30 s after the reboot the archive unlocks: the herald "Hidden archive unlocked", then its message (`story_wake`), at a free moment.
 
 The yard (`render/yard.ts`) is a deck and a few works set into a large asteroid: the game's own cratered basalt (`rockGeometry`,
 `lavaRock`), a pad ringed in yellow, post lamps and a hazard edge, the three arches and two spray masts, a shack, silo and conveyor,

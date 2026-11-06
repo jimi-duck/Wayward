@@ -98,19 +98,19 @@ const TURN = 1.6;
  * thrust physics; a stop short of the dock. Rock that still touches her is shoved aside (world.ts), and nothing hurts
  * her while Lane Control has her.
  */
-export function recoveryStep(s: ShipState, to: { x: number; z: number } | null, hull: Hull, obs: readonly Obstacle[], dt: number): void {
+export function recoveryStep(s: ShipState, to: { x: number; z: number } | null, hull: Hull, obs: readonly Obstacle[], dt: number, holdR = HOLD_R): void {
   const before = s.heading;
   let want = 0;
   if (to) {
     const dx = to.x - s.x, dz = to.z - s.z, d = Math.hypot(dx, dz) || 1;
     const ux = dx / d, uz = dz / d;
-    const path = d > HOLD_R ? clearCourse(s, ux, uz, obs) : { x: ux, z: uz, danger: 0 };
+    const path = d > holdR ? clearCourse(s, ux, uz, obs) : { x: ux, z: uz, danger: 0 };
     const line = Math.atan2(-uz, ux);
     const course = line + Math.max(-SWING, Math.min(SWING, wrap(Math.atan2(-path.z, path.x) - line)));
     const err = wrap(course - s.heading);
     s.heading += Math.max(-TURN * dt, Math.min(TURN * dt, err));
     // slow to turn and with something close ahead, and none at the hold
-    if (d > HOLD_R) want = Math.min(topSpeed(hull) * CRUISE * (1 - 0.6 * path.danger) * Math.max(0.25, Math.cos(Math.min(Math.abs(err), Math.PI / 2))), (d - HOLD_R) * 0.6);
+    if (d > holdR) want = Math.min(topSpeed(hull) * CRUISE * (1 - 0.6 * path.danger) * Math.max(0.25, Math.cos(Math.min(Math.abs(err), Math.PI / 2))), (d - holdR) * 0.6);
   }
   const speed = Math.hypot(s.vx, s.vz);
   const v = speed + (want - speed) * Math.min(1, 2 * dt);
