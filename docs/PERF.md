@@ -377,3 +377,14 @@ Reported: "the first system loading isn't working great" in Story mode. Measured
 First frame 580 to 770 ms became about 150 ms; no program is linked after Begin.
 
 **Not measured:** a real phone or GPU, and the Continue path on a saved journey (same code, not timed).
+
+## Pass 11: arriving after the first jump (2026-11-06)
+
+Reported: still "a little bad" after the first jump. Measured by flying the Story's first jump in headless Chromium (software GL, 568x320, Medium) and counting shader programs per frame:
+
+| Cause | Change | After |
+|---|---|---|
+| Ned's yard made its four point lights when it was built, on arrival, and hid them while it was not due. A hidden light is not counted, so the scene's light count went 6 to 10 and **every lit material linked again** (about 30 programs: rocks, hulls, the Wayward's paint) a few seconds into the system | the four lights exist from page start and the group is always visible (intensity 0 does the work) | programs after arrival: 84 flat (was 84 to 114); no relink |
+| The first frames of a new system (sky bake, station and hull builds, texture uploads) ran in view | `settle()` in `main.ts`: after a jump the world takes 12 idle steps unseen, the sector builds, every program is compiled and drawn once (rounds, until none is new), all behind the jump's veil with the world held; the veil then fades over 0.7 s | the first-frame cost happens under the veil, not in play |
+
+**Not measured:** a real phone or GPU. In software GL the first frame still takes about 7 s, now under the veil; the real cost is far smaller but not known. The hold adds that time to the jump on a slow device.
