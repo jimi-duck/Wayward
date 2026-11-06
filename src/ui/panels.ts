@@ -4,6 +4,7 @@ import { SURVIVAL, SURVIVALS, type SurvivalId } from '../content/survival';
 import { ENDING_BY_ID, ENDINGS } from '../content/endings';
 import { FRAGMENTS_ALL } from '../content/story';
 import { OBSERVATIONS } from '../content/situations';
+import { FEATURES, FEATURE_ORDER, metFlag } from '../content/features';
 import { grants, type Profile, type Recorded } from '../meta/profile';
 import { identity, type Levels } from '../sim/build';
 import { artImg } from './art';
@@ -88,6 +89,10 @@ export class SummaryPanel {
     const breakout = r.mode === 'breakout';
     $('summary').classList.toggle('alert', !r.escaped);
     $('summary').querySelector('.kick')!.textContent = t(r.escaped ? 'Escaped' : 'Hull breach');
+    // a run that got out shows the calm cast-off scene along the top of the panel; a breach shows none
+    const pic = r.escaped ? artImg('debrief', 'castoff', 'sum-pic') : null;
+    $('summary').querySelector('.sum-pic')?.remove();
+    if (pic) $('summary').querySelector('.panel')!.prepend(pic);
     $('sum-t').textContent = t(r.escaped ? 'Into the lane' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run complete');
     // what did it: the kicker already says hull breach
     $('sum-s').textContent = r.escaped ? t('Escaped with {n} Cyrite remaining', { n: r.cyriteLeft }) : damageWord(r.cause || 'rock');
@@ -316,6 +321,10 @@ export class StartOptions {
         const got = (a.sightings ?? []).includes(o.flag);
         return pictured(h('li', got ? 'on' : '', '', h('b', '', got ? t(o.name) : '???'), h('span', 'kind', t(got ? 'seen' : 'unseen')), h('p', '', got ? `${t(o.line)} ${t(o.theory)}` : t('Somewhere out there.'))), 'sighting', o.flag, got);
       }));
+      $('ar-f').replaceChildren(...FEATURE_ORDER.map((id) => {
+        const got = (a.sightings ?? []).includes(metFlag(id)), d = FEATURES[id];
+        return pictured(h('li', got ? 'on' : '', '', h('b', '', got ? t(d.name) : '???'), h('span', 'kind', t(got ? 'met' : 'not met')), h('p', '', t(got ? d.blurb : 'Not met yet.'))), 'phenomenon', id, got);
+      }));
       $('ar-j').replaceChildren(...a.journeys.slice(0, 12).map((r) => h('li', r.end === 'through' ? '' : 'lost', '',
         h('b', '', t(r.ending ? ENDING_BY_ID[r.ending].name : r.end === 'through' ? 'Through' : r.end === 'captured' ? 'Taken' : 'Lost')),
         h('span', '', [plural(r.jumps, '{n} jump', '{n} jumps'), plural(r.days, '{n} day', '{n} days'), plural(r.wrecks, '{n} wreck', '{n} wrecks'), r.hardcore ? t('hardcore') : ''].filter(Boolean).join(' · ')))));
@@ -325,7 +334,7 @@ export class StartOptions {
         const got = p.earned.includes(u.id);
         return h('li', got ? 'on' : '', '', h('b', '', got ? t(u.name) : '???'), h('span', 'kind', t(u.kind)), h('p', '', t(got ? u.text : u.hint)));
       }));
-      $('logbook-s').textContent = [plural(a.journeys.length, '{n} journey', '{n} journeys'), t('{n} of {of} endings', { n: a.endings.length, of: ENDINGS.length }), t('{n} of {of} pieces of the Severance', { n: a.records.length, of: FRAGMENTS_ALL.length }), t('{n} of {of} sightings', { n: (a.sightings ?? []).length, of: OBSERVATIONS.length }), t('{n} of {of} unlocks', { n: p.earned.length, of: UNLOCKS.length }), t('none of it makes the ship stronger')].join(' · ');
+      $('logbook-s').textContent = [plural(a.journeys.length, '{n} journey', '{n} journeys'), t('{n} of {of} endings', { n: a.endings.length, of: ENDINGS.length }), t('{n} of {of} pieces of the Severance', { n: a.records.length, of: FRAGMENTS_ALL.length }), t('{n} of {of} sightings', { n: (a.sightings ?? []).filter((x) => OBSERVATIONS.some((o) => o.flag === x)).length, of: OBSERVATIONS.length }), t('{n} of {of} unlocks', { n: p.earned.length, of: UNLOCKS.length }), t('none of it makes the ship stronger')].join(' · ');
     }
     $('logbook').hidden = !on;
   }

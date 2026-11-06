@@ -194,6 +194,8 @@ export const FEATURES: Record<FeatureId, FeatureDef> = {
     pulse: { period: 6, depth: 0.8 }, load: 'calm', story: ['signal', 'route', 'site'],
   },
 };
+/** The flag a run sets once she has flown into a phenomenon of this kind (the Archive's Phenomena list). */
+export const metFlag = (id: string) => `met_${id}`;
 export const FEATURE_ORDER = Object.keys(FEATURES) as FeatureId[];
 
 // ── expanses ──────────────────────────────────────────────────────────────

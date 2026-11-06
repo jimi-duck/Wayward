@@ -42,7 +42,7 @@ import { BUMP_QUIET, BUMP_SPEED, solidsOf } from './solids';
 import { Den, denBerth, DEN_BOUNTY, DEN_CYRITE, DEN_HP, DEN_PARTS, DEN_R } from './den';
 import { Market, marketBerth } from './market';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
-import { FEATURES } from '../content/features';
+import { FEATURES, metFlag } from '../content/features';
 import {
   ALIEN_FIRST, ARCADE_OPENING, ALIEN_TYPES, BEAM_LEN, BEAM_W, BORG_ADAPT, CULL, ELITE_BLAST_DAMAGE, ELITES, FACTION_TRAITS, SPAWN_FAR, SPAWN_NEAR, SQUADS, VARIANTS,
   WEB_R, alienBonus, alienFire, alienLabel, beamLive, cloaked, leave, moveAlien, moveShots, pickElite, pickVariant, provoke, rayDist,
@@ -2481,6 +2481,8 @@ export class World implements EncounterHost {
     const f = space.features.find((q) => q.named && Math.hypot(s.x - q.x, s.z - q.z) < q.r);
     this.siteHere = f?.named ?? null;
     if (f?.named) this.flags.add(`site:${f.named}`);
+    // the Archive keeps each kind of phenomenon she has flown into
+    for (const q of space.features) if (Math.hypot(s.x - q.x, s.z - q.z) < q.r) this.flags.add(metFlag(q.def));
   }
 
   private stepAliens(dt: number, t: number, p: Pressure): void {

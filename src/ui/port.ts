@@ -1,5 +1,5 @@
 import { artImg } from './art';
-import { placeOfPort } from '../content/art';
+import { placeOfPort, planetOf } from '../content/art';
 import { affordable, cheapest } from '../sim/bay';
 import { needsTorpedoFit } from '../sim/tutor';
 import type { World } from '../sim/world';
@@ -88,13 +88,17 @@ export class PortPanel {
     this.opened = performance.now();
     this.sel = 'bay';
     // the yard mends the hull while the ship is docked
+    // arriving hurt (half the plates or fewer, before the yard mends them) shows the limping scene in place of the place's banner
+    const hurt = world.plates * 2 <= world.stats.maxPlates;
     const mended = world.mendAtDock();
     this.msg = mended ? t('Hull mended at the dock · {n} plates', { n: mended }) : '';
     $('port-t').textContent = world.bk?.port?.name ?? t('Port');
     // a banner of the place, where the build has one for who holds it
-    const banner = world.bk?.port ? artImg('place', placeOfPort(world.bk.port.name, !!world.bk.def.netted), 'port-pic') : null;
+    const banner = world.bk?.port ? (hurt && artImg('debrief', 'limping', 'port-pic')) || artImg('place', placeOfPort(world.bk.port.name, !!world.bk.def.netted), 'port-pic') : null;
     $('port-art').hidden = !banner;
-    $('port-art').replaceChildren(...(banner ? [banner] : []));
+    // and, in its corner, the planet this system hangs over
+    const planet = banner && world.bk?.def.name ? artImg('planet', planetOf(world.bk.def.name), 'port-planet') : null;
+    $('port-art').replaceChildren(...(banner ? [banner] : []), ...(planet ? [planet] : []));
     // where this is (the system) and what the port asks of the crew
     $('port-s').textContent = [world.bk?.def.name ? t(world.bk.def.name) : '', t(world.bk?.def.netted ? 'Implant scans required' : 'No implant checks')].filter(Boolean).join(' · ');
     const x = $('port-x');
