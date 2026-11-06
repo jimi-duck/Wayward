@@ -620,5 +620,7 @@ export const UI: Record<string, string> = {
   'Them {a} · You {b}': 'Gegner {a} · Du {b}',
   // ── photo mode ──
   'Photo mode': 'Fotomodus',
-  'Photo mode · any key or tap returns': 'Fotomodus · Taste oder Tippen bringt dich zurück',
+  'Photo mode · any key or tap returns': 'Fotomodus · Taste oder Tippen bringt dich zurück',  // ── the roll secret ──
+  'Secret found': 'Geheimnis gefunden',
+  '+1,000 Cyrite': '+1.000 Cyrite',
 };

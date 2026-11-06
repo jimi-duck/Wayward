@@ -64,3 +64,17 @@ describe('chapters', () => {
     expect(chapterSave()).toBeNull();
   });
 });
+
+describe('skipping to a chapter', () => {
+  it('stands at the gate that opens the chapter, with its record written', async () => {
+    const { journeyAtChapter, CHAPTERS } = await import('../src/sim/skip');
+    expect(CHAPTERS).toBe(8);
+    for (let n = 1; n < CHAPTERS; n++) {
+      const j = journeyAtChapter(7, n);
+      expect(j.at).toBe(gateOf(j.chart, n - 1).id);
+      expect(atChapter(j)).toBe(true);
+      expect(j.chapters![j.chapters!.length - 1]!.region).toBe(n);
+    }
+    expect(journeyAtChapter(7, 0).trail).toHaveLength(1);
+  });
+});

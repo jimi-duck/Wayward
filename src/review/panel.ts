@@ -1,5 +1,7 @@
 import type { Sector } from '../render/sector';
 import { PALETTE_COUNT, skyIn } from '../render/sky';
+import { saveJourney } from '../meta/save';
+import { CHAPTERS, chapterName, journeyAtChapter } from '../sim/skip';
 import type { World } from '../sim/world';
 import { GROUPS, type Gallery, type Group, type Label } from './gallery';
 import './review.css';
@@ -51,6 +53,13 @@ export class ReviewPanel {
     this.render();
   }
 
+  /** Begin the Story at a chapter: save the journey there, then reload into the game and carry on. */
+  private play(chapter: number): void {
+    if (!window.confirm(`Start the Story at chapter ${chapter + 1}? This replaces your saved journey.`)) return;
+    saveJourney(journeyAtChapter(Math.floor(Math.random() * 1e9), chapter));
+    location.search = '?chapter';
+  }
+
   private open(on: boolean): void {
     this.drawer.classList.toggle('on', on);
     document.getElementById('rv-btn')!.classList.toggle('on', on);
@@ -81,6 +90,10 @@ export class ReviewPanel {
     const skies = make('div', undefined, { className: 'rv-row' });
     SKY_NAMES.forEach((n, i) => skies.append(button(n, () => this.sky(i), this.palette === i)));
     skies.append(button('Another sky', () => this.sky(this.palette, true)));
+    // the Story, from the start of any chapter: a new journey on the road, saved as the Story save (the old one is kept as its safety copy)
+    const chapters = make('div', undefined, { className: 'rv-stops' });
+    const names = journeyAtChapter(1, 0);
+    for (let n = 0; n < CHAPTERS; n++) chapters.append(button(`${n + 1} · ${chapterName(names, n)}`, () => this.play(n)));
     this.drawer.replaceChildren(
       make('h2', 'Review world'),
       make('p', `${g.current.name}`, { className: 'rv-k' }),
@@ -88,6 +101,8 @@ export class ReviewPanel {
       head,
       make('p', 'Show', { className: 'rv-k' }), groups, list,
       make('p', 'Background', { className: 'rv-k' }), skies,
+      make('p', 'Play the Story from a chapter', { className: 'rv-k' }), chapters,
+      make('p', 'Starts a new journey at that chapter\'s gate and replaces the saved one (the old save is kept as the safety copy). The chapters before it are not played, so their choices are not made.', { className: 'rv-hint' }),
       make('p', 'Fly with the usual keys or stick. Nothing here can hurt you. [ ] step through the stops, V changes the sky, H hides the names.', { className: 'rv-hint' }),
     );
   }
