@@ -44,10 +44,16 @@ export const PAINTER = 'Ned Varga';
 export const PAINT_LINE = '“OB-7731, this is Ned. Sam said you’d come. Ease her into the ring and hold still. New paint, new name, no charge.”';
 /** The pop-up card once the work is done (content/story.ts `story_yard_done`). */
 export const YARD_DONE = 'story_yard_done';
-export const PAINT_NOTICE = ['Ship reprogrammed', 'Repainted · renamed WAYWARD'] as const;
+export const PAINT_NOTICE = ['Reprogrammed', 'Owner lock stripped'] as const;
+/** The special moment after the work (owner 2026-11-06): a second notice, then the title card, with a short fly-out under the camera's pan. Seconds since the work. */
+export const YARD_REPAINT_AT = 2.8;
+export const YARD_REPAINT = ['Repainted', 'Company grey to yellow'] as const;
+export const YARD_TITLE_AT = 4.2;
+/** She rolls out of the ring on her own between these (the helm is hers again after). */
+export const YARD_GLIDE = [2.4, 5.2] as const;
 /** The explanation card comes this long after the work (the reveal has played by then), and the archive's message this long after the work. */
-export const PAINT_CARD = 7;
-export const PAINT_WAKE = 28;
+export const PAINT_CARD = 9.5;
+export const PAINT_WAKE = 30;
 
 /** The straight run from the arrival to the Jump Gate, in units: 10 km, about 25 s flat out. */
 const POSTJUMP_LANE = 1000;

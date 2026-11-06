@@ -68,6 +68,12 @@ export class Notifier {
     if (this.queue.length > QUEUED) this.toCorner(line(this.queue.pop()!));
   }
 
+  /** Take every plate down at once (a title card takes the centre: ui/hud.ts nameCard). */
+  clear(): void {
+    for (const s of this.shown.splice(0)) this.view.remove(s.handle);
+    this.queue.length = 0;
+  }
+
   step(dt: number): void {
     for (const s of [...this.shown]) {
       if ((s.left -= dt) > 0) continue;

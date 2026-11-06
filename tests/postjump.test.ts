@@ -6,7 +6,7 @@ import { World } from '../src/sim/world';
 import { guideTarget, sidePlaces } from '../src/sim/guide';
 import { places } from '../src/sim/breakout';
 import { paintHull } from './paint';
-import { lockLifted, painted, paintAt, PAINT_NOTICE, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK } from '../src/sim/postjump';
+import { lockLifted, painted, paintAt, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK } from '../src/sim/postjump';
 import { FIRST_SECURITY_MAX, SECURITY_FROM, SECURITY_TO, SECURITY_GAP, SECURITY_DELAY, TRAFFIC_CLEAR, TRAFFIC_N } from '../src/sim/traffic';
 import { goalOf } from '../src/sim/goal';
 import { CARD_BY_ID } from '../src/sim/comms';
@@ -294,11 +294,11 @@ describe('the paint bay (owner 2026-11-05)', () => {
       w.step(STEP, input());
       for (const e of w.events) {
         if (e.type === 'ping' && e.id === 'paint_bay') said.push('ned');
-        if (e.type === 'storyNotice' && e.headline === PAINT_NOTICE[0]) said.push('notice');
+        if (e.type === 'yardDone' && e.n === 0) said.push('notice');
       }
       w.events.length = 0;
     }
-    expect(said).toEqual(['ned']);
+    expect(said).toEqual(['ned', 'notice']);
     expect(w.flags.has('hull_repainted')).toBe(true);
     // the notice goes out in the step that sets the flag
     expect(painted(w.flags)).toBe(true);
@@ -319,6 +319,20 @@ describe('the paint bay (owner 2026-11-05)', () => {
     if (w.comms) seen = w.comms.def.id;
     expect(seen).toBe('story_yard_done');
     expect(CARD_BY_ID.story_sam!.text).toContain('Ned Varga’s yard');
+  });
+
+  it('the work is a moment: a notice, a second notice, the name as a title, a short roll out under her own thrust, then the card', () => {
+    const w = afterCode();
+    const p = w.bk!.yard!;
+    const heard: string[] = [];
+    const note = () => { for (const e of w.events) { if (e.type === 'yardDone') heard.push(['reprogrammed', 'repainted', 'title'][e.n]!); } w.events.length = 0; };
+    for (let i = 0; i < Math.round(3 / STEP) && !w.flags.has('hull_repainted'); i++) { w.ship.invuln = 1; w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0; w.step(STEP, input()); note(); }
+    const at = { x: w.ship.x, z: w.ship.z };
+    for (let i = 0; i < Math.round(9 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); note(); }
+    for (let i = 0; i < Math.round(8 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); note(); }
+    expect(heard).toEqual(['reprogrammed', 'repainted', 'title']);
+    // she has rolled out of the ring by herself
+    expect(Math.hypot(w.ship.x - at.x, w.ship.z - at.z)).toBeGreaterThan(8);
   });
 
   it('nothing attacks and no swarm comes between the code and the paint, however long she takes', () => {
