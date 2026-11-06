@@ -77,5 +77,5 @@ export class Market {
 /** Where a Dust Traders system's market stands: a third of the way along, well off the line. */
 export function marketBerth(x0: number, z0: number, heading: number, lane: number, side: number): { x: number; z: number } {
   const fx = Math.cos(heading), fz = -Math.sin(heading), rx = Math.sin(heading), rz = Math.cos(heading);
-  return { x: x0 + fx * lane * 0.3 + rx * side * 300, z: z0 + fz * lane * 0.3 + rz * side * 300 };
+  return { x: x0 + fx * lane * 0.3 + rx * side * 150, z: z0 + fz * lane * 0.3 + rz * side * 150 };
 }
