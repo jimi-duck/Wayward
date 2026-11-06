@@ -2543,6 +2543,8 @@ export class World implements EncounterHost {
       }
       return;
     }
+    // the first system past Cerro stays quiet from the arrival until Ned's work is explained (owner, 6 November 2026): no distress signal, no skirmish, no place
+    if (this.bk?.def.first && (!painted(this.flags) || (this.yardAt !== Infinity && !this.cardsSeen.has(YARD_DONE)))) return;
     // the system's own place comes first, a little after arrival, when the sky is clear; the sector's chance events wait for it
     const place = this.sortie.place;
     if (this.placeDue && place) {

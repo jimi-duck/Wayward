@@ -343,13 +343,17 @@ describe('the paint bay (owner 2026-11-05)', () => {
     const w = afterCode();
     w.bk!.nextPursuit = 0;
     w.bk!.nextSwarm = 0;
-    let hulls = 0;
+    let hulls = 0, events = 0;
+    (w as unknown as { nextEvent: number }).nextEvent = 0;
     for (let i = 0; i < Math.round(300 / STEP); i++) {
       if (w.phase === 'comms') { w.answer(0); continue; }
       w.ship.invuln = 1; w.step(STEP, input());
       hulls = Math.max(hulls, custody(w).length, w.aliens.filter((a) => a.variant === 'mote').length);
+      if (w.encounter) events++;
     }
     expect(hulls).toBe(0);
+    // ...and no distress signal, skirmish or other chance event either (owner 2026-11-06)
+    expect(events).toBe(0);
     expect(w.sortie.calm).toBe(true);
   });
 
