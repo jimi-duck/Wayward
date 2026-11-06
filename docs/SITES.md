@@ -159,7 +159,7 @@ plain script, which does not dodge. Of the dens it reached it crushed a third in
 
 Every built thing is solid to the player (`sim/solids.ts`, `World.stepSolids`): the
 depot (a 9-unit core at its berth's side), the audit dock, the relay post and mast,
-Ned's yard (9), neutral traffic (a ward's hull; a ram no longer hurts it or you), the barge, the gantry (7), the Dust Market (9), the den (12), the seed, and a
+Ned's yard (its rock, never the pad), neutral traffic (a ward's hull; a ram no longer hurts it or you), the barge, the gantry (7), the Dust Market (9), the den (12), the seed, and a
 situation's site (settlement 12, wreck 8, and so on). The ship is pushed back out
 and its inward way is lost. A bump faster than 3 units/s flashes the shield
 (`shieldHit` with source `solid`, at most every 0.5 s): no charge, no plate, no

@@ -719,8 +719,9 @@ export class Hud {
         } else if (paintAt(world)) {
           // the autopilot is overridden and the hull is still the company's: Ned's yard, free, is the course
           const pt = bk.yard!, dpt = Math.hypot(pt.x - s.x, pt.z - s.z);
-          text($('obj-t'), t('Reach Ned’s yard'));
-          text($('obj-left'), range(dpt));
+          // in the ring the work is on: say so, so she holds still
+          text($('obj-t'), t(dpt < pt.r ? 'Hold still · Ned is working' : 'Reach Ned’s yard'));
+          text($('obj-left'), dpt < pt.r ? `${Math.round(Math.min(1, world.yardT / DOCK_TIME) * 100)}%` : range(dpt));
           ticks($('obj-p'), Math.max(0, 1 - dpt / (bk.def.lane * 0.65)), 30);
         } else if (refuelAt(world)) {
           // the first system past Cerro with a short tank: fill it first (buy at the depot or mine), the gate comes after
