@@ -7,21 +7,22 @@ import { CARD_BY_ID, openCard } from '../src/sim/comms';
 import { World } from '../src/sim/world';
 import fixture from './fixtures/road-jobs.json';
 
-// The road's first thread steps: three jobs with a chip, a line and Pike's, the prospector's and Hester's replies.
+// The road's first jobs: two spine steps with a chip and a line (Pike's, Hester's replies) and a standalone one (the prospector's).
 
 const NO_INPUT = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' } as const;
 const IDS = ['nothing_to_declare', 'follow_cyrite', 'pirate_toll'];
 const CARDS = ['sc_declare', 'sc_follow', 'sc_toll'];
 
 describe('the threads', () => {
-  it('leave every job’s rules, rewards and endings exactly as they were', () => {
+  // a snapshot of the job rework v2 (November 2026): regenerate tests/fixtures/road-jobs.json only on purpose
+  it('leave every job’s rules, rewards and endings exactly as the rework set them', () => {
     const now = JSON.parse(JSON.stringify({ missions: MISSIONS.filter((m) => IDS.includes(m.id)), cards: MISSION_CARDS.filter((c) => CARDS.includes(c.id)).map(({ thread, ...c }) => (void thread, c)) }));
     expect(now).toEqual(fixture);
   });
 
   it('show a chip and a line on the road only', () => {
     const ctx = (flags: string[]) => ({ levels: {}, plates: 4, flags: new Set(flags), cyrite: 60, fuel: 10, need: 5, supplies: 5, heat: 0, standing: {}, fitted: new Set<string>(), notice: {} }) as never;
-    for (const id of CARDS) {
+    for (const id of ['sc_declare', 'sc_toll', 'sc_witness']) {
       const def = CARD_BY_ID[id]!;
       expect(def.thread, id).toBeDefined();
       expect(openCard(def, ctx([ON_ROAD]), { next: () => 0.5, range: () => 0, int: () => 0 } as never).thread).toEqual(def.thread);
@@ -59,8 +60,8 @@ describe('the replies', () => {
     const no = fly(2, 'sc_declare', 'no');
     expect(no.pings).toContain('“No offence taken. The Line’s patient.”');
     const sold = fly(2, 'sc_declare', 'sell');
-    expect(sold.pings).toContain('“Custody paid you six. Remember what it cost.”');
-    expect(sold.pings).not.toContain('“You never saw what was in it. Good. I’ll call again.”');
+    expect(sold.pings).toContain('“Custody paid you thirty-five. The hospice paid the rest.”');
+    expect(sold.pings).not.toContain('“Medicine through, and nobody saw you. Good. I’ll call again.”');
   });
 
   it('hester answers a refusal at Branford', () => {

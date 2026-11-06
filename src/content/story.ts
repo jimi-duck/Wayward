@@ -674,10 +674,12 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'A Continuance cutter · the field is hers',
     choices: [
       { id: 'sign', label: 'Show the signature', tone: 'bluff', hint: 'The order, the work order, the room. All three.', needs: { flag: ['sig_paid', 'sig_built', 'sig_room'] }, win: { text: 'She reads it twice. ‘He asked for ten years.’ · the field drops', flag: ['calloway_turned', 'sig_used', 'field_dropped', 'field_talked'], hunt: 2, blockade: 'pass' } },
-      { id: 'line', label: 'Run it with the Line', tone: 'help', hint: 'Quill’s decoys light up inside the field.', show: { flag: 'thread_line_5' }, win: { text: 'A hundred hulls at once · the field can’t hold them', flag: ['field_dropped', 'field_line'], hunt: 1, blockade: 'pass' } },
+      { id: 'line', label: 'Run it with the Line', tone: 'help', hint: 'Quill’s decoys light up inside the field.', show: { flag: 'thread_line_3' }, win: { text: 'A hundred hulls at once · the field can’t hold them', flag: ['field_dropped', 'field_line'], hunt: 1, blockade: 'pass' } },
       { id: 'bargain', label: 'Bargain', tone: 'pay', hint: 'Eight Cyrite and your word. She lets you through.', cost: { chits: 40 }, win: { text: 'The field drops · she keeps your word', flag: ['calloway_bargain', 'field_dropped', 'field_talked'], hunt: 1, blockade: 'pass' } },
       { id: 'shoot', label: 'Shoot the cutter', tone: 'fight', hint: 'Break the field the hard way.', win: { text: 'The cutter breaks off · the Offices mark you', flag: ['calloway_hostile', 'field_dropped'], spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], heat: 0.12, blockade: 'fight' } },
-      { id: 'run', label: 'Run the field', tone: 'run', hint: 'Cost: Wanted and a day lost.', win: { text: 'You limp out of the field', flag: ['calloway_hostile', 'field_dropped'], hunt: -1, heat: 0.1, blockade: 'run' } },
+      { id: 'run', label: 'Run the field', tone: 'run', hint: 'Cost: Wanted and a day lost.', show: { noFlag: 'relay_blind' }, win: { text: 'You limp out of the field', flag: ['calloway_hostile', 'field_dropped'], hunt: -1, heat: 0.1, blockade: 'run' } },
+      // her relay was blinded at Gilt Market (lose_prefect): she cannot see where you went
+      { id: 'run_blind', label: 'Run the field', tone: 'run', hint: 'Her relay is blind. She cannot follow you out.', show: { flag: 'relay_blind' }, win: { text: 'You slip out of the field · her relay is blind', flag: 'field_dropped', blockade: 'run' } },
     ],
   }),
   story({
@@ -737,11 +739,9 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_draper', kind: 'plea', caller: 'office',
     from: 'Director Draper · asset recovery, the Offices', title: 'Same man, other badge',
-    text: '“Drop the Kellern act, Juno. I ran Accounts. Every job you took for me is on a charge sheet now. The debt’s settled. I own the record.”',
+    text: '“Drop the Kellern act, Juno. I ran Accounts. Every job you took for me is on a charge sheet now. I own the record, and what’s left of the debt.”',
     lines: [
       { if: { flag: 'job_heavy_tanker_won' }, text: 'Charge sheet · assault on a Custody transport.' },
-      { if: { flag: 'job_missing_payroll_won' }, text: 'Charge sheet · theft of workers’ wages.' },
-      { if: { flag: 'job_drift_cache_won' }, text: 'Charge sheet · destruction of Drift property.' },
       { if: { flag: 'job_wanted_won' }, text: 'Charge sheet · an unlicensed capture.' },
     ],
     cargo: 'An Offices tender · Draper on the bridge',

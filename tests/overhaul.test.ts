@@ -157,31 +157,39 @@ describe('main beats', () => {
 
 describe('the threads', () => {
   it('count a won job, not one settled aside, and take Hester’s down for the tanker and the payroll', () => {
-    const f = ['job_follow_cyrite_won', 'job_pirate_toll_won', 'job_missing_shift_won', 'job_one_filter_won', 'job_long_walk_won', 'job_long_walk_sell'];
+    // a standalone job won (the filter, the hauler) is no step; a spine job settled aside (the shift reported) is none either
+    const f = ['job_pirate_toll_won', 'job_missing_shift_won', 'job_last_shift_won', 'job_kill_zone_won', 'job_one_filter_won', 'job_long_walk_won'];
     expect(count(f, 'crews')).toBe(4);
+    expect(count([...f, 'job_missing_shift_tell'], 'crews')).toBe(3);
     expect(count([...f, 'job_heavy_tanker_won'], 'crews')).toBe(3);
     expect(count([...f, 'job_heavy_tanker_won', 'job_missing_payroll_won'], 'crews')).toBe(1);
+    expect(count([...f, 'job_missing_payroll_won', 'job_missing_payroll_warn'], 'crews')).toBe(4);
   });
 
-  it('take the debt down 14 a step, to nothing at the sixth', () => {
-    expect(debtLeft([])).toBe(80);
-    expect(debtLeft(['job_wanted_won'])).toBe(66);
-    expect(debtLeft(['job_wanted_won', 'job_heavy_tanker_won', 'job_missing_payroll_won', 'job_drift_cache_won', 'job_be_bait_won', 'job_two_captains_won'])).toBe(0);
+  it('take the debt down 20 a step, from sixty to nothing at the third', () => {
+    expect(debtLeft([])).toBe(60);
+    expect(debtLeft(['job_wanted_won'])).toBe(40);
+    expect(debtLeft(['job_wanted_won', 'job_wanted_warn'])).toBe(60);
+    expect(debtLeft(['job_wanted_won', 'job_heavy_tanker_won', 'job_missing_payroll_won', 'job_drift_cache_won'])).toBe(20);
+    expect(debtLeft(['job_wanted_won', 'job_heavy_tanker_won', 'job_recovery_order_won'])).toBe(0);
   });
 
   it('keep their step flags in step with the flags, every time', () => {
-    const f = new Set(['job_nothing_to_declare_won', 'job_keep_distance_won', 'job_dead_drop_won', 'relay_narrows', 'relay_rift']);
+    const f = new Set(['job_nothing_to_declare_won', 'job_keep_distance_won', 'job_the_witness_won', 'job_lose_prefect_won', 'relay_narrows', 'relay_rift']);
     derive(f);
     expect([...f]).toEqual(expect.arrayContaining(['thread_line_1', 'thread_line_3', 'relays_2']));
     expect(f.has('thread_line_4')).toBe(false);
-    f.delete('job_dead_drop_won');
+    f.delete('job_the_witness_won');
     derive(f);
     expect(f.has('thread_line_3')).toBe(false);
+    expect(f.has('thread_line_2')).toBe(true);
   });
 
-  it('show a chip on every job of the four threads', () => {
-    for (const id of ['sc_declare', 'sc_distance', 'sc_dead_drop', 'sc_witness', 'sc_finders', 'sc_needle', 'sc_prefect', 'sc_follow', 'sc_toll', 'sc_missing', 'sc_filter', 'sc_long_walk', 'sc_shift', 'sc_kill_zone',
-      'sc_wreck', 'sc_dark', 'sc_wire', 'sc_answered', 'sc_hole', 'sc_wanted', 'sc_tanker', 'sc_payroll', 'sc_cache', 'sc_bait', 'sc_captains']) expect(CARD_BY_ID[id]!.thread, id).toBeDefined();
+  it('show a chip on every spine job, and none on a standalone one unless it costs a thread', () => {
+    for (const id of ['sc_declare', 'sc_witness', 'sc_prefect', 'sc_toll', 'sc_missing', 'sc_shift', 'sc_kill_zone', 'sc_wreck', 'sc_wire', 'sc_ring', 'sc_wanted', 'sc_tanker', 'sc_recovery'])
+      expect(CARD_BY_ID[id]!.thread, id).toBeDefined();
+    for (const id of ['sc_follow', 'sc_lifeboat', 'sc_distance', 'sc_filter', 'sc_ransom', 'sc_dead_drop', 'sc_long_walk', 'sc_finders', 'sc_dark', 'sc_bend', 'sc_cradle', 'sc_needle', 'sc_bait', 'sc_hole', 'sc_sable'])
+      expect(CARD_BY_ID[id]!.thread, id).toBeUndefined();
   });
 });
 
@@ -201,10 +209,10 @@ describe('the Tollgate’s three proofs', () => {
     expect(ok(['frag_order', 'clue_sig_serial'])).toBe(false);
   });
 
-  it('offers the Quiet Line’s answer only with five steps of it, and drops the field whatever she picks', () => {
+  it('offers the Quiet Line’s answer only with all three steps of it, and drops the field whatever she picks', () => {
     const def = CARD_BY_ID.story_tollgate!;
     const line = def.choices.find((c) => c.id === 'line')!;
-    expect(line.show).toEqual({ flag: 'thread_line_5' });
+    expect(line.show).toEqual({ flag: 'thread_line_3' });
     for (const c of def.choices) expect([c.win.flag].flat(), c.id).toContain('field_dropped');
   });
 });
@@ -302,7 +310,7 @@ describe('a road save from before the whole road', () => {
     const o = oldSave(3);
     expect(roadRegion(o.chart, 1)).toBe(false);
     const back = migrate(o)!;
-    expect(back.version).toBe(23);
+    expect(back.version).toBe(24);
     for (let i = 0; i < LEGS.length; i++) expect(roadRegion(back.chart, i), `leg ${i}`).toBe(true);
     expect(back.at).toBe(o.at);
     expect(back.chart.visited).toEqual(o.chart.visited);

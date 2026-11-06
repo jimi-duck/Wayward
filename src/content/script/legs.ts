@@ -31,6 +31,9 @@ const MARCHES_ROWS: Row[] = [
   // the ledger's second route: Brook freed without it, his own copy finds her here
   radio('mw_brook', 'm_wake', after('mw_edge', 2), 'Adam Brook', 'kellern', '“Free, and still counting. My copy of Kellern’s books is in your file now.”', { if: { has: ['brook_free'], not: ['frag_ledger'] }, wall: 'frag_ledger' }),
   wall('mw_brook_sig', 'm_wake', after('mw_brook'), 'clue_sig_reach'),
+  // the lifeboat (standalone): Anka answers
+  radio('mw_anka', 'm_wake', flag('job_lifeboat_wake_won'), 'Anka Mor', 'miners', '“Forty-one. I’ll say your name every time I count them.”'),
+  radio('mw_anka_paid', 'm_wake', flag('job_lifeboat_wake_pay'), 'Anka Mor', 'miners', '“Thank you. They’ll be back, though. They always are.”'),
   objective('mw_gate', 'm_wake', leave(), 'Jump to Kessel Hold'),
 
   // 2 · Kessel Hold (hub): Oduya and the moot; then Quiet Line 2, the patrol codes
@@ -54,6 +57,8 @@ const MARCHES_ROWS: Row[] = [
   objective('walk_objective', 'm_walk', arrive(), 'The Long Walk · the Drift kept the names'),
   main('walk_saffi', 'm_walk', free(6), 'story_drift'),
   radio('walk_wren', 'm_walk', after('walk_saffi', 2), 'Wren Saffi', 'miners', '“Ninefold, line nine. My parents. Gran reads the list every year. I just fly.”'),
+  // the lifeboat's echo
+  radio('walk_boat', 'm_walk', after('walk_wren', 4), 'Ma Saffi', 'miners', '“Anka’s boat came through. Forty-one names. You kept them.”', { if: { has: ['lifeboat_saved'] } }),
   objective('walk_gate', 'm_walk', leave(), 'Jump to Low Harrow'),
 
   // 5 · Low Harrow (breather): Thren folklore, a scored hull, Wren on full tanks; Hester's call (the job is at Gannet Reach)
@@ -61,14 +66,14 @@ const MARCHES_ROWS: Row[] = [
   notice('mh_hull', 'm_harrow', settle(), 'white', 'Drift hull', 'scored in long parallel lines', { wall: 'saw_scored' }),
   radio('mh_wren', 'm_harrow', after('mh_hull', 2), 'Wren Saffi', 'miners', '“Don’t run a lane full. They follow the full ones. Everybody knows that.”', { if: { full: false } }),
   radio('mh_wren_full', 'm_harrow', after('mh_hull', 2), 'Wren Saffi', 'miners', '“You’re running heavy. I’d vent some, if I were you. Gran would just stare.”', { if: { full: true } }),
-  radio('mh_hester', 'm_harrow', after('mh_hull', 8), HESTER[0], HESTER[1], '“Hester again. A shift went quiet at Gannet. Eleven people. I’ve got no ships. You’ve got one.”'),
+  radio('mh_hester', 'm_harrow', after('mh_hull', 8), HESTER[0], HESTER[1], '“Hester again. A shift went quiet at Gannet. Nine people. I’ve got no ships. You’ve got one.”'),
   objective('mh_gate', 'm_harrow', leave(), 'Jump to Gannet Reach'),
 
   // 6 · Gannet Reach (pressure): Oduya's rigs (if the moot stands with her), then Hester's missing shift
   notice('mg_notice', 'm_gannet', arrive(), 'amber', 'Gannet Reach', 'Holdfast rigs · Kellern security aboard'),
   objective('mg_objective', 'm_gannet', arrive(), 'Gannet Reach · the rigs are boarded'),
   main('mg_rigs', 'm_gannet', free(6), 'story_oduya_rigs', { if: { has: ['pact_holdfast'] } }),
-  hester('mg_hester_won', 'm_gannet', 'job_missing_shift_won', '“Eleven home. That’s three. I’m still writing.”', { if: { not: ['job_missing_shift_tell'] } }),
+  hester('mg_hester_won', 'm_gannet', 'job_missing_shift_won', '“Nine home. I keep a list, and you’re on it.”', { if: { not: ['job_missing_shift_tell'] } }),
   hester('mg_hester_lost', 'm_gannet', 'job_missing_shift_lost', '“You looked. That counts with me.”'),
   hester('mg_hester_no', 'm_gannet', 'job_missing_shift_declined', '“Then I’ll go myself.”'),
   objective('mg_gate', 'm_gannet', leave(), 'Jump to Sallow Port'),
@@ -87,9 +92,9 @@ const BELT_ROWS: Row[] = [
   notice('bb_notice', 'b_breakwater', arrive(), 'teal', 'Breakwater', 'the Salvage Belt · wrecks and claims'),
   notice('bb_after', 'b_breakwater', arrive(5), 'red', 'Rift relay lit', 'they know your next gate', { if: { has: ['relay_rift'] } }),
   objective('bb_objective', 'b_breakwater', arrive(), 'Next: Scrap Exchange', 'The Scrapgate · 7 jumps'),
-  hester('bb_hester_won', 'b_breakwater', 'job_one_filter_won', '“Air for another month. I won’t forget it.”'),
-  hester('bb_hester_lost', 'b_breakwater', 'job_one_filter_lost', '“You came. Some didn’t.”'),
-  hester('bb_hester_no', 'b_breakwater', 'job_one_filter_declined', '“We’ll breathe shallow. We’re good at it.”'),
+  radio('bb_steward_won', 'b_breakwater', flag('job_one_filter_won'), 'Settlement steward', 'miners', '“Air for another month. I won’t forget it.”'),
+  radio('bb_steward_lost', 'b_breakwater', flag('job_one_filter_lost'), 'Settlement steward', 'miners', '“You came. Some didn’t.”'),
+  radio('bb_steward_no', 'b_breakwater', flag('job_one_filter_declined'), 'Settlement steward', 'miners', '“We’ll breathe shallow. We’re good at it.”'),
   objective('bb_gate', 'b_breakwater', leave(), 'Jump to Scrap Exchange'),
 
   // 2 · Scrap Exchange (hub): Val's advance
@@ -97,6 +102,10 @@ const BELT_ROWS: Row[] = [
   objective('bx_objective', 'b_exchange', arrive(), 'Scrap Exchange · everyone knows what you carry', 'Dust Trader port · refit bay open'),
   main('bx_val', 'b_exchange', free(6), 'story_broker'),
   card('bx_name', 'b_exchange', after('bx_val', 40), 'offer_identity'),
+  // the ransom crew (standalone): dispatch answers
+  radio('bx_boy', 'b_exchange', flag('job_ransom_crew_won'), 'Dust Traders dispatch', 'guild', '“The boy’s home. Berth’s yours anytime.”', { if: { not: ['lifeboat_ransomed'] } }),
+  radio('bx_boy_wake', 'b_exchange', flag('job_ransom_crew_won'), 'Dust Traders dispatch', 'guild', '“The boy’s home. That crew learned ransom pays at Wake. Someone paid them.”', { if: { has: ['lifeboat_ransomed'] } }),
+  radio('bx_boy_sold', 'b_exchange', flag('job_ransom_crew_sell'), 'Dust Traders dispatch', 'guild', '“The Offices have the crew. Pray they’re careful with the boy.”'),
   objective('bx_gate', 'b_exchange', leave(), 'Jump to the Graveyard'),
 
   // 3 · the Graveyard (work): the Survey's first call
@@ -128,6 +137,7 @@ const BELT_ROWS: Row[] = [
   objective('bn_objective', 'b_kiln', arrive(), 'Kiln · someone is selling routes'),
   main('bn_kesh', 'b_kiln', free(6), 'story_kesh', { if: { has: ['broker'] } }),
   pike('bn_pike', 'b_kiln', 'job_the_witness_won', '“The witness says Val. Val’s been selling our routes to Custody. Funny. She sells yours too.”', { wall: 'val_leak' }),
+  pike('bn_pike_sold', 'b_kiln', 'witness_sold', '“You handed Orrin to Custody. The Line won’t call you again soon.”'),
   objective('bn_gate', 'b_kiln', leave(), 'Jump to Tarik’s Lamps'),
 
   // 7 · Tarik's Lamps (reckoning): the burned charts; Val's sale, if she was taken up; Hester's hauler
@@ -135,7 +145,7 @@ const BELT_ROWS: Row[] = [
   objective('bt_objective', 'b_tarik', arrive(), 'Tarik’s Lamps · the charts they burned'),
   main('bt_tarik', 'b_tarik', free(6), 'story_charts'),
   main('bt_val', 'b_tarik', after('bt_tarik', 6), 'story_vell_betray', { if: { has: ['broker'] } }),
-  hester('bt_hester_won', 'b_tarik', 'job_long_walk_won', '“That hauler was my cousin’s. You’re on the list twice now.”'),
+  radio('bt_dunne_won', 'b_tarik', flag('job_long_walk_won'), 'Hauler Dunne', 'miners', '“Home on one drive. My crew will drink to you tonight.”'),
   hester('bt_hester_lost', 'b_tarik', 'job_long_walk_lost', '“Not your fault. The Belt eats slow ships.”'),
   objective('bt_gate', 'b_tarik', leave(), 'Jump to the Scrapgate'),
 ];
@@ -164,8 +174,8 @@ const DEEP_ROWS: Row[] = [
   notice('dn_notice', 'd_fold', arrive(), 'teal', 'Ninth Fold', 'the ferry’s anchorage'),
   objective('dn_objective', 'd_fold', arrive(), 'Ninth Fold · someone aboard is watching'),
   main('dn_agent', 'd_fold', free(6), 'story_ferry_agent'),
-  accounts('dn_acc', 'd_fold', 'missing_payroll'),
   hester('dn_hester', 'd_fold', 'job_missing_payroll_won', '“Somebody took our wages at the Deep. I know it was you. Your name’s in the other column now.”', { if: { not: ['job_missing_payroll_warn'] } }),
+  hester('dn_hester_warn', 'd_fold', 'job_missing_payroll_warn', '“You warned the barges. That’s a month of wages home. I won’t forget it.”'),
   objective('dn_gate', 'd_fold', leave(), 'Jump to Hushlight'),
 
   // 5 · Hushlight (breather): the Voice, first contact, in a quiet stop so it lands
@@ -177,7 +187,8 @@ const DEEP_ROWS: Row[] = [
   notice('ds_notice', 'd_still', arrive(), 'amber', 'Stillwater', 'Holdfast rig · raiders closing'),
   objective('ds_objective', 'd_still', arrive(), 'Stillwater · Hester’s own rig'),
   radio('ds_hester', 'd_still', free(4), HESTER[0], HESTER[1], '“My rig, my mother’s name on it. I’m not leaving. So you’re not either, if you’re staying.”'),
-  hester('ds_hester_won', 'd_still', 'job_last_shift_won', '“Still standing. Both of us.”'),
+  hester('ds_hester_won', 'd_still', 'job_last_shift_won', '“Still standing. Both of us.”', { if: { not: ['job_last_shift_tow'] } }),
+  hester('ds_hester_tow', 'd_still', 'job_last_shift_tow', '“The rig’s gone. All forty of us aren’t. That’s the trade.”'),
   objective('ds_gate', 'd_still', leave(), 'Jump to Kindmere'),
 
   // 7 · Kindmere (reckoning): a signal that answers; the ring, from Tarik's charts or from Drift memory
@@ -185,6 +196,10 @@ const DEEP_ROWS: Row[] = [
   objective('dk_objective', 'd_kindmere', arrive(), 'Kindmere · refit before the Slow Door'),
   radio('dk_tarik', 'd_kindmere', free(20), 'Tarik Silva', 'miners', '“Put every closed relay on one chart. It isn’t a bend. It’s a ring. Thirty years I’ve drawn it.”', { if: { has: ['frag_charts'] }, wall: 'ring_known' }),
   radio('dk_ossie', 'd_kindmere', free(20), 'Ossie Raine', 'miners', '“The old Drift say the closures go all the way round. Like a fence. I never asked what for.”', { if: { not: ['frag_charts'] }, wall: 'ring_known' }),
+  // Tarik's bend (standalone), and what Hester's rig means at the stores
+  notice('dk_stores', 'd_kindmere', arrive(3), 'teal', 'Holdfast Stores', 'Hester’s rig held · friends’ prices', { if: { has: ['rig_held'] } }),
+  radio('dk_bend', 'd_kindmere', flag('job_tarik_bend_won'), 'Tarik Silva', 'miners', '“Still true. Thirty years, and it’s still true. It’s on your chart now.”'),
+  radio('dk_bend_sold', 'd_kindmere', flag('job_tarik_bend_sell'), 'Holdfast Stores', 'miners', '“The Gutter are tolling Tarik’s bend. We know who sold it.”'),
   objective('dk_gate', 'd_kindmere', leave(), 'Jump to the Slow Door'),
 ];
 
@@ -194,6 +209,9 @@ const YARDS_ROWS: Row[] = [
   notice('yc_notice', 'y_cutton', arrive(), 'teal', 'Cutton', 'the Breaker Yards · Custody watches'),
   objective('yc_objective', 'y_cutton', arrive(), 'Next: Yard Nine', 'The Breaker · 7 jumps'),
   card('yc_see', 'y_cutton', free(40), 'offer_see', { if: { has: ['slow_motes'] } }),
+  // the cradle crew (standalone): Joss answers
+  radio('yc_joss', 'y_cutton', flag('job_cradle_crew_won'), 'Joss Peller', 'miners', '“Forty. I counted them twice. Thank you.”'),
+  radio('yc_joss_fuel', 'y_cutton', flag('job_cradle_crew_fuel'), 'Joss Peller', 'miners', '“You took the fuel and left us. Fine. We’ll remember.”'),
   objective('yc_gate', 'y_cutton', leave(), 'Jump to Yard Nine'),
 
   // 2 · Yard Nine (hub): Ben Anand and the first work order; Quiet Line 6, the Needle, where Quill joins
@@ -207,7 +225,6 @@ const YARDS_ROWS: Row[] = [
   // 3 · Anvil Slip (work): the Account's Drift cache, which is Drift property
   notice('ya_notice', 'y_anvil', arrive(), 'teal', 'Anvil Slip', 'Kellern claim · a wrecked cargo train'),
   objective('ya_objective', 'y_anvil', arrive(), 'Anvil Slip · cases drifting'),
-  accounts('ya_acc', 'y_anvil', 'drift_cache'),
   radio('ya_wren', 'y_anvil', flag('job_drift_cache_won'), 'Wren Saffi', 'miners', '“Those were our cases. Gran says to stop calling you ours.”', { if: { has: ['pact_drift'] } }),
   objective('ya_gate', 'y_anvil', leave(), 'Jump to Keelberth'),
 
@@ -229,7 +246,11 @@ const YARDS_ROWS: Row[] = [
   notice('yt_notice', 'y_torch', arrive(), 'amber', 'Torchwall', 'yard crossing · crews restless'),
   objective('yt_objective', 'y_torch', arrive(), 'Torchwall · the crews may strike'),
   main('yt_marit', 'y_torch', free(6), 'story_crew'),
-  radio('yt_hester', 'y_torch', flag('crews_stood'), HESTER[0], HESTER[1], '“Every crew you helped is standing at the Breaker. I didn’t ask them. That’s the point.”', { if: { has: ['thread_crews_5'] } }),
+  radio('yt_hester', 'y_torch', flag('crews_stood'), HESTER[0], HESTER[1], '“Every crew you helped is standing at the Breaker. I didn’t ask them. That’s the point.”', { if: { has: ['thread_crews_3'] } }),
+  // the cradle's echo, and Hester's rig
+  radio('yt_cradle', 'y_torch', after('yt_marit', 3), 'Marit Voss', 'frontier', '“Forty of your people walked out at Cutton. They’re in our crews now.”', { if: { has: ['cradle_freed'] } }),
+  radio('yt_cradle_cold', 'y_torch', after('yt_marit', 3), 'Marit Voss', 'frontier', '“Forty stayed sealed at Cutton while you took their fuel. The crews know.”', { if: { has: ['cradle_fuel'] } }),
+  hester('yt_rig', 'y_torch', 'job_kill_zone_won', '“My rig held at Stillwater. That’s why my crews could come.”', { if: { has: ['rig_held'] } }),
   hester('yt_hester_won', 'y_torch', 'job_kill_zone_won', '“Crossing’s open. My people can get to the Breaker now.”'),
   objective('yt_gate', 'y_torch', leave(), 'Jump to Davit Dock'),
 
@@ -256,7 +277,7 @@ const PORTS_ROWS: Row[] = [
   // 3 · Penny Cross (work): the Survey's tell, confirmed: it answers a full tank
   notice('fp_notice', 'f_penny', arrive(), 'teal', 'Penny Cross', 'Gutter claim'),
   objective('fp_objective', 'f_penny', arrive(), 'Penny Cross · something answers a full tank'),
-  analyst('fp_survey', 'f_penny', 'job_someone_answered_won', '“It answers only when your tank is full. Every time. I think you’ve worked out what that means.”', { wall: 'clue_cyrite' }),
+  analyst('fp_survey', 'f_penny', 'job_something_dark_won', '“It answers only when your tank is full. Every time. I think you’ve worked out what that means.”', { wall: 'clue_cyrite' }),
   notice('fp_wall', 'f_penny', after('fp_survey'), 'teal', 'The Wall', 'Cyrite draws them'),
   objective('fp_gate', 'f_penny', leave(), 'Jump to Mirren’s Pier'),
 
@@ -266,6 +287,9 @@ const PORTS_ROWS: Row[] = [
   main('fm_mirren', 'f_mirren', free(6), 'story_witnesses'),
   notice('fm_names', 'f_mirren', flag('forty_held'), 'teal', 'The Wall', 'the Forty · Ada Aster listed'),
   radio('fm_ines', 'f_mirren', after('fm_names', 3), 'Old Mirren', 'guild', '“Duarte, line twelve. Ask your harbour-master who her great-grandmother was.”', { if: { has: ['ines_berth'] } }),
+  // drawing the pickets off (standalone): the Guild gunship answers
+  radio('fm_gun', 'f_mirren', flag('job_be_bait_won'), 'Guild gunship', 'guild', '“Three down. The pier is open. The Guild owes you one.”'),
+  radio('fm_gun_warn', 'f_mirren', flag('job_be_bait_warn'), 'Guild gunship', 'guild', '“You warned them. We saw. Mind which Guild ports you dock at.”'),
   objective('fm_gate', 'f_mirren', leave(), 'Jump to Lucky Haven'),
 
   // 5 · Lucky Haven (breather): people who live with them; Thren glass for sale; children in the damping field
@@ -282,7 +306,7 @@ const PORTS_ROWS: Row[] = [
   main('fg_val', 'f_gilt', free(30), 'story_vell_reckoning', { if: { has: ['broker'] } }),
   radio('fg_ashe', 'f_gilt', free(14), 'Corin Ashe', 'office', '“They pulled me off the Ferry. I read the reports I filed on you. I’m not filing any more.”', { if: { has: ['agent_exposed'] } }),
   radio('fg_ashe_used', 'f_gilt', free(14), 'Corin Ashe', 'office', '“They pulled me off the Ferry. I read the reports I filed on you. I’m not filing any more.”', { if: { has: ['agent_used'], not: ['agent_exposed'] } }),
-  pike('fg_pike', 'f_gilt', 'job_lose_prefect_won', '“Her relay’s blind. That’s seven, if you’re counting. Quill is.”'),
+  pike('fg_pike', 'f_gilt', 'job_lose_prefect_won', '“Her relay’s blind. That’s three for the Line. Quill is counting.”'),
   objective('fg_gate', 'f_gilt', leave(), 'Jump to Ninehaven'),
 
   // 7 · Ninehaven (reckoning): the Voice on the approach: Ada's note 1, back in static; then "We kept the keys"
@@ -298,6 +322,7 @@ const HOLLOWS_ROWS: Row[] = [
   notice('ha_notice', 'h_ashdeep', arrive(), 'teal', 'Ashdeep', 'the Hollows · nothing human lives here'),
   notice('ha_act', 'h_ashdeep', arrive(6), 'white', 'Act III', 'what the file is worth'),
   objective('ha_objective', 'h_ashdeep', arrive(), 'Next: Hollowforge', 'The Seam · 7 jumps'),
+  analyst('ha_hole', 'h_ashdeep', 'job_no_return_won', '“Three readings, the last one inside. Nobody gets that close. Keep your scope on.”'),
   objective('ha_gate', 'h_ashdeep', leave(), 'Jump to Hollowforge'),
 
   // 2 · Hollowforge (hub): the Thren speak, the Voice translating
@@ -307,16 +332,19 @@ const HOLLOWS_ROWS: Row[] = [
   main('hf_thren', 'h_forge', after('hf_scope', 4), 'story_thren'),
   objective('hf_gate', 'h_forge', leave(), 'Jump to Coldvault'),
 
-  // 3 · Coldvault (work): two captains, one wreck (the Account's last)
+  // 3 · Coldvault (work): Kellern's tug comes for the registry (the Account's last step)
   notice('hv_notice', 'h_vault', arrive(), 'teal', 'Coldvault', 'a foundry’s spoil field'),
   objective('hv_objective', 'h_vault', arrive(), 'Coldvault · the ring’s centre is near'),
-  accounts('hv_acc', 'h_vault', 'two_captains'),
+  radio('hv_key', 'h_vault', flag('job_recovery_order_won'), 'Director Draper', 'office', '“You took my key. Keep it. I still have the file.”', { if: { not: ['job_recovery_order_pay'] } }),
+  radio('hv_paid', 'h_vault', flag('job_recovery_order_pay'), ACCOUNTS[0], ACCOUNTS[1], '“Balance settled. Kellern Recovery thanks you for your business.”'),
+  radio('hv_lost', 'h_vault', flag('job_recovery_order_lost'), 'Director Draper', 'office', '“The order stands, Juno. Next time I send a bigger tug.”'),
   objective('hv_gate', 'h_vault', leave(), 'Jump to Palecairn'),
 
   // 4 · Palecairn (turn): Echo or Sable
   notice('hc_notice', 'h_cairn', arrive(), 'teal', 'Palecairn', 'dead relay · one lone scout'),
   objective('hc_objective', 'h_cairn', arrive(), 'Palecairn · two voices want something'),
   main('hc_two', 'h_cairn', free(6), 'story_echo_sable'),
+  notice('hc_home', 'h_cairn', flag('job_sables_crossing_won'), 'white', 'Sable', 'home, inside the swarm'),
   objective('hc_gate', 'h_cairn', leave(), 'Jump to Mute Hall'),
 
   // 5 · Mute Hall (breather): they line the lane; nobody drew it
@@ -333,6 +361,9 @@ const HOLLOWS_ROWS: Row[] = [
   notice('hw_notice', 'h_gaunt', arrive(), 'teal', 'Gaunt Watch', 'a Continuance cutter · no weapons showing'),
   objective('hw_objective', 'h_gaunt', arrive(), 'Gaunt Watch · the Governor’s aide'),
   main('hw_noor', 'h_gaunt', free(6), 'story_aide'),
+  // the Survey's last step: Noor's ring
+  radio('hw_ring', 'h_gaunt', flag('job_ring_centre_won'), 'Noor Haddad', 'office', '“There. The centre sits on the Seam. I think I always knew.”'),
+  radio('hw_ring_sold', 'h_gaunt', flag('job_ring_centre_sell'), 'Noor Haddad', 'office', '“You gave it to the Governor. She’ll thank you. I won’t.”'),
   objective('hw_gate', 'h_gaunt', leave(), 'Jump to the Seam'),
 ];
 

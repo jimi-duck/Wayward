@@ -348,7 +348,7 @@ export interface CardDef {
   /** Who is on the channel, for the read (no ships: a voice on the radio). */
   ships?: Array<{ variant: string; n: number }>;
   cargo?: string;
-  fee?: { base: number; heat?: number; flags?: Record<string, number> };
+  fee?: { base: number; heat?: number; flags?: Record<string, number>; /** A set price (a debt's balance): no region or faction toll on it. */ flat?: boolean };
   truths?: Truth[];
   /** Ambushes and declarations do not wait: the world slows instead of stopping, and after `timeout` seconds of it the default is taken. */
   slow?: { timeout: number; default: string };
@@ -475,8 +475,10 @@ export function feeFor(def: CardDef, x: Ctx): number {
   if (!f) return 0;
   let v = f.base + (f.heat ?? 0) * x.heat;
   for (const [flag, m] of Object.entries(f.flags ?? {})) if (x.flags.has(flag)) v *= m;
-  v *= x.toll?.[def.caller as Faction] ?? 1;
-  v *= 1 + FEE_REGION * (x.region ?? 0);
+  if (!f.flat) {
+    v *= x.toll?.[def.caller as Faction] ?? 1;
+    v *= 1 + FEE_REGION * (x.region ?? 0);
+  }
   // written in chits, paid in Cyrite
   return cy(Math.max(5, Math.round(v / 5) * 5));
 }

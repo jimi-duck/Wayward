@@ -1,11 +1,13 @@
 // ── the four job threads of the road ──────────────────────────────────────
-// Twenty-five jobs, each pinned to one stop (content/road.ts), make four
-// threads that run the length of the road (docs/overhaul/BEAT_MAP.md §4): the
-// Quiet Line (Owen Pike, then Quill), Hester's crews, the Survey (Noor Haddad)
-// and the Account (Kellern Recovery, which is Draper). A job of a thread
-// leaves `job_<id>_<answer>` and `job_<id>_<won|lost|declined>` flags
-// (sim/stage.ts); a step counts when its job was won. Everything here is read
-// off the flags, so it survives a save and a reload with nothing new to keep.
+// Thirty jobs, each pinned to one stop (content/road.ts). Thirteen of them are
+// the spine of four threads that run the length of the road (job rework v2,
+// docs/MISSIONS.md): the Quiet Line (Owen Pike, then Quill), Hester's crews, the
+// Survey (Noor Haddad) and the Account (Kellern Recovery, which is Draper).
+// The other seventeen stand alone: each is a story with its own ending, and
+// no thread counts it. Every job on the road leaves `job_<id>_<answer>` and
+// `job_<id>_<won|lost|declined|ignored>` flags (sim/stage.ts); a spine step
+// counts when its job was won. Everything here is read off the flags, so it
+// survives a save and a reload with nothing new to keep.
 
 export type ThreadId = 'line' | 'crews' | 'survey' | 'account';
 
@@ -18,17 +20,18 @@ export interface Thread {
 }
 
 export const THREADS: Thread[] = [
-  { id: 'line', name: 'Quiet Line', contact: 'Owen Pike', jobs: ['nothing_to_declare', 'keep_distance', 'dead_drop', 'the_witness', 'finders_keepers', 'needle', 'lose_prefect'] },
-  { id: 'crews', name: 'Hester’s crews', contact: 'Hester Vane', jobs: ['follow_cyrite', 'pirate_toll', 'missing_shift', 'one_filter', 'long_walk', 'last_shift', 'kill_zone'] },
-  { id: 'survey', name: 'The Survey', contact: 'a Survey analyst', jobs: ['wreck_remembered', 'something_dark', 'voice_wire', 'someone_answered', 'no_return'] },
-  { id: 'account', name: 'The Account', contact: 'Kellern Recovery · Accounts', jobs: ['wanted', 'heavy_tanker', 'missing_payroll', 'drift_cache', 'be_bait', 'two_captains'] },
+  { id: 'line', name: 'Quiet Line', contact: 'Owen Pike', jobs: ['nothing_to_declare', 'the_witness', 'lose_prefect'] },
+  { id: 'crews', name: 'Hester’s crews', contact: 'Hester Vane', jobs: ['pirate_toll', 'missing_shift', 'last_shift', 'kill_zone'] },
+  { id: 'survey', name: 'The Survey', contact: 'a Survey analyst', jobs: ['wreck_remembered', 'voice_wire', 'ring_centre'] },
+  // Draper shows himself at Davit Dock between the second step and the third
+  { id: 'account', name: 'The Account', contact: 'Kellern Recovery · Accounts', jobs: ['wanted', 'heavy_tanker', 'recovery_order'] },
 ];
 
 const THREAD_BY_ID = Object.fromEntries(THREADS.map((t) => [t.id, t])) as Record<ThreadId, Thread>;
 
-/** The breach debt the Account starts from, and what each step takes off it (to nothing at the sixth). */
-export const ACCOUNT_DEBT = 80;
-const DEBT_STEP = 14;
+/** The breach debt the Account starts from, and what each step takes off it (to nothing at the third). Refusing adds nothing. */
+export const ACCOUNT_DEBT = 60;
+export const DEBT_STEP = 20;
 
 /** A flag test; a set is used as it is, since this runs every step on the road (sim/evidence.ts `derive`). */
 const has = (flags: Iterable<string>) => { const f = flags instanceof Set ? flags : new Set(flags); return (x: string) => f.has(x); };
@@ -47,7 +50,7 @@ export function won(flags: Iterable<string>, id: ThreadId): number {
 
 /**
  * A thread's count, as its payoffs read it. Hester's crews lose one for the Heavy Tanker (it carried their filters) and two for the
- * Stolen Payroll (their wages), if those were won for the Account.
+ * Stolen Payroll (their wages), if those were taken rather than warned off.
  */
 export function count(flags: Iterable<string>, id: ThreadId): number {
   const list = flags instanceof Set ? flags : new Set(flags);

@@ -39,6 +39,6 @@ export function derive(flags: Set<string>): void {
   if (has('clue_sig_ports') || has('forty_held') || has('forty_known')) flags.add('sig_room');
   // the strike holds if she stood with the crews and Hester's people were enough to come
   if (has('crews_stood') && has('thread_crews_3')) flags.add('strike_held');
-  // Draper shown up with three or more of his jobs on the sheet: a Trade is easier to make
-  if (has('draper_revealed') && has('thread_account_3')) flags.add('stalled');
+  // Draper shown up with two or more of his jobs on the sheet: a Trade is easier to make
+  if (has('draper_revealed') && has('thread_account_2')) flags.add('stalled');
 }

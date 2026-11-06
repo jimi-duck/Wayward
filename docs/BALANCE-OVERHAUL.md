@@ -11,19 +11,30 @@ as it can, and does not read. Pilot numbers, not playtests.
 
 | Strategy | Policy | Threshold | Minutes | Wrecks | Endings open | Dropped | Twice |
 |---|---|---|---|---|---|---|---|
-| torpedo+defence | run | yes | 207 | 1 | vanish | none | none |
-| torpedo+defence | bluff | yes | 193 | 3 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 183 | 1 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | run | stuck | 5 | 0 | — | none | none |
+| torpedo+defence | bluff | stuck | 4 | 0 | — | none | none |
+| torpedo+defence | fight | stuck | 5 | 0 | — | none | none |
 
 ## Leg by leg
 
 | Leg | Minutes (mean) | Wrecks (mean) |
 |---|---|---|
-| The Reach | 27 | 0.0 |
-| The Marches | 20 | 0.0 |
-| The Salvage Belt | 26 | 0.0 |
-| The Drift Deep | 21 | 0.0 |
-| The Breaker Yards | 26 | 0.3 |
-| The Free Ports | 28 | 1.0 |
-| The Hollows | 23 | 0.0 |
-| The Last Lanes | 23 | 0.3 |
+| The Reach | 5 | 0.0 |
+| The Marches | 0 | 0.0 |
+| The Salvage Belt | 0 | 0.0 |
+| The Drift Deep | 0 | 0.0 |
+| The Breaker Yards | 0 | 0.0 |
+| The Free Ports | 0 | 0.0 |
+| The Hollows | 0 | 0.0 |
+| The Last Lanes | 0 | 0.0 |
+
+## Jobs on the road
+
+How each pinned job ended across the 3 journeys. The pilot takes the first answer it is offered and
+never chases a goal, so this shows what is reachable, not how often a player wins.
+
+| Job | Won | Lost | Declined | Ignored |
+|---|---|---|---|---|
+| nothing_to_declare | 0 | 0 | 0 | 0 |
+| follow_cyrite | 0 | 0 | 0 | 0 |
+| pirate_toll | 0 | 0 | 0 | 0 |

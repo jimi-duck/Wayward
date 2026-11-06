@@ -15,31 +15,69 @@ costs nothing) and at least one other way to settle it:
 
 | Job | Where | Goal | Another way |
 |---|---|---|---|
-| A pirate toll | Reach to Drift Deep | `destroy`: break the toll captain and the crew, or only the captain, who holds them together (70% pay) | a jammer slips past |
-| A heavy tanker | Marches to Hollows | `strike`: cripple, then hold close to take her. Destroyed outright, the cargo burns (40%) | warn her for supplies |
-| Wanted alive | Marches to Hollows | `strike`, but she runs | warn her; the Gutter remembers |
-| The last shift | Salvage Belt to Free Ports | `defend`: hold a rig 105 s, raiders in three waves, drawn off or shot. Pay by what is left of the rig | a tractor takes the crew out |
-| Run the needle | Drift Deep onward | `race`: six beacons in order against a rival at 78% of the ship's top speed, rock in the gaps | a spoofer drops her out |
-| The point of no return | Drift Deep onward | `survey`: three rings round a black hole, the closer the more it pays; the nav goes, the core burns | sell the contract |
-| Nothing to declare | Reach to Free Ports | `sneak`: reach the drop between three sweeping patrols, hold still | sell the drop |
-| A kill zone | Belt onward | `destroy`: six raiders, two heavy, on a crossing; clearing it cheapens supplies for ten days | a jammer slips past |
-| The missing shift | Marches to Free Ports | `reach`: hold at the wreck with a supply; a rescued crew slows the Net | tell the Custody |
-| Follow the Cyrite | Belt to Hollows | `follow`: stay on a prospector's wing to a vein; nothing shoots | buy her chart for a rich seam |
-| Someone answered | Drift Deep onward | `watch`: hold slow and close by a relay three unknown contacts circle; sets an Archive flag | sell the bearing |
-| The wreck that remembered | Belt onward | `watch`: pull a wreck's log slow and close; the Offices pay, and someone wanted it wiped | strip it for parts |
-| Keep your distance | Marches to Hollows | `sneak` with a ten-second hold: copy four patrols' codes from the middle of their loop | sell the loop |
-| Be the bait | Marches to Hollows | `destroy`: four Custody pickets come from ahead and have to be broken | warn the pickets |
-| The dead drop | Marches to Hollows | `reach`: collect a package at a beacon; a trap of three pickets waits on the way out | tell the Custody |
-| The long walk | Marches to Hollows | `follow`: walk a crippled, slow hauler to the lane; raiders come after half a minute | a tractor takes her in |
-| Finders keepers | Belt onward | `race`: four marks to a claim against a rival salvor at 90% of your speed | a spoofer takes half |
-| Something in the dark | Belt onward | `survey`: two rings round an uncharted warm object; the nearer pays most | sell the bearing |
-| The voice on the wire | Belt onward | `reach`: take a call at a dead relay that says your ship's name; sets the Voice flags | jam the relay |
-| Missing payroll | Marches to Hollows | `strike`: cripple a lightly built courier and take a month of wages | warn the barges |
-| One filter left | Marches to Free Ports | `reach` on a ninety-second clock with two supplies of parts | sell them the parts |
-| Two captains, one wreck | Belt onward | `destroy`: five hulls from two crews that turn on you; the wreck is yours | strip it while they shout |
-| The witness | Belt onward | `defend`: keep a freighter alive 80 s against two waves of pickets | hand her over |
-| Lose the Governor | Marches to Hollows | `sneak`: wipe your trace at a relay inside a patrol loop; the Governor loses a day | pay the broker |
-| The Drift Cache | Marches to Hollows | `recover`: pick up four drifting cases, a crew closes after the first | winch three in with an ore tractor |
+| A pirate toll | Reach to Drift Deep | `destroy`: break the toll captain and the crew, or only the captain (70% pay); two more Gutter scouts if `gutter_cold` | a jammer slips past |
+| A heavy tanker | Marches to Hollows | `strike` for Kellern Recovery: cripple, then hold close. Destroyed outright, the cargo burns (40%) | warn her (125) |
+| Wanted alive | Marches to Hollows | `strike` for Kellern, through a Custody broker; she runs | warn her (100) |
+| The last shift | Salvage Belt to Free Ports | `defend` a rig 105 s; held sets `rig_held` and cheapens supplies | tow the crew out (70, `rig_lost`) |
+| Run the needle | Drift Deep onward | `race` six beacons against a rival | a spoofer drops her out (300) |
+| The point of no return | Drift Deep onward | `survey` three rings round a black hole | sell the contract (300) |
+| Nothing to declare | Reach to Free Ports | `sneak` hospice medicine past three patrols | sell the drop (175, `gutter_cold`) |
+| A kill zone | Belt onward | `destroy` six raiders, three if `crews_stood` | a jammer slips past |
+| The missing shift | Marches to Free Ports | `reach` a wreck with nine aboard | tell the Custody (165) |
+| Guard the prospector | Belt to Hollows | `follow` a prospector to a vein; scouts come | take her find (120) |
+| The wreck that remembered | Belt onward | `watch`: pull a wreck's log slow and close | strip it for parts |
+| Listen to the Loop | Marches to Hollows | `survey` two rings inside a patrol loop | sell the loop (235, `route_sold`) |
+| Be the bait | Marches to Hollows | `destroy` three Custody pickets | warn the pickets (405) |
+| The dead drop | Marches to Hollows | `reach` a package; the trap springs early if `route_sold` | tell the Custody (260) |
+| The long walk | Marches to Hollows | `follow` a crippled hauler to the lane | a tractor takes her in |
+| Finders keepers | Belt onward | `race` four marks against a rival salvor | a spoofer takes half (300) |
+| The Warm Object | Belt onward | `survey` two rings round an uncharted warm object; sets `saw_object`, `thren_curious` | sell the bearing (330) |
+| The voice on the wire | Belt onward | `reach` a dead relay that says your ship's name | jam the relay |
+| Missing payroll | Marches to Hollows | `strike` a courier with a month of wages | warn the barges |
+| One filter left | Marches to Free Ports | `reach` on a ninety-second clock | sell them the parts |
+| The witness | Belt onward | `defend` a freighter 80 s | hand her over (275, `witness_sold`) |
+| Lose the Governor | Marches to Hollows | `sneak` to a relay; sets `relay_blind` | pay the broker |
+| The Drift Cache | Marches to Hollows | `recover` four cases | winch them in (320) |
+
+Seven more are pinned only on the authored road (weight 0, the chart never deals them):
+
+| Job | Stop | Goal | Another way |
+|---|---|---|---|
+| The lifeboat | Wake | `defend` a lifeboat 60 s from scouts and a raptor; `lifeboat_saved` | hand them to the raiders (`lifeboat_ransomed`) |
+| The ransom crew | Scrap Exchange | `strike` the ransom tug; `ransom_ended` | pay the ransom |
+| Tarik's bend | Kindmere | `follow` a lane only Tarik drew; `bend_followed` | sell the chart (`bend_sold`) |
+| The cradle crew | Cutton | `reach` forty sealed in a cradle; `cradle_freed` | sell them fuel (`cradle_fuel`) |
+| The recovery order | Coldvault | `strike` Kellern's tug; `key_taken` | pay what is left of the debt (`account_paid`) |
+| Sable's crossing | Palecairn | `follow` Sable home; needs `sable_trust`; `sable_home` | sell her route (`sable_sold`) |
+| The ring's centre | Gaunt Watch | `survey` three rings round the relay; `ring_mapped` | sell the map (`ring_sold`) |
+
+Cut in the rework: "Two captains, one wreck" (the recovery order took its stop) and
+"Someone answered" (folded into The Warm Object).
+
+## Spine and standalone (job rework v2, 6 November 2026)
+
+Thirty jobs on the road: thirteen form four story threads (the spine), seventeen stand
+alone. A spine job counts as a step when it is won and not settled by a dark answer
+(`sell`, `tell`, `warn`, `strip`, `rob`; `sim/threads.ts`). Standalone jobs carry no
+thread chip but still leave `job_<id>_<answer>` flags, so radio lines and later
+stops can answer them.
+
+| Thread | Jobs | What it opens |
+|---|---|---|
+| The Quiet Line | Nothing to declare, The witness, Lose the Governor | 1, 2, 3 steps: Line radio; 3 opens Broadcast and the Line answer at Tollgate |
+| Hester's crews | Pirate toll, Missing shift, Last shift, Kill zone | 2, 3, 4 steps: 3+ for Unite and the strike |
+| The survey | The wreck, The voice on the wire, The ring's centre | 3 steps (or `ring_mapped`) for Seal |
+| The account | Wanted, The heavy tanker, The recovery order | the debt: 60, minus 20 a step won; stalled = Draper revealed and two steps |
+
+The recovery order's pay answer costs what is left of the debt, flat (300 chits, two
+thirds after one step, half after two). Refusing any job stays free. A dark answer
+pays about half the stop's win pay.
+
+Echoes: `lifeboat_saved` brings Ma Saffi into the long walk; `lifeboat_ransomed` brings
+the boy into the ransom crew; `cradle_freed` or `cradle_fuel` change Marit's lines at
+Torchwall. Saves from before this are version 23 and move to 24
+(`meta/save.ts`, `reworkJobs`): retired pins ahead are re-pinned to the road's jobs, and
+`job_two_captains_*` flags become `job_recovery_order_*`.
 
 ## How often, and how you know
 

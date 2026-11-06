@@ -1,5 +1,5 @@
 import { t } from '../i18n';
-import type { ActorSpec, Goal, SituationDef } from '../content/situations';
+import { cast, type ActorSpec, type Goal, type SituationDef } from '../content/situations';
 import type { Outcome } from './comms';
 import { leave, type Alien } from './enemies';
 import { topSpeed } from './ship';
@@ -151,6 +151,7 @@ export class Run {
   }
 
   private foe(w: World, a: ActorSpec): void {
+    if (!cast(a, w.flags)) return;
     for (let i = 0; i < a.n; i++) {
       const p = this.spot(w, a, i, a.n);
       const al = w.spawnHostile(a.variant, { x: p.x, y: w.rng.range(-1.5, 1.5), z: p.z }, null, true);

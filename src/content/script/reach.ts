@@ -37,15 +37,15 @@ export const REACH: Row[] = [
   card('hr_order', '*', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] }, holdsJob: true }),
   card('hr_hand', '*', { on: 'flag', flag: 'clue_order_sig' }, 'story_handwriting', { if: { not: ['ada_named'] }, holdsJob: true }),
   // the Quiet Line's first job (content/missions.ts nothing_to_declare): Owen Pike answers by what the player did; flags from sim/stage.ts
-  pike('hr_pike_won', 'job_nothing_to_declare_won', '“You never saw what was in it. Good. I’ll call again.”', { not: ['job_nothing_to_declare_sell'] }),
-  pike('hr_pike_sold', 'job_nothing_to_declare_sell', '“Custody paid you six. Remember what it cost.”'),
+  pike('hr_pike_won', 'job_nothing_to_declare_won', '“Medicine through, and nobody saw you. Good. I’ll call again.”', { not: ['job_nothing_to_declare_sell'] }),
+  pike('hr_pike_sold', 'job_nothing_to_declare_sell', '“Custody paid you thirty-five. The hospice paid the rest.”'),
   pike('hr_pike_no', 'job_nothing_to_declare_declined', '“No offence taken. The Line’s patient.”'),
   objective('hr_gate', 'halden', { on: 'leave' }, 'Jump to Hollis'),
 
   // ── Stop 3 · Hollis (work): the ghost and the job's thread lines follow ──
   notice('ho_notice', 'hollis', { on: 'arrive', delay: 2 }, 'teal', 'Hollis', 'mining claim, rich rock'),
   // Hester's crews, step 1: the prospector's parting line
-  { id: 'ho_prospector', stop: 'hollis', if: { not: ['job_follow_cyrite_rob'] }, on: { on: 'flag', flag: 'job_follow_cyrite_won' }, do: { radio: { from: 'The prospector', caller: 'frontier', text: '“Tell Hester you helped. She keeps a list of people who do.”' } } },
+  { id: 'ho_prospector', stop: 'hollis', if: { not: ['job_follow_cyrite_rob'] }, on: { on: 'flag', flag: 'job_follow_cyrite_won' }, do: { radio: { from: 'The prospector', caller: 'frontier', text: '“Juno Aster, isn’t it? I’ll tell every claim office who kept the Gutter off me.”' } } },
   { id: 'ho_robbed', stop: 'hollis', on: { on: 'flag', flag: 'job_follow_cyrite_rob' }, do: { radio: { from: 'The prospector', caller: 'frontier', text: '“Hester will hear about this. Every rig in the Reach will.”' } } },
   // the ghost (sim/ghost.ts): the flag comes with the contact; the Wall is set the moment it triggers, so a jump before Sam speaks still logs it
   notice('ho_ghost', 'hollis', { on: 'flag', flag: 'ghost_here' }, 'white', 'UNKNOWN CONTACT', '4.2 km · holding', { wall: 'clue_ghost' }),

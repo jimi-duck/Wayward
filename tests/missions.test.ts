@@ -289,7 +289,7 @@ describe('the second batch', () => {
   });
 
   it('a signal and a wreck are read by holding slow and close', () => {
-    for (const [id, choice, pay] of [['someone_answered', 'listen', 130], ['wreck_remembered', 'read', 120]] as const) {
+    for (const [id, choice, pay] of [['wreck_remembered', 'read', 120]] as const) {
       const { w, st } = take(id, choice);
       const before = w.cyrite;
       for (let i = 0; i < 14 * 60 && !st.result; i++) { put(w, st.x, st.z); run(w, 1 / 60); }
@@ -300,20 +300,22 @@ describe('the second batch', () => {
 });
 
 describe('the third batch', () => {
-  it('keep your distance is won by sitting unseen in the middle of the loop', () => {
+  it('listen to the loop is won by holding inside both rings round the checkpoint', () => {
     const { w, st } = take('keep_distance', 'record');
     const before = w.cyrite;
     expect(st.actors.filter((a) => a.ward?.act === 'patrol').length).toBe(4);
-    for (let i = 0; i < 16 * 60 && !st.result; i++) { put(w, st.x, st.z); run(w, 1 / 60); }
+    for (let i = 0; i < 12 * 60; i++) { put(w, st.x + 110, st.z); run(w, 1 / 60); }
+    put(w, st.x + 900, st.z);
+    run(w, 1);
     expect(st.result).toBe('won');
     expect(gain(w, before)).toBe(jy(150));
   });
 
-  it('be the bait is won by breaking the four pickets that come', () => {
+  it('be the bait is won by breaking the three pickets that come', () => {
     const { w, st } = take('be_bait', 'bait');
     const before = w.cyrite;
     run(w, 1);
-    expect(st.run!.foes.length).toBe(4);
+    expect(st.run!.foes.length).toBe(3);
     for (const f of [...st.run!.foes]) kill(w, f);
     run(w, 1);
     expect(st.result).toBe('won');
@@ -404,15 +406,26 @@ describe('the fourth batch', () => {
     expect(gain(w, before)).toBe(jy(180));
   });
 
-  it('two captains are both broken', () => {
-    const { w, st } = take('two_captains', 'break');
-    const before = w.cyrite;
-    run(w, 1);
-    expect(st.run!.foes.length).toBe(5);
-    for (const f of [...st.run!.foes]) kill(w, f);
-    run(w, 1);
-    expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(jy(170));
+  it('the crossing is six raiders, or three when the crews stood', () => {
+    const a = take('kill_zone', 'clear');
+    run(a.w, 1);
+    expect(a.st.run!.foes.length).toBe(6);
+    const b = take('kill_zone', 'clear', { flags: ['crews_stood'] });
+    run(b.w, 1);
+    expect(b.st.run!.foes.length).toBe(3);
+    const before = b.w.cyrite;
+    for (const f of [...b.st.run!.foes]) kill(b.w, f);
+    run(b.w, 1);
+    expect(b.st.result).toBe('won');
+    expect(gain(b.w, before)).toBe(jy(170));
+  });
+
+  it('the toll brings two more Gutter scouts when the Gutter has gone cold on you', () => {
+    const a = take('pirate_toll', 'break');
+    run(a.w, 1);
+    const b = take('pirate_toll', 'break', { flags: ['gutter_cold'] });
+    run(b.w, 1);
+    expect(b.st.run!.foes.length).toBe(a.st.run!.foes.length + 2);
   });
 
   it('the witness lives when the pickets are broken, and is lost when she is not', () => {
@@ -560,5 +573,89 @@ describe('the quick bonus and the twists', () => {
     const said: string[] = [];
     for (let i = 0; i < 40; i++) { run(w, 1); for (const e of w.drain()) if (e.type === 'ping') said.push(e.text); }
     expect(said.some((x) => x.includes('Gutter scouts'))).toBe(true);
+  });
+});
+
+describe('the road’s own jobs (job rework v2)', () => {
+  it('the lifeboat at Wake is held for a minute, or paid off', () => {
+    const a = take('lifeboat_wake', 'defend');
+    const before = a.w.cyrite;
+    for (let i = 0; i < 70 && !a.st.result; i++) { run(a.w, 1); for (const f of [...(a.st.run?.foes ?? [])]) kill(a.w, f); }
+    expect(a.st.result).toBe('won');
+    expect(gain(a.w, before)).toBeGreaterThan(0);
+    expect(a.w.flags.has('lifeboat_saved')).toBe(true);
+    const b = take('lifeboat_wake', 'pay');
+    expect(b.st.result).toBe('won');
+    expect(b.w.flags.has('lifeboat_ransomed')).toBe(true);
+  });
+
+  it('the ransom crew pays in full for a crippled ship, and three tenths for a sunk one', () => {
+    const a = take('ransom_crew', 'take');
+    const tg = a.st.run!.target!;
+    const before = a.w.cyrite;
+    hit(a.w, tg, tg.maxHp * 0.75);
+    run(a.w, 1);
+    put(a.w, tg.x + 6, tg.z);
+    run(a.w, 5);
+    expect(a.st.result).toBe('won');
+    expect(gain(a.w, before)).toBe(jy(130));
+    const b = take('ransom_crew', 'take');
+    const b0 = b.w.cyrite;
+    kill(b.w, b.st.run!.target!);
+    run(b.w, 1);
+    expect(b.st.result).toBe('won');
+    expect(gain(b.w, b0)).toBeLessThan(jy(130) * 0.5);
+  });
+
+  it('the cradle opens when she holds at the frame', () => {
+    const { w, st } = take('cradle_crew', 'cut');
+    const before = w.cyrite;
+    for (let i = 0; i < 14 * 60 && !st.result; i++) { put(w, st.x, st.z); run(w, 1 / 60); }
+    expect(st.result).toBe('won');
+    expect(gain(w, before)).toBe(jy(120));
+    expect(w.flags.has('cradle_freed')).toBe(true);
+  });
+
+  it('the ring’s centre takes three readings', () => {
+    const { w, st } = take('ring_centre', 'read');
+    const before = w.cyrite;
+    for (let i = 0; i < 14 * 60; i++) { put(w, st.x + 80, st.z); run(w, 1 / 60); }
+    put(w, st.x + 900, st.z);
+    run(w, 1);
+    expect(st.result).toBe('won');
+    expect(gain(w, before)).toBe(jy(150));
+    expect(w.flags.has('ring_mapped')).toBe(true);
+  });
+
+  it('Tarik’s bend is a follow', () => {
+    const a = take('tarik_bend', 'follow');
+    const before = a.w.cyrite;
+    for (let i = 0; i < 90 * 60 && !a.st.result; i++) {
+      const lead = a.st.actors.find((x) => x.ward?.act === 'lead');
+      if (lead) put(a.w, lead.x, lead.z + 20);
+      for (const h of a.w.aliens) if (!h.ward) h.hp = 0;
+      run(a.w, 1 / 60);
+    }
+    expect(a.st.result).toBe('won');
+    expect(gain(a.w, before)).toBeGreaterThanOrEqual(jy(110));
+  });
+
+  it('Sable’s crossing plays only once she was taken on at Palecairn', () => {
+    const w = world('sables_crossing');
+    run(w, 60);
+    expect(w.stage!.begun).toBe(false);
+    const { st } = take('sables_crossing', 'follow', { flags: ['sable_trust'] });
+    expect(st.taken).toBe(true);
+  });
+
+  it('the recovery order asks the balance that is left of the debt', () => {
+    for (const [flags, cost] of [[[], 60], [['thread_account_1'], 40], [['thread_account_1', 'thread_account_2'], 20]] as const) {
+      const w = world('recovery_order', { flags: [...flags], cyrite: 100 });
+      const st = w.stage!;
+      put(w, st.x, st.z + 160);
+      for (let i = 0; i < 60 && !(w.call ?? w.comms); i++) run(w, 1);
+      const pay = (w.call ?? w.comms)!.choices.find((c) => c.id === 'pay')!;
+      expect(pay.cost.join(' '), flags.join()).toContain(`${cost}`);
+    }
   });
 });

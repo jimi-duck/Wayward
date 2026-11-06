@@ -1,7 +1,7 @@
 import { t } from '../i18n';
 import { MISSIONS } from '../content/missions';
 import { COLLISIONS, ON_ROAD } from '../content/road';
-import { SITUATION_BY_ID, type ActorSpec, type SitResult, type SituationDef } from '../content/situations';
+import { cast, SITUATION_BY_ID, type ActorSpec, type SitResult, type SituationDef } from '../content/situations';
 import { CARD_BY_ID, weightOf, type Outcome, type Tone } from './comms';
 import { leave, provoke, type Alien } from './enemies';
 import { bounty, JOB_PAY, Run, scaleOut, type Pt } from './mission';
@@ -92,7 +92,7 @@ export class Stage {
     const at0 = stageAnchor(at, { x: this.sx, z: this.sz }, { x: this.lx, z: this.lz }, b.port);
     this.x = at0.x; this.z = at0.z;
     // site actors are there from the start: you see them before you hear them
-    for (const a of def.actors ?? []) if ((a.from ?? 'site') === 'site' && !a.foe) this.spawn(w, a);
+    for (const a of def.actors ?? []) if ((a.from ?? 'site') === 'site' && !a.foe && cast(a, w.flags)) this.spawn(w, a);
   }
 
   // ── geometry ───────────────────────────────────────────────────────────
@@ -186,6 +186,8 @@ export class Stage {
   step(w: World, dt: number): void {
     const d = this.def, now = w.runTime;
     if (this.result && !this.actors.length) return;
+    // a scene that waits on a flag (Sable's crossing waits for her to be taken on): until it is set, nothing here
+    if (d.needs && !this.begun && !w.flags.has(d.needs)) return;
     const near = this.dist(w);
 
     if (!this.result) {
@@ -217,7 +219,7 @@ export class Stage {
   private begin(w: World): void {
     this.begun = true;
     for (const f of this.def.seen ?? []) w.flags.add(f);
-    for (const a of this.def.actors ?? []) if ((a.from === 'ahead' || a.from === 'astern') && !a.foe) this.spawn(w, a);
+    for (const a of this.def.actors ?? []) if ((a.from === 'ahead' || a.from === 'astern') && !a.foe && cast(a, w.flags)) this.spawn(w, a);
     this.said_('start', w);
   }
 
@@ -303,7 +305,7 @@ export class Stage {
   private trap(w: World): void {
     const tr = this.def.trap;
     if (!tr || this.sprang) return;
-    if (this.progress(w.ship.x, w.ship.z) < tr.at) return;
+    if (this.progress(w.ship.x, w.ship.z) < (tr.early && w.flags.has(tr.early.flag) ? tr.early.at : tr.at)) return;
     this.sprang = true;
     const { ux, uz } = this.dir();
     for (let i = 0; i < tr.n; i++) {
@@ -411,7 +413,7 @@ export class Stage {
   // ── the end ────────────────────────────────────────────────────────────
   /** A job of the road's threads leaves a flag for each answer and each ending, which the stop's script answers on the radio (content/script/). */
   private thread(w: World, what: string): void {
-    if (!(this.def.card && CARD_BY_ID[this.def.card]?.thread && w.flags.has(ON_ROAD))) return;
+    if (!(this.def.card && JOB_IDS.has(this.def.id) && w.flags.has(ON_ROAD))) return;
     w.flags.add(`job_${this.def.id}_${what}`);
     // a job won for one thread can cost another (content/road.ts COLLISIONS): the tanker carried Hester's filters, the payroll was her wages
     const hit = COLLISIONS[this.def.id];
