@@ -925,7 +925,7 @@ export class Hud {
     text($('tc-t'), d.name);
     text($('tc-s'), '');
     const el = $('title-card');
-    el.classList.remove('on');
+    el.classList.remove('on', 'name');
     void el.offsetWidth;
     el.style.setProperty('--tc-secs', `${TITLE_SECS}s`);
     el.classList.add('on');
@@ -939,10 +939,11 @@ export class Hud {
     text($('tc-s'), t('Reprogrammed · Repainted · Renamed'));
     const el = $('title-card');
     el.classList.remove('on');
+    el.classList.add('name');
     void el.offsetWidth;
-    el.style.setProperty('--tc-secs', `${TITLE_SECS + 1}s`);
+    el.style.setProperty('--tc-secs', `${TITLE_SECS - 0.5}s`);
     el.classList.add('on');
-    this.titleT = TITLE_SECS + 1;
+    this.titleT = TITLE_SECS - 0.5;
   }
 
   private banner(kicker: string, title: string, sub: string, secs: number, tone = ''): void {

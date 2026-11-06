@@ -57,11 +57,11 @@ Gate holds ("Jump Gate holding · Ned's yard first") until she has been. The dep
 2. She holds in the teal ring (`YARD_R`, slow like a dock, no fight on, `World.stepYard`) for the dock time. The work is done at once:
    `hull_repainted` and `ship_renamed` are set and the rename reveal plays (render/reveal.ts): her lights go out and come back white,
    one amber band takes the hull from grey to yellow, the registry is struck out and WAYWARD written. The three arches light in turn.
-3. The special moment (owner 2026-11-06), seconds after the work: a teal notice "Reprogrammed" at once; "Repainted" at 3.2 s; from 2.4 s
-   to 6.4 s she rolls out of the ring on her own under the camera's pan (the helm is hers again after); at 4.8 s the arrival-style title
-   card shows WAYWARD, "Ned's yard · work done", "Reprogrammed · Repainted · Renamed". At 11 s the plain card (`story_yard_done`, one tap)
+3. The special moment (owner 2026-11-06), seconds after the work: a teal notice "Reprogrammed" at once; "Repainted" at 2.8 s; from 2.4 s
+   to 5.2 s she rolls out of the ring on her own under the camera's pan (the helm is hers again after); at 4.2 s the arrival-style title
+   card shows WAYWARD, "Ned's yard · work done", "Reprogrammed · Repainted · Renamed". At 9.5 s the plain card (`story_yard_done`, one tap)
    says it in words.
-4. About 32 s after the work the archive unlocks: the herald "Hidden archive unlocked", then its message (`story_wake`), at a free moment.
+4. About 30 s after the work the archive unlocks: the herald "Hidden archive unlocked", then its message (`story_wake`), at a free moment.
 
 The yard (`render/yard.ts`) is a deck and a few works set into a large asteroid: the game's own cratered basalt (`rockGeometry`,
 `lavaRock`), a pad ringed in yellow, post lamps and a hazard edge, the three arches and two spray masts, a shack, silo and conveyor,

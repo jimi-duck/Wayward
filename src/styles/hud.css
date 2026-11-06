@@ -509,7 +509,8 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 #title-card.on #tc-t { animation: tc-name var(--tc-secs, 5.2s) cubic-bezier(.2, .6, .2, 1) forwards; }
 @keyframes tc-name { from { letter-spacing: .32em; text-indent: .32em; } to { letter-spacing: .5em; text-indent: .5em; } }
 #tc-s { min-height: 1em; font: 600 calc(var(--fs) * 0.95)/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
-@media (max-height: 520px) { #title-card { bottom: 13vh; padding: 10px 40px; gap: 4px; } #tc-t { font-size: 24px; } #tc-k, #tc-s { font-size: 10px; } }
+#title-card.name { bottom: 24vh; }
+@media (max-height: 520px) { #title-card.name { bottom: 31vh; } #title-card { bottom: 13vh; padding: 10px 40px; gap: 4px; } #tc-t { font-size: 24px; } #tc-k, #tc-s { font-size: 10px; } }
 @media (prefers-reduced-motion: reduce) {
   #title-card.on { animation: none; opacity: 1; }
   #title-card.on #tc-t { animation: none; letter-spacing: .4em; }
