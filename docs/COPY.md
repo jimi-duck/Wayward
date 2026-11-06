@@ -1,7 +1,8 @@
 # Copy
 
 Rules for every line the player reads. German twins follow the English
-(`src/i18n/de/`), short and informal (du).
+(`src/i18n/de/`), short and informal (du). The game starts in English unless
+the player picks German (or `?lang=de`); it no longer follows the browser.
 
 - **Clarity first.** In the HUD, chart, menus, tutorials and choice hints, say
   what is happening or what to do before adding atmosphere.
