@@ -12,7 +12,7 @@ import type { PowerKind } from '../sim/events';
 import { POWER_HINT, POWER_LABEL, STOCKED } from '../sim/pickups';
 import { NAMED } from '../content/features';
 import { REPORT_GOOD, REPORT_TEXT, type ReportKind } from '../sim/space';
-import { cargoOf, lessonOf, stepOf } from '../sim/tutor';
+import { cargoOf, lessonOf } from '../sim/tutor';
 import type { World } from '../sim/world';
 import { Radar } from './radar';
 import { Heading } from './guide';
@@ -20,7 +20,7 @@ import { range, Targeting } from './targeting';
 import { num, plural, t } from '../i18n';
 import { damageWord } from './panels';
 import { Notifier, NoticePlates, type Notice } from './notify';
-import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
+import { blockOf, cheapest, quickPicks } from '../sim/bay';
 import { BREAK_COOLDOWN } from '../sim/tuning';
 import { lockLifted, paintAt, refuelAt } from '../sim/postjump';
 import { recovering } from '../sim/recovery';
@@ -158,7 +158,6 @@ export class Hud {
   onBay: () => void = () => {};
   /** When the log last said the self-repair had started, so a flicker of danger does not repeat it. */
   private mendNoted = -Infinity;
-  private contactKey = '';
   private centreKey = '';
   /** The run that ended in a jump: the next run's first frame shows the new system's title card. Seconds the card has left. */
   private jumpedRun: unknown = null;
@@ -182,7 +181,7 @@ export class Hud {
 
   /** The language changed: redraw what is only written when it changes. */
   relabel(): void {
-    this.modeLvl = this.modeKey = this.condKey = this.contactKey = this.powerKey = this.plateKey = '';
+    this.modeLvl = this.modeKey = this.condKey = this.powerKey = this.plateKey = '';
     this.seed = -1;
   }
 

@@ -11,7 +11,7 @@ export const GHOST_FAR = 420;
 export const GHOST_NEAR = 310;
 /** The share of the tank at which it appears, and at which it comes nearer. */
 export const GHOST_TANK = 0.5;
-export const GHOST_CLOSE = 0.75;
+const GHOST_CLOSE = 0.75;
 /** How fast it closes from the far hold to the near one (units a second). */
 const CLOSE_RATE = 6;
 /** The stop it haunts (content/road.ts `script`). */

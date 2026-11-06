@@ -1,9 +1,7 @@
 import { CanvasTexture, Color, Group, Vector3, type Mesh, Vector4, MeshBasicMaterial, MeshStandardMaterial, SRGBColorSpace, type Material, type Texture } from 'three';
 import { Kit, metal, seeded, type V3 } from './kit';
 import { buildFits, fitKey, shown } from './fitted';
-import {
-  bevelGeo, block, setBevelScale, bolts, bracket, frameRing, hatch, lamp, oct, octFaces, octFrame, panel, pipeRun, vent, type Face,
-} from './parts';
+import { bevelGeo, block, setBevelScale, bolts, frameRing, hatch, lamp, oct, octFaces, panel, pipeRun, vent, type Face } from './parts';
 
 // ── the Wayward ───────────────────────────────────────────────────────────
 // A stolen Obedience-class ore hauler, registry OB-7731-A, after brand v1.1

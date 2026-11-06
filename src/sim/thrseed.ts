@@ -10,21 +10,21 @@ import { t } from '../i18n';
 
 export const SEED_HP = 40;
 /** Its hull radius (units), growth per second (0 to 1 takes 240 s), and how big its hull gets with growth. */
-export const SEED_R = 7;
-export const SEED_GROW = 1 / 240;
+const SEED_R = 7;
+const SEED_GROW = 1 / 240;
 /** Studying: the ring (units), how slow you must be, the seconds it takes. */
-export const SEED_STUDY_R = 34;
-export const SEED_STUDY_SPEED = 8;
+const SEED_STUDY_R = 34;
+const SEED_STUDY_SPEED = 8;
 export const SEED_STUDY_T = 8;
 /** Motes in an answer: a base and a share of growth; seconds between answers. */
-export const SEED_ANSWER = 1;
-export const SEED_ANSWER_GROW = 2;
-export const SEED_ANSWER_EVERY = 12;
+const SEED_ANSWER = 1;
+const SEED_ANSWER_GROW = 2;
+const SEED_ANSWER_EVERY = 12;
 /** A bloomed seed (growth 1) calls a knot when you come within this (units), every so many seconds. */
-export const SEED_BLOOM_R = 200;
-export const SEED_BLOOM_EVERY = 30;
+const SEED_BLOOM_R = 200;
+const SEED_BLOOM_EVERY = 30;
 /** Burned small (under this growth) it is clean; later it bursts. */
-export const SEED_CLEAN = 0.5;
+const SEED_CLEAN = 0.5;
 export const SEED_CYRITE = 15;
 export const SEED_PARTS = 6;
 

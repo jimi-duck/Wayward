@@ -2,7 +2,7 @@ import { legOf, roadRegion } from './road';
 import { t } from '../i18n';
 import { ACTS, BEATS, CHOICE_REGION, FRAGMENT_FLAGS, FRAGMENT_FLAGS_LONG, FRAGMENTS_ALL, CERRO_BEATS, type Act } from '../content/story';
 import { isLongSet, type RegionSet } from '../content/regions';
-import { regionOf, sysById, tierOf, viewOf } from './chart';
+import { sysById, tierOf, viewOf } from './chart';
 import type { Journey } from './journey';
 
 // ── the story ─────────────────────────────────────────────────────────────

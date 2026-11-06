@@ -28,9 +28,9 @@ export interface Pickup {
 }
 
 export const CRYSTAL_LIFE = 11;
-export const REPAIR_LIFE = 12;
-export const POWER_LIFE = 14;
-export const PICKUP_R = SHIP_R + 1.3;
+const REPAIR_LIFE = 12;
+const POWER_LIFE = 14;
+const PICKUP_R = SHIP_R + 1.3;
 /** How long each booster lasts, seconds. */
 export const POWER_TIME: Record<PowerKind, number> = { shield: 7, rapid: 8, yield: 10, overdrive: 8 };
 export const POWER_LABEL: Record<PowerKind, string> = {

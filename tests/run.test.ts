@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
-import { DETECT_R, FACTIONS, WARY_R } from '../src/sim/bosses';
+import { DETECT_R, WARY_R } from '../src/sim/bosses';
 import { BOSS_FIRST } from '../src/sim/director';
 import { ENCOUNTERS, startEncounter } from '../src/sim/encounters';
 import { spawnAlien } from '../src/sim/enemies';

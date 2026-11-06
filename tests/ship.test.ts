@@ -193,7 +193,6 @@ describe('break and reverse', () => {
     stepShip(s, ctl({ brk: true, rollDir: -1 }), HULL, STEP);
     expect(s.breakDir).toBe(-1);
     fly(s, HULL, idle, BREAK_TIME + 0.1);
-    const h = s.heading;
     stepShip(s, brk, HULL, STEP);
     expect(s.breakT).toBe(-1);
     fly(s, HULL, idle, BREAK_COOLDOWN);

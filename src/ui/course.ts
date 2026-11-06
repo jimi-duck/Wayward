@@ -14,7 +14,7 @@ import { plural, t } from '../i18n';
 // does on the chart.
 
 /** How far behind, in words: half a day, a day, a day and a half. */
-export function whenWords(days: number): string {
+function whenWords(days: number): string {
   const d = halfDays(days);
   if (d <= 0) return t('here');
   if (d < 1) return t('half a day');
@@ -22,7 +22,7 @@ export function whenWords(days: number): string {
 }
 
 /** The pursuit line: who, how far, and what they know. */
-export function pursuitLine(p: Course['pursuit']): string {
+function pursuitLine(p: Course['pursuit']): string {
   if (p.hidden) return t('Not shown while you rest');
   const when = whenWords(p.days);
   if (p.days <= 0) return p.who === 'calloway' ? t('Governor Calloway · here') : t('Custody pursuit · here');

@@ -1,7 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { SURVIVAL, SURVIVAL_IDS, type SurvivalId } from '../src/content/survival';
-import { netted } from '../src/sim/chart';
 import { endSortie, newJourney, plot, replot, sortieDef, hearNews, type Journey } from '../src/sim/journey';
 import { NO_LOOT, type Loot } from '../src/sim/run';
 import { World } from '../src/sim/world';

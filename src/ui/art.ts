@@ -35,5 +35,3 @@ export function artImg(slot: SlotId, id: string, cls = 'art'): HTMLImageElement 
   return img;
 }
 
-/** How many pictures the build found, for the dev panel and the tests. */
-export const artCount = () => BY_KEY.size;

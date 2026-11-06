@@ -93,12 +93,3 @@ export function newRun(seed: number, survival = 'prospector'): RunStats {
   };
 }
 
-/** The weapon that did most of the killing, and its share. */
-export function mainWeapon(r: RunStats): { weapon: Weapon; share: number } {
-  let best: Weapon = 'laser', n = -1, total = 0;
-  for (const [w, k] of Object.entries(r.killsBy) as Array<[Weapon, number]>) {
-    total += k;
-    if (k > n) { n = k; best = w; }
-  }
-  return { weapon: best, share: total ? n / total : 0 };
-}

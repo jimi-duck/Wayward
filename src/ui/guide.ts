@@ -22,7 +22,7 @@ function text(el: HTMLElement, s: string): void {
 }
 
 /** "30° left", "ahead", "behind", in the player's language. */
-export function bearingText(rel: number): string {
+function bearingText(rel: number): string {
   const b = sayBearing(rel);
   if (b.word === 'ahead') return t('Ahead');
   if (b.word === 'behind') return t('Behind');

@@ -1,6 +1,6 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { it } from 'vitest';
-import { blockOf, budgets, cost, reachable } from '../src/sim/bay';
+import { budgets, cost, reachable } from '../src/sim/bay';
 import { UPGRADE } from '../src/content/upgrades';
 import { endSortie, hearNews, newJourney, plot, replot, sortieDef, type Journey } from '../src/sim/journey';
 import { World } from '../src/sim/world';

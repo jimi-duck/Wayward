@@ -62,8 +62,8 @@ const portSideOf = (from: { x: number; z: number }, to: { x: number; z: number }
  * A situation's stage: on the way but not in the way, on the side the port is not (it used to sit on the
  * port's own side, a few tens of units off the dock). Everything that points at the situation uses this one spot.
  */
-export const STAGE_ALONG = 0.34;
-export const STAGE_OFF = 150;
+const STAGE_ALONG = 0.34;
+const STAGE_OFF = 150;
 export function stageAnchor(system: string, from: { x: number; z: number }, to: { x: number; z: number }, port: Disc | null): { x: number; z: number } {
   const { fx, fz, rx, rz, len } = frame(from, to);
   const side = port ? -portSideOf(from, to, port) : hash(system) & 1 ? 1 : -1;
@@ -72,7 +72,7 @@ export function stageAnchor(system: string, from: { x: number; z: number }, to: 
 }
 
 /** Where a place sits (no situation): a third of the way along and well off the line, away from the port, so it is a diversion the player chooses. */
-export function placeAnchor(system: string, r: number, from: { x: number; z: number }, to: { x: number; z: number }, port: Disc | null): { x: number; z: number } {
+function placeAnchor(system: string, r: number, from: { x: number; z: number }, to: { x: number; z: number }, port: Disc | null): { x: number; z: number } {
   const { fx, fz, rx, rz, len } = frame(from, to);
   const h = hash(system);
   const side = port ? -portSideOf(from, to, port) : h & 1 ? 1 : -1;

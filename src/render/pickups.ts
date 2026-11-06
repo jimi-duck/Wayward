@@ -1,8 +1,4 @@
-import {
-  AdditiveBlending, BoxGeometry, BufferAttribute, Color, CylinderGeometry, Group, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh,
-  LatheGeometry, MeshBasicMaterial, MeshStandardMaterial, OctahedronGeometry, Vector2, Quaternion, Sprite, SpriteMaterial, TorusGeometry, Vector3,
-  type BufferGeometry, type Material, type Scene, type Texture,
-} from 'three';
+import { AdditiveBlending, BoxGeometry, BufferAttribute, Color, CylinderGeometry, Group, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, LatheGeometry, MeshStandardMaterial, OctahedronGeometry, Vector2, Quaternion, Sprite, SpriteMaterial, TorusGeometry, Vector3, type BufferGeometry, type Material, type Scene, type Texture } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { STEP } from '../core/loop';
 import { LOOSE, type Pickup } from '../sim/pickups';
@@ -33,12 +29,12 @@ const K_PURPLE = new Color(0.5, 0.25, 0.75);
 const K_LOW = 1, K_HIGH = 5;
 
 /** How rich a crystal of this value is, 0 (lowest) to 1 (highest). */
-export function krailRank(value: number): number {
+function krailRank(value: number): number {
   return Math.min(1, Math.max(0, (value - K_LOW) / (K_HIGH - K_LOW)));
 }
 
 /** The colour of a Krail crystal worth `value`: white to blue to purple, blended smoothly. */
-export function krailColour(value: number, out: Color): Color {
+function krailColour(value: number, out: Color): Color {
   const t = krailRank(value);
   return t < 0.5 ? out.copy(K_WHITE).lerp(K_BLUE, t * 2) : out.copy(K_BLUE).lerp(K_PURPLE, t * 2 - 1);
 }

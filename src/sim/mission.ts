@@ -117,10 +117,8 @@ export class Run {
   private state: 'on' | 'disabled' | 'scattered' = 'on';
   private hold = 0;
   private waves = 0;
-  private next = 0;
   private rivalNext = 0;
   private reads = 0;
-  private holdRing = 0;
   private maxReads = 0;
   private exposure = 0;
   private stealth = 1;
@@ -199,7 +197,6 @@ export class Run {
         const ta = specs.find((a) => a.target)!;
         this.target = this.adopted[0] ?? this.ship(w, ta, { x, z }, 'hold');
         this.startHp = this.target.maxHp;
-        this.next = 0;
         break;
       }
       case 'race': {

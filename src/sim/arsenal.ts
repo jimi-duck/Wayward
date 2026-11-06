@@ -45,9 +45,9 @@ export const newSystems = (): Systems => ({ mines: [], burns: [], mineT: 1, vent
 
 const STERN = 1.7;
 const VENT_EVERY = 0.05;
-export const MINE_ARM = 0.5;
+const MINE_ARM = 0.5;
 const MINE_FUSE = 0.12;
-export const GRAVITY_FUSE = 0.7;
+const GRAVITY_FUSE = 0.7;
 export const GRAVITY_PULL = 20;
 export const CHAIN_CLOUD = 2.5;
 

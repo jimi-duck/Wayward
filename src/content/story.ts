@@ -39,11 +39,10 @@ export const STORY_AT = 40;
  * first sortie beyond Cerro. `story_bay` (the work bay's account) and `story_raiders` (the intercept) are the odd ones out:
  * they are played inside the training.
  */
-export const BAY_BEAT = 'story_bay';
 export const BREACH_BEAT = 'story_breach';
 export const SAM_BEAT = 'story_sam';
 /** Where Sam's private channel always comes in from, in degrees (the bearing line and the RX readout on his calls). */
-export const SAM_BEARING = 47;
+const SAM_BEARING = 47;
 export const WAKE_BEAT = 'story_wake';
 /** The opening's chain past Cerro. There is no registry card: the code's notice says it (owner 2026-10-31). */
 export const CERRO_BEATS = [BREACH_BEAT, SAM_BEAT, WAKE_BEAT] as const;
@@ -73,7 +72,7 @@ export const FRAGMENTS: Fragment[] = [
 export const FRAGMENT_FLAGS = FRAGMENTS.map((f) => f.flag);
 
 /** The four more the long journey's beats bring in. The endings still read the first four; these are the rest of the file. */
-export const FRAGMENTS_LONG: Fragment[] = [
+const FRAGMENTS_LONG: Fragment[] = [
   { flag: 'frag_blackbox', name: 'The black box', line: 'A wreck’s recorder: the last call from the night the lanes went dark.', where: 'Wrecks in the Salvage Belt keep their recorders.' },
   { flag: 'frag_charts', name: 'The charts', line: 'The old lane charts, from before the breakers.', where: 'Someone in the Drift Deep still sails by them.' },
   { flag: 'frag_workorder', name: 'The work order', line: 'The Continuance’s order to build the breakers, signed and dated.', where: 'The Breaker Yards filed everything.' },

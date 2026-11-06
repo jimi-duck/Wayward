@@ -6,7 +6,6 @@ import { MODULES } from '../src/content/modules';
 import { UPGRADES } from '../src/content/upgrades';
 import { CARD_BY_ID, COMMS_FIRST, SHOWN_WORDS, SLOW, condOk, openCard, resolve, sensors, type Ctx } from '../src/sim/comms';
 import { VARIANTS } from '../src/sim/enemies';
-import { DESK } from '../src/sim/desk';
 import { Rng } from '../src/sim/rng';
 import { cy } from '../src/sim/purse';
 import { World } from '../src/sim/world';

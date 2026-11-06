@@ -11,7 +11,7 @@ const fade = (t: number) => t * t * (3 - 2 * t);
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 
 /** Value noise in -1..1. */
-export function noise3(x: number, y: number, z: number, seed = 0): number {
+function noise3(x: number, y: number, z: number, seed = 0): number {
   const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
   const xf = fade(x - xi), yf = fade(y - yi), zf = fade(z - zi);
   const c = (dx: number, dy: number, dz: number) => hash(xi + dx, yi + dy, zi + dz, seed);

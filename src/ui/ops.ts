@@ -9,7 +9,7 @@ import { t } from '../i18n';
 
 export type Ops = 'clear' | 'yellow' | 'red' | 'critical';
 
-export const OPS_WORD: Record<Ops, string> = { clear: 'Clear', yellow: 'Yellow alert', red: 'Red alert', critical: 'Critical' };
+const OPS_WORD: Record<Ops, string> = { clear: 'Clear', yellow: 'Yellow alert', red: 'Red alert', critical: 'Critical' };
 
 export function opsOf(w: World): Ops {
   if (w.alive && w.stats.maxPlates > 1 && w.plates <= 1) return 'critical';

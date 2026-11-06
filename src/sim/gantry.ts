@@ -10,12 +10,12 @@ import { t } from '../i18n';
 
 /** The cradle's ring (units), how slow the ship must be, the seconds a mend takes, the mends it has in it, and how near a fight shuts it (units). */
 export const GANTRY_R = 12;
-export const GANTRY_SPEED = 12;
+const GANTRY_SPEED = 12;
 export const GANTRY_MEND_T = 6;
 export const GANTRY_USES = 3;
-export const GANTRY_FIGHT_R = 200;
+const GANTRY_FIGHT_R = 200;
 /** The hunt at which it turns the ship away: the same flag the Custody's patrols read. */
-export const GANTRY_FLAG = 0.6;
+const GANTRY_FLAG = 0.6;
 
 export type GantryState = 'ready' | 'working' | 'shut' | 'refuses' | 'spent' | 'full';
 

@@ -10,11 +10,11 @@ import type { World } from './world';
 // (docs/SITES.md).
 
 export const MARKET_R = 16;
-export const MARKET_SPEED = 14;
-export const MARKET_DWELL = 2;
+const MARKET_SPEED = 14;
+const MARKET_DWELL = 2;
 export const MARKET_DEALS = 2;
-export const MARKET_FEAR_R = 220;
-export const MARKET_RUN = 10;
+const MARKET_FEAR_R = 220;
+const MARKET_RUN = 10;
 /** The ring it keeps clear of its berth when it runs, and how far it may run (units). */
 const RUN_MAX = 260;
 

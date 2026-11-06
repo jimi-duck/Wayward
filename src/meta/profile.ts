@@ -27,7 +27,7 @@ export interface Best {
   refit: number;
 }
 
-export interface RunRecord {
+interface RunRecord {
   at: number;
   score: number;
   time: number;

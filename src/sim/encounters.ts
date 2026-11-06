@@ -93,7 +93,7 @@ export interface Encounter {
 }
 
 /** Seconds the ship must spend inside an anchored weather event for it to pay. */
-export const DWELL: Partial<Record<EncounterId, number>> = { ion_storm: 8, nebula: 6, anomaly: 6 };
+const DWELL: Partial<Record<EncounterId, number>> = { ion_storm: 8, nebula: 6, anomaly: 6 };
 /** The events that are weather, and ride the feature they sit in. */
 export const WEATHER: ReadonlySet<EncounterId> = new Set<EncounterId>(['ion_storm', 'nebula', 'anomaly']);
 /** Whether an event is live: begun, and not over. A dormant place is neither. */

@@ -38,29 +38,29 @@ export interface Fleet {
 export interface News { id: string; text: string }
 
 /** Days a Drift fleet stays in a system. */
-export const DRIFT_STAY: [number, number] = [1, 2.5];
+const DRIFT_STAY: [number, number] = [1, 2.5];
 /** A Gutter system raids a neighbour this often a day; a raid lasts so many days; a raid on nobody's system takes it this often. */
-export const RAID_CHANCE = 0.25;
-export const RAID_DAYS = 2;
-export const RAID_TAKE = 0.3;
+const RAID_CHANCE = 0.25;
+const RAID_DAYS = 2;
+const RAID_TAKE = 0.3;
 /** What a raid does to a port: Cyrite and food dearer. */
 export const RAID_MARKUP = 1.3;
 /** A Holdfast next to the Net throws it back this often a day, for so many days. */
-export const HOLD_CHANCE = 0.2;
-export const HOLD_DAYS = 1.5;
+const HOLD_CHANCE = 0.2;
+const HOLD_DAYS = 1.5;
 /** A Voice system builds into an empty neighbour this often a day. */
-export const VOICE_GROW = 0.08;
+const VOICE_GROW = 0.08;
 /** Thren: what bleeds to each neighbour a day, what fades a day (much more where the Net is), and the most a system holds. */
-export const THREN_SPREAD = 0.08;
-export const THREN_FADE = 0.05;
-export const THREN_BURN = 0.35;
+const THREN_SPREAD = 0.08;
+const THREN_FADE = 0.05;
+const THREN_BURN = 0.35;
 /** Of the Thren next door, the share a full tank draws into the Wayward's system a day. */
-export const THREN_PULL = 0.45;
+const THREN_PULL = 0.45;
 /** Thren a Thren lane brings with it. */
-export const THREN_LANE = 0.6;
+const THREN_LANE = 0.6;
 /** Thren at which a system has them about (cards, the chart), and at which they gather (news). */
 export const THREN_ABOUT = 0.3;
-export const THREN_THICK = 0.5;
+const THREN_THICK = 0.5;
 
 const wild = (s: StarSystem) => s.kind !== 'home' && s.kind !== 'edge';
 

@@ -23,7 +23,7 @@ export const TANK_MAX = 40;
 export const tankFor = (jump: number): number => Math.max(1, jump);
 
 /** A port's price for one unit of jump fluid, in Cyrite, from the Cyrite price on its board (about two). */
-export const FLUID_PRICE = 0.4;
+const FLUID_PRICE = 0.4;
 export const fluidPrice = (cyritePrice: number): number => Math.max(1, Math.round(cyritePrice * FLUID_PRICE));
 
 /**

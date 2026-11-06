@@ -18,7 +18,7 @@ export const hex = (name: string): string => {
 export type Rgb = string;
 
 /** A token's `r,g,b` triple. */
-export const rgbOf = (name: string): Rgb => {
+const rgbOf = (name: string): Rgb => {
   const h = hex(name);
   return [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(',');
 };

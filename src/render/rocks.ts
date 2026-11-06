@@ -72,7 +72,7 @@ const SIMPLEX = /* glsl */ `
     return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
   }`;
 
-export const lavaTime = { value: 0 };
+const lavaTime = { value: 0 };
 
 /** How a kind of rock looks: its cracks' glow, the stone's tint, how much of it is veined, how fast it pulses. */
 interface RockLook {
@@ -313,7 +313,7 @@ function shardGeometry(): BufferGeometry {
   return g;
 }
 
-const SEATS = 4, CLUSTER = 3, SHARDS_PER_ROCK = SEATS * CLUSTER;
+const SEATS = 4, CLUSTER = 3;
 const MAX_SHARDS = 640;
 
 /** Where crystals sit on a rock shape: in its hollows, spread apart, each leaning out along the surface. */

@@ -1,5 +1,5 @@
 import { GATES, LEGS, type RoadStop } from '../content/road';
-import { regionOf, regionDef, sysById, type Chart, type StarSystem } from './chart';
+import { regionOf, regionDef, type Chart, type StarSystem } from './chart';
 
 // ── where the Warden's Road applies ───────────────────────────────────────
 // A road journey's chart lays every region out as one line of stops
@@ -56,5 +56,3 @@ export function scriptKey(c: Chart, s: StarSystem): string | undefined {
   return stopAt(c, s)?.script;
 }
 
-/** Whether a system is a road gate, where an arrival plays at a Warden relay. */
-export const roadGate = (c: Chart, id: string): boolean => { const s = sysById(c, id); return (s.kind === 'gate' || s.kind === 'edge') && legOf(c, s) >= 0; };

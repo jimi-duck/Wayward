@@ -28,7 +28,7 @@ import type { RunStats } from './run';
 /** Gutter crews hunting you: this much more of the pursuit comes from ahead. */
 export const GUTTER_HUNT = 0.15;
 
-export interface FactionState {
+interface FactionState {
   notice: number;
   tier: Tier;
   /** Standing owed but not yet lost (a fraction of a point). */

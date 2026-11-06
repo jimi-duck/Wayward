@@ -82,9 +82,6 @@ const HAUL_AT = 80;
 const LINGER = 1.2;
 /** The torpedo bay: the one node the bay offers in the lesson. */
 export const LESSON_NODE = 'tp_bay';
-/** Cyrite over the price in the purse when the bay step begins. */
-const SPARE = 1;
-
 /** The Story's depot, set this far ahead and aside at the start: a short hop once the rock is mined. */
 const DEPOT_AT = 170;
 /** The training's Jump Gate, this far ahead (units, 10 km): the real one is far off, and the lesson is not the trip. */

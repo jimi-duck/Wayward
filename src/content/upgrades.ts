@@ -45,11 +45,11 @@ import type { Stats } from '../sim/stats';
 
 export type Branch =
   | 'laser' | 'torpedo' | 'mine' | 'plasma' | 'close' | 'mobility' | 'defence' | 'utility' | 'synergy' | 'salvage';
-export type Category = 'weapons' | 'defence' | 'ship';
-export type UpgradeKind = 'stat' | 'system' | 'spec' | 'synergy' | 'tech';
-export type TechFaction = 'gutter' | 'custody' | 'office' | 'voice' | 'thren';
+type Category = 'weapons' | 'defence' | 'ship';
+type UpgradeKind = 'stat' | 'system' | 'spec' | 'synergy' | 'tech';
+type TechFaction = 'gutter' | 'custody' | 'office' | 'voice' | 'thren';
 
-export interface Req { id: string; lv?: number; }
+interface Req { id: string; lv?: number; }
 
 export interface UpgradeDef {
   id: string;

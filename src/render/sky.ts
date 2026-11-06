@@ -1,8 +1,4 @@
-import {
-  AdditiveBlending, BackSide, CanvasTexture, Color, DoubleSide, Euler, EquirectangularReflectionMapping, Group, IcosahedronGeometry, InstancedMesh,
-  LinearFilter, Mesh, MeshBasicMaterial, MeshLambertMaterial, MirroredRepeatWrapping, MeshStandardMaterial, Object3D, OrthographicCamera, PlaneGeometry, Quaternion, RepeatWrapping, RingGeometry, Scene, ShaderMaterial,
-  SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, Vector3, Vector4, WebGLRenderTarget, type Texture, type WebGLRenderer,
-} from 'three';
+import { AdditiveBlending, BackSide, CanvasTexture, Color, DoubleSide, Euler, EquirectangularReflectionMapping, Group, IcosahedronGeometry, InstancedMesh, LinearFilter, Mesh, MeshLambertMaterial, MirroredRepeatWrapping, MeshStandardMaterial, Object3D, OrthographicCamera, PlaneGeometry, Quaternion, RepeatWrapping, RingGeometry, Scene, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, Vector3, Vector4, WebGLRenderTarget, type Texture, type WebGLRenderer } from 'three';
 import { farWorks } from './farworks';
 import { hulkModel } from './space';
 import { glowTexture } from './textures';
@@ -53,7 +49,7 @@ export interface Sky {
   palette?: number;
 }
 
-export interface Planet {
+interface Planet {
   kind: 0 | 1 | 2; // gas giant, rock, ice
   colA: Color;
   colB: Color;

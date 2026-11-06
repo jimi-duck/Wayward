@@ -25,7 +25,7 @@ import { routeBetween, sysById, type Chart } from './chart';
 /** Days she spends in each system before she picks the trail up. */
 export const SEARCH = 0.3;
 /** Days' start you have when you leave Cerro (on top of the lane she has to cross after you). */
-export const HUNT_START = 1;
+const HUNT_START = 1;
 /** The pursuit on the road, counted in days (docs/ROAD.md): the leg starts at `start`; an amber notice fires at `amber`, a red one at `red`, and at 0 she is in the system. */
 export const PURSUIT = { start: 2, amber: 1, red: 0.5 } as const;
 /** Seconds of a sortie that make a day (sim/journey.ts DAY). */

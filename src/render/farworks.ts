@@ -364,7 +364,7 @@ function spire(m: Skins, rnd: () => number): Group {
 
 const MAKERS = [ringStation, fleet, hulk, brokenRing, relay, mine, spire];
 /** The names of the works, by index, for the bench. */
-export const FAR_WORKS = ['station', 'fleet', 'hulk', 'broken ring', 'relay', 'mine', 'spire'] as const;
+const FAR_WORKS = ['station', 'fleet', 'hulk', 'broken ring', 'relay', 'mine', 'spire'] as const;
 
 /** One far work by index (see FAR_WORKS), merged, at the origin: the bench's way to look at one. */
 export function farWork(sky: Sky, which: number): Group {

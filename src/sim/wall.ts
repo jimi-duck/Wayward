@@ -1,7 +1,6 @@
 import { t } from '../i18n';
-import { WALL, WALL_BY_FLAG, type WallItem } from '../content/wall';
+import { WALL, type WallItem } from '../content/wall';
 import { isLongSet, type RegionSet } from '../content/regions';
-import type { Carry } from './breakout';
 
 // ── the Wall ──────────────────────────────────────────────────────────────
 // The evidence view, worked out from the journey's flags (content/wall.ts):
@@ -12,7 +11,7 @@ import type { Carry } from './breakout';
 /** The three-region chart's regions on the eight-region scale (Reach, Marches, Hollows). */
 const THREE_AS_LONG = [0, 1, 6] as const;
 
-export interface WallRow { item: WallItem; found: boolean }
+interface WallRow { item: WallItem; found: boolean }
 
 export interface WallView {
   /** Found rows first (in the order the story finds them), then the questions still open here or ahead. */
@@ -51,9 +50,4 @@ export function wallView(flags: Iterable<string>, at: number, set: RegionSet = '
   };
 }
 
-/** Flags that are clues, newly found between two flag sets: what the recap line names. */
-export const newClues = (before: Iterable<string>, after: Iterable<string>): WallItem[] => {
-  const was = new Set(before);
-  return [...after].filter((f) => !was.has(f)).map((f) => WALL_BY_FLAG[f]).filter((w): w is WallItem => !!w);
-};
 

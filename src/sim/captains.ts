@@ -146,7 +146,7 @@ export interface Form {
 /** Each run past them takes this off the odds. */
 export const RUN_LEARN = 0.22;
 /** Each payment puts the price up by this share. */
-export const FEE_RISE = 0.5;
+const FEE_RISE = 0.5;
 
 export const CAPTAIN_BY_ID: Record<string, CaptainDef> = Object.fromEntries(CAPTAINS.map((c) => [c.id, c]));
 

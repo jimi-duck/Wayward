@@ -4,7 +4,7 @@ import { CARD_BY_ID } from '../src/sim/comms';
 import { newJourney, sortieDef, type Journey } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { SCRIPT } from '../src/content/script';
-import { GATES, LEGS, ROAD } from '../src/content/road';
+import { GATES, LEGS } from '../src/content/road';
 
 // The Reach on the road: the chapter script plays stop by stop, from data, in a world with a quiet sky.
 

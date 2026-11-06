@@ -439,10 +439,6 @@ export function pickVariant(t: number, aliens: readonly Alien[], rng: Rng, theat
   return pool[pool.length - 1] ?? null;
 }
 
-/** The archetype-only picker, as before variants: kept for callers that want a kind. */
-export function pickKind(t: number, aliens: readonly Alien[], rng: Rng): AlienKind | null {
-  return pickVariant(t, aliens, rng)?.kind ?? null;
-}
 
 /** An elite modifier that suits this archetype. */
 export function pickElite(kind: AlienKind, faction: Faction, rng: Rng): EliteId {

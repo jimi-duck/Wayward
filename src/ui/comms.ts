@@ -120,7 +120,7 @@ export function glanceLine(gist: string, title: string, text: string): string {
 }
 
 /** A ledger row's figure: cargo in Cyrite, credit in CR (the two are never one number), or a word. */
-export function ledgerValue(r: LedgerRow): string {
+function ledgerValue(r: LedgerRow): string {
   const amount = r.n ?? r.cr;
   if (amount === undefined) return t(r.v ?? '');
   return (amount < 0 ? '−' : '') + t(r.n !== undefined ? '{n} Cyrite' : '{n} CR', { n: Math.abs(amount) });
@@ -131,7 +131,7 @@ export interface Row { k: string; v: string; tone: string }
 const rowsOf = (rows: LedgerRow[] | undefined): Row[] => (rows ?? []).map((r) => ({ k: t(r.k), v: ledgerValue(r), tone: r.tone ?? '' }));
 
 /** One Neon Glass panel of the opening's sheets: who, a status word, then what it says. */
-export interface SheetPanel {
+interface SheetPanel {
   role: GlassRole;
   from: string;
   status: string;

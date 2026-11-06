@@ -91,7 +91,7 @@ export const CALM: Readonly<Influence> = Object.freeze({
 });
 
 /** How the composer is tuned: how far ahead it deals, when it starts, how many features it keeps. */
-export const COMPOSE = {
+const COMPOSE = {
   /** Deal a new expanse when the nearest one ahead has its rim further than this from the ship. */
   lookahead: 1800,
   /** Its rim is dealt this far ahead, and within this bearing off the nose. */
@@ -378,7 +378,7 @@ export type ReportKind = 'sight' | 'lock' | 'jam' | 'pull' | 'drag' | 'conceal' 
 export interface Report { kind: ReportKind; value: number; }
 
 /** Least hold before an effect is worth a word. */
-export const REPORT_AT = 0.3;
+const REPORT_AT = 0.3;
 
 /** The conditions to tell the player about, strongest first, at most `max`. */
 export function reports(inf: Influence, max = 2): Report[] {

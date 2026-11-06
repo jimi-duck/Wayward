@@ -59,7 +59,7 @@ export const nodeName = (id: string): string => UPGRADE[id]?.name ?? FITTING[id]
 export const nodeText = (id: string, lv: number): string => (UPGRADE[id] ? upgradeText(UPGRADE[id]!, lv) : FITTING[id]?.text ?? MODULE_BY_ID[id]?.text ?? '');
 
 /** Whether a fitting is yard work: in the Story every install is, so it needs a work bay (a port). */
-export const yardWork = (id: string, _lv: number, arcade: boolean): boolean => !arcade && NODE[id] !== undefined;
+const yardWork = (id: string, _lv: number, arcade: boolean): boolean => !arcade && NODE[id] !== undefined;
 
 /** Levels fitted beyond what the ship left with: every price rises with them. */
 export function built(levels: Levels): number {
@@ -207,7 +207,7 @@ export function quickPicks(ctx: BayCtx, n = PICKS): WebNode[] {
 const STOCK_BRANCH: ReadonlySet<string> = new Set(['laser', 'torpedo']);
 
 export type PickRole = 'weapons' | 'defence' | 'ship';
-export const PICK_ROLES: readonly PickRole[] = ['weapons', 'defence', 'ship'];
+const PICK_ROLES: readonly PickRole[] = ['weapons', 'defence', 'ship'];
 
 /** Which of the three a node is: its upgrade's category, and the ship's for a fitting. */
 export const roleOf = (id: string): PickRole => UPGRADE[id]?.cat ?? 'ship';
@@ -232,7 +232,7 @@ function shortOf(ctx: BayCtx): string | null {
   return null;
 }
 
-export function arcadePicks(ctx: BayCtx): WebNode[] {
+function arcadePicks(ctx: BayCtx): WebNode[] {
   // the ship leaves with lasers and torpedoes, so those are what it starts out leaning to
   const affinity = new Map<string, number>([['laser', 1], ['torpedo', 1]]);
   for (const [id, lv] of Object.entries(ctx.levels)) for (const t of UPGRADE[id]?.tags ?? []) affinity.set(t, (affinity.get(t) ?? 0) + lv);

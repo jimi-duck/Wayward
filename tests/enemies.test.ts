@@ -3,7 +3,7 @@ import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { BOSS_FIRST, FACTIONS, INTRO_HP, bossGap } from '../src/sim/bosses';
 import { bossHp, pressure } from '../src/sim/director';
-import { ARCADE_OPENING, SPAWN_NEAR, VARIANTS, alienMax, spawnAlien } from '../src/sim/enemies';
+import { ARCADE_OPENING, SPAWN_NEAR, VARIANTS, spawnAlien } from '../src/sim/enemies';
 import type { Bulwark } from '../src/sim/field';
 import { Rng } from '../src/sim/rng';
 import { newShip } from '../src/sim/ship';
