@@ -27,6 +27,8 @@ export const FLOOR = {
   moments: 20,
   /** Seconds a line of chatter (not story) may wait before it is dropped. */
   stale: 25,
+  /** Seconds a line tied to an event (a patrol's challenge, a warning, a wave inbound) may wait: it is said in step with the event or not at all. */
+  live: 6,
   /** Seconds after a road arrival that nothing is said but the scan: the camera's sweep over the new system and its title (render/sector.ts) play first. */
   arrival: 9,
   /** Seconds after a card closes in which a Voice made by its answer is a reply: it skips the quiet window and the gap, and waits only for the line on screen. Raiders answer a refusal; Sam answers a fitted launcher. Under the 3.5 s Sam's breach lines wait, so those keep the quiet. */
@@ -38,7 +40,11 @@ export const SCAN_LINE = 'Scanning for transmissions';
 
 export type Kind = 'voice' | 'signal';
 type Held = Extract<GameEvent, { type: 'ping' }> | Extract<GameEvent, { type: 'storyNotice' }>;
-interface Line { ev: Held; kind: Kind; at: number; keep: boolean; reply: boolean }
+interface Line { ev: Held; kind: Kind; at: number; keep: boolean; reply: boolean; live: boolean }
+
+/** Lines said because something just happened (sim/traffic, stage, mission, den, gantry, claim rules), not because the story reached them. */
+const REACTIVE = /^(relay_|patrol|traffic_|say_|warn_|mis_|gantry_|den_|claim_|seed_studied)/;
+const reactive = (e: Held): boolean => e.type === 'ping' && REACTIVE.test(e.id);
 
 const CHATTER_IDS = new Set(CHATTER.map((c) => c.id));
 /** Whether an event is a Voice or a Signal the floor paces, and which. */
@@ -65,18 +71,20 @@ export class Floor {
       if (!kind || this.out.has(e)) continue;
       const ev = e as Held;
       const reply = kind === 'voice' && !this.momentOpen && now - this.momentClosed < FLOOR.reply;
-      this.q.push({ ev, kind, at: now, keep: kind === 'signal' || !(ev.type === 'ping' && CHATTER_IDS.has(ev.id)), reply });
+      this.q.push({ ev, kind, at: now, keep: kind === 'signal' || !(ev.type === 'ping' && (CHATTER_IDS.has(ev.id) || reactive(ev))), reply, live: reactive(ev) });
       events.splice(i--, 1);
     }
   }
 
   /** Let the next line out if the floor is free. Lines keep the order they were made in: the story is told in order. */
   step(now: number, free: boolean): Held | null {
-    this.q = this.q.filter((l) => l.keep || now - l.at < FLOOR.stale);
+    this.q = this.q.filter((l) => (l.live ? now - l.at < FLOOR.live : l.keep || now - l.at < FLOOR.stale));
     if (!free || this.momentOpen || now < this.floorUntil || !this.q.length) return null;
-    const pick = this.hush ? this.q.find((l) => l.ev.type === 'storyNotice' && l.ev.headline === SCAN_LINE) : this.q[0]!;
+    // a line tied to an event goes ahead of the queue, and ahead of the gap: it names what is happening now
+    const hot = this.hush ? undefined : this.q.find((l) => l.live && now >= this.quietUntil);
+    const pick = hot ?? (this.hush ? this.q.find((l) => l.ev.type === 'storyNotice' && l.ev.headline === SCAN_LINE) : this.q[0]!);
     if (!pick) return null;
-    if (pick.kind === 'voice' && !pick.reply && (now < this.quietUntil || now - this.lastVoice < FLOOR.gap)) return null;
+    if (pick.kind === 'voice' && !pick.reply && (now < this.quietUntil || (!pick.live && now - this.lastVoice < FLOOR.gap))) return null;
     this.q.splice(this.q.indexOf(pick), 1);
     if (pick.kind === 'voice') { this.lastVoice = now; this.floorUntil = now + FLOOR.hold; }
     else this.floorUntil = now + FLOOR.signal;
