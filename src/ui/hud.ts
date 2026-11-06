@@ -934,6 +934,8 @@ export class Hud {
 
   /** Ned's yard is done (sim/postjump.ts YARD_TITLE_AT): the new name in the arrival title card's style, with what was done as its last line. */
   private nameCard(): void {
+    // the title takes the centre: no notice may sit under or across it
+    this.notifier.clear();
     text($('tc-k'), t('Ned’s yard · work done'));
     text($('tc-t'), 'WAYWARD');
     text($('tc-s'), t('Reprogrammed · Repainted · Renamed'));
