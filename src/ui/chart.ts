@@ -89,7 +89,7 @@ export function svg(tag: string, attrs: Record<string, string | number>, text = 
 }
 
 /** Small line glyphs on a 16 unit grid: a kind of system, and the four things a lane costs. */
-export const GLYPH: Record<string, string> = {
+const GLYPH: Record<string, string> = {
   // places: each its own silhouette, one outline weight (the map marks use the same paths)
   port: 'M3 3h10v10H3zM6 8h4M8 6v4',
   mining: 'M8 1.5l5.5 3.2v6.6L8 14.5l-5.5-3.2V4.7zM8 5.8l2.4 1.4v1.6L8 10.2 5.6 8.8V7.2z',

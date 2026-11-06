@@ -60,10 +60,10 @@ export const AUDIT_R = 24;
 /** Straight-line distance from the start to the Jump Gate: about a minute flat out. */
 export const LANE_DIST = 2600;
 /** The port: this far along the line, this far off it. */
-export const PORT_ALONG = 1000;
-export const PORT_OFF = 200;
-export const LANE_R = 16;
-export const PORT_R = 14;
+const PORT_ALONG = 1000;
+const PORT_OFF = 200;
+const LANE_R = 16;
+const PORT_R = 14;
 /** The gate and the depot keep their own: inside this (units) nothing can hurt the ship, and hostile hulls will not enter, but circle outside. */
 export const SAFE_R = 40;
 /** How far outside the safe ring a hostile hull holds, and how fast (of its cruise) it circles there. */
@@ -332,7 +332,7 @@ export function pickPursuer(heat: number, rng: Rng, gutter = 0.22, ahead: readon
 // Jump Gate will not hold still (World.navNoise).
 
 /** Seconds to the first swarm, and between swarms, with an empty tank in thin Thren and a full one in thick; the fluid aboard divides it. */
-export const SWARM_FIRST = 50;
+const SWARM_FIRST = 50;
 export const swarmGap = (thren: number, fuel: number) => lerp(110, 40, clamp(thren, 0, 1)) / (0.5 + clamp(fuel / TANK_MAX, 0, 1));
 /** Motes in a swarm, and the Thren at which a web layer leads it. */
 export const swarmSize = (thren: number) => 3 + Math.round(clamp(thren, 0, 1) * 3);
@@ -361,7 +361,7 @@ const CYRITE: Record<RockKind, readonly [number, number, number]> = {
   volatile: [0, 0, 0],
 };
 /** Of a clean take, what rock broken any other way (a ram, lightning) leaves behind. */
-export const SCRAP = 0.3;
+const SCRAP = 0.3;
 /** Of a clean take, what a torpedo, mine or burn leaves: the blast destroys the rest. One number, so a booster can multiply it. */
 export const TORP_YIELD = 0.5;
 
@@ -376,12 +376,12 @@ export function rockYield(kind: RockKind, size: RockSize, k = 1): Yield {
 // ── the course ────────────────────────────────────────────────────────────
 
 /** Where the first system past Cerro puts its places, as a share of the way to the Jump Gate and how far off the line (right is positive). */
-export const FIRST_AUDIT = { along: 0.3, off: 300 };
-export const FIRST_DEPOT = { along: 0.55, off: -190 };
+const FIRST_AUDIT = { along: 0.3, off: 300 };
+const FIRST_DEPOT = { along: 0.55, off: -190 };
 /** Ned's yard (owner, 5 November 2026: a separate site, a deck set in a big asteroid): past the middle of the way, off to the side opposite the depot. */
-export const FIRST_YARD = { along: 0.58, off: 170 };
+const FIRST_YARD = { along: 0.58, off: 170 };
 /** The yard's mark (units): a work pad, never a berth. */
-export const YARD_R = 20;
+const YARD_R = 20;
 /** Rock and bulwarks are cleared this far round the yard while the hull waits for it. */
 export const YARD_CLEAR = 46;
 
@@ -399,7 +399,7 @@ export function course(heading: number, x = 0, z = 0, def: SortieDef = HOME): { 
 }
 
 /** Where the Narrows' relay mast stands against its gate (units): off the ring, never in the lane. */
-export const RELAY_OFF = { x: 80, z: -70 };
+const RELAY_OFF = { x: 80, z: -70 };
 /** The relay mast of a road gate (the Narrows and every arrival after it), if this sortie has one. */
 export const relayOf = (b: Breakout): { x: number; z: number } | null => (b.def.script === 'narrows' || b.def.relay ? { x: b.lane.x + RELAY_OFF.x, z: b.lane.z + RELAY_OFF.z } : null);
 

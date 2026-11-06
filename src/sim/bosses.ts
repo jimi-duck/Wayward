@@ -28,7 +28,7 @@ import type { ShipState } from './ship';
 // It leaves when its fuse runs out (the fuse burns only on station). A kill
 // pays the bounty; the world adds the salvage.
 
-export const BOSS_WARN = 2.6;
+const BOSS_WARN = 2.6;
 /** Seconds after the warning that the hail opens. */
 const HAIL_AFTER = 1.1;
 /** Seconds from "engage" to the drop. */
@@ -45,7 +45,7 @@ const STAY = 48, JUMP_TIME = 2.6;
 /** Where a sighted ship appears, from the ship's bow (clear of every detection range). */
 const SIGHT_AT = 190, SIGHT_ARC = 0.6, SIGHT_Y = 28;
 /** A ship that has noticed you and is being run from burns its fuse at this rate while you are beyond 3.5 times its station: it hunts longer. */
-export const CHASE_BURN = 0.6, CHASE_FAR = 3.5;
+const CHASE_BURN = 0.6, CHASE_FAR = 3.5;
 /** After an unbroken evasion the next one is sharper-eyed: range and speed of noticing. */
 export const WARY_R = 1.15, WARY_T = 0.8;
 /** What staying clear pays when it jumps out: a share of its bounty in score, and a little Krail. */

@@ -11,7 +11,7 @@ type Tone = 'gain' | 'loss' | 'stop';
 interface Chip { tone: Tone; text: string; fluid?: boolean }
 
 /** How many chips show before the rest fold into "+N more". */
-export const MAX_CHIPS = 4;
+const MAX_CHIPS = 4;
 
 const OVER = { mass: 'Mass over limit', power: 'Power over limit', heat: 'Heat over limit' } as const;
 

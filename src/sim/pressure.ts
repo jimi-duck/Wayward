@@ -17,7 +17,7 @@ export const REARM = 0.05;
 /** The same warning does not come twice inside this many seconds. */
 export const DEBOUNCE = 25;
 /** Calloway's "close behind" line: jumps behind you at most. */
-export const CLOSE_BEHIND = 1;
+const CLOSE_BEHIND = 1;
 
 export type Act = 'quiet' | 'leave';
 

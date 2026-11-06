@@ -18,7 +18,7 @@ import { FONT, INK, RGB, rgba } from './palette';
 // In the nebula the sensors are down: a shorter reach and static.
 
 /** Units across the scope's radius: 1.0 km. */
-export const RADAR_RANGE = 100;
+const RADAR_RANGE = 100;
 const BEZEL = 15;
 const ARCS = 24;
 

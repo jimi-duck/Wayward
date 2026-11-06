@@ -24,11 +24,11 @@ export const THREADS: Thread[] = [
   { id: 'account', name: 'The Account', contact: 'Kellern Recovery · Accounts', jobs: ['wanted', 'heavy_tanker', 'missing_payroll', 'drift_cache', 'be_bait', 'two_captains'] },
 ];
 
-export const THREAD_BY_ID = Object.fromEntries(THREADS.map((t) => [t.id, t])) as Record<ThreadId, Thread>;
+const THREAD_BY_ID = Object.fromEntries(THREADS.map((t) => [t.id, t])) as Record<ThreadId, Thread>;
 
 /** The breach debt the Account starts from, and what each step takes off it (to nothing at the sixth). */
 export const ACCOUNT_DEBT = 80;
-export const DEBT_STEP = 14;
+const DEBT_STEP = 14;
 
 /** A flag test; a set is used as it is, since this runs every step on the road (sim/evidence.ts `derive`). */
 const has = (flags: Iterable<string>) => { const f = flags instanceof Set ? flags : new Set(flags); return (x: string) => f.has(x); };
@@ -37,7 +37,7 @@ const has = (flags: Iterable<string>) => { const f = flags instanceof Set ? flag
 const ASIDE = ['sell', 'tell', 'warn', 'strip', 'rob'];
 
 /** Whether a job was won for its thread: taken on and done, not settled aside. */
-export const stepWon = (flags: Iterable<string>, job: string): boolean => { const h = has(flags); return h(`job_${job}_won`) && !ASIDE.some((a) => h(`job_${job}_${a}`)); };
+const stepWon = (flags: Iterable<string>, job: string): boolean => { const h = has(flags); return h(`job_${job}_won`) && !ASIDE.some((a) => h(`job_${job}_${a}`)); };
 
 /** Jobs of a thread won. */
 export function won(flags: Iterable<string>, id: ThreadId): number {
@@ -62,5 +62,3 @@ export const accountCalled = (flags: Iterable<string>): boolean => { const list 
 /** What is left of the breach debt, after the Account's steps. */
 export const debtLeft = (flags: Iterable<string>): number => Math.max(0, ACCOUNT_DEBT - DEBT_STEP * won(flags, 'account'));
 
-/** The thread a job is in, if any. */
-export const threadOf = (job: string): Thread | undefined => THREADS.find((t) => t.jobs.includes(job));

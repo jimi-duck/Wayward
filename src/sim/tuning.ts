@@ -99,13 +99,11 @@ export const BANK_REFILL = 18;
 export const TORP_SPEED = 16;
 export const TORP_ACCEL = 75;
 export const TORP_MAX = 64;
-export const TORP_LIFE = 3.4;
 export const TORP_TURN = 3.4;
 export const TORP_SEEK = 95;
 export const TORP_FUSE = 1.5;
 export const TORP_BLAST = 9;
 export const TORP_DAMAGE = 6;
-export const TORP_RACK = 3;
 export const TORP_RELOAD = 3.4;
 /** Seconds between two torpedoes from a full rack. */
 export const TORP_SPACING = 0.45;

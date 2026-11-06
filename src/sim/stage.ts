@@ -72,7 +72,7 @@ export class Stage {
   result: SitResult | null = null;
   /** Seconds since the goal was taken, and seconds of hold or follow so far. */
   clock = 0; hold = 0; out = 0;
-  private threatT = -1; private trapped = false; private sprang = false; private nearSaid = false; private provoked = false;
+  private threatT = -1; private sprang = false; private nearSaid = false; private provoked = false;
   /** The goal line on the HUD ('' when there is none). */
   line = '';
   /** A hail ring for the call: set from the def. */
@@ -240,7 +240,6 @@ export class Stage {
       this.run = new Run(this.def, { x: this.x, z: this.z, ux, uz }, w, this.actors.filter((a) => (this.def.actors ?? []).some((sp) => sp.target && sp.tag === a.ward?.tag)));
     }
     if (this.def.threat) this.threatT = this.def.threat.after;
-    this.trapped = !!this.def.trap;
     w.events.push({ type: 'sectorEvent', id: 'scene', name: t(this.def.name), text: this.line });
   }
 

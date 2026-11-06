@@ -40,7 +40,7 @@ const RANK: Record<NoticeType, number> = { arrival: 0, warning: 1, done: 2, deni
 /** Seconds on screen, and before the same message may come again. */
 export const SECS = 4;
 /** A finished job is on screen this long. */
-export const SECS_DONE = 6;
+const SECS_DONE = 6;
 export const GAP = 8;
 /** How many plates show at once, and how many wait before the oldest waiting one goes to the corner log. */
 export const SHOWN = 2;

@@ -1,4 +1,3 @@
-import { Color } from 'three';
 import type { Faction } from '../sim/enemies';
 
 // ── one look for the whole game ──────────────────────────────────────────
@@ -42,4 +41,3 @@ export const GLOW = {
   core: 3.6,
 };
 
-export const tintOf = (n: number): Color => new Color(n);

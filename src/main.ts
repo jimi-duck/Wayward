@@ -15,9 +15,9 @@ import { chapterSave, clearJourney, exportJourney, hasBackup, importJourney, loa
 import { recap } from './sim/chapters';
 import { bounty } from './sim/mission';
 import { cy } from './sim/purse';
-import { ARCADE_SURVIVAL, SURVIVAL } from './content/survival';
+import { ARCADE_SURVIVAL } from './content/survival';
 import { autoCourse, bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
-import { regionsOf, routeBetween, sysById } from './sim/chart';
+import { routeBetween, sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
 import { JobDone } from './ui/jobdone';

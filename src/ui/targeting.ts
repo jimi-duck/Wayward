@@ -414,7 +414,7 @@ export class Targeting {
 
   /** Hulls out of view: the most pressing first (armed and near, then what you cannot see), each pinned to the edge along its bearing. */
   private drawThreats(world: World, sector: Sector, live: boolean): void {
-    const s = sector.shipNow, m = 30;
+    const m = 30;
     let n = 0;
     if (live) {
       const out = threats(world, 24).filter((f) => {

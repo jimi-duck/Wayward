@@ -13,7 +13,7 @@ import type { World } from './world';
 // way the screen and the scope turn.
 
 /** Hulls further than this (units, 1.1 km) are not worth a mark. */
-export const GUIDE_RANGE = 110;
+const GUIDE_RANGE = 110;
 /** A hull further than this (units, 1.2 km: hulls are culled at 2.1 km) shows only as an unknown contact: no faction, no worth, no type. */
 export const IDENT_RANGE = 120;
 /** Within this off the nose a thing counts as dead ahead. */
@@ -133,7 +133,3 @@ export function sayBearing(rel: number): { word: 'ahead' | 'left' | 'right' | 'b
   return { word: rel > 0 ? 'left' : 'right', deg };
 }
 
-/** The side of a bearing the shortest turn takes: +1 left, -1 right. */
-export function turnSide(rel: number): 1 | -1 {
-  return rel >= 0 ? 1 : -1;
-}

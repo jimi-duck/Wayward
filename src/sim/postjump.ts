@@ -20,7 +20,7 @@ export const AUDIT_DOCK = 'Kellern Audit Dock';
 export const SUPPLY_DEPOT = 'Frontier Supply Depot';
 
 /** The flag that lifts the owner lock (content/story.ts `story_sam`): from here on the course is the Jump Gate. */
-export const LOCK_LIFTED = 'ship_stolen';
+const LOCK_LIFTED = 'ship_stolen';
 export const lockLifted = (flags: ReadonlySet<string> | readonly string[]): boolean => (flags instanceof Set ? flags.has(LOCK_LIFTED) : (flags as readonly string[]).includes(LOCK_LIFTED));
 
 /**
@@ -50,16 +50,16 @@ export const PAINT_CARD = 7;
 export const PAINT_WAKE = 28;
 
 /** The straight run from the arrival to the Jump Gate, in units: 10 km, about 25 s flat out. */
-export const POSTJUMP_LANE = 1000;
+const POSTJUMP_LANE = 1000;
 
 /**
  * The sky: a worked-over scrap expanse. A gantry works, a breaker field and a graveyard of hulls are the spent
  * mine's leavings, a Cyrite seam is what is left in it, and a passage is the far traffic that still crosses.
  */
-export const POSTJUMP_SKY: Exp = { x: 'scrap', f: ['works', 'breakers', 'graveyard', 'seam', 'passage'] };
+const POSTJUMP_SKY: Exp = { x: 'scrap', f: ['works', 'breakers', 'graveyard', 'seam', 'passage'] };
 
 /** The first level's own numbers: a worked-out field (thin, with a few veined rocks left), a slow pursuit, no blockade. */
-export const WORKED = { density: 0.6, rich: 0.1, pace: { first: 150, calm: 30 }, heatRate: 0.7 } as const;
+const WORKED = { density: 0.6, rich: 0.1, pace: { first: 150, calm: 30 }, heatRate: 0.7 } as const;
 
 /**
  * What the first system past Cerro is, laid over what the chart dealt it. The chart keeps its row (its name, holder,

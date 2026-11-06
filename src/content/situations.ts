@@ -29,7 +29,7 @@ import type { Holder, SystemKind } from './systems';
 // region, interaction in the middle, understanding late. The player's
 // understanding waits; the presence does not.
 
-export type SitGroup = 'corporate' | 'frontier' | 'unknown';
+type SitGroup = 'corporate' | 'frontier' | 'unknown';
 /** How a situation ended: carried through, lost, turned down, or left behind unanswered. */
 export type SitResult = 'won' | 'lost' | 'declined' | 'ignored';
 /** What stands at the site, drawn in render/stage.ts. */
@@ -428,8 +428,6 @@ SITUATIONS.push(...MISSIONS);
 
 export const SITUATION_BY_ID: Record<string, SituationDef> = Object.fromEntries(SITUATIONS.map((s) => [s.id, s]));
 
-/** The kinds of situation that are only variants, never dealt out on their own. */
-export const ARC_FLAGS = ['saw_thren', 'saw_voice', 'saw_object', 'saw_unknown_ship', 'saw_hulk', 'saw_signal', 'saw_pulse'];
 
 // ── the timetable ─────────────────────────────────────────────────────────
 // Where a situation is promised. `col` is the column inside the region (0 the

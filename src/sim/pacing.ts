@@ -58,7 +58,7 @@ export interface ApproachDef {
 }
 
 /** When the approaches' `late` weights are reached. */
-export const LATE = 600;
+const LATE = 600;
 
 export const APPROACHES: Record<Approach, ApproachDef> = {
   // looks you over first: the opening's way in, and a cruiser's habit
@@ -70,7 +70,7 @@ export const APPROACHES: Record<Approach, ApproachDef> = {
   circle:      { at: 90,  weight: { interceptor: 0.8 },                bearing: [PACING.noseClear, Math.PI] },
   intercept:   { at: 120, weight: { interceptor: 0.9 },                bearing: [PACING.noseClear, 1.3] },
 };
-export const APPROACH_ORDER = Object.keys(APPROACHES) as Approach[];
+const APPROACH_ORDER = Object.keys(APPROACHES) as Approach[];
 
 /** How a hull of this role closes on the ship, `t` seconds into a run. Specials (the web layer) always come straight in. */
 export function pickApproach(role: Role, t: number, rng: Rng): Approach {

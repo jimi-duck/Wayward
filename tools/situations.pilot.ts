@@ -2,7 +2,7 @@ import { writeFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { ARC, SITUATION_BY_ID, SITUATIONS } from '../src/content/situations';
 import { REGIONS_LONG } from '../src/content/regions';
-import { makeChart, regionOf, sysById } from '../src/sim/chart';
+import { makeChart, regionOf } from '../src/sim/chart';
 import { endSortie, newJourney, plot, sortieDef } from '../src/sim/journey';
 import { laySituations } from '../src/sim/situations';
 import { World } from '../src/sim/world';

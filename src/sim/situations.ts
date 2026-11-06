@@ -5,7 +5,7 @@ import {
 import { MISSIONS } from '../content/missions';
 import { isLongSet, REGIONS_LONG } from '../content/regions';
 import { roadRegion, stopAt } from './road';
-import { jumps, lanesFrom, netted, pushNet, regionOf, sysById, type Chart, type Sit, type StarSystem } from './chart';
+import { lanesFrom, netted, pushNet, regionOf, sysById, type Chart, type Sit, type StarSystem } from './chart';
 import { Rng } from './rng';
 
 // ── situations on the chart ───────────────────────────────────────────────
@@ -234,9 +234,3 @@ export function settle(c: Chart, at: string, result: SitResult, ctx: SettleCtx, 
   return lines;
 }
 
-/** How near the front the Net is to a system, in jumps from the nearest netted one (0 netted). Used for the chart's fear. */
-export function netDistance(c: Chart, id: string): number {
-  let best = Infinity;
-  for (const s of c.systems) if (netted(c, s.id)) best = Math.min(best, jumps(c, id, s.id));
-  return best;
-}

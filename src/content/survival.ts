@@ -38,7 +38,7 @@ export const ARCADE_SURVIVAL: SurvivalId = 'prospector';
 export interface Cargo { parts: number; cyrite: number; ore: number }
 
 /** The sector events, by id (sim/encounters.ts), and the weight each has in the draw. */
-export type EventWeights = Record<'rich_field' | 'distress' | 'convoy' | 'ion_storm' | 'nebula' | 'derelict' | 'anomaly' | 'skirmish', number>;
+type EventWeights = Record<'rich_field' | 'distress' | 'convoy' | 'ion_storm' | 'nebula' | 'derelict' | 'anomaly' | 'skirmish', number>;
 
 export interface Survival {
   id: SurvivalId;

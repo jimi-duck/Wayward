@@ -4,7 +4,7 @@ import type { InputFrame } from '../src/input/types';
 import { EXPANSES, FEATURES, type FeatureId } from '../src/content/features';
 import { HAZARDS, PROFILES, SITE_OF_PLACE } from '../src/content/profiles';
 import { migrate } from '../src/meta/save';
-import { regionOf, sysById, type Chart } from '../src/sim/chart';
+import { regionOf, type Chart } from '../src/sim/chart';
 import { composeChart, expOf, objectiveOf, signature, skyOfSignature } from '../src/sim/experience';
 import { newJourney, sortieDef, type Journey } from '../src/sim/journey';
 import { HEAVY_GOALS } from '../src/sim/situations';

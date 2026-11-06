@@ -11,7 +11,7 @@ import { count, THREADS } from './threads';
 
 /** The flag a road gate's handshake sets: its relay is lit. The Narrows' also sets `relay_broadcast`. */
 export const relayFlag = (script: string) => `relay_${script}`;
-export const RELAY_FLAGS = GATES.map((g) => relayFlag(g.script));
+const RELAY_FLAGS = GATES.map((g) => relayFlag(g.script));
 
 /** Relays lit on the road. */
 export function relaysLit(flags: ReadonlySet<string>): number {

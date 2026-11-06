@@ -131,7 +131,6 @@ describe('the story beats', () => {
     // Lane Control's notice offers no way out: one action, on towards the audit dock
     expect(w.comms?.choices.map((c) => c.id)).toEqual(['proceed']);
     expect(w.comms?.ledger?.find((r) => r.k === 'Outstanding')?.cr).toBe(80);
-    const before = w.result().carry;
     w.answer('proceed');
     // Lane Control flies her in; Sam calls 2 km out from the dock
     run(95);

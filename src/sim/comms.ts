@@ -36,7 +36,7 @@ import type { Rng } from './rng';
 //                  bait) or to the odds (a bluff), and the odds move with
 //                  heat, flags, standing and fitted systems.
 
-export type CardKind = 'trade' | 'plea' | 'job' | 'warning' | 'shakedown' | 'checkpoint' | 'distress' | 'rumour' | 'captain' | 'offer';
+type CardKind = 'trade' | 'plea' | 'job' | 'warning' | 'shakedown' | 'checkpoint' | 'distress' | 'rumour' | 'captain' | 'offer';
 /** What kind of answer a choice is, for the pilot's policies and the report. */
 export type Tone = 'fight' | 'run' | 'pay' | 'bluff' | 'trade' | 'help' | 'refuse';
 /** Who you can stand well or badly with. */
@@ -137,7 +137,7 @@ export interface Cond {
 /** A number, or a token read off the ship: the card's fee, all of it, half of it. */
 export type Amount = number | 'fee' | '-fee' | '-all' | '-half';
 
-export interface Spawn { variant: string; n: number; from?: 'ahead' | 'behind' | 'around' }
+interface Spawn { variant: string; n: number; from?: 'ahead' | 'behind' | 'around' }
 
 /** A job: carry something somewhere, and be paid on arrival. */
 export interface JobDef {
@@ -429,7 +429,6 @@ export interface Open {
 
 /** Seconds into a Breakout before the first card, and the gap between chance cards. */
 export const COMMS_FIRST = 24;
-export const commsGap = (heat: number, rng: Rng) => rng.range(30, 46) + (1 - heat) * 8;
 /** Within this distance of the port, its approach calls (once). */
 export const PORT_CALL = 150;
 /** The world's speed while an ambush or a declaration waits. */
@@ -468,7 +467,7 @@ export function condOk(c: Cond | undefined, x: Ctx): boolean {
 }
 
 /** Each region out adds this share to every card fee: the late game still has somewhere for chits to go. */
-export const FEE_REGION = 0.12;
+const FEE_REGION = 0.12;
 
 /** The card's fee for this ship, now: a faction that has marked you charges more. */
 export function feeFor(def: CardDef, x: Ctx): number {
@@ -538,7 +537,7 @@ const upgradeName = (id: string) => UPGRADES.find((u) => u.id === id)?.name ?? M
 const STANDING_WORDS: Record<Standing, string> = {
   custody: 'the Custody', gutter: 'the Gutter', frontier: 'Frontier Supply', guild: 'the Dust Traders', kellern: 'Kellern Mining', miners: 'the miners',
 };
-export const standingName = (s: Standing) => STANDING_WORDS[s];
+const standingName = (s: Standing) => STANDING_WORDS[s];
 
 /** The chance a choice's odds give, clamped to a gamble (never certain, never hopeless). */
 export function oddsFor(o: Odds, x: Ctx): number {
@@ -632,7 +631,7 @@ const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
  * adds) for as long as the whole stays within SHOWN_WORDS. The lines after
  * that go to `more`, one tap behind the (i), in order.
  */
-export function cardParts(def: CardDef, x: Ctx, fee: number): { text: string; more: string[] } {
+function cardParts(def: CardDef, x: Ctx, fee: number): { text: string; more: string[] } {
   const slots: Record<string, string> = {
     fee: String(fee), cyrite: String(x.cyrite), need: String(x.need), short: String(Math.max(0, Math.ceil(x.need - x.fuel))), fuel: String(Math.floor(x.fuel)),
     chits: String(x.cyrite), supplies: String(x.supplies),

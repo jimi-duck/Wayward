@@ -12,7 +12,7 @@
 // would cost picture and buy nothing. An overloaded GPU does not produce
 // steady intervals, it produces jitter, so steady-at-the-cap holds the tier.
 
-export type TierName = 'low' | 'medium' | 'high';
+type TierName = 'low' | 'medium' | 'high';
 
 export interface QualityTier {
   name: TierName;

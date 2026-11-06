@@ -26,7 +26,7 @@ const fmt = num;
 // ── the build, drawn ──────────────────────────────────────────────────────
 
 /** The ship as built: its name (unless `named` is false), then each branch with what was fitted in it. */
-export function buildView(levels: Levels, named = true): HTMLElement {
+function buildView(levels: Levels, named = true): HTMLElement {
   const id = identity(levels);
   const wrap = h('div', 'build');
   if (named) wrap.append(h('div', 'sum-ship', t(id.title)));

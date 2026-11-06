@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
-import {
-  HEAT_START, JUMP_COST, LANE_DIST, PATCH_COST, PATCH_QUIET, PATCH_TIME, PRICE, PURSUIT_FIRST, SPOOL, APPROACH, JUMP_T, START_CYRITE, pickPursuer, rockYield, rockTake, TORP_YIELD,
-} from '../src/sim/breakout';
+import { HEAT_START, JUMP_COST, LANE_DIST, PATCH_COST, PATCH_QUIET, PATCH_TIME, PURSUIT_FIRST, SPOOL, APPROACH, JUMP_T, START_CYRITE, pickPursuer, rockYield, rockTake, TORP_YIELD } from '../src/sim/breakout';
 import type { Rock } from '../src/sim/field';
 import { Rng } from '../src/sim/rng';
 import { World } from '../src/sim/world';

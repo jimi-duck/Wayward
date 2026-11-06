@@ -27,7 +27,7 @@ function rand(seed: number) {
 }
 
 /** The plating, painted once: albedo and height. */
-export function platingTextures(): { map: Texture; bump: Texture; paint: Texture } {
+function platingTextures(): { map: Texture; bump: Texture; paint: Texture } {
   if (plating) return plating;
   const make = () => {
     const c = document.createElement('canvas');

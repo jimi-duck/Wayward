@@ -9,7 +9,6 @@ import { ACCOUNTS, after, ANALYST, arrive, card, flag, free, HESTER, leave, main
 // (docs/overhaul/SCRIPT_EN_DE.md); lines it does not give are short and in
 // the same voice. The arrivals at the gates are in arrivals.ts.
 
-const sam = (id: string, stop: string, on: Row['on'], text: string, extra: Partial<Row> = {}) => radio(id, stop, on, SAM[0], SAM[1], text, extra);
 const pike = (id: string, stop: string, f: string, text: string, extra: Partial<Row> = {}) => radio(id, stop, flag(f), PIKE[0], PIKE[1], text, extra);
 const hester = (id: string, stop: string, f: string, text: string, extra: Partial<Row> = {}) => radio(id, stop, flag(f), HESTER[0], HESTER[1], text, extra);
 const quill = (id: string, stop: string, f: string, text: string) => radio(id, stop, flag(f), QUILL[0], QUILL[1], text);
@@ -23,7 +22,7 @@ const rest = (id: string, stop: string, name: string, jumps: string): Row[] => [
 ];
 
 // ── Leg 2 · the Marches: who stands with you ──────────────────────────────
-export const MARCHES_ROWS: Row[] = [
+const MARCHES_ROWS: Row[] = [
   // 1 · Wake (landfall): note 1's lead becomes the goal; the edge relay; her pursuit line, set by the Narrows answer
   notice('mw_notice', 'm_wake', arrive(), 'teal', 'Wake', 'the Marches · past the charts'),
   objective('mw_objective', 'm_wake', arrive(), 'Next: Kessel Hold', 'The Rift · 7 jumps'),
@@ -83,7 +82,7 @@ export const MARCHES_ROWS: Row[] = [
 ];
 
 // ── Leg 3 · the Salvage Belt: what things are worth ───────────────────────
-export const BELT_ROWS: Row[] = [
+const BELT_ROWS: Row[] = [
   // 1 · Breakwater (landfall): the quiet at the Rift lands one jump late; Hester's last filter
   notice('bb_notice', 'b_breakwater', arrive(), 'teal', 'Breakwater', 'the Salvage Belt · wrecks and claims'),
   notice('bb_after', 'b_breakwater', arrive(5), 'red', 'Rift relay lit', 'they know your next gate', { if: { has: ['relay_rift'] } }),
@@ -142,7 +141,7 @@ export const BELT_ROWS: Row[] = [
 ];
 
 // ── Leg 4 · the Drift Deep: the ring ──────────────────────────────────────
-export const DEEP_ROWS: Row[] = [
+const DEEP_ROWS: Row[] = [
   notice('dl_notice', 'd_longwater', arrive(), 'teal', 'Longwater', 'Drift Deep · no Net here'),
   objective('dl_objective', 'd_longwater', arrive(), 'Next: The Quiet Ferry', 'The Slow Door · 7 jumps'),
   objective('dl_gate', 'd_longwater', leave(), 'Jump to the Quiet Ferry'),
@@ -190,7 +189,7 @@ export const DEEP_ROWS: Row[] = [
 ];
 
 // ── Leg 5 · the Breaker Yards: who built it ───────────────────────────────
-export const YARDS_ROWS: Row[] = [
+const YARDS_ROWS: Row[] = [
   // 1 · Cutton (landfall): Calloway asks what gathered on the Slow Door
   notice('yc_notice', 'y_cutton', arrive(), 'teal', 'Cutton', 'the Breaker Yards · Custody watches'),
   objective('yc_objective', 'y_cutton', arrive(), 'Next: Yard Nine', 'The Breaker · 7 jumps'),
@@ -242,7 +241,7 @@ export const YARDS_ROWS: Row[] = [
 ];
 
 // ── Leg 6 · the Free Ports: who was in the room ───────────────────────────
-export const PORTS_ROWS: Row[] = [
+const PORTS_ROWS: Row[] = [
   notice('fs_notice', 'f_saltquay', arrive(), 'teal', 'Saltquay', 'the Free Ports · everyone trades'),
   objective('fs_objective', 'f_saltquay', arrive(), 'Next: Duarte Harbour', 'The Tollgate · 7 jumps'),
   radio('fs_officer', 'f_saltquay', free(10), 'Checkpoint officer · Offices of Peace', 'custody', '“Inspector Ashgrove has been reassigned. I’m told you know why. Registry, please.”', { if: { has: ['ashgrove_met'] } }),
@@ -295,7 +294,7 @@ export const PORTS_ROWS: Row[] = [
 ];
 
 // ── Leg 7 · the Hollows: what it was for ──────────────────────────────────
-export const HOLLOWS_ROWS: Row[] = [
+const HOLLOWS_ROWS: Row[] = [
   notice('ha_notice', 'h_ashdeep', arrive(), 'teal', 'Ashdeep', 'the Hollows · nothing human lives here'),
   notice('ha_act', 'h_ashdeep', arrive(6), 'white', 'Act III', 'what the file is worth'),
   objective('ha_objective', 'h_ashdeep', arrive(), 'Next: Hollowforge', 'The Seam · 7 jumps'),
@@ -338,7 +337,7 @@ export const HOLLOWS_ROWS: Row[] = [
 ];
 
 // ── Leg 8 · the Last Lanes: what you do with it ───────────────────────────
-export const LAST_ROWS: Row[] = [
+const LAST_ROWS: Row[] = [
   notice('ll_notice', 'l_lastlight', arrive(), 'teal', 'Lastlight', 'the Last Lanes · the Threshold ahead'),
   objective('ll_objective', 'l_lastlight', arrive(), 'Next: The Last Toll', 'The Threshold · 7 jumps'),
   objective('ll_gate', 'l_lastlight', leave(), 'Jump to the Last Toll'),

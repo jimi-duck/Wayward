@@ -11,7 +11,7 @@ import { FRAGMENTS_ALL } from './story';
 // `at` is the region the row belongs to on the eight-region chart, -1 for
 // Cerro. `short` marks the rows the three-region chart plays too.
 
-export type Certainty = 'fact' | 'inference';
+type Certainty = 'fact' | 'inference';
 
 export interface WallItem {
   flag: string;

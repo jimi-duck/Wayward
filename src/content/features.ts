@@ -83,7 +83,7 @@ export interface Look {
 }
 
 /** What Story can do with it, as tags the story and comms code read. */
-export type StoryUse = 'place' | 'route' | 'cover' | 'wreck' | 'signal' | 'site' | 'history';
+type StoryUse = 'place' | 'route' | 'cover' | 'wreck' | 'signal' | 'site' | 'history';
 
 export interface FeatureDef {
   id: FeatureId;

@@ -8,7 +8,7 @@ import { DEFAULT_SURVIVAL, survivalOf, type SurvivalId } from '../content/surviv
 import type { RegionSet } from '../content/regions';
 import { weightFuel } from './budgets';
 import { cy, refine } from './purse';
-import { SUPPLIES_MAX, SUPPLIES_START, HOME, JUMP_COST, START_CYRITE, TANK_MAX, HOLD_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
+import { SUPPLIES_MAX, HOME, JUMP_COST, HOLD_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
   arrive, colsOf, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, regionDef, regionOf, regionsOf, routeBetween, SIGHT, sightPlaces, spreadNet, sysById,
   tierOf, viewOf, type Chart, type StarSystem,
@@ -89,7 +89,7 @@ export const ADRIFT = 1;
 export const WAITING = 40;
 /** Days a ghost echo holds Calloway up, per mark, at every jump; the mark at which she cannot read your route. */
 export const ECHO_DELAY = 0.5;
-export const ECHO_BLIND = 2;
+const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
 export const VERSION = 23;
 /** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
@@ -97,7 +97,7 @@ const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
 export const AHEAD: Partial<Record<string, string[]>> = { voice: ['drone', 'probe', 'drone'], thren: ['mote', 'mote', 'weaver'] };
 /** A Gutter raid adds this to the share of the pursuit from ahead. */
-export const RAID_AHEAD = 0.25;
+const RAID_AHEAD = 0.25;
 
 /** How much tougher the hulls are at the Threshold than in Cerro, and how much more the jobs pay: the chart's depth sets both, so a ship that stays as it was falls behind and a ship that keeps growing keeps up. */
 export const DEPTH = { threat: 8, pay: 2.5 } as const;
@@ -109,7 +109,7 @@ export const threatAt = (c: Chart, id: string): number => 1 + (DEPTH.threat - 1)
 /** The multiplier on a job's pay at a system (1 to `DEPTH.pay`). */
 export const bountyAt = (c: Chart, id: string): number => 1 + (DEPTH.pay - 1) * depthOf(c, id);
 
-export type JourneyEnd = 'through' | 'captured' | 'wrecked';
+type JourneyEnd = 'through' | 'captured' | 'wrecked';
 
 export interface Leg {
   system: string;
@@ -170,7 +170,7 @@ export interface Journey {
 
 const rng = (j: Journey) => new Rng((j.seed * 7919 + ++j.rolls * 104729) >>> 0);
 
-export function startCarry(survival: SurvivalId = DEFAULT_SURVIVAL): Carry {
+function startCarry(survival: SurvivalId = DEFAULT_SURVIVAL): Carry {
   const K = survivalOf(survival).voyage.start;
   return {
     cyrite: 0, fuel: K.cyrite, supplies: K.supplies, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], hush: HUSH,

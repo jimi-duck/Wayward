@@ -1,7 +1,4 @@
-import {
-  AdditiveBlending, Color, CylinderGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, PlaneGeometry, RingGeometry,
-  SphereGeometry, Sprite, SpriteMaterial, TorusGeometry, type Material, type Object3D, type Scene, type Texture,
-} from 'three';
+import { AdditiveBlending, Color, CylinderGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, PlaneGeometry, RingGeometry, Sprite, SpriteMaterial, TorusGeometry, type Material, type Object3D, type Scene, type Texture } from 'three';
 import type { Boss, Strike, Telegraph } from '../sim/bosses';
 import type { Encounter } from '../sim/encounters';
 import { NEON } from './enemies';

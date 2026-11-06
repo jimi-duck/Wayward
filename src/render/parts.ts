@@ -55,7 +55,7 @@ export function block(k: Kit, key: string, size: V3, pos: V3, rot: V3 = [0, 0, 0
  * high, faceted so the chamfers catch the light as plates do. `taper` scales
  * the +X end; `open` leaves the ends off.
  */
-export function octGeo(len: number, w: number, h: number, taper = 1, open = false): BufferGeometry {
+function octGeo(len: number, w: number, h: number, taper = 1, open = false): BufferGeometry {
   const g = new CylinderGeometry(taper, 1, len, 8, 1, open).rotateY(Math.PI / 8).rotateZ(-Math.PI / 2);
   g.scale(1, h / (2 * OCT), w / (2 * OCT));
   const flat = g.toNonIndexed();
@@ -92,15 +92,6 @@ export function octFaces(w: number, h: number): Face[] {
   ];
 }
 
-/** The four faces of a box body `w` wide and `h` high: top, starboard, belly, port. */
-export function boxFaces(w: number, h: number): Face[] {
-  return [
-    { f: 0, rad: h / 2, wid: w },
-    { f: Math.PI / 2, rad: w / 2, wid: h },
-    { f: Math.PI, rad: h / 2, wid: w },
-    { f: -Math.PI / 2, rad: w / 2, wid: h },
-  ];
-}
 
 /**
  * A panel lying on a face of a body whose axis is at (y0, z0): centred at `x`

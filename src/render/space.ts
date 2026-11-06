@@ -1,8 +1,4 @@
-import {
-  CylinderGeometry, OctahedronGeometry,
-  AdditiveBlending, NormalBlending, BoxGeometry, BufferAttribute, Color, Group, IcosahedronGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial,
-  SphereGeometry, Sprite, SpriteMaterial, TorusGeometry, Vector3, type BufferGeometry, type Material, type Scene, type Texture,
-} from 'three';
+import { OctahedronGeometry, AdditiveBlending, NormalBlending, BoxGeometry, Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, Sprite, SpriteMaterial, Vector3, type BufferGeometry, type Material, type Scene, type Texture } from 'three';
 import { FEATURES, type FeatureDef } from '../content/features';
 import { clamp } from '../core/math';
 import type { Feature, Space } from '../sim/space';
@@ -74,7 +70,6 @@ const FRAGMENT_MAT = new MeshStandardMaterial({ color: new Color(0.1, 0.06, 0.16
 const ROCK_MAT = lavaRock(2.6, 1, 0.07, undefined, false);
 const HULL_MAT = new MeshStandardMaterial({ color: 0x6a7480, roughness: 0.6, metalness: 0.3, flatShading: true, emissive: 0x0a1016, envMapIntensity: 1.3 });
 const SLAB_MAT = new MeshStandardMaterial({ color: 0x34404e, roughness: 0.32, metalness: 0.55, emissive: 0x05090e, envMapIntensity: 1.3 });
-const CORE_MAT = new MeshBasicMaterial({ color: 0x000000 });
 const SEAM_MAT = new MeshBasicMaterial({ color: new Color(0.35, 0.8, 1.1), toneMapped: false, fog: false });
 
 // the dead: hull models from the same designs the fleets fly, gone cold, scorched and breached

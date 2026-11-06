@@ -31,7 +31,7 @@ export const SELF_REPAIR = {
   fireDanger: 22,
 } as const;
 
-export type MendState = 'waiting' | 'repairing' | 'paused' | 'cooling' | 'spent';
+type MendState = 'waiting' | 'repairing' | 'paused' | 'cooling' | 'spent';
 
 export interface Mend {
   state: MendState;

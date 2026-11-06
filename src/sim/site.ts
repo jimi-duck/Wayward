@@ -30,7 +30,7 @@ export function portStyleOf(holder: Holder | undefined): PortStyle {
 /** The hunt (0 to 1) from which a port watches the ship; the Custody's patrols use the same 0.6 (docs/TRAFFIC.md). */
 export const ALERT_HEAT = 0.6;
 /** Working ships (wards) about the ring that make it busy, and how near they must be (units). */
-export const BUSY_SHIPS = 2;
+const BUSY_SHIPS = 2;
 export const BUSY_R = 140;
 /** Seconds a mood is held after what raised it has passed, so a lamp row does not flicker. */
 export const MOOD_HOLD = 4;

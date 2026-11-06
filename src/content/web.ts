@@ -49,7 +49,6 @@ export const TABS: Record<Tab, TabDef> = {
 export const TAB_ORDER = Object.keys(TABS) as Tab[];
 
 export interface Budget { power: number; mass: number; heat: number; }
-export const NO_BUDGET: Readonly<Budget> = Object.freeze({ power: 0, mass: 0, heat: 0 });
 
 /** The stock ship's ratings, before any fitting raises them. */
 export const RATINGS: Readonly<Budget> = Object.freeze({ power: 8, mass: 8, heat: 8 });

@@ -11,7 +11,7 @@
 
 export const LOCK_AT = 0.35;
 export const SWEEP_END = 2.4;
-export const ARC_START = 0.6;
+const ARC_START = 0.6;
 export const ARC_END = 6;
 /** When the camera starts back, after a moment held on her flank. */
 export const HOLD_END = 7.2;

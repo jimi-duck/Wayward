@@ -1,4 +1,4 @@
-import { BRANCHES, UPGRADE, UPGRADES, type Branch, type UpgradeDef } from '../content/upgrades';
+import { BRANCHES, UPGRADES, type Branch, type UpgradeDef } from '../content/upgrades';
 import { applyModules } from './modules';
 import { BASE, flightHull, capStats, newStats, type Stats } from './stats';
 import { thrustPerStep, topSpeed, turnPerStep } from './ship';

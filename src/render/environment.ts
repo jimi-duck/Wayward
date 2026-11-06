@@ -23,7 +23,6 @@ import { WORLD_RIM } from './kit';
 // reflect, so the scene also gets a small, dark environment map: a black
 // sky with a warm window where the key light is and a cold one opposite.
 
-const VOID = new Color('#030509');
 /** The distance haze: a dark, cool steel grey, so far rock fades up out of the dark instead of staying a cut-out. */
 const HAZE = new Color('#25323f');
 const FOG_BASE = 0.0072;

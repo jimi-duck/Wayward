@@ -1,6 +1,6 @@
 import { GATES, LEGS, NARROWS, ROAD, type RoadStop } from '../content/road';
 import type { SystemKind } from '../content/systems';
-import { gateOf, regionDef, regionOf, viewOf, type StarSystem } from './chart';
+import { gateOf, regionDef, viewOf, type StarSystem } from './chart';
 import { RELAY_BROADCAST } from './calloway';
 import { daysUntil, halfDays, PURSUIT } from './hunt';
 import { here, options, type Journey } from './journey';
@@ -14,7 +14,7 @@ import { accountCalled, debtLeft, ACCOUNT_DEBT } from './threads';
 // data; ui/course.ts draws it.
 
 export interface Layer { name: string; purpose: string; kind: SystemKind }
-export type Pip = 'done' | 'here' | 'ahead';
+type Pip = 'done' | 'here' | 'ahead';
 export type Tone = 'calm' | 'amber' | 'red';
 
 export interface Course {
@@ -41,13 +41,13 @@ export interface Course {
 }
 
 /** The index of a system on the road (0 the audit dock's system), or -1 off it. The Reach's, as the scripts and tests count it. */
-export const roadIndex = (j: Journey, s: StarSystem): number => (legOf(j.chart, s) === 0 && s.kind !== 'home' ? s.col - 1 : -1);
+const roadIndex = (j: Journey, s: StarSystem): number => (legOf(j.chart, s) === 0 && s.kind !== 'home' ? s.col - 1 : -1);
 
 /**
  * Where she is on the leg the Course shows: the leg (through a gate, the next one) and her place in its stops, counted from 0 at
  * the first stop past the way in (-1 at the way in: the audit dock's system in the Reach, or the gate behind). Null off the road.
  */
-export function legPlace(j: Journey): { leg: number; pos: number; rows: RoadStop[] } | null {
+function legPlace(j: Journey): { leg: number; pos: number; rows: RoadStop[] } | null {
   const s = here(j), c = j.chart, leg = legOf(c, s);
   if (leg < 0) return null;
   const gate = s.kind === 'gate' || s.kind === 'edge';

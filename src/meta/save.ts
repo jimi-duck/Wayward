@@ -113,7 +113,7 @@ function wokenArchive(j: Journey): void {
  * The modules the overcharge took with it, and what each level cost in Krail when it was fitted
  * (fixed here: the web no longer has them, and a later change to prices must not change a refund).
  */
-export const RETIRED: Readonly<Record<string, readonly number[]>> = {
+const RETIRED: Readonly<Record<string, readonly number[]>> = {
   oc_coils: [40, 60, 80], oc_nova: [60], oc_overload: [60], oc_phase: [60], sy_core_mines: [40],
 };
 
@@ -327,7 +327,7 @@ export function importJourney(text: string): Journey | null {
  * one dealt from the same seed. The Reach is laid out the same either way; it is checked system by system, and what the journey
  * knows of the Reach (flown, the Net, places, skies, situations) is kept. Anything that does not match leaves the save as it was.
  */
-export function authorRoad(j: Journey): void {
+function authorRoad(j: Journey): void {
   const c = j.chart;
   if (c.regionSet !== 'road' || roadRegion(c, LEGS.length - 1)) return;
   const reach = new Set(c.systems.filter((s) => s.kind === 'home' || regionOf(s) === 0).map((s) => s.id));

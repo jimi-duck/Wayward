@@ -25,8 +25,8 @@ export function stealthOf(L: Levels): number {
  * lock that dust and shrouds take, and a jammer filters part of a static field's navigation interference. Without
  * either, the sky is as it is, so the same system is flown differently with a Signals fit.
  */
-export const ARRAY_BACK = 0.4;
-export const JAMMER_CUT = 0.35;
+const ARRAY_BACK = 0.4;
+const JAMMER_CUT = 0.35;
 export function easeSky(L: Levels, a: { sight: number; lock: number; jam: number }): void {
   if (L.md_array) { a.sight += (1 - a.sight) * ARRAY_BACK; a.lock += (1 - a.lock) * ARRAY_BACK; }
   if (L.md_jammer) a.jam *= 1 - JAMMER_CUT;

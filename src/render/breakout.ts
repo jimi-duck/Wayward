@@ -2,7 +2,6 @@ import {
   AdditiveBlending, BoxGeometry, CircleGeometry, Color, CylinderGeometry, DoubleSide, ShaderMaterial, Matrix4, Quaternion, Vector3, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Sprite, SpriteMaterial, ExtrudeGeometry, IcosahedronGeometry, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, Line, Shape,
   type Material, type Scene, type Texture,
 } from 'three';
-import { clamp } from '../core/math';
 import type { World } from '../sim/world';
 import { AUDIT_R, SAFE_R, relayOf } from '../sim/breakout';
 import { RELAY_JAM_R, RELAY_R } from '../sim/traffic';
@@ -11,7 +10,7 @@ import { GANTRY_R } from '../sim/gantry';
 import { MARKET_R } from '../sim/market';
 
 import { MOOD_AMBER, MOOD_LIGHT, portStyleOf, type Mood, type PortStyle } from '../sim/site';
-import type { Effects, RGB } from './fx';
+import type { Effects } from './fx';
 import { Kit, metal, seeded, type V3 } from './kit';
 
 // ── the Breakout's places, and the cutter ────────────────────────────────
@@ -558,7 +557,7 @@ export function buildPort(style: PortStyle = 'frontier', own?: { lamp: Material;
  * It faces -x, where the ship comes from.
  */
 /** Lit sections up the Narrows' relay mast, bottom to top. */
-export const MAST_SECTIONS = 6;
+const MAST_SECTIONS = 6;
 
 /** The Narrows' relay mast: a dark lattice stood off the gate's ring, a band of lamp for each section, lit from the bottom when the key is answered (content/script/narrows.ts). Metres. */
 export function buildMast(): { body: Group; lamps: Mesh[] } {
@@ -585,7 +584,7 @@ export function buildMast(): { body: Group; lamps: Mesh[] } {
   return { body, lamps };
 }
 
-export function buildAudit(): Group {
+function buildAudit(): Group {
   const k = new Kit(), rnd = seeded(31);
   // the arch: two pylons and a gantry beam over the lane, hazard stripes on the legs, a scan strip underneath
   for (const s of [-1, 1]) {

@@ -11,13 +11,13 @@ import type { World } from './world';
 
 /** How far it tethers (units), the pull of each haul, how often it hauls (s) and how close a rock must come to be ground (units). */
 export const BARGE_PULL_R = 100;
-export const BARGE_PULL = 1.4;
-export const BARGE_EVERY = 1;
-export const BARGE_MOUTH = 11;
+const BARGE_PULL = 1.4;
+const BARGE_EVERY = 1;
+const BARGE_MOUTH = 11;
 /** Its drift (units/s), its flight from a fight, and how near a fight must be to send it (units). */
-export const BARGE_DRIFT = 5;
-export const BARGE_RUN = 12;
-export const BARGE_FEAR_R = 220;
+const BARGE_DRIFT = 5;
+const BARGE_RUN = 12;
+const BARGE_FEAR_R = 220;
 /** Rock it will not touch: it blows up when ground. */
 const SKIP: ReadonlySet<string> = new Set(['volatile']);
 /** The fastest a hauled rock goes (units/s): a tether, not a catapult. */
@@ -36,10 +36,9 @@ export class Barge {
   ground = 0;
   private dir: number;
   private t = 0;
-  private x0: number; private z0: number;
 
   constructor(x: number, z: number, dir: number) {
-    this.x = this.x0 = x; this.z = this.z0 = z; this.dir = dir; this.face = dir;
+    this.x = x; this.z = z; this.dir = dir; this.face = dir;
   }
 
   step(w: World, dt: number): void {

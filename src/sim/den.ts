@@ -14,22 +14,22 @@ export const DEN_HP = 45;
 /** Its hull radius (units). */
 export const DEN_R = 12;
 /** How near the ship must be to see it on the scope and in the dark (units), and to wake it. */
-export const DEN_SEE_R = 140;
+const DEN_SEE_R = 140;
 export const DEN_WAKE_R = 220;
 /** Seconds between waves, the most it launches before it is dry, the most its raiders alive at once, and the hulls in a wave. */
-export const DEN_EVERY = 30;
+const DEN_EVERY = 30;
 export const DEN_WAVES = 4;
-export const DEN_ALIVE = 2;
+const DEN_ALIVE = 2;
 /** Hulls in the first wave, and in each later one. */
-export const DEN_WAVE_FIRST = 1;
-export const DEN_WAVE = 1;
+const DEN_WAVE_FIRST = 1;
+const DEN_WAVE = 1;
 /** Seconds between flank wings sent when it is shot, and how far round the flank they appear (units). */
-export const DEN_FLANK_EVERY = 15;
-export const DEN_FLANK_R = 90;
+const DEN_FLANK_EVERY = 15;
+const DEN_FLANK_R = 90;
 /** Hull left (0 to 1) at which it runs to its second den, the hull it has there, and the seconds it lies low first. */
-export const DEN_FLEE = 0.35;
-export const DEN_SECOND_HP = 0.6;
-export const DEN_LIE_LOW = 20;
+const DEN_FLEE = 0.35;
+const DEN_SECOND_HP = 0.6;
+const DEN_LIE_LOW = 20;
 /** What a dead den spills (Cyrite, parts) and its bounty (score). */
 export const DEN_CYRITE = 60;
 export const DEN_PARTS = 8;

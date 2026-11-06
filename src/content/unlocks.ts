@@ -22,7 +22,7 @@ export interface Lifetime {
   bestScore: number;
 }
 
-export type UnlockKind = 'specialisation' | 'synergy' | 'event' | 'modifier' | 'cosmetic';
+type UnlockKind = 'specialisation' | 'synergy' | 'event' | 'modifier' | 'cosmetic';
 
 export interface UnlockDef {
   id: string;

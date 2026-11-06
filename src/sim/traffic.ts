@@ -23,12 +23,12 @@ export const TRAFFIC_CLEAR = 140;
 /** The security dispatch: never nearer than this, gives up after this many seconds, one per this many, at most this many alive. */
 export const SECURITY_FROM = 130;
 export const SECURITY_TO = 180;
-export const SECURITY_TTL = 70;
+const SECURITY_TTL = 70;
 export const SECURITY_GAP = 45;
-export const SECURITY_MAX = 4;
+const SECURITY_MAX = 4;
 /** The first system past Cerro is a busy yard: fire on a civilian there and Wanted goes to the top, with a bigger and faster response. */
 export const FIRST_SECURITY_MAX = 7;
-export const FIRST_SECURITY_GAP = 25;
+const FIRST_SECURITY_GAP = 25;
 /** Seconds between the shot and the guns arriving. */
 export const SECURITY_DELAY = 3.5;
 /** A second hit inside this many seconds calls them. */
@@ -50,7 +50,7 @@ interface Route {
 }
 
 /** The lines of the system, in the course's own frame. None pass through the start, the gate, the dock or the depot. */
-export const ROUTES: Route[] = [
+const ROUTES: Route[] = [
   // the long freight crossing the course ahead, mine to port and the yards to starboard
   { id: 'freight', pts: [[0.3, -1150], [0.4, 1150]], ships: ['hauler', 'liner'], pace: [0.9, 1.4] },
   // and back, further out
@@ -85,11 +85,11 @@ const here_ = (d: { here?: string[]; thren?: number }): number => (d.here?.some(
 
 /** A patrol drops by this long after arrival, then again after this many seconds. */
 export const PATROL_FIRST: [number, number] = [75, 110];
-export const PATROL_GAP: [number, number] = [150, 220];
+const PATROL_GAP: [number, number] = [150, 220];
 /** Per system, at most this many calls. */
 export const PATROL_MAX = 3;
 /** The patrol comes alongside to this far and keeps this long on the ship. */
-export const PATROL_STAND = 55;
+const PATROL_STAND = 55;
 export const PATROL_LOOK = 6;
 /** The heat at which a patrol finds the ship flagged and turns on it. */
 export const PATROL_FLAG = 0.6;
@@ -111,11 +111,11 @@ export interface RelayPost { x: number; z: number; lock: number; jam: number; ja
 /** How far it scans (units), how near and how slow the ship must be to jam it, how long that takes (s) and holds (s), and the quiet between its calls (s). */
 export const RELAY_R = 110;
 export const RELAY_JAM_R = 28;
-export const RELAY_JAM_SPEED = 18;
-export const RELAY_JAM_T = 4;
+const RELAY_JAM_SPEED = 18;
+const RELAY_JAM_T = 4;
 export const RELAY_JAMMED = 120;
-export const RELAY_LOCK_T = 3;
-export const RELAY_GAP = 45;
+const RELAY_LOCK_T = 3;
+const RELAY_GAP = 45;
 
 interface Hull { al: Alien; route: Route; leg: number; }
 interface Patrol { al: Alien[]; phase: 'in' | 'look' | 'out'; since: number; side: number }

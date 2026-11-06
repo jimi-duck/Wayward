@@ -112,7 +112,7 @@ export function acquire(t: Targets, x: number, z: number, heading: number, cone 
   return best;
 }
 
-export function findTarget(t: Targets, id: number | null): Target | undefined {
+function findTarget(t: Targets, id: number | null): Target | undefined {
   if (id === null) return undefined;
   if (t.boss && t.boss.id === id) return t.boss;
   return t.ships.find((o) => o.id === id) ?? t.rocks.find((o) => o.id === id);

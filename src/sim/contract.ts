@@ -47,7 +47,7 @@ export const LEASE_DUE = 35;
 /** What Juno owes once the contract breaches. */
 export const owed = (price = upgradePrice()): number => PENALTY + LEASE_DUE + price;
 
-export type RowTone = '' | 'mine' | 'warn' | 'bad';
+type RowTone = '' | 'mine' | 'warn' | 'bad';
 /**
  * One line of a ledger: an English label, and an amount or a word. `n` is Cyrite cargo, `cr` is credit (the purse), `v`
  * is a word or a preformatted figure. The panel runs the label and the word through t().
@@ -58,7 +58,7 @@ export interface LedgerRow { k: string; n?: number; cr?: number; v?: string; ton
 export const ratio = (n: number, m = QUOTA): string => `${n.toLocaleString('en')} / ${m.toLocaleString('en')}`;
 
 /** The Work Bay's projection: what 1,000 Cyrite would settle for once the company's charges, the launcher among them, are taken. Not earned, and not a balance. */
-export function bayLedger(): LedgerRow[] {
+function bayLedger(): LedgerRow[] {
   const price = upgradePrice();
   return [
     { k: 'Gross', cr: GROSS },
@@ -68,17 +68,17 @@ export function bayLedger(): LedgerRow[] {
 }
 
 /** The torpedo launcher's price, on the bay's card under the projection. */
-export function launcherLedger(): LedgerRow[] {
+function launcherLedger(): LedgerRow[] {
   return [...bayLedger(), { k: 'Torpedo launcher', cr: upgradePrice(), tone: 'warn' }];
 }
 
 /** The breach notice: only what is owed. The invoice behind it has the lines. */
-export function breachLedger(): LedgerRow[] {
+function breachLedger(): LedgerRow[] {
   return [{ k: 'Outstanding', cr: owed(), tone: 'bad' }];
 }
 
 /** The breach invoice: the penalty, the lease and the financed launcher. */
-export function invoiceLedger(): LedgerRow[] {
+function invoiceLedger(): LedgerRow[] {
   return [
     { k: 'Penalty', cr: PENALTY },
     { k: 'Lease', cr: LEASE_DUE },
@@ -88,7 +88,7 @@ export function invoiceLedger(): LedgerRow[] {
 }
 
 /** The raiders' terms taken: the ship, the cargo and the pilot. */
-export function seizedLedger(): LedgerRow[] {
+function seizedLedger(): LedgerRow[] {
   return [
     { k: 'Cargo', v: 'Seized', tone: 'warn' },
     { k: 'Vessel', v: 'Seized', tone: 'warn' },
@@ -98,7 +98,7 @@ export function seizedLedger(): LedgerRow[] {
 }
 
 /** The registry's notice once the lock is lifted: what changed, and what did not. */
-export function renameLedger(): LedgerRow[] {
+function renameLedger(): LedgerRow[] {
   return [
     { k: 'Registry status', v: 'Unregistered', tone: 'warn' },
     { k: 'Owner lock', v: 'Lifted', tone: 'warn' },
@@ -107,12 +107,12 @@ export function renameLedger(): LedgerRow[] {
 }
 
 /** The archive's finding, on its card: where it points. */
-export function archiveLedger(): LedgerRow[] {
+function archiveLedger(): LedgerRow[] {
   return [{ k: 'Next lead', v: 'Halden’s Reach', tone: 'warn' }];
 }
 
 /** The archive record, opened on request. No date, time or reference that is not known. */
-export function evidenceLedger(): LedgerRow[] {
+function evidenceLedger(): LedgerRow[] {
   return [
     { k: 'Reserve level', v: '94%', tone: 'mine' },
     { k: 'Reserve entry and gate-closure order', v: 'same day' },

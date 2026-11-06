@@ -42,7 +42,7 @@ interface Line { ev: Held; kind: Kind; at: number; keep: boolean; reply: boolean
 
 const CHATTER_IDS = new Set(CHATTER.map((c) => c.id));
 /** Whether an event is a Voice or a Signal the floor paces, and which. */
-export const kindOf = (e: GameEvent): Kind | null => (e.type === 'ping' ? 'voice' : e.type === 'storyNotice' ? 'signal' : null);
+const kindOf = (e: GameEvent): Kind | null => (e.type === 'ping' ? 'voice' : e.type === 'storyNotice' ? 'signal' : null);
 
 export class Floor {
   private q: Line[] = [];

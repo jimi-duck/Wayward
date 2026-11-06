@@ -12,7 +12,7 @@ import type { Stats } from './stats';
 /** A count for each of the four systems. */
 export type Marks = Record<ShipSystem, number>;
 
-export const noMarks = (): Marks => ({ guns: 0, rig: 0, signals: 0, contacts: 0 });
+const noMarks = (): Marks => ({ guns: 0, rig: 0, signals: 0, contacts: 0 });
 
 // ── what the fitted modules do ────────────────────────────────────────────
 

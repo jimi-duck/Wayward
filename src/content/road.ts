@@ -11,7 +11,7 @@ import type { Holder, SystemKind } from './systems';
 export const ON_ROAD = 'on_road';
 
 /** What a stop is for in the story, so a script and a pilot can say why it is there. */
-export type RoadRole = 'start' | 'landfall' | 'hub' | 'work' | 'turn' | 'breather' | 'pressure' | 'reckoning';
+type RoadRole = 'start' | 'landfall' | 'hub' | 'work' | 'turn' | 'breather' | 'pressure' | 'reckoning';
 
 export interface RoadStop {
   /** Absent: the chart names it (the audit dock's system, which plays as it does today). */
@@ -44,8 +44,6 @@ export const ROAD: RoadStop[] = [
   { name: 'Copperline', purpose: 'a clerk in trouble', kind: 'port', holder: 'kellern', port: 'Kellern Fuel Dock', role: 'reckoning', script: 'copperline' },
 ];
 
-/** The stop a system is, by name (the audit dock's system has none). Any leg's. */
-export const roadStop = (name: string): RoadStop | undefined => LEGS.flat().find((r) => r.name === name);
 
 /** The gate out of the Reach, as the Course screen names it. */
 export const NARROWS = { name: 'The Narrows', purpose: 'an old relay, dark seventy years', ada: 'the relay Ada watched' } as const;
@@ -61,7 +59,7 @@ const stop = (role: RoadRole, name: string, kind: RoadStop['kind'], holder: Hold
   ({ name, kind, holder, port: null, role, script, ...(role === 'breather' ? { quiet: true } : {}), ...o });
 
 /** The Marches: who stands with you. */
-export const MARCHES: RoadStop[] = [
+const MARCHES: RoadStop[] = [
   stop('landfall', 'Wake', 'transit', 'none', 'm_wake', { purpose: 'past the charts', scene: 'thren_curious' }),
   stop('hub', 'Kessel Hold', 'port', 'holdfast', 'm_kessel', { port: 'The Claim Hall', purpose: 'the moot wants your file', job: 'keep_distance' }),
   stop('work', 'Tamsin Field', 'contested', 'gutter', 'm_tamsin', { purpose: 'someone offers to settle your debt', job: 'wanted' }),
@@ -72,7 +70,7 @@ export const MARCHES: RoadStop[] = [
 ];
 
 /** The Salvage Belt: what things are worth. */
-export const BELT: RoadStop[] = [
+const BELT: RoadStop[] = [
   stop('landfall', 'Breakwater', 'transit', 'none', 'b_breakwater', { purpose: 'listen to the wrecks', job: 'one_filter' }),
   stop('hub', 'Scrap Exchange', 'port', 'guild', 'b_exchange', { port: 'Dust Traders Exchange', purpose: 'everyone knows what you carry' }),
   stop('work', 'The Graveyard', 'mining', 'guild', 'b_graveyard', { purpose: 'a wreck that remembers', job: 'wreck_remembered' }),
@@ -83,7 +81,7 @@ export const BELT: RoadStop[] = [
 ];
 
 /** The Drift Deep: the ring. */
-export const DEEP: RoadStop[] = [
+const DEEP: RoadStop[] = [
   stop('landfall', 'Longwater', 'transit', 'none', 'd_longwater', { purpose: 'ask the Drift where the closures run', scene: 'thren_shadow' }),
   stop('hub', 'The Quiet Ferry', 'transit', 'none', 'd_ferry', { port: 'Free Dock', purpose: 'a lane ahead, no questions', job: 'finders_keepers' }),
   stop('work', 'Lantern Mile', 'mining', 'none', 'd_lantern', { purpose: 'a warm object, moving', job: 'something_dark' }),
@@ -94,7 +92,7 @@ export const DEEP: RoadStop[] = [
 ];
 
 /** The Breaker Yards: who built it. */
-export const YARDS: RoadStop[] = [
+const YARDS: RoadStop[] = [
   stop('landfall', 'Cutton', 'transit', 'none', 'y_cutton', { purpose: 'the yards remember', scene: 'yard_hulk' }),
   stop('hub', 'Yard Nine', 'port', 'kellern', 'y_nine', { port: 'Kellern Claim Office', purpose: 'the first work order', job: 'needle' }),
   stop('work', 'Anvil Slip', 'mining', 'kellern', 'y_anvil', { purpose: 'a cargo train broke up here', job: 'drift_cache' }),
@@ -105,7 +103,7 @@ export const YARDS: RoadStop[] = [
 ];
 
 /** The Free Ports: who was in the room. */
-export const PORTS: RoadStop[] = [
+const PORTS: RoadStop[] = [
   stop('landfall', 'Saltquay', 'transit', 'none', 'f_saltquay', { purpose: 'the free ports kept the names', scene: 'voice_guide' }),
   stop('hub', 'Duarte Harbour', 'port', 'guild', 'f_duarte', { port: 'Dust Traders Exchange', purpose: 'a berth, no questions' }),
   stop('work', 'Penny Cross', 'mining', 'gutter', 'f_penny', { purpose: 'something answers a full tank', job: 'someone_answered' }),
@@ -116,7 +114,7 @@ export const PORTS: RoadStop[] = [
 ];
 
 /** The Hollows: what it was for. */
-export const HOLLOWS: RoadStop[] = [
+const HOLLOWS: RoadStop[] = [
   stop('landfall', 'Ashdeep', 'transit', 'none', 'h_ashdeep', { purpose: 'where the lanes began', job: 'no_return' }),
   stop('hub', 'Hollowforge', 'mining', 'voice', 'h_forge', { purpose: 'a pattern on the scope' }),
   stop('work', 'Coldvault', 'contested', 'voice', 'h_vault', { purpose: 'the ring’s centre', job: 'two_captains' }),
@@ -127,7 +125,7 @@ export const HOLLOWS: RoadStop[] = [
 ];
 
 /** The Last Lanes: what you do with it. The Threshold follows the last row. */
-export const LAST: RoadStop[] = [
+const LAST: RoadStop[] = [
   stop('landfall', 'Lastlight', 'transit', 'none', 'l_lastlight', { purpose: 'the last relay ahead' }),
   stop('hub', 'The Last Toll', 'port', 'none', 'l_toll', { port: 'The Last Toll', purpose: 'every lane ends here' }),
   stop('work', 'Thin Gap', 'transit', 'thren', 'l_gap', { purpose: 'the first question' }),
@@ -152,8 +150,6 @@ export const GATES: Array<{ script: string; purpose: string }> = [
   { script: 'threshold', purpose: 'the last relay' },
 ];
 
-/** Every stop's script key, gates included: a row's `stop` must be one of these (or `*`). */
-export const SCRIPT_KEYS: ReadonlySet<string> = new Set([...LEGS.flat().map((r) => r.script), ...GATES.map((g) => g.script)]);
 
 /** What a job of the road costs another thread when it is won (docs/overhaul/BEAT_MAP.md §4): the collision chips. */
 export const COLLISIONS: Record<string, { standing?: Partial<Record<'miners' | 'frontier' | 'guild' | 'gutter', number>>; unflag?: string }> = {

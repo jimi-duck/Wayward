@@ -726,7 +726,6 @@ export class Sector {
 
   /** Particles that come from state rather than events: exhaust, burning hulls, the anomaly's pull. */
   private ambient(world: World, heading: number): void {
-    const s = this.lerped;
     // exhaust: embers off the nozzles while the engines burn
     const ex = this.ship.exhaust();
     if (world.alive && ex.heat > 0.2) {

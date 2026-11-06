@@ -15,7 +15,6 @@ function level(): World {
   w.skipTraining();
   return w;
 }
-const run = (w: World, s: number) => { for (let i = 0; i < Math.round(s / STEP); i++) { w.ship.invuln = 1; w.step(STEP, input()); } };
 const at = (w: World, x: number, z: number) => { w.ship.x = x; w.ship.z = z; w.ship.vx = w.ship.vz = 0; };
 
 describe("the Custody's relay post", () => {

@@ -127,14 +127,14 @@ export interface Chart {
  * clearly more than a short one (the same mean as before, about 16, over a wider spread), so the choice at a
  * fork is also a choice of what to spend (docs/BALANCE-FORKS.md). A journey already saved keeps its own lanes.
  */
-export const LANE_COST = { base: 8, perDistance: 20 } as const;
+const LANE_COST = { base: 8, perDistance: 20 } as const;
 
 /** The Net's pace: progress a day into a system next to a netted one, before richness. */
 export const NET_RATE = 0.45;
 /** How much harder each further netted neighbour presses a system. */
-export const NET_PRESS = 0.5;
+const NET_PRESS = 0.5;
 /** A Holdfast's claim holds the Net back: its pace there is multiplied by this. */
-export const HOLDFAST_HOLD = 0.4;
+const HOLDFAST_HOLD = 0.4;
 /** How far the news reaches: the Net is seen this many jumps out, each arrival. */
 export const SIGHT = 2;
 /** What the Net does to a port: dearer Cyrite, supplies and plates. */
