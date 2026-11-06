@@ -306,22 +306,6 @@ export function clearJourney(): void {
   }
 }
 
-/** The journey as text, for a file the player keeps. */
-export const exportJourney = (j: Journey): string => JSON.stringify(j);
-
-/** A journey from an exported file, saved as the current one. Null if the text is not a save this game can read. */
-export function importJourney(text: string): Journey | null {
-  let j: Journey | null = null;
-  try {
-    j = migrate(JSON.parse(text));
-  } catch {
-    return null;
-  }
-  if (!j) return null;
-  saveJourney(j);
-  return j;
-}
-
 /**
  * A road journey saved before the whole road was authored, still in the Reach: its chart past the Narrows is swapped for the authored
  * one dealt from the same seed. The Reach is laid out the same either way; it is checked system by system, and what the journey
