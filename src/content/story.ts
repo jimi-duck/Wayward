@@ -272,7 +272,7 @@ export const STORY_CARDS: CardDef[] = [
     ledger: 'bay',
     doc: { kind: 'bay', open: 'View account summary', kick: 'Document · account summary', title: 'Contract 08-441', sub: 'Projected on delivery of 1,000 Cyrite.', note: 'The delivery is not complete yet. These figures are a projection, not money in your account.', at: 3 },
     side: { from: 'Work Bay · docked', status: '800 Cyrite', title: 'Service stop', label: 'Sam Okoro · radio',
-      lines: ['Heads up, Juno. There are raiders working out your way. Get torpedoes fitted before you head back.', 'The company will finance the launcher. It’ll cost you twenty credits, but I’d rather that than not see you back.'] },
+      lines: ['There’s raiders working out your way, Juno. Get torpedoes fitted before you head back. I mean it.', 'The company will finance the launcher. Twenty credits off your pay, I know, but I want you coming home.'] },
     cargo: 'Cerro work bay · Contract 08-441',
     choices: [
       { id: 'install', label: 'Torpedo launcher', tone: 'pay', hint: 'Company-financed · 20 CR (deducted from your payout)',
@@ -311,20 +311,20 @@ export const STORY_CARDS: CardDef[] = [
       // radio, whose channel opens 2 km out from the dock. One plain acknowledgement (the owner, 23 October 2026).
       { id: 'proceed', label: 'Acknowledge', tone: 'run', hint: '',
         win: { text: 'Controls locked · recovery autopilot active', flag: RECOVERY_FLAG,
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 2.5, gap: 10, text: ['“They’re calling it a breach and they want the hauler back. Let the autopilot fly for now.”', '“Hang in there, Juno. I’m working on a way out of this.”'] } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 2.5, gap: 10, text: ['“They’re calling it a breach. They want the hauler back, and you with it. Let the autopilot fly for now.”', '“Hang in there, Juno. I’m not letting them have you. Give me a minute.”'] } } },
     ],
   }),
   story({
     id: 'story_sam', kind: 'warning', caller: 'miners', glass: 'ochre', status: 'Private', rx: SAM_BEARING, quote: true,
     from: 'Sam Okoro · private channel', title: 'A way out',
-    text: 'Juno, it’s me. Keep this off the open channel.\nThis code overrides the autopilot. The debt’s still in your name, but she’s yours to fly again.\nGo to Ned Varga’s yard, off the lane. Fly into his ring and let go. Ned will reprogram her, repaint her and give her a new name. He won’t charge you.',
+    text: 'Juno, it’s me. Keep this off the open channel.\nThis code overrides the autopilot. The debt’s still there, and they’ll be looking for you, but this is your chance to get out.\nHead to Ned’s yard, he owes me one. He’ll reprogram her and mask your code, at least for now. It isn’t much, but it’s a start.',
     cargo: 'Ned’s yard · off the lane',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
         // the code overrides the autopilot and nothing more (owner 2026-11-05): she is still the company's grey hull; Ned's yard makes her hers (sim/postjump.ts PAINT_DUE)
         win: { text: 'Autopilot overridden · the helm is yours', flag: ['ship_stolen', 'paint_due', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
           signal: { tone: 'teal', headline: 'Autopilot overridden', reason: 'Lane Control shut out' },
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Don’t dock. Ned’s yard first. Go, Juno.”' } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“At least you’ll have your freedom. Don’t dock. Ned’s yard first. Go, Juno.”' } } },
     ],
   }),
   story({
@@ -349,7 +349,7 @@ export const STORY_CARDS: CardDef[] = [
       { id: 'lead', label: 'Set course: Halden’s Reach', tone: 'help', hint: '',
         win: { text: 'The record is on the Wall · next lead: Halden’s Reach', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'],
           signal: { tone: 'amber', headline: 'Registry: unregistered', reason: 'Paint won’t pass a scan' },
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.5, text: '“A name of your own now, and a lead to follow. Keep moving, Juno. I’m listening.”' } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.5, text: '“A name of your own, and a lead. That’s more than most of us ever get. Keep moving, Juno.”' } } },
     ],
   }),
   // ── Act II, the Reach ───────────────────────────────────────────────────

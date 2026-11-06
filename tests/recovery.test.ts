@@ -113,7 +113,7 @@ describe('the forced recovery', () => {
       w.events.length = 0;
     });
     expect(w.comms?.def.id).toBe(SAM_BEAT);
-    expect(heard.map(([, x]) => x)).toEqual(['“They’re calling it a breach and they want the hauler back. Let the autopilot fly for now.”', '“Hang in there, Juno. I’m working on a way out of this.”']);
+    expect(heard.map(([, x]) => x)).toEqual(['“They’re calling it a breach. They want the hauler back, and you with it. Let the autopilot fly for now.”', '“Hang in there, Juno. I’m not letting them have you. Give me a minute.”']);
     // spread over the run in, the last a few seconds before his channel opens
     expect(heard[1]![0] - heard[0]![0]).toBeGreaterThanOrEqual(10);
     expect(heard[1]![0]).toBeLessThan(t - 3);
