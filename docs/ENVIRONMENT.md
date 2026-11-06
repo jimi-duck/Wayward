@@ -119,10 +119,6 @@ nothing to the ship at all.
 | **Passage** | V · | 6–14° | uncommon | none; it is sky | cannot be reached | a mile of lit windows crossing the far dark |
 | **Carrier** | M N S | 2–4° | rare | none; a bearing on the scope | cannot be reached until followed | a pulse on the nav strip toward a feature |
 
-Each row has an audio hum and grit in the data (`voice`). Audio is stage 6;
-the idea is one low bed per feature, blended by how far in the ship is, so
-the player learns "that tone is a static field" without a word.
-
 ### Behaviour
 
 Features are not set dressing. In the data:

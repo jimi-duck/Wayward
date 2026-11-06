@@ -15,7 +15,6 @@ import { chapterSave, clearJourney, exportJourney, hasBackup, importJourney, loa
 import { recap } from './sim/chapters';
 import { bounty } from './sim/mission';
 import { cy } from './sim/purse';
-import { FEATURES } from './content/features';
 import { ARCADE_SURVIVAL, SURVIVAL } from './content/survival';
 import { autoCourse, bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
 import { regionsOf, routeBetween, sysById } from './sim/chart';
@@ -37,7 +36,6 @@ import { StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel, preloadPort } from './ui/port';
 import { BayPanel } from './ui/bay';
 import { showConsole } from './ui/briefing';
-import { Feel, SOUND_AVAILABLE } from './audio/audio';
 import type { RegionSet } from './content/regions';
 import { installCrashCard } from './ui/crash';
 import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18n';
@@ -91,10 +89,9 @@ function boot(review: typeof import('./review') | null): void {
   // `?debug=1` also leaves the world on window (the live one, after a new run too), for the screenshot scripts
   if (params.get('debug') === '1') Object.defineProperty(window, '__world', { get: () => world });
 
-  const feel = new Feel();
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
-  sector.reduceMotion = feel.reduceMotion = motion.matches;
-  motion.addEventListener('change', (e) => { sector.reduceMotion = feel.reduceMotion = e.matches; });
+  sector.reduceMotion = motion.matches;
+  motion.addEventListener('change', (e) => { sector.reduceMotion = e.matches; });
 
   // ── zoom ───────────────────────────────────────────────────────────────
   // the middle distance by default: room to see what is coming; the choice is remembered
@@ -254,22 +251,12 @@ function boot(review: typeof import('./review') | null): void {
     const snap = j && !j.hardcore ? chapterSave() : null;
     el('chapter').hidden = !snap || !j || snap.day >= j.day;
     paintWarn();
-    paintSwitches();
     // a save that could not be read is said so, with the safety copy on offer if there is one
     const bad = saveUnreadable() && !journey;
     el('save-problem').textContent = t('Your saved journey could not be read.');
     el('save-problem').hidden = !bad;
     el('restore').hidden = !bad || !hasBackup();
     renderSaves(live);
-  };
-  /** Settings on the title: sound and buzz, read from the same switches the pause card has. */
-  const paintSwitches = () => {
-    for (const [id, on] of [['s-sound', feel.prefs.sound], ['s-buzz', feel.prefs.haptics]] as const) {
-      el(id).setAttribute('aria-pressed', String(on));
-      el(`${id}-v`).textContent = t(on ? 'On' : 'Off');
-    }
-    el('s-sound').hidden = !SOUND_AVAILABLE;
-    el('s-buzz').hidden = !feel.canBuzz;
   };
   /** Export the saved journey to a file, or bring one back from a file. */
   const renderSaves = (live: Journey | null) => {
@@ -372,7 +359,6 @@ function boot(review: typeof import('./review') | null): void {
   const threshold = (j: Journey, lines: string[]) => {
     loop.paused = true;
     input.reset();
-    feel.win();
     sector.storyScene = 'ending';
     ending.show(j, () => {
       sector.storyScene = null;
@@ -544,26 +530,19 @@ function boot(review: typeof import('./review') | null): void {
     if (!on) el('p-go').focus({ preventScroll: true });
   };
   window.addEventListener('pointerdown', (e) => { if (photo) { e.preventDefault(); e.stopPropagation(); setPhoto(false); } }, true);
-  /** The pause card's other face: sound, buzz and camera, kept off the card that explains the game. */
+  /** The pause card's other face: engine colour and camera, kept off the card that explains the game. */
   const settingsOpen = () => el('pause').classList.contains('settings-on');
   const showSettings = (on: boolean) => {
     el('pause').classList.toggle('settings-on', on);
     showBrief();
     if (on) el('p-back').focus({ preventScroll: true });
   };
-  /** The briefing's live parts: its title, the bay's count, the settings' switches. */
+  /** The briefing's live parts: its title, the bay's count, the settings' rows. */
   const showBrief = () => {
     const first = !profile.briefed;
     el('pause').classList.toggle('first', first);
     // the arcade's card names the run; the Story's is the ship's "All stop"
     el('pause-t').textContent = t(settingsOpen() ? 'Settings' : document.documentElement.classList.contains('breakout') ? 'All stop' : 'Survive the waves');
-    for (const [id, on] of [['p-sound', feel.prefs.sound], ['p-buzz', feel.prefs.haptics]] as const) {
-      el(id).classList.toggle('on', on);
-      el(id).setAttribute('aria-pressed', String(on));
-      el(`${id}-v`).textContent = t(on ? 'On' : 'Off');
-    }
-    el('p-sound').closest('li')!.hidden = !SOUND_AVAILABLE;
-    el('p-buzz-r').hidden = !feel.canBuzz;
     el('p-paint-r').hidden = !el('paint').childElementCount;
   };
   // Phones and tablets take the whole screen where the browser allows it
@@ -668,15 +647,12 @@ function boot(review: typeof import('./review') | null): void {
         input.reset();
         jobDone.show(e, () => { loop.paused = was; input.reset(); });
       }
-      feel.events(events);
       radio.events(events);
       if (started && world.call && !callHold && !loop.paused && !panelOpen()) { callHold = true; loop.paused = true; input.reset(); }
       else if (callHold && !world.call) { callHold = false; if (!panelOpen()) { loop.paused = false; input.reset(); } }
       radio.sync(world.call, world.callUntil - world.runTime);
       // the title covers the canvas and the HUD: nothing to draw until the first launch
       if (!started) return;
-      const there = world.air.from[0];
-      feel.bed(there && !loop.paused ? FEATURES[there.def].voice : null, world.air.weight);
       sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
       sector.covered = bay.covers;
       sector.blind = port.open;
@@ -763,8 +739,6 @@ function boot(review: typeof import('./review') | null): void {
   press('m-settings', () => showStep('set'));
   press('d-back', () => showStep('menu'));
   press('s-back', () => showStep('menu'));
-  press('s-sound', () => { feel.setSound(!feel.prefs.sound); paintSwitches(); showBrief(); });
-  press('s-buzz', () => { feel.setHaptics(!feel.prefs.haptics); paintSwitches(); showBrief(); });
   press('s-review', () => { location.search = '?dev'; });
   press('chapter', () => { const j = restartChapter(); if (j) { journey = j; showResume(); } });
   press('restore', () => { const j = restoreJourney(); if (j) { journey = j; showResume(); } });
@@ -840,8 +814,6 @@ function boot(review: typeof import('./review') | null): void {
   };
   act('p-set', () => showSettings(true));
   act('p-back', () => showSettings(false));
-  act('p-sound', () => { feel.setSound(!feel.prefs.sound); showBrief(); });
-  act('p-buzz', () => { feel.setHaptics(!feel.prefs.haptics); showBrief(); });
   act('p-go', () => setPaused(false));
   act('p-photo', () => setPhoto(true));
   // Story mode saves the journey as it stands (the last chart or dock); the arcade just leaves. Either way the page reloads to the title
