@@ -728,3 +728,6 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 /* Compact HUD (Settings, touch only): the log lines, the heading tape and the scope's sector text step back; the goal, the bars,
    the notices and the scope itself stay. */
 html.compact-hud #log-lines, html.compact-hud #heading, html.compact-hud .sens-side { display: none; }
+
+/* Ned's yard: the HUD tears while she is zapped (ui/hud.ts glitch); the jitter itself is set per frame */
+#hud.glitch { filter: contrast(1.35) saturate(1.8) hue-rotate(-14deg); text-shadow: 2px 0 rgba(255, 60, 90, .55), -2px 0 rgba(60, 220, 255, .55); }

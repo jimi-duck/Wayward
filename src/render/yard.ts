@@ -1,6 +1,5 @@
-import { AdditiveBlending, BoxGeometry, Color, CylinderGeometry, Group, Mesh, MeshBasicMaterial, PointLight, SphereGeometry, type Material, type Scene } from 'three';
-import { DOCK_TIME } from '../sim/breakout';
-import { paintDue, RENAMED } from '../sim/postjump';
+import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, CylinderGeometry, Group, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, PointLight, SphereGeometry, type Material, type Scene } from 'three';
+import { paintDue, RENAMED, YARD_ZAP } from '../sim/postjump';
 import type { World } from '../sim/world';
 import { cable, crate, flatRing, materials, strut, stripes, tank, truss, windowMaterial, windowRow } from './breakout';
 import type { Effects } from './fx';
@@ -26,8 +25,13 @@ const WORK = new Color(3.4, 1.9, 0.5);
 const MARK = new Color(2.6, 2.7, 2.8);
 const CYAN = new Color(0.4, 2.4, 3.2);
 
-/** The sequence of lights after the work: scan, spray, mark (seconds since it was done). */
-const SEQ = { scan: [0, 2.2], spray: [1.8, 4.8], mark: [4.4, 6.6] } as const;
+/** The sequence of lights after the work: scan, spray, mark (seconds she has held in the ring). */
+const SEQ = { scan: [0, 1.3], spray: [1.1, 2.7], mark: [2.5, 3.6] } as const;
+
+/** How many bolts at most, and the segments in each. */
+const BOLTS = 6, SEGS = 9;
+/** Where the bolts start: the lamps on the arch posts. */
+const ANCHORS: ReadonlyArray<readonly [number, number, number]> = [[-9.5, 6.8, -6.6], [-9.5, 6.8, 6.6], [9.5, 6.8, -6.6], [9.5, 6.8, 6.6]];
 
 const glowMat = (c: Color, opacity = 1): MeshBasicMaterial => new MeshBasicMaterial({ color: c.clone(), transparent: true, opacity, blending: AdditiveBlending, depthWrite: false, toneMapped: false, fog: false });
 const within = (e: number, r: readonly [number, number]): number => (e < r[0] || e > r[1] ? 0 : Math.min(1, (e - r[0]) / 0.25, (r[1] - e) / 0.4));
@@ -61,10 +65,17 @@ export class YardView {
   private strips: [MeshBasicMaterial, MeshBasicMaterial, MeshBasicMaterial] = [glowMat(SCAN, 0.3), glowMat(WORK, 0.3), glowMat(MARK, 0.3)];
   private nozzles = glowMat(WORK, 0.2);
   private mists: Mesh[] = [];
+  /** Lightning from the arches to the hull while she is held (owner 2026-11-06): jagged lines, new every 50 ms. */
+  private readonly bolt = new LineSegments(new BufferGeometry(), new LineBasicMaterial({ color: 0xbfeaff, transparent: true, opacity: 1, blending: AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
+  private boltT = 0;
 
   constructor(private readonly scene: Scene) {
     this.root.visible = false;
     this.root.position.y = FLOOR;
+    this.bolt.geometry.setAttribute('position', new BufferAttribute(new Float32Array(BOLTS * SEGS * 6), 3));
+    this.bolt.frustumCulled = false;
+    this.bolt.visible = false;
+    this.root.add(this.bolt);
     scene.add(this.root);
     // The lights are not under `root`: the number of lights in the scene changing recompiles every lit material (a freeze of seconds on a
     // phone), so all four exist from the start of the page, at no intensity until the hull is due, and the scene's light count never moves.
@@ -320,12 +331,12 @@ export class YardView {
     this.root.visible = true;
     this.time += dt;
     const waiting = paintDue(world.flags);
-    const e = world.runTime - world.yardAt;
+    const zap = world.yardPhase === 2, e = world.yardAt !== Infinity ? 99 : zap ? world.yardT : 0;
     // the beacon pulses slowly while the hull waits for the yard, and is steady after
     this.beacon.opacity = waiting ? 0.6 + 0.4 * Math.sin(this.time * 2.4) : 0.55;
     this.beaconLight.intensity = waiting ? 5 + 5 * Math.sin(this.time * 2.4) : 2;
     // the ring: it pulses, and fills as she holds in it
-    const hold = Math.min(1, world.yardT / DOCK_TIME);
+    const hold = world.yardPhase >= 2 ? 1 : world.yardPhase === 1 ? 0.4 : 0;
     (this.ring.material as MeshBasicMaterial).opacity = waiting ? 0.3 + 0.2 * Math.sin(this.time * 2.4) + 0.4 * hold : 0.12;
     (this.pad.material as MeshBasicMaterial).opacity = waiting ? 0.3 + 0.3 * hold : 0.1;
     // after the work, the three arches light in turn: scan teal, spray amber, mark white
@@ -333,15 +344,39 @@ export class YardView {
     const flick = 0.55 + 0.45 * Math.abs(Math.sin(this.time * 19) * Math.sin(this.time * 7.3));
     this.strips.forEach((m, i) => { m.opacity = 0.12 + 0.8 * s[i]! * (i === 0 ? 1 : flick); });
     this.nozzles.opacity = 0.2 + 0.8 * s[1] * flick;
-    this.mists.forEach((m) => { (m.material as MeshBasicMaterial).opacity = 0.2 * s[1] * flick; m.visible = s[1] > 0.02; });
+    this.mists.forEach((m) => { (m.material as MeshBasicMaterial).opacity = 0.2 * s[1] * flick; m.visible = false; });
     const k = s[0] > 0.02 ? 0 : s[1] > 0.02 ? 1 : s[2] > 0.02 ? 2 : -1;
     this.lamp.color.setHex(k === 0 ? TEAL : k === 2 ? WHITE : AMBER);
     this.lamp.intensity = k < 0 ? 90 : 200;
-    // vapour while she is sprayed, sparks while she is marked
-    if (dt > 0 && this.mist-- <= 0 && e >= 0 && e < 7) {
-      this.mist = 4;
-      if (k === 1) fx.burst(y.x + (Math.random() - 0.5) * 3, 1.2, y.z + (Math.random() < 0.5 ? -4 : 4), 3, [0.8, 0.72, 0.55], 1.6, 1.2, 1.4);
-      if (k === 2) fx.burst(y.x + (Math.random() - 0.5) * 5, 1.4, y.z + (Math.random() - 0.5) * 3, 3, [2.4, 2.4, 2.6], 3, 0.2, 0.4);
+    // lightning from the arches to the hull while she is held: more bolts as it goes, sparks on the hull, the lamp flaring white
+    this.bolt.visible = zap;
+    if (zap) {
+      const prog = Math.min(1, world.yardT / YARD_ZAP);
+      this.boltT -= dt;
+      if (this.boltT <= 0) {
+        this.boltT = 0.05;
+        const th = this.root.rotation.y, c = Math.cos(th), sn = Math.sin(th), dx = world.ship.x - y.x, dz = world.ship.z - y.z;
+        const lx = dx * c - dz * sn, lz = dx * sn + dz * c;
+        const pos = (this.bolt.geometry.getAttribute('position') as BufferAttribute);
+        const live = Math.min(BOLTS, 1 + Math.floor(prog * BOLTS * (0.6 + Math.random() * 0.6)));
+        for (let b = 0; b < BOLTS; b++) {
+          const a0 = ANCHORS[(b + Math.floor(Math.random() * 4)) % 4]!, tx = lx + (Math.random() - 0.5) * 3, ty = 0.4 + Math.random() * 1.6, tz = lz + (Math.random() - 0.5) * 3;
+          let px = a0[0], py = a0[1], pz = a0[2];
+          for (let i = 0; i < SEGS; i++) {
+            const f = (i + 1) / SEGS, jit = 1.1 * Math.sin(Math.PI * f) * (i === SEGS - 1 ? 0 : 1);
+            const nx = a0[0] + (tx - a0[0]) * f + (Math.random() - 0.5) * jit * 2, ny = a0[1] + (ty - a0[1]) * f + (Math.random() - 0.5) * jit * 1.4, nz = a0[2] + (tz - a0[2]) * f + (Math.random() - 0.5) * jit * 2;
+            pos.setXYZ(b * SEGS * 2 + i * 2, px, py, pz);
+            pos.setXYZ(b * SEGS * 2 + i * 2 + 1, nx, ny, nz);
+            px = nx; py = ny; pz = nz;
+          }
+        }
+        pos.needsUpdate = true;
+        this.bolt.geometry.setDrawRange(0, live * SEGS * 2);
+      }
+      (this.bolt.material as LineBasicMaterial).opacity = 0.5 + 0.5 * flick;
+      this.lamp.color.setHex(WHITE);
+      this.lamp.intensity = 150 + 350 * prog * flick;
+      if (dt > 0 && this.mist-- <= 0) { this.mist = 3; fx.burst(world.ship.x + (Math.random() - 0.5) * 3, 1.2, world.ship.z + (Math.random() - 0.5) * 3, 3, [1.2, 2.2, 2.8], 3, 0.2, 0.4); }
     }
   }
 }

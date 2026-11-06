@@ -317,7 +317,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_sam', kind: 'warning', caller: 'miners', glass: 'ochre', status: 'Private', rx: SAM_BEARING, quote: true,
     from: 'Sam Okoro · private channel', title: 'A way out',
-    text: 'Juno. Keep this off the open channel.\nThis code overrides the recovery autopilot. The debt stays in your name, but she’s yours to fly.\nFly to Ned Varga’s yard, off the lane. Hold her in his ring and he’ll reprogram, repaint and rename her. Free.',
+    text: 'Juno. Keep this off the open channel.\nThis code overrides the recovery autopilot. The debt stays in your name, but she’s yours to fly.\nFly to Ned Varga’s yard, off the lane. Fly into his ring and let go. Ned takes the helm, reprograms, repaints and renames her. Free.',
     cargo: 'Ned’s yard · off the lane',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',

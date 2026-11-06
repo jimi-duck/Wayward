@@ -102,8 +102,8 @@ export class Floor {
   }
 
   /** Whether a new Moment may go up: nothing open, and the gap since the last one has passed. */
-  mayMoment(now: number): boolean {
-    return !this.hush && !this.momentOpen && now - this.momentClosed >= FLOOR.moments;
+  mayMoment(now: number, gap: number = FLOOR.moments): boolean {
+    return !this.hush && !this.momentOpen && now - this.momentClosed >= gap;
   }
 
   /** Drop waiting Voices (Sam's lines still waiting when his card opens), by a test on the event. */

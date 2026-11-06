@@ -29,8 +29,8 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_CARD, PAINT_LINE, PAINT_WAKE, YARD_GLIDE, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, YARD_DONE, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
-import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
+import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_CARD, PAINT_LINE, PAINT_WAKE, YARD_ZAP, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, YARD_DONE, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
+import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
 import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_EVERY_ALERT, FLAK_R, SiteBrain, type Mood } from './site';
 import { LOOSE } from './pickups';
@@ -450,7 +450,7 @@ export class World implements EncounterHost {
     this.follows = [];
     this.portCalled = false;
     this.auditCalled = false;
-    this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0;
+    this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
     this.radioQ = [];
     this.floor = new Floor();
@@ -739,14 +739,16 @@ export class World implements EncounterHost {
     const p = pressure(this.clock, this.mods);
     // Lane Control's recovery has the helm until Sam's code lifts the owner lock
     const held = !!this.bk && recovering(this.flags);
-    let c = !this.alive || slowed || (this.bk && this.bk.jumpT >= 0) ? IDLE : held ? RECOVERY_CONTROLS : flightControls(input);
-    // after Ned's work she rolls out of the ring on her own for a few seconds, straight ahead, under the camera's pan; the helm is hers again after
-    const yardE = this.runTime - this.yardAt;
-    if (this.alive && yardE >= YARD_GLIDE[0] && yardE < YARD_GLIDE[1] && this.phase === 'play') { c = { ...c, turn: 0, thrust: Math.max(c.thrust, 0.3), brk: false }; this.ship.invuln = Math.max(this.ship.invuln, 0.5); }
-    if (held && this.alive && !slowed) {
+    // ...and Ned's yard has it from the ring to the way out (sim/postjump.ts YARD_ZAP)
+    const yardAuto = !!this.bk && this.yardPhase > 0;
+    let c = !this.alive || slowed || (this.bk && this.bk.jumpT >= 0) ? IDLE : held || yardAuto ? RECOVERY_CONTROLS : flightControls(input);
+    if ((held || yardAuto) && this.alive && !slowed) {
       // Lane Control flies her on rails; everyone else keeps clear of a ship under recovery
       // she steers round the bulwarks only; loose rock in her lane drifts aside ahead of her
-      recoveryStep(s, this.bk!.audit, this.hull, this.field.bulwarks, dt);
+      const yd = this.bk!.yard, front = this.yardFront();
+      const yardTo = !yardAuto || !yd ? null : this.yardPhase === 1 ? yd : this.yardPhase === 4 && this.runTime - this.yardAt >= YARD_OUT_AT ? { x: yd.x + front.x * 70, z: yd.z + front.z * 70 } : null;
+      if (yardAuto) s.invuln = Math.max(s.invuln, 0.5);
+      recoveryStep(s, yardAuto ? yardTo : this.bk!.audit, this.hull, yardAuto ? [] : this.field.bulwarks, dt, yardAuto ? (this.yardPhase === 1 ? 1.5 : 6) : HOLD_R);
       const fx = Math.cos(s.heading), fz = -Math.sin(s.heading);
       for (const r of this.field.rocks) {
         const rx = r.x - s.x, rz = r.z - s.z, ahead = rx * fx + rz * fz, side = rx * -fz + rz * fx, clear = r.r + SHIP_R + 4;
@@ -887,8 +889,9 @@ export class World implements EncounterHost {
     if (b.nagT > 0) b.nagT -= dt;
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (!this.alive || b.jumpT >= 0) return;
-    // a situation (a patrol's sweep, a toll) waits in the first system until the paint is on (owner, 5 November 2026: nothing comes between the code and the depot)
-    if (!(b.def.first && paintDue(this.flags))) this.stage?.step(this, dt);
+    // a situation (a patrol's sweep, a toll, a distress call) never plays in the first system once the story has it: from the breach to the jump
+    // (owner, 6 November 2026: no distress signal or raider there)
+    if (!(b.def.first && (recovering(this.flags) || lockLifted(this.flags)))) this.stage?.step(this, dt);
     if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); this.den?.step(this, dt); this.thrSeed?.step(this, dt); }
     const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
     if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
@@ -968,7 +971,7 @@ export class World implements EncounterHost {
       this.events.push({ type: 'storyNotice', tone: 'teal', headline: SCAN_LINE, reason: this.sortie.name });
     }
 
-    if (beat && !this.storyMade && !(beat === WAKE_BEAT && (paintDue(this.flags) || (this.yardAt !== Infinity && !this.cardsSeen.has(YARD_DONE)))) && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
+    if (beat && !this.storyMade && !(beat === WAKE_BEAT && (paintDue(this.flags) || ((this.yardAt !== Infinity || this.yardPhase > 0) && !this.cardsSeen.has(YARD_DONE)))) && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.storyMade = true;
       const def = CARD_BY_ID[beat];
       // Sam's card is the recovery's to deal, at 2 km from the dock, even after a load mid-recovery
@@ -1135,9 +1138,21 @@ export class World implements EncounterHost {
   private stolenSaid = 0;
   /** Ned's yard (sim/postjump.ts): Ned has been heard. */
   private paintCalled = false;
+  /** The archive's herald has been shown (it comes before the paint card; the archive's message follows that card's answer). */
+  private wakeHerald = false;
   /** Ned's yard: how long she has held in its ring (the ring fills as it goes), and when the work was done (runTime; Infinity: not yet). */
   yardT = 0;
   yardAt = Infinity;
+  /** The autopilot's part in Ned's yard: 0 none, 1 flying to the pad, 2 held while the zaps run (yardT counts), 3 unused, 4 rebooted and flying out. */
+  yardPhase = 0;
+  /** How glitched the HUD is, 0 to 1 (1: dark): rising through the zaps, dark at the reboot, flickering back after. */
+  get yardGlitch(): number {
+    if (this.yardPhase === 2) return Math.min(1, this.yardT / YARD_ZAP) * 0.85;
+    if (this.yardAt === Infinity) return 0;
+    const e = this.runTime - this.yardAt;
+    if (e < YARD_DARK) return 1;
+    return e < YARD_BOOT ? 0.55 * (1 - (e - YARD_DARK) / (YARD_BOOT - YARD_DARK)) : 0;
+  }
   private yardBeat = 0;
   /** The first system past Cerro: the hull is not reported stolen yet, so nothing there explains Wanted yet (main.ts holds the note). */
   get beforeReport(): boolean { return !!this.bk?.def.first && this.runTime < this.stolenAt + STOLEN.notice + STOLEN.explain; }
@@ -1176,11 +1191,22 @@ export class World implements EncounterHost {
       if (this.yardBeat === 0 && e >= YARD_REPAINT_AT) { this.yardBeat = 1; this.events.push({ type: 'yardDone', n: 1 }); }
       else if (this.yardBeat === 1 && e >= YARD_TITLE_AT) { this.yardBeat = 2; this.events.push({ type: 'yardDone', n: 2 }); }
     }
-    if (!y || !paintDue(this.flags) || this.docked || this.phase !== 'play') { this.yardT = 0; return; }
-    const ready = Math.hypot(this.ship.x - y.x, this.ship.z - y.z) < y.r && speed < DOCK_SPEED && !this.inDanger();
-    if (!ready) { this.yardT = Math.max(0, this.yardT - dt * 2); return; }
+    if (this.yardPhase === 4) { if (this.runTime - this.yardAt >= YARD_AUTO_END) this.yardPhase = 0; return; }
+    if (!y || !paintDue(this.flags) || this.docked || this.phase !== 'play') { this.yardPhase = 0; this.yardT = 0; return; }
+    const d = Math.hypot(this.ship.x - y.x, this.ship.z - y.z);
+    if (this.yardPhase === 0) {
+      // in the ring: the autopilot takes her to the pad (no fight on)
+      if (d < y.r && !this.inDanger()) { this.yardPhase = 1; this.yardT = 0; }
+      return;
+    }
     this.yardT += dt;
-    if (this.yardT < DOCK_TIME) return;
+    if (this.yardPhase === 1) {
+      if ((d < 4 && speed < 0.4) || this.yardT > 12) { this.yardPhase = 2; this.yardT = 0; }
+      return;
+    }
+    // held on the pad while the zaps run, then the reboot: the work is done
+    if (this.yardT < YARD_ZAP) return;
+    this.yardPhase = 4;
     this.yardT = 0;
     this.yardAt = this.runTime;
     this.yardBeat = 0;
@@ -1189,6 +1215,14 @@ export class World implements EncounterHost {
     this.events.push({ type: 'yardDone', n: 0 });
     this.follows.push({ card: YARD_DONE, at: this.runTime + PAINT_CARD });
     this.follows.push({ card: WAKE_BEAT, at: this.runTime + PAINT_WAKE });
+  }
+
+  /** The way out of Ned's yard: the unit vector from the yard toward the company's dock, which its open front faces. */
+  yardFront(): { x: number; z: number } {
+    const y = this.bk?.yard, a = this.bk?.audit;
+    if (!y || !a) return { x: 0, z: 1 };
+    const dx = a.x - y.x, dz = a.z - y.z, n = Math.hypot(dx, dz) || 1;
+    return { x: dx / n, z: dz / n };
   }
 
   /** One wave of the opening chase: heavier and more of them each time, always from behind. */
@@ -1877,9 +1911,14 @@ export class World implements EncounterHost {
       const def = CARD_BY_ID[f!.card];
       if (def && !this.cardsSeen.has(def.id)) {
         if (f!.quick) this.openComms(def);
-        else {
+        else if (def.id === WAKE_BEAT && this.yardAt !== Infinity && !this.cardsSeen.has(YARD_DONE)) {
+          // the archive is found first (the herald), then the paint card says what happened; the archive's message follows its answer
+          if (!this.wakeHerald && def.herald) { this.wakeHerald = true; this.events.push({ type: 'storyNotice', tone: 'teal', headline: def.herald.headline, reason: def.herald.reason }); this.floor.take(this.events, t); }
+          this.follows.push({ card: WAKE_BEAT, at: t + 1 });
+        } else {
           // the herald goes to the floor at once, so the card (offered below) waits for it, whatever else is quiet
-          if (def.herald) { this.events.push({ type: 'storyNotice', tone: 'teal', headline: def.herald.headline, reason: def.herald.reason }); this.floor.take(this.events, t); }
+          if (def.herald && !this.wakeHerald) { this.events.push({ type: 'storyNotice', tone: 'teal', headline: def.herald.headline, reason: def.herald.reason }); this.floor.take(this.events, t); }
+          if (def.id === WAKE_BEAT && this.wakeHerald) d.chain.add(def.id);
           d.offer(def, weightOf(def), t, false, def.trigger === 'story');
         }
       }
@@ -1929,7 +1968,9 @@ export class World implements EncounterHost {
     }
 
     // deliver the one that is next, if the moment is right: a story line still waiting goes first, and a card is FLOOR.moments after the last
-    if (!this.call && !this.floor.busy(t) && this.floor.mayMoment(t)) {
+    // ...but the archive's message follows the paint card closely, once the herald has said it was found
+    const chained = this.wakeHerald && this.cardsSeen.has(YARD_DONE) && !this.cardsSeen.has(WAKE_BEAT);
+    if (!this.call && !this.floor.busy(t) && this.floor.mayMoment(t, chained ? 4 : undefined)) {
       const a = d.next(busy, t);
       if (a) {
         const pre = a.def.trigger === 'chance' || a.def.trigger === 'follow' || a.def.trigger === 'port' || a.def.trigger === undefined;
@@ -2537,6 +2578,8 @@ export class World implements EncounterHost {
       }
       return;
     }
+    // the first system past Cerro stays quiet from the breach to the jump (owner, 6 November 2026): no distress signal, no skirmish, no place
+    if (this.bk?.def.first && (recovering(this.flags) || lockLifted(this.flags))) return;
     // the system's own place comes first, a little after arrival, when the sky is clear; the sector's chance events wait for it
     const place = this.sortie.place;
     if (this.placeDue && place) {

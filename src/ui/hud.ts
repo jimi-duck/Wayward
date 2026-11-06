@@ -249,7 +249,7 @@ export class Hud {
           if (this.titleT > 0 && e.headline === SCAN_LINE) { text($('tc-s'), t(e.headline)); break; }
           this.notify(world, { type: e.tone === 'amber' ? 'warning' : e.tone === 'red' ? 'denied' : 'arrival', headline: e.headline, reason: e.reason, key: `story:${e.headline}` }); break;
         case 'yardDone':
-          // the special moment: the new name, like a film's title, as she rolls out of Ned's yard
+          // the special moment: the new name, like a film's title, as the autopilot flies her out of Ned's yard
           if (e.n === 2) this.nameCard();
           else this.notify(world, { type: 'arrival', headline: e.n === 0 ? PAINT_NOTICE[0] : YARD_REPAINT[0], reason: e.n === 0 ? PAINT_NOTICE[1] : YARD_REPAINT[1], key: `yard:${e.n}` });
           break;
@@ -368,7 +368,20 @@ export class Hud {
     }
   }
 
+  private glitching = false;
+  /** Ned's yard (owner 2026-11-06): the HUD flickers and tears while she is zapped, goes dark at the reboot and flickers back. 0: untouched. */
+  private glitch(g: number): void {
+    const el = $('hud');
+    if (g <= 0) { if (this.glitching) { this.glitching = false; el.style.opacity = ''; el.style.transform = ''; el.classList.remove('glitch'); } return; }
+    this.glitching = true;
+    el.classList.add('glitch');
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.style.opacity = g >= 1 ? '0' : '0.5'; el.style.transform = ''; return; }
+    el.style.opacity = g >= 1 ? '0' : Math.random() < g * 0.5 ? '0.05' : String(1 - g * Math.random() * 0.7);
+    el.style.transform = `translate(${((Math.random() - 0.5) * g * 18).toFixed(1)}px, ${((Math.random() - 0.5) * g * 6).toFixed(1)}px)`;
+  }
+
   update(world: World, sector: Sector, dt: number): void {
+    this.glitch(world.yardGlitch);
     this.aim.update(world, sector, dt);
     // the heading tape, with the objective on it; it also says whether this is travel or a fight
     this.guide.update(world, sector.shipNow.heading, dt);
@@ -725,8 +738,8 @@ export class Hud {
           // the autopilot is overridden and the hull is still the company's: Ned's yard, free, is the course
           const pt = bk.yard!, dpt = Math.hypot(pt.x - s.x, pt.z - s.z);
           // in the ring the work is on: say so, so she holds still
-          text($('obj-t'), t(dpt < pt.r ? 'Hold still · Ned is working' : 'Reach Ned’s yard'));
-          text($('obj-left'), dpt < pt.r ? `${Math.round(Math.min(1, world.yardT / DOCK_TIME) * 100)}%` : range(dpt));
+          text($('obj-t'), t(world.yardPhase > 0 ? 'Autopilot · Ned is working' : 'Reach Ned’s yard'));
+          text($('obj-left'), world.yardPhase > 0 ? '' : range(dpt));
           ticks($('obj-p'), Math.max(0, 1 - dpt / (bk.def.lane * 0.65)), 30);
         } else if (refuelAt(world)) {
           // the first system past Cerro with a short tank: fill it first (buy at the depot or mine), the gate comes after

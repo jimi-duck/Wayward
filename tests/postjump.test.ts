@@ -6,7 +6,7 @@ import { World } from '../src/sim/world';
 import { guideTarget, sidePlaces } from '../src/sim/guide';
 import { places } from '../src/sim/breakout';
 import { paintHull } from './paint';
-import { lockLifted, painted, paintAt, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK } from '../src/sim/postjump';
+import { lockLifted, painted, paintAt, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK, YARD_ZAP, YARD_AUTO_END } from '../src/sim/postjump';
 import { FIRST_SECURITY_MAX, SECURITY_FROM, SECURITY_TO, SECURITY_GAP, SECURITY_DELAY, TRAFFIC_CLEAR, TRAFFIC_N } from '../src/sim/traffic';
 import { goalOf } from '../src/sim/goal';
 import { CARD_BY_ID } from '../src/sim/comms';
@@ -280,7 +280,7 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(goalOf(w).goal).toBe('Fly to Ned’s yard: free reprogram, repaint and rename');
   });
 
-  it('Ned speaks once the ship comes up on his yard, then the work is done, with a notice', () => {
+  it('Ned speaks once the ship comes up on his yard, then the autopilot does the work in the ring, with a notice', () => {
     const w = afterCode();
     const said: string[] = [];
     const p = w.bk!.yard!;
@@ -288,9 +288,9 @@ describe('the paint bay (owner 2026-11-05)', () => {
     for (let i = 0; i < Math.round(40 / STEP) && !w.flags.has('hull_repainted'); i++) {
       if (w.phase === 'comms') { w.answer(0); continue; }
       w.ship.invuln = 1;
-      // Ned is heard on the way in; then she eases into the ring and holds
-      if (i > 3 / STEP) { w.ship.x = p.x; w.ship.z = p.z; } else { w.ship.x = p.x - 100; w.ship.z = p.z; }
-      w.ship.vx = w.ship.vz = 0;
+      // Ned is heard on the way in; then she is in the ring and the autopilot has her
+      if (i === Math.round(3 / STEP)) { w.ship.x = p.x - p.r * 0.8; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0; }
+      else if (i < 3 / STEP) { w.ship.x = p.x - 100; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0; }
       w.step(STEP, input());
       for (const e of w.events) {
         if (e.type === 'ping' && e.id === 'paint_bay') said.push('ned');
@@ -305,14 +305,31 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(paintAt(w)).toBe(false);
   });
 
-  it('the yard is a place to dock: no work while she is fast in the ring, the work at once when she holds, then a card says what happened', () => {
+  it('the yard is flown by autopilot: she is taken to the pad, zapped while the HUD glitches, rebooted, flown out, and the helm comes back', () => {
     const w = afterCode();
     const p = w.bk!.yard!;
-    for (let i = 0; i < Math.round(3 / STEP); i++) { w.ship.invuln = 1; w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = 40; w.ship.vz = 0; w.step(STEP, input()); w.events.length = 0; }
-    expect(w.flags.has('hull_repainted')).toBe(false);
-    for (let i = 0; i < Math.round(3 / STEP) && !w.flags.has('hull_repainted'); i++) { w.ship.invuln = 1; w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0; w.step(STEP, input()); w.events.length = 0; }
+    // outside the ring the helm is the player's
+    for (let i = 0; i < Math.round(2 / STEP); i++) { w.ship.invuln = 1; w.ship.x = p.x - 100; w.ship.z = p.z; w.step(STEP, input()); w.events.length = 0; }
+    expect(w.yardPhase).toBe(0);
+    w.ship.x = p.x - p.r * 0.8; w.ship.z = p.z; w.ship.vx = 40; w.ship.vz = 0;
+    w.step(STEP, input());
+    expect(w.yardPhase).toBe(1);
+    // she is flown to the pad and held, and the glitch climbs while the zaps run
+    let glitch = 0;
+    for (let i = 0; i < Math.round(20 / STEP) && w.yardPhase < 4; i++) { w.step(STEP, { ...input(), thrust: 1, turn: 1 }); w.events.length = 0; glitch = Math.max(glitch, w.yardGlitch); if (w.yardPhase < 4) expect(w.flags.has('hull_repainted')).toBe(false); }
+    expect(glitch).toBeGreaterThan(0.5);
+    expect(w.yardPhase).toBe(4);
+    expect(Math.hypot(w.ship.x - p.x, w.ship.z - p.z)).toBeLessThan(8);
+    // the reboot: the flags, a dark HUD, then it flickers back
     expect(w.flags.has('hull_repainted')).toBe(true);
     expect(w.flags.has('ship_renamed')).toBe(true);
+    expect(w.yardGlitch).toBe(1);
+    // the autopilot flies her out of the front, and the helm is hers again after
+    const front = w.yardFront();
+    for (let i = 0; i < Math.round(YARD_AUTO_END / STEP) + 5; i++) { w.step(STEP, input()); w.events.length = 0; }
+    expect(w.yardPhase).toBe(0);
+    expect(w.yardGlitch).toBe(0);
+    expect((w.ship.x - p.x) * front.x + (w.ship.z - p.z) * front.z).toBeGreaterThan(8);
     expect(w.phase).toBe('play');
     let seen = '';
     for (let i = 0; i < Math.round(15 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); w.events.length = 0; }
@@ -321,32 +338,72 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(CARD_BY_ID.story_sam!.text).toContain('Ned Varga’s yard');
   });
 
-  it('the work is a moment: a notice, a second notice, the name as a title, a short roll out under her own thrust, then the card', () => {
+  it('the work is a moment: a notice, a second notice, the name as a title, as the autopilot flies her out, then the card', () => {
     const w = afterCode();
     const p = w.bk!.yard!;
     const heard: string[] = [];
     const note = () => { for (const e of w.events) { if (e.type === 'yardDone') heard.push(['reprogrammed', 'repainted', 'title'][e.n]!); } w.events.length = 0; };
-    for (let i = 0; i < Math.round(3 / STEP) && !w.flags.has('hull_repainted'); i++) { w.ship.invuln = 1; w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0; w.step(STEP, input()); note(); }
-    const at = { x: w.ship.x, z: w.ship.z };
+    w.ship.x = p.x - p.r * 0.8; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
+    for (let i = 0; i < Math.round((YARD_ZAP + 8) / STEP) && w.yardPhase < 4; i++) { w.ship.invuln = 1; w.step(STEP, input()); note(); }
+    expect(heard).toEqual(['reprogrammed']);
     for (let i = 0; i < Math.round(9 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); note(); }
-    for (let i = 0; i < Math.round(8 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); note(); }
     expect(heard).toEqual(['reprogrammed', 'repainted', 'title']);
-    // she has rolled out of the ring by herself
-    expect(Math.hypot(w.ship.x - at.x, w.ship.z - at.z)).toBeGreaterThan(8);
   });
 
   it('nothing attacks and no swarm comes between the code and the paint, however long she takes', () => {
     const w = afterCode();
     w.bk!.nextPursuit = 0;
     w.bk!.nextSwarm = 0;
-    let hulls = 0;
+    let hulls = 0, events = 0;
+    (w as unknown as { nextEvent: number }).nextEvent = 0;
     for (let i = 0; i < Math.round(300 / STEP); i++) {
       if (w.phase === 'comms') { w.answer(0); continue; }
       w.ship.invuln = 1; w.step(STEP, input());
       hulls = Math.max(hulls, custody(w).length, w.aliens.filter((a) => a.variant === 'mote').length);
+      if (w.encounter) events++;
     }
     expect(hulls).toBe(0);
+    // ...and no distress signal, skirmish or other chance event either (owner 2026-11-06)
+    expect(events).toBe(0);
     expect(w.sortie.calm).toBe(true);
+  });
+
+  it('no situation (a distress call and its raider) plays in the first system after the paint either (owner 2026-11-06)', () => {
+    const j = past();
+    const def = sortieDef(j);
+    def.situation = 'missing_shift';
+    const w = new World(5, { mode: 'breakout', sortie: def, carry: j.carry });
+    w.skipTraining();
+    w.flags.add('ship_stolen'); w.flags.add('paint_due');
+    expect(w.stage?.def.card).toBe('sc_missing');
+    paintHull(w);
+    for (let i = 0; i < Math.round(240 / STEP); i++) {
+      if (w.phase === 'comms') { w.answer(0); continue; }
+      w.ship.invuln = 1; w.step(STEP, input()); w.events.length = 0;
+    }
+    expect(w.stage?.rangAt ?? null).toBeNull();
+  });
+
+  it('the archive is found first, then the paint card says what happened, and the archive message follows that card closely (owner 2026-11-06)', () => {
+    const w = afterCode();
+    const p = w.bk!.yard!;
+    w.ship.x = p.x - p.r * 0.8; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
+    const log: string[] = [];
+    let yardClosed = -1, wakeAt = -1;
+    for (let i = 0; i < Math.round(90 / STEP) && wakeAt < 0; i++) {
+      w.ship.invuln = 1;
+      if (w.phase === 'comms') {
+        const id = w.comms!.def.id;
+        if (id === 'story_yard_done') { log.push('paint card'); w.answer(0); yardClosed = w.runTime; continue; }
+        if (id === 'story_wake') { log.push('archive'); wakeAt = w.runTime; continue; }
+        w.answer(0); continue;
+      }
+      w.step(STEP, input());
+      for (const e of w.events) if (e.type === 'storyNotice' && e.headline === 'Hidden archive unlocked') log.push('found');
+      w.events.length = 0;
+    }
+    expect(log).toEqual(['found', 'paint card', 'archive']);
+    expect(wakeAt - yardClosed).toBeLessThanOrEqual(8);
   });
 
   it('the pursuit clock starts at the paint, not at the code', () => {
