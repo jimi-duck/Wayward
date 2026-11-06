@@ -117,7 +117,7 @@ const SECTOR_NAME: Record<EncounterId, string> = {
 };
 
 /** Seconds a jump arrival's title card stays up, fade in and out included. */
-const TITLE_SECS = 8.5;
+const TITLE_SECS = 4.5;
 
 /** The pay under a finished job's headline: "+34 Cyrite · +3 supplies", or the job's name when it paid nothing. */
 function payLine(cyrite: number, supplies: number, name: string, partial = false, quick = false): string {

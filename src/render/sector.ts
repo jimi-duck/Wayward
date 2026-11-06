@@ -61,8 +61,8 @@ const BLAST_TINT: Record<string, RGB> = {
 /** How far the bay's ease must have run before it covers the view completely. */
 const COVERED = 0.985;
 /** The arrival sweep: seconds held on the wide shot, then seconds to swing in behind the ship. */
-const ARRIVE_HOLD = 1.5;
-const ARRIVE_SWING = 6.5;
+const ARRIVE_HOLD = 0.75;
+const ARRIVE_SWING = 3.25;
 /** The still world's drift: photo mode's circle (radians a second), and the pause's slow sway (radians, and its pace). */
 const ORBIT_RATE = 0.12;
 const SWAY = 0.32;
