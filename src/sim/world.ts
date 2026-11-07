@@ -78,6 +78,7 @@ import { reasonOf, type Advice } from './advice';
 import { voiceId, voiceText } from './voice';
 import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
 import { discounted, effects, type Effects } from './modules';
+import { Pack } from './tactics';
 import {
   acquire, fireWeapons, launchTorpedo, moveBolts, moveTorpedoes, newArms, type Arms, type Bolt, type FireMods, type Targets, type Torpedo,
 } from './weapons';
@@ -176,6 +177,8 @@ export class World implements EncounterHost {
   aliens: Alien[] = [];
   shots: Shot[] = [];
   webs: Web[] = [];
+  /** The pack's plays: light hulls that attack together (sim/tactics.ts). */
+  pack = new Pack();
   pickups: Pickup[] = [];
   sys: Systems = newSystems();
   tele: Telegraph[] = [];
@@ -2508,6 +2511,8 @@ export class World implements EncounterHost {
     const arena: Arena = { bulwarks: this.field.bulwarks, rocks: this.field.rocks, aliens: this.aliens, bolts: this.bolts, notice: this.stats.notice };
     const well = this.encounter?.id === 'anomaly' && live(this.encounter) && !this.encounter.anchored ? this.encounter : null;
     const safe = !!this.safe, keep = this.bk ? [this.bk.lane, ...(this.bk.port ? [this.bk.port] : []), ...(this.bk.audit ? [this.bk.audit] : [])] : [];
+    // the pack calls its plays before anyone moves (sim/tactics.ts)
+    if (this.alive && !safe) this.pack.step(dt, this.aliens, s, this.rng);
     for (let i = this.aliens.length - 1; i >= 0; i--) {
       const al = this.aliens[i];
       // a hull moving can clear another from the list (a ram, a break); skip the hole

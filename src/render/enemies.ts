@@ -364,10 +364,10 @@ class HullView {
   }
 
   /** The drives and running lights of this hull (see `lights`). */
-  flare(streaks: Streaks, size: number, burn: number, time: number, id: number, far: number): void {
+  flare(streaks: Streaks, size: number, burn: number, time: number, id: number, far: number, sync = false): void {
     if (!this.flaring) return;
     this.body.updateWorldMatrix(true, false);
-    lights(streaks, this.body.matrixWorld, this, this.colour, size, burn, time, id, far);
+    lights(streaks, this.body.matrixWorld, this, this.colour, size, burn, time, id, far, sync);
   }
 }
 
@@ -380,14 +380,15 @@ const LP = new Vector3(), LBACK = new Vector3(), LFWD = new Vector3();
  * world; `far` grows the flare with distance so a drive still shows from
  * across the sky.
  */
-function lights(streaks: Streaks, m: Matrix4, model: { engines: V3[]; lamps: Lamp[] }, colour: Color, size: number, burn: number, time: number, id: number, far: number): void {
+function lights(streaks: Streaks, m: Matrix4, model: { engines: V3[]; lamps: Lamp[] }, colour: Color, size: number, burn: number, time: number, id: number, far: number, sync = false): void {
   const flick = 1 + Math.sin(time * 31 + id) * 0.06;
   LBACK.set(-1, 0, 0).transformDirection(m);
   LFWD.set(1, 0, 0).transformDirection(m);
   // running lights: a few points that blink out of step, windows that stay lit
   for (let i = 0; i < model.lamps.length; i++) {
     const [lx, ly, lz, len, wid] = model.lamps[i]!;
-    const slit = len !== wid, blink = slit ? 1 : 0.35 + 0.65 * Math.max(0, Math.sin(time * 2.4 + id * 1.7 + i * 2.1) * 3 - 1.2);
+    // a pack holding its stations blinks as one, quick and in step: the tell that they are about to come together
+    const slit = len !== wid, blink = slit ? 1 : sync ? 0.3 + 0.9 * Math.max(0, Math.sin(time * 7) * 3 - 1.5) : 0.35 + 0.65 * Math.max(0, Math.sin(time * 2.4 + id * 1.7 + i * 2.1) * 3 - 1.2);
     if (!slit && blink < 0.05) continue;
     LP.set(lx, ly, lz).applyMatrix4(m);
     streaks.push(LP.x, LP.y, LP.z, LFWD.x, LFWD.y, LFWD.z,
@@ -569,14 +570,16 @@ export class EnemyView {
         const roll = al.roll >= 0 ? al.rollDir * Math.PI * 2 * smooth(al.roll / JINK_ROLL) : 0;
         this.e.set(al.bank + roll + Math.sin(this.time * 1.7 + al.id) * 0.04, al.face, pitch, 'YZX');
       }
-      const burn = Math.min(1, Math.hypot(al.vx, al.vy, al.vz) / 30);
+      // the pack's go: every member lights its drives at once
+      const burn = Math.max(Math.min(1, Math.hypot(al.vx, al.vy, al.vz) / 30), al.burst ? 1 + al.burst * 1.4 : 0);
+      const sync = al.mode === 'muster' && !al.play?.go;
       // engines read from far off: the flare keeps a size on screen as the hull shrinks with distance
       const far = Math.min(2.4, Math.sqrt(Math.max(1, this.p.distanceTo(this.eye) / 40)));
       if (plain) {
         const batch = this.batch(al.kind, al.faction);
         this.m.compose(this.p, this.q.setFromEuler(this.e), this.sc.setScalar(al.r));
         batch.add(this.m, al.hitT > 0);
-        lights(this.streaks, this.m, batch.model, batch.colour, al.r, burn, this.time, al.id, far);
+        lights(this.streaks, this.m, batch.model, batch.colour, al.r, burn, this.time, al.id, far, sync);
         continue;
       }
       seen.add(al.id);
@@ -592,7 +595,7 @@ export class EnemyView {
         (v.halo.material as SpriteMaterial).color.copy(ELITE_GLOW[al.elite]).multiplyScalar(al.elite === 'volatile' ? 0.22 + 0.12 * Math.sin(this.time * 12) : 0.24);
         v.halo.scale.setScalar(2.6 + Math.sin(this.time * 3 + al.id) * 0.15);
       }
-      v.flare(this.streaks, al.r, burn, this.time, al.id, far);
+      v.flare(this.streaks, al.r, burn, this.time, al.id, far, sync);
     }
     for (const b of this.batches.values()) b.end();
     for (const [id, v] of this.live) {
