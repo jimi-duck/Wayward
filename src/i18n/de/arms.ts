@@ -5,7 +5,7 @@ export const ARMS: Record<string, string> = {
   'Shields · arc · flak': 'Schilde · Bogen · Flak',
   'Burner': 'Heizer',
   // reactor
-  'Slipstream coupling': 'Sog-Kopplung',
+  'Slipstream': 'Sog-Kopplung',
   'The faster you fly, the faster your laser bank refills.': 'Je schneller du fliegst, desto schneller füllt sich die Laserbank.',
   'Full speed gives the full bonus. Hovering gives none.': 'Volles Tempo gibt den vollen Bonus. Stillstand keinen.',
   'Coolant flush': 'Kühlspülung',
@@ -15,7 +15,7 @@ export const ARMS: Record<string, string> = {
   'Kills in quick succession feed the core: each one adds to your damage for a few seconds.': 'Schnelle Abschüsse speisen den Kern: jeder gibt dir ein paar Sekunden mehr Schaden.',
   'Up to five kills deep. Six seconds without one and it fades.': 'Bis zu fünf Abschüsse tief. Sechs Sekunden ohne einen, und er verblasst.',
   // wake deflectors
-  'Wake deflectors': 'Kielwasser-Deflektoren',
+  'Deflectors': 'Deflektoren',
   'Rock is shoved out of your path and your wake, so you can fly through a field.': 'Fels wird aus deinem Weg und deinem Kielwasser gedrückt, du fliegst quer durchs Feld.',
   'Big rock moves slowly. The faster you fly, the wider the clearing.': 'Große Brocken bewegen sich langsam. Je schneller du fliegst, desto breiter die Schneise.',
   'Bow wave': 'Bugwelle',

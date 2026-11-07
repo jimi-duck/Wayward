@@ -413,7 +413,7 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.rollIframes += 0.35; s.rollCooldown *= 0.9; },
   },
   {
-    id: 'mo_deflector', name: 'Wake deflectors', branch: 'mobility', cat: 'ship', kind: 'system', max: 1, tags: ['mobility', 'unlock', 'control'],
+    id: 'mo_deflector', name: 'Deflectors', branch: 'mobility', cat: 'ship', kind: 'system', max: 1, tags: ['mobility', 'unlock', 'control'],
     weight: 1.2,
     text: 'Rock is shoved out of your path and your wake, so you can fly through a field.',
     note: 'Big rock moves slowly. The faster you fly, the wider the clearing.',
@@ -524,7 +524,7 @@ export const UPGRADES: UpgradeDef[] = [
 
   // ── reactor: the power plant, wired into the ship ──────────────────────
   {
-    id: 'rx_flux', name: 'Slipstream coupling', branch: 'reactor', cat: 'ship', kind: 'stat', max: 3, tags: ['reactor', 'speed', 'laser', 'sustain'],
+    id: 'rx_flux', name: 'Slipstream', branch: 'reactor', cat: 'ship', kind: 'stat', max: 3, tags: ['reactor', 'speed', 'laser', 'sustain'],
     text: 'The faster you fly, the faster your laser bank refills.',
     note: 'Full speed gives the full bonus. Hovering gives none.',
     apply: (s) => { s.flux += 0.3; },

@@ -289,6 +289,7 @@ export class World implements EncounterHost {
   private wells: Array<{ x: number; z: number; life: number; r: number }> = [];
   /** Seconds to the point-defence turret's next shot. */
   private pdT = 0;
+  private deflectT = 0;
   /** The secret: barrel rolls in a row in the Story, each within ROLL_CHAIN_GAP seconds of the last. */
   private rollChain = 0;
   private rollChainAt = -Infinity;
@@ -2766,7 +2767,7 @@ export class World implements EncounterHost {
     if (n <= 0) return;
     this.surgeN = Math.min(n, this.surgeN + 1);
     this.surgeT = SURGE.window;
-    this.events.push({ type: 'surge', n: this.surgeN, max: n });
+    this.events.push({ type: 'surge', n: this.surgeN, max: n, x: this.ship.x, z: this.ship.z });
   }
 
   /** Wake deflectors: rock round the ship is shoved clear, wider the faster you fly; the bow wave cracks what it shoves ahead. */
@@ -2776,6 +2777,10 @@ export class World implements EncounterHost {
     const frac = Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(this.hull));
     const reach = DEFLECT.near + (DEFLECT.far - DEFLECT.near) * frac;
     const hx = Math.cos(s.heading), hz = -Math.sin(s.heading);
+    if (frac > 0.3 && (this.deflectT -= dt) <= 0 && this.field.rocks.some((r) => Math.hypot(r.x - s.x, r.z - s.z) < reach + r.r)) {
+      this.deflectT = 0.3;
+      this.events.push({ type: 'deflect', x: s.x + hx * 2, z: s.z + hz * 2, heading: s.heading, speed: frac });
+    }
     for (const r of [...this.field.rocks]) {
       const dx = r.x - s.x, dz = r.z - s.z, d = Math.hypot(dx, dz) || 1, lim = reach + r.r;
       if (d >= lim) continue;
@@ -2824,7 +2829,7 @@ export class World implements EncounterHost {
     const sh = this.shots.splice(best, 1)[0]!;
     this.pdT = st.flakEvery;
     this.events.push({ type: 'arc', points: [s.x, 0.6, s.z, sh.x, sh.y, sh.z] });
-    this.events.push({ type: 'plasmaDown', x: sh.x, y: sh.y, z: sh.z });
+    this.events.push({ type: 'flak', x: sh.x, y: sh.y, z: sh.z });
   }
 
   /** Chain lances: the lance that struck `from` goes on to the nearest other hull in reach. */
@@ -2837,6 +2842,7 @@ export class World implements EncounterHost {
     }
     if (!to) return;
     const sp = Math.hypot(b.vx, b.vz) || this.stats.laserSpeed, d3 = Math.max(0.5, Math.hypot(to.x - from.x, to.y - from.y, to.z - from.z));
+    this.events.push({ type: 'arc', points: [from.x, from.y, from.z, to.x, to.y, to.z] });
     const k = sp / d3;
     this.bolts.push({
       x: from.x, y: from.y, z: from.z, vx: (to.x - from.x) * k, vy: (to.y - from.y) * k, vz: (to.z - from.z) * k, life: d3 / sp + 0.25,
