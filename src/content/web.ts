@@ -40,10 +40,10 @@ export const TABS: Record<Tab, TabDef> = {
   weapons: { name: 'Weapons', sub: 'Lasers · reach · rate' },
   ordnance: { name: 'Ordnance', sub: 'Torpedoes · mines' },
   engines: { name: 'Engines', sub: 'Drive · handling · plasma' },
-  defence: { name: 'Defence', sub: 'Shields · the hull arc' },
+  defence: { name: 'Defence', sub: 'Shields · arc · flak' },
   utility: { name: 'Utility', sub: 'Tractor · scanners · Cyrite' },
   signals: { name: 'Signals', sub: 'Stealth · sensors · contacts' },
-  reactor: { name: 'Reactor', sub: 'Speed · cooling · the core' },
+  reactor: { name: 'Reactor', sub: 'Core · cooling · surge' },
   synergies: { name: 'Synergies', sub: 'Pairings · salvaged tech' },
 };
 export const TAB_ORDER = Object.keys(TABS) as Tab[];
@@ -126,9 +126,11 @@ export const WEB: WebNode[] = [
   n('ph_lance', 'weapons', 3, 0, ['ph_pierce'], { heat: 2, power: 1 }),
   n('ph_cone', 'weapons', 3, 1, ['ph_capacitors', 'ph_lenses'], { heat: 2, power: 1 }),
   n('ph_array', 'weapons', 3, 2, ['ph_lenses'], { power: 2 }),
+  n('ph_chain', 'weapons', 3, 3, ['ph_pierce', 'ph_lenses'], { heat: 1, power: 1 }),
   n('ph_lance_cap', 'weapons', 4, 0, ['ph_lance'], { heat: 1 }),
   n('ph_cone_wide', 'weapons', 4, 1, ['ph_cone'], { heat: 1 }),
   n('ph_fire_control', 'weapons', 4, 2, ['ph_array'], { power: 1 }),
+  n('ph_chain_link', 'weapons', 4, 3, ['ph_chain'], { heat: 1 }),
   // the yard (the Story mode)
   n('md_hardpoints', 'weapons', 2, 3, null, { power: 1, mass: 1 }, { story: true }),
   n('md_gunnery', 'weapons', 2, 4, null, { heat: 1 }, { story: true }),
@@ -146,6 +148,7 @@ export const WEB: WebNode[] = [
   n('tp_cluster', 'ordnance', 4, 0, ['tp_heavy'], { mass: 1 }, { price: 0.65 }),
   n('tp_swarm_volley', 'ordnance', 4, 1, ['tp_swarm'], { heat: 1 }, { price: 0.65 }),
   n('tp_painter', 'ordnance', 4, 2, ['tp_precision'], { power: 1 }, { price: 0.65 }),
+  n('tp_well', 'ordnance', 4, 3, ['tp_yield', 'tp_tracking'], { power: 1, heat: 1 }, { price: 0.55 }),
   n('mn_layer', 'ordnance', 1, 4, null, { power: 1, mass: 2 }),
   n('mn_yield', 'ordnance', 2, 3, ['mn_layer'], { heat: 1 }),
   n('mn_racks', 'ordnance', 2, 4, ['mn_layer'], { mass: 1 }),
@@ -159,6 +162,8 @@ export const WEB: WebNode[] = [
   n('mo_thrusters', 'engines', 1, 1, null, { power: 1 }),
   n('mo_dampers', 'engines', 2, 1, ['mo_thrusters'], { mass: 1 }),
   n('mo_jets', 'engines', 2, 2, ['mo_thrusters'], { power: 1 }),
+  n('mo_deflector', 'hull', 1, 3, null, { power: 1, mass: 1 }),
+  n('mo_bow', 'hull', 2, 3, ['mo_deflector'], { power: 1 }),
   n('mo_afterburner', 'engines', 3, 0, ['mo_impulse'], { heat: 2 }),
   n('mo_drift', 'engines', 3, 1, ['mo_dampers'], { power: 1 }),
   n('mo_evasion', 'engines', 3, 2, ['mo_jets'], { power: 1 }),
@@ -177,6 +182,8 @@ export const WEB: WebNode[] = [
   n('cl_arc_reach', 'defence', 2, 2, ['cl_arc'], { power: 1 }),
   n('cl_storm', 'defence', 3, 2, ['cl_arc_power', 'cl_arc_reach'], { power: 1, heat: 1 }),
   // the yard (the Story mode)
+  n('df_flak', 'defence', 2, 5, null, { power: 2 }),
+  n('df_flak_rate', 'defence', 3, 5, ['df_flak'], { power: 1 }),
   n('md_projector', 'defence', 2, 3, null, { power: 2 }, { story: true }),
   n('md_capacitor', 'defence', 2, 4, null, { power: 1 }, { story: true }),
 
@@ -204,6 +211,9 @@ export const WEB: WebNode[] = [
   // ── reactor: power and heat ────────────────────────
   n('rx_core', 'reactor', 1, 0, null, { heat: 1 }, { gives: { power: 3 } }),
   n('rx_sinks', 'reactor', 1, 1, null, { mass: 1 }, { gives: { heat: 4 } }),
+  n('rx_flux', 'reactor', 2, 0, ['rx_core'], { power: 1 }),
+  n('rx_flush', 'reactor', 2, 1, ['rx_sinks'], { power: 1 }),
+  n('rx_surge', 'reactor', 3, 0, ['rx_flux', 'rx_flush'], { power: 1, heat: 1 }),
 
   // ── synergies (each needs its two halves) and salvaged tech ─────────────
   n('sy_plasma_torps', 'synergies', 1, 0, null, { power: 1, heat: 1 }),

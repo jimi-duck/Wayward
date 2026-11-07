@@ -508,6 +508,24 @@ export class Sector {
           this.arsenal.arc(e.points);
           for (let i = 3; i + 2 < e.points.length; i += 6) this.fx.flash(e.points[i]!, e.points[i + 1]!, e.points[i + 2]!, 1.4, BOLT, 0.1);
           break;
+        case 'flush':
+          this.fx.ring(e.x, 0.2, e.z, 5, SHIELD, 0.4);
+          this.fx.burst(e.x, 0.3, e.z, 14, SHIELD, 8, 0.2, 0.4);
+          break;
+        case 'surge':
+          this.fx.flash(e.x, 0.4, e.z, 2 + e.n * 0.5, AMBER, 0.12);
+          break;
+        case 'well':
+          this.fx.ring(e.x, 0.2, e.z, e.r * 1.6, [0.9, 0.7, 2.2], 0.9);
+          this.fx.ring(e.x, 0.2, e.z, e.r * 0.8, [0.9, 0.7, 2.2], 1.5);
+          break;
+        case 'flak':
+          this.fx.flash(e.x, e.y, e.z, 1.6, BOLT, 0.08);
+          this.fx.burst(e.x, e.y, e.z, 8, LANCE_SPARK, 10, 0.18, 0.3);
+          break;
+        case 'deflect':
+          this.fx.ring(e.x, 0.1, e.z, 3 + e.speed * 4, SHIELD, 0.3);
+          break;
         case 'strike':
           if (e.kind === 'lightning') {
             this.arsenal.arc([e.x, 30, e.z, e.x, 0, e.z, e.x, 18, e.z, e.x + 3, 0, e.z - 2]);

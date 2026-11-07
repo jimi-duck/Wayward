@@ -219,6 +219,15 @@ export const FIGURES: FigDef[] = [
   { label: 'Killing rams are free', get: (s) => +s.ramSafe, fmt: dash(() => t('On')) },
   { label: 'Roll cloak', get: (s) => s.rollCloak, fmt: dash(sec) },
   { label: 'Snare', get: (s) => s.snare, fmt: dash(sec) },
+  { label: 'Bank refill at speed', get: (s) => s.flux, fmt: dash((v) => `+${Math.round(v * 100)}%`) },
+  { label: 'Roll refills bank', get: (s) => s.rollFlush, fmt: dash(pct) },
+  { label: 'Surge, kills deep', get: (s) => s.surge, fmt: dash(f0) },
+  { label: 'Rock pushed aside', get: (s) => s.deflect, fmt: dash(pct) },
+  { label: 'Bow wave/sec', get: (s) => s.bowWave, fmt: dash(f1) },
+  { label: 'Point defence every', get: (s) => s.flakEvery, fmt: dash(sec), lower: true },
+  { label: 'Point defence reach', get: (s) => off(s.flakEvery > 0, s.flakRange), fmt: dash(m) },
+  { label: 'Lance jumps', get: (s) => s.laserChain, fmt: dash(f0) },
+  { label: 'Singularity wells', get: (s) => +s.torpWell, fmt: dash(() => t('On')) },
 ];
 
 export function figures(before: Stats, after: Stats, arcade = true): Fig[] {
@@ -253,7 +262,7 @@ const SPEC_PREFIX: Record<string, string> = {
   cl_storm: 'Storm', cl_juggernaut: 'Juggernaut', mo_drift: 'Drift', mo_evasion: 'Evasive', df_fortress: 'Fortress',
   df_reactive: 'Reactive', df_regenerative: 'Regenerative',
   pl_corona: 'Corona', cl_shock: 'Shock', mo_afterburner: 'Redline', ut_prospector: 'Deep-core', ut_salvager: 'Salvager',
-  ut_scanner: 'Scanner',
+  ut_scanner: 'Scanner', ph_chain: 'Chain-lance', tp_well: 'Singularity',
 };
 
 export function identity(levels: Levels): Identity {

@@ -21,7 +21,8 @@ import type { Stats } from '../sim/stats';
 //            │                └─ specialise: Drift drive · Evasive pattern · Afterburner
 //            └─ Utility ──── tractor, krail matrix
 //                             └─ specialise: Prospector · Salvage drones · Salvage scanners
-//   Defence ──  Shields, armour, bulkheads, damage control
+//   Defence ──  Shields, armour, bulkheads, damage control, point defence
+//   Reactor ──  Slipstream coupling, coolant flush, surge core: the power plant, wired into flying and firing
 //                             └─ specialise: Fortress · Reactive armour · Regenerative hull
 //   Synergies on the bridges between regions, once you own both halves.
 //
@@ -44,7 +45,7 @@ import type { Stats } from '../sim/stats';
 // it changes (see FIGURES in sim/build.ts).
 
 export type Branch =
-  | 'laser' | 'torpedo' | 'mine' | 'plasma' | 'close' | 'mobility' | 'defence' | 'utility' | 'synergy' | 'salvage';
+  | 'laser' | 'torpedo' | 'mine' | 'plasma' | 'close' | 'mobility' | 'defence' | 'utility' | 'reactor' | 'synergy' | 'salvage';
 type Category = 'weapons' | 'defence' | 'ship';
 type UpgradeKind = 'stat' | 'system' | 'spec' | 'synergy' | 'tech';
 type TechFaction = 'gutter' | 'custody' | 'office' | 'voice' | 'thren';
@@ -99,6 +100,7 @@ export const BRANCHES: Record<Branch, BranchDef> = {
   mobility: { name: 'Mobility', cat: 'ship', identity: 'Interceptor', system: 'rig' },
   defence: { name: 'Defence', cat: 'defence', identity: 'Bulwark', system: 'guns' },
   utility: { name: 'Utility', cat: 'ship', identity: 'Prospector', system: 'rig' },
+  reactor: { name: 'Reactor', cat: 'ship', identity: 'Burner', system: 'rig' },
   synergy: { name: 'Synergy', cat: 'weapons', identity: 'Hybrid', system: 'guns' },
   salvage: { name: 'Salvage', cat: 'ship', identity: 'Raider', system: 'guns' },
 };
@@ -173,6 +175,19 @@ export const UPGRADES: UpgradeDef[] = [
     text: 'Your lances cost less energy and track harder.',
     apply: (s) => { s.bankShot *= 0.75; s.laserHoming += 0.9; s.laserDamage *= 1.1; },
   },
+  {
+    id: 'ph_chain', name: 'Chain lances', branch: 'laser', cat: 'weapons', kind: 'spec', max: 1, group: 'laser', needs: 4,
+    tags: ['laser', 'chain', 'area'],
+    text: 'A lance that hits a hull jumps on to the next one nearby.',
+    note: 'The jump hits a little lighter than the first.',
+    apply: (s) => { s.laserChain += 1; },
+  },
+  {
+    id: 'ph_chain_link', name: 'Long chain', branch: 'laser', cat: 'weapons', kind: 'stat', max: 2, tags: ['laser', 'chain'],
+    requires: [{ id: 'ph_chain' }],
+    text: 'Your lances jump on one more time.',
+    apply: (s) => { s.laserChain += 1; },
+  },
 
   // ── torpedoes ──────────────────────────────────────────────────────────
   {
@@ -237,6 +252,13 @@ export const UPGRADES: UpgradeDef[] = [
     requires: [{ id: 'tp_precision' }],
     text: 'Laser hits paint a target; torpedoes lock it first and hit it harder.',
     apply: (s) => { s.painter = true; s.markBonus = 1.6; },
+  },
+  {
+    id: 'tp_well', name: 'Singularity warhead', branch: 'torpedo', cat: 'weapons', kind: 'spec', max: 1, group: 'torpedo', needs: 3,
+    tags: ['torpedo', 'control', 'area'],
+    text: 'Each blast leaves a well that drags hulls and rock together.',
+    note: 'Pull a squad into one place, then hit it again.',
+    apply: (s) => { s.torpWell = true; s.torpBlast *= 1.1; },
   },
 
   // ── mines ──────────────────────────────────────────────────────────────
@@ -390,6 +412,19 @@ export const UPGRADES: UpgradeDef[] = [
     text: 'Your roll covers you much longer, so you can fly through fire.',
     apply: (s) => { s.rollIframes += 0.35; s.rollCooldown *= 0.9; },
   },
+  {
+    id: 'mo_deflector', name: 'Deflectors', branch: 'mobility', cat: 'ship', kind: 'system', max: 1, tags: ['mobility', 'unlock', 'control'],
+    weight: 1.2,
+    text: 'Rock is shoved out of your path and your wake, so you can fly through a field.',
+    note: 'Big rock moves slowly. The faster you fly, the wider the clearing.',
+    apply: (s) => { s.deflect = 1; },
+  },
+  {
+    id: 'mo_bow', name: 'Bow wave', branch: 'mobility', cat: 'ship', kind: 'stat', max: 2, tags: ['mobility', 'speed', 'xp'],
+    requires: [{ id: 'mo_deflector' }],
+    text: 'Rock shoved aside at speed cracks, and gives up its Cyrite.',
+    apply: (s) => { s.bowWave += 3; s.deflect += 0.25; },
+  },
 
   // ── defence ────────────────────────────────────────────────────────────
   {
@@ -448,6 +483,19 @@ export const UPGRADES: UpgradeDef[] = [
     note: 'In the Story mode, a plate grows back after a minute without a hit.',
     apply: (s) => { s.regen = 60; s.repairUnderFire = true; s.repairRate *= 1.5; },
   },
+  {
+    id: 'df_flak', name: 'Point defence', branch: 'defence', cat: 'defence', kind: 'system', max: 1, tags: ['defence', 'unlock', 'flak'],
+    weight: 1.2,
+    text: 'A turret shoots down enemy bolts that come close.',
+    note: 'One bolt at a time. A fan of shots still gets through.',
+    apply: (s) => { s.flakEvery = 1.6; },
+  },
+  {
+    id: 'df_flak_rate', name: 'Point-defence tracking', branch: 'defence', cat: 'defence', kind: 'stat', max: 3, tags: ['defence', 'flak'],
+    requires: [{ id: 'df_flak' }],
+    text: 'Your turret fires sooner and reaches further.',
+    apply: (s) => { s.flakEvery *= 0.78; s.flakRange *= 1.1; },
+  },
 
   // ── utility ────────────────────────────────────────────────────────────
   {
@@ -472,6 +520,27 @@ export const UPGRADES: UpgradeDef[] = [
     weight: 0.8,
     text: 'All your weapons hit harder.',
     apply: (s) => { s.dmgAll *= 1.07; },
+  },
+
+  // ── reactor: the power plant, wired into the ship ──────────────────────
+  {
+    id: 'rx_flux', name: 'Slipstream', branch: 'reactor', cat: 'ship', kind: 'stat', max: 3, tags: ['reactor', 'speed', 'laser', 'sustain'],
+    text: 'The faster you fly, the faster your laser bank refills.',
+    note: 'Full speed gives the full bonus. Hovering gives none.',
+    apply: (s) => { s.flux += 0.3; },
+  },
+  {
+    id: 'rx_flush', name: 'Coolant flush', branch: 'reactor', cat: 'ship', kind: 'system', max: 1, tags: ['reactor', 'unlock', 'evasion', 'torpedo'],
+    weight: 1.2,
+    text: 'A barrel roll vents the loops: half the bank back, and a torpedo racked.',
+    note: 'Fire, roll, fire.',
+    apply: (s) => { s.rollFlush = 0.5; },
+  },
+  {
+    id: 'rx_surge', name: 'Surge core', branch: 'reactor', cat: 'ship', kind: 'system', max: 1, tags: ['reactor', 'unlock', 'damage'],
+    text: 'Kills in quick succession feed the core: each one adds to your damage for a few seconds.',
+    note: 'Up to five kills deep. Six seconds without one and it fades.',
+    apply: (s) => { s.surge = 5; },
   },
 
   // ── synergies ──────────────────────────────────────────────────────────

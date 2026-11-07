@@ -1,0 +1,50 @@
+// The arms-and-reactor pass (November 2026): the reactor's three live parts, wake deflectors, point defence, chain lances and the
+// singularity warhead (content/upgrades.ts, content/web.ts, sim/build.ts). Short and informal, like the English.
+export const ARMS: Record<string, string> = {
+  'Core · cooling · surge': 'Kern · Kühlung · Surge',
+  'Shields · arc · flak': 'Schilde · Bogen · Flak',
+  'Burner': 'Heizer',
+  // reactor
+  'Slipstream': 'Sog-Kopplung',
+  'The faster you fly, the faster your laser bank refills.': 'Je schneller du fliegst, desto schneller füllt sich die Laserbank.',
+  'Full speed gives the full bonus. Hovering gives none.': 'Volles Tempo gibt den vollen Bonus. Stillstand keinen.',
+  'Coolant flush': 'Kühlspülung',
+  'A barrel roll vents the loops: half the bank back, and a torpedo racked.': 'Eine Fassrolle spült die Kreisläufe: die halbe Bank zurück und ein Torpedo geladen.',
+  'Fire, roll, fire.': 'Feuern, rollen, feuern.',
+  'Surge core': 'Surge-Kern',
+  'Kills in quick succession feed the core: each one adds to your damage for a few seconds.': 'Schnelle Abschüsse speisen den Kern: jeder gibt dir ein paar Sekunden mehr Schaden.',
+  'Up to five kills deep. Six seconds without one and it fades.': 'Bis zu fünf Abschüsse tief. Sechs Sekunden ohne einen, und er verblasst.',
+  // wake deflectors
+  'Deflectors': 'Deflektoren',
+  'Rock is shoved out of your path and your wake, so you can fly through a field.': 'Fels wird aus deinem Weg und deinem Kielwasser gedrückt, du fliegst quer durchs Feld.',
+  'Big rock moves slowly. The faster you fly, the wider the clearing.': 'Große Brocken bewegen sich langsam. Je schneller du fliegst, desto breiter die Schneise.',
+  'Bow wave': 'Bugwelle',
+  'Rock shoved aside at speed cracks, and gives up its Cyrite.': 'Fels, den du mit Tempo beiseite schiebst, bricht und gibt sein Cyrit her.',
+  // point defence
+  'Point defence': 'Punktabwehr',
+  'A turret shoots down enemy bolts that come close.': 'Ein Geschütz schießt feindliche Geschosse ab, die nah kommen.',
+  'One bolt at a time. A fan of shots still gets through.': 'Ein Geschoss nach dem anderen. Ein Schussfächer kommt trotzdem durch.',
+  'Point-defence tracking': 'Punktabwehr-Zielerfassung',
+  'Your turret fires sooner and reaches further.': 'Dein Geschütz feuert früher und reicht weiter.',
+  // weapons
+  'Chain lances': 'Kettenlanzen',
+  'A lance that hits a hull jumps on to the next one nearby.': 'Eine Lanze, die einen Rumpf trifft, springt zum nächsten in der Nähe.',
+  'The jump hits a little lighter than the first.': 'Der Sprung trifft etwas schwächer als der erste Treffer.',
+  'Long chain': 'Lange Kette',
+  'Your lances jump on one more time.': 'Deine Lanzen springen einmal öfter weiter.',
+  'Singularity warhead': 'Singularitäts-Sprengkopf',
+  'Each blast leaves a well that drags hulls and rock together.': 'Jede Explosion hinterlässt einen Sog, der Schiffe und Fels zusammenzieht.',
+  'Pull a squad into one place, then hit it again.': 'Zieh eine Staffel an einen Ort und triff sie nochmal.',
+  'Chain-lance': 'Kettenlanzen',
+  'Singularity': 'Singularität',
+  // figures
+  'Bank refill at speed': 'Bankladung bei Tempo',
+  'Roll refills bank': 'Rolle lädt Bank',
+  'Surge, kills deep': 'Surge, Abschüsse tief',
+  'Rock pushed aside': 'Fels beiseite gedrückt',
+  'Bow wave/sec': 'Bugwelle/Sek.',
+  'Point defence every': 'Punktabwehr alle',
+  'Point defence reach': 'Punktabwehr-Reichweite',
+  'Lance jumps': 'Lanzensprünge',
+  'Singularity wells': 'Singularitäts-Sog',
+};

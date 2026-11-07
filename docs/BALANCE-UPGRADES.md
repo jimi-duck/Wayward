@@ -108,3 +108,19 @@ Same four builds (seeds 3000, 3013, 3026, 3039), the first 70 systems, main agai
 No shift beyond what four journeys can tell apart. The feel pilot (`docs/FEEL.md`, arcade fights with random builds) reads
 8.2 kills a minute and 0.28 plates hit a minute on main, 8.0 and 0.25 here. The eight-region `pilot:journey` set was
 not run (it takes hours); the upgrade and feel pilots stand in for it.
+
+## The arms and reactor pass (2026-11-07)
+
+Ten new parts that change how you fly and fight (numbers in `sim/tuning.ts` `SURGE`, `DEFLECT`, `WELL`, `CHAIN`; stats in `sim/stats.ts`):
+
+| Part | Where | What it does |
+|---|---|---|
+| Slipstream (3 steps) | Reactor | Laser bank refills up to +30% a step faster at full speed (cap +120%) |
+| Coolant flush | Reactor | A barrel roll refills half the bank and racks a torpedo |
+| Surge core | Reactor | Kills within 6 s stack, up to 5, +8% damage each |
+| Deflectors (wake deflectors), Bow wave (2) | Hull | Rock near the ship is shoved clear, wider at speed; Bow wave cracks rock shoved ahead (cap 9/s) |
+| Point defence, tracking (3) | Defence | Turret shoots one enemy bolt in reach every 1.6 s (floor 0.35 s) |
+| Chain lances, Long chain (2) | Weapons (laser specialisation) | A lance that hits a hull jumps on, 75% damage, up to 3 jumps |
+| Singularity warhead | Ordnance (torpedo specialisation) | A blast leaves a 2.4 s well that drags hulls, rock and enemy fire in |
+
+Pilot (`UPG_LEGS=70`, wide build, seeds 3000, 3013, 3026): all three flew 70 systems without a wreck, and the pilot fitted deflectors and point defence unprompted. The pilot cannot judge feel. The bay icons are stand-ins drawn by `tools/make-arms-icons.py`.

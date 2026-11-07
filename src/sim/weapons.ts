@@ -33,6 +33,8 @@ export interface Bolt {
   homing: number;
   /** A disruptor bolt (Gutter tech): drawn heavier. */
   heavy?: boolean;
+  /** Onward jumps left to a lance that hits a hull (chain lances). */
+  chain?: number;
 }
 
 export interface Torpedo {
@@ -74,6 +76,8 @@ export interface FireMods {
   damage: number;
   /** Drifting with the drift drive. */
   drifting: boolean;
+  /** Share of top speed the ship is flying at (0 to 1): slipstream coupling feeds the bank with it. */
+  speed?: number;
 }
 
 export const NO_FIRE_MODS: FireMods = { rapid: false, damage: 1, drifting: false };
@@ -191,7 +195,7 @@ export function fireWeapons(
         const vy = el ? el.y / (el.d / s.laserSpeed) : 0;
         bolts.push({
           x, y: 0, z, vx: ax * s.laserSpeed + ship.vx, vy, vz: az * s.laserSpeed + ship.vz, life: s.laserLife,
-          dmg, pierce: s.laserPierce, hit: [], homing: s.laserHoming, heavy,
+          dmg, pierce: s.laserPierce, hit: [], homing: s.laserHoming, heavy, chain: s.laserChain,
         });
       }
       events.push({ type: 'bolt', x, z, heading: ship.heading });
@@ -206,7 +210,7 @@ export function fireWeapons(
   if (!c.fire) arms.dryFired = false;
   // the bank refills all the time, firing or not: a held trigger drains it
   // slowly, and an empty bank fires at the rate it refills, never stutters
-  arms.bank = Math.min(s.bankMax, arms.bank + s.bankRefill * dt);
+  arms.bank = Math.min(s.bankMax, arms.bank + s.bankRefill * (1 + s.flux * (m.speed ?? 0)) * dt);
 
   if (!s.torpedoes) return;
   // torpedoes

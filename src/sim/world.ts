@@ -64,7 +64,7 @@ import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
 import { BASE, flightHull, type Stats } from './stats';
 import {
   BREACH_GRACE, CHAIN_WINDOW, DYING, PX, BOOST_FIRST, BOOST_CHANCE, ARCADE_BOUNTY, ARCADE_ROCK, BOOST_GAP, REPAIR_CHANCE,
-  REPAIR_CHANCE_ELITE, REPAIR_GAP, BULWARK_POINTS, MINE_HP, MINE_KRAIL, ROCK_BUMP, ROCK_POINTS, ROCK_PUSH, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
+  REPAIR_CHANCE_ELITE, REPAIR_GAP, BULWARK_POINTS, MINE_HP, MINE_KRAIL, ROCK_BUMP, ROCK_POINTS, ROCK_PUSH, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult, CHAIN, DEFLECT, SURGE, WELL,
 } from './tuning';
 import { SCRAP_PRICE, type Prices } from '../content/systems';
 import { ARCADE_PRICE } from '../content/web';
@@ -282,6 +282,14 @@ export class World implements EncounterHost {
   private timeScore = 0;
   private nextSample = 0;
   private wasRolling = false;
+  /** Surge core: kills stacked, and seconds left before they fade. */
+  surgeN = 0;
+  private surgeT = 0;
+  /** Singularity wells left by torpedo blasts. */
+  private wells: Array<{ x: number; z: number; life: number; r: number }> = [];
+  /** Seconds to the point-defence turret's next shot. */
+  private pdT = 0;
+  private deflectT = 0;
   /** The secret: barrel rolls in a row in the Story, each within ROLL_CHAIN_GAP seconds of the last. */
   private rollChain = 0;
   private rollChainAt = -Infinity;
@@ -769,6 +777,7 @@ export class World implements EncounterHost {
     // the gate's and the depot's damping field holds every gun cold, ours as well as theirs
     const cold = !!this.safe;
     if (rolling && !this.wasRolling && st.rollBurst && !cold) plasmaRing(this.sys, s, st);
+    if (rolling && !this.wasRolling && st.rollFlush > 0 && this.alive) this.flush();
     if (rolling && !this.wasRolling && st.rollCloak > 0) { this.cloakT = st.rollCloak; this.events.push({ type: 'cloak', x: s.x, z: s.z }); }
     if (rolling && !this.wasRolling && this.bk) this.chainRoll();
     this.wasRolling = rolling;
@@ -779,7 +788,7 @@ export class World implements EncounterHost {
 
     // our weapons and systems
     const targets = this.targets();
-    const fm: FireMods = { rapid: this.powers.rapid > 0, damage: this.dmgMult * (this.powers.overdrive > 0 ? 1.5 : 1), drifting: drifting(s, this.hull) };
+    const fm: FireMods = { rapid: this.powers.rapid > 0, damage: this.dmgMult * (this.powers.overdrive > 0 ? 1.5 : 1) * (1 + SURGE.damage * this.surgeN), drifting: drifting(s, this.hull), speed: Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(this.hull)) };
     let fireStats = this.sensorsDown || this.air.lock < 1 ? { ...st, torpSeek: st.torpSeek * (this.sensorsDown ? 0.6 : 1) * this.air.lock } : st;
     if (this.powers.yield > 0) fireStats = { ...fireStats, torpDamage: fireStats.torpDamage * YIELD_DAMAGE, torpBlast: fireStats.torpBlast * YIELD_BLAST };
     if (this.alive) {
@@ -824,6 +833,9 @@ export class World implements EncounterHost {
     for (const tp of moveTorpedoes(this.torps, targets, dt)) this.torpBlast(tp);
     this.stepFieldWall();
     this.stepSystems(dt, fm.rapid);
+    this.stepDeflect(dt);
+    this.stepWells(dt);
+    this.stepFlak(dt);
     this.stepStrikes(dt);
     for (let i = this.tele.length - 1; i >= 0; i--) if ((this.tele[i]!.t -= dt) <= 0) this.tele.splice(i, 1);
     this.stepPickups(dt);
@@ -1427,6 +1439,7 @@ export class World implements EncounterHost {
     if (this.repairCd > 0) this.repairCd -= dt;
     if (this.boostCd > 0) this.boostCd -= dt;
     if (this.chain > 0 && (this.chainT -= dt) <= 0) this.chain = 0;
+    if (this.surgeN > 0 && (this.surgeT -= dt) <= 0) this.surgeN = 0;
     this.sinceHit += dt;
     if (this.shieldT > 0) this.shieldT = Math.max(0, this.shieldT - dt);
     else if (this.shields < st.shieldMax && this.alive) {
@@ -2725,6 +2738,7 @@ export class World implements EncounterHost {
       const b = launchTorpedo(this.torps, st, tp.x, tp.z, a, 14, null, tp.dmg * 0.35, true);
       b.y = tp.y; b.life = 0.45; b.max = 20; b.blast = tp.blast * 0.45; b.cone = 0;
     }
+    if (st.torpWell) { this.wells.push({ x: tp.x, z: tp.z, life: WELL.life, r: tp.blast + WELL.reach }); this.events.push({ type: 'well', x: tp.x, z: tp.z, r: tp.blast + WELL.reach }); }
     if (st.torpPlasma) this.sys.burns.push({ x: tp.x, z: tp.z, r: tp.blast * 0.6, life: 2.5, max: 2.5, dps: st.plasmaDps, trail: false });
     if (st.torpArc > 0) {
       const near = this.reachableHulls()
@@ -2737,6 +2751,103 @@ export class World implements EncounterHost {
         this.events.push({ type: 'arc', points: pts });
       }
     }
+  }
+
+  /** Coolant flush: a barrel roll vents the loops, half the bank back and a torpedo racked. */
+  private flush(): void {
+    const st = this.stats, a = this.arms, s = this.ship;
+    a.bank = Math.min(st.bankMax, a.bank + st.bankMax * st.rollFlush);
+    if (st.torpedoes && a.rack < st.torpRack) { a.rack++; a.reload = a.rack < st.torpRack ? st.torpReload : 0; a.spacing = 0; }
+    this.events.push({ type: 'flush', x: s.x, z: s.z });
+  }
+
+  /** Surge core: a kill stacks the surge and keeps it alive a little longer. */
+  private surge(): void {
+    const n = this.stats.surge;
+    if (n <= 0) return;
+    this.surgeN = Math.min(n, this.surgeN + 1);
+    this.surgeT = SURGE.window;
+    this.events.push({ type: 'surge', n: this.surgeN, max: n, x: this.ship.x, z: this.ship.z });
+  }
+
+  /** Wake deflectors: rock round the ship is shoved clear, wider the faster you fly; the bow wave cracks what it shoves ahead. */
+  private stepDeflect(dt: number): void {
+    const st = this.stats, s = this.ship;
+    if (st.deflect <= 0 || !this.alive) return;
+    const frac = Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(this.hull));
+    const reach = DEFLECT.near + (DEFLECT.far - DEFLECT.near) * frac;
+    const hx = Math.cos(s.heading), hz = -Math.sin(s.heading);
+    if (frac > 0.3 && (this.deflectT -= dt) <= 0 && this.field.rocks.some((r) => Math.hypot(r.x - s.x, r.z - s.z) < reach + r.r)) {
+      this.deflectT = 0.3;
+      this.events.push({ type: 'deflect', x: s.x + hx * 2, z: s.z + hz * 2, heading: s.heading, speed: frac });
+    }
+    for (const r of [...this.field.rocks]) {
+      const dx = r.x - s.x, dz = r.z - s.z, d = Math.hypot(dx, dz) || 1, lim = reach + r.r;
+      if (d >= lim) continue;
+      const fall = 1 - d / lim, ahead = (dx * hx + dz * hz) / d;
+      // away from the ship, and to whichever side of its line the rock sits: a rock dead ahead goes round, not back
+      const side = dx * -hz + dz * hx >= 0 ? 1 : -1;
+      let nx = dx / d + -hz * side * 0.9 * Math.max(0, ahead), nz = dz / d + hx * side * 0.9 * Math.max(0, ahead);
+      const nl = Math.hypot(nx, nz) || 1; nx /= nl; nz /= nl;
+      const a = (DEFLECT.push * st.deflect * fall) / (0.6 + 0.12 * r.r * r.r);
+      r.vx += nx * a * dt; r.vz += nz * a * dt;
+      const v = Math.hypot(r.vx, r.vz);
+      if (v > 36) { r.vx *= 36 / v; r.vz *= 36 / v; }
+      if (st.bowWave > 0 && ahead > 0.3 && frac > 0.45) this.damageRock(r, st.bowWave * frac * fall * dt, 'ram', r.x, 0, r.z, true);
+    }
+  }
+
+  /** Singularity wells: hulls, rock and enemy fire in reach are dragged toward the middle until it closes. */
+  private stepWells(dt: number): void {
+    for (let i = this.wells.length - 1; i >= 0; i--) {
+      const w = this.wells[i]!;
+      if ((w.life -= dt) <= 0) { this.wells.splice(i, 1); continue; }
+      const pull = (o: { x: number; z: number; vx: number; vz: number }, k: number) => {
+        const dx = w.x - o.x, dz = w.z - o.z, d = Math.hypot(dx, dz) || 1;
+        if (d > w.r * 2.2 || d < 0.6) return;
+        o.vx += (dx / d) * WELL.pull * k * (1 - d / (w.r * 2.2)) * dt; o.vz += (dz / d) * WELL.pull * k * (1 - d / (w.r * 2.2)) * dt;
+      };
+      for (const al of this.aliens) if (!al.ward && Math.abs(al.y) < 5) pull(al, 1.4);
+      for (const rk of this.field.rocks) pull(rk, 1);
+      for (const sh of this.shots) pull(sh, 0.5);
+    }
+  }
+
+  /** Point defence: the turret shoots down the nearest enemy bolt in reach, one every so often. */
+  private stepFlak(dt: number): void {
+    const st = this.stats, s = this.ship;
+    if (st.flakEvery <= 0 || !this.alive || this.safe) return;
+    if ((this.pdT -= dt) > 0) return;
+    let best = -1, bd = st.flakRange;
+    for (let i = 0; i < this.shots.length; i++) {
+      const sh = this.shots[i]!;
+      if (sh.from === 'tutor-missile') continue;
+      const d = Math.hypot(sh.x - s.x, sh.y, sh.z - s.z);
+      if (d < bd) { bd = d; best = i; }
+    }
+    if (best < 0) { this.pdT = 0; return; }
+    const sh = this.shots.splice(best, 1)[0]!;
+    this.pdT = st.flakEvery;
+    this.events.push({ type: 'arc', points: [s.x, 0.6, s.z, sh.x, sh.y, sh.z] });
+    this.events.push({ type: 'flak', x: sh.x, y: sh.y, z: sh.z });
+  }
+
+  /** Chain lances: the lance that struck `from` goes on to the nearest other hull in reach. */
+  private chainLance(b: Bolt, from: Alien): void {
+    let to: Alien | null = null, bd: number = CHAIN.reach;
+    for (const al of this.aliens) {
+      if (al === from || al.ward || cloaked(al) || b.hit.includes(al.id)) continue;
+      const d = Math.hypot(al.x - from.x, al.y - from.y, al.z - from.z);
+      if (d < bd) { bd = d; to = al; }
+    }
+    if (!to) return;
+    const sp = Math.hypot(b.vx, b.vz) || this.stats.laserSpeed, d3 = Math.max(0.5, Math.hypot(to.x - from.x, to.y - from.y, to.z - from.z));
+    this.events.push({ type: 'arc', points: [from.x, from.y, from.z, to.x, to.y, to.z] });
+    const k = sp / d3;
+    this.bolts.push({
+      x: from.x, y: from.y, z: from.z, vx: (to.x - from.x) * k, vy: (to.y - from.y) * k, vz: (to.z - from.z) * k, life: d3 / sp + 0.25,
+      dmg: b.dmg * CHAIN.keep, pierce: 0, hit: [...b.hit, from.id], homing: 0, chain: (b.chain ?? 1) - 1,
+    });
   }
 
   /** Lightning, shells and webs landing where their circles were drawn. */
@@ -2932,6 +3043,7 @@ export class World implements EncounterHost {
         land(al.id);
         if (st.painter) al.mark = 4;
         this.hurtAlien(al, b.dmg, 'laser', b.x, b.y, b.z);
+        if ((b.chain ?? 0) > 0) { this.chainLance(b, al); b.chain = 0; }
       }
       const sd = this.thrSeed;
       if (!spent && sd && sd.state !== 'dead' && hit(sd.x, 0, sd.z, sd.r)) { spent = true; this.hurtSeed(sd, b.dmg, b.x, b.y, b.z); }
@@ -3190,6 +3302,7 @@ export class World implements EncounterHost {
     this.kills++;
     this.run.kills++;
     this.run.killsBy[src]++;
+    this.surge();
     this.run.killsByKind[al.variant] = (this.run.killsByKind[al.variant] ?? 0) + 1;
     if (al.elite) this.run.elites++;
     this.events.push({
@@ -3488,7 +3601,7 @@ export class World implements EncounterHost {
     this.shields = this.stats.shieldMax; this.shieldT = 0;
     this.arms = newArms(this.stats);
     this.refit = 0; this.techs = new Set();
-    this.cloakT = 0; this.chain = 0; this.chainT = 0;
+    this.cloakT = 0; this.chain = 0; this.chainT = 0; this.surgeN = 0; this.surgeT = 0; this.wells = []; this.pdT = 0;
     for (const k of POWERS) this.powers[k] = 0;
     this.dcUsed = false; this.sinceHit = 0; this.repairCd = 0; this.boostCd = BOOST_FIRST;
     this.theatre = 'gutter'; this.theatreT = 70; this.nextEvent = EVENT_FIRST; this.eventN = 0; this.lastEvent = null;
