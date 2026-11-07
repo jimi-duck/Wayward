@@ -368,6 +368,18 @@ export class Hud {
     }
   }
 
+  private rebooting = false;
+  /** Ned's yard: after the zaps the ship is shut down. The view dims and a rebooting loader fills (owner 2026-11-07). `p` 0 to 1, -1 when it is not up. */
+  private reboot(p: number): void {
+    const on = p >= 0;
+    if (on !== this.rebooting) {
+      this.rebooting = on;
+      $('reboot').classList.toggle('on', on);
+      if (on) { text($('rb-t'), t('Rebooting')); text($('rb-s'), t('Ship systems restoring')); }
+    }
+    if (on) $('rb-i').style.width = `${Math.round(Math.min(1, p) * 100)}%`;
+  }
+
   private glitching = false;
   /** Ned's yard (owner 2026-11-06): the HUD flickers and tears while she is zapped, goes dark at the reboot and flickers back. 0: untouched. */
   private glitch(g: number): void {
@@ -382,6 +394,7 @@ export class Hud {
 
   update(world: World, sector: Sector, dt: number): void {
     this.glitch(world.yardGlitch);
+    this.reboot(world.yardReboot);
     this.aim.update(world, sector, dt);
     // the heading tape, with the objective on it; it also says whether this is travel or a fight
     this.guide.update(world, sector.shipNow.heading, dt);

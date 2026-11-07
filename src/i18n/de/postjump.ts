@@ -84,6 +84,8 @@ export const POSTJUMP: Record<string, string> = {
   'Hidden archive unlocked': 'Verstecktes Archiv entsperrt',
   'Fly to Ned’s yard: free reprogram, repaint and rename': 'Zu Neds Werft fliegen: kostenlos umprogrammieren, lackieren, umbenennen',
   'Reach Ned’s yard': 'Neds Werft erreichen',
+  'Rebooting': 'Neustart',
+  'Ship systems restoring': 'Schiffssysteme werden wiederhergestellt',
   'Autopilot · Ned is working': 'Autopilot · Ned arbeitet',
   'Make her yours': 'Mach sie zu deinem Schiff',
   'free': 'kostenlos',

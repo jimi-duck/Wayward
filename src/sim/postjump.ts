@@ -58,8 +58,10 @@ export const YARD_TITLE_AT = 4.2;
 export const YARD_ZAP = 3.6;
 export const YARD_OUT_AT = 1.4;
 export const YARD_AUTO_END = 5.6;
-export const YARD_DARK = 1.0;
-export const YARD_BOOT = 1.9;
+export const YARD_DARK = 0.3;
+export const YARD_BOOT = 1.2;
+/** After the zaps the ship shuts down: a dark screen with a rebooting loader (ui/hud.ts reboot) for this long, then the new colours and name. */
+export const YARD_REBOOT = 2.8;
 /** The explanation card comes this long after the work (the reveal has played by then), and the archive's message this long after the work. */
 export const PAINT_CARD = 10.5;
 export const PAINT_WAKE = 8.4;

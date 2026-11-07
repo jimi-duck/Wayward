@@ -72,6 +72,16 @@
 /* the jump: the HUD steps back for the fly-through, and a pale teal veil closes over the view at the end of it */
 #hud, #touch { transition: opacity .45s var(--ez); }
 #app.warping #hud, #app.warping #touch { opacity: 0; }
+/* Ned's yard: the ship is shut down. The view outside stays, a little darker; a rebooting loader sits low in the middle (ui/hud.ts reboot). */
+#reboot { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0; transition: opacity .45s ease;
+  background: radial-gradient(ellipse at 50% 55%, rgba(var(--void-rgb), .5), rgba(var(--void-rgb), .82)); display: grid; place-items: end center; padding-bottom: 20vh; }
+#reboot.on { opacity: 1; }
+.rb-box { display: grid; justify-items: center; gap: 10px; min-width: min(360px, 70vw); }
+#rb-t { font: 600 calc(var(--fs) * 1.25)/1 var(--font-rail); letter-spacing: .34em; text-indent: .34em; text-transform: uppercase; color: var(--cy); }
+.rb-bar { display: block; width: 100%; height: 4px; background: rgba(var(--void-rgb), .8); box-shadow: 0 0 0 1px var(--rim-cyan) inset; overflow: hidden; }
+.rb-bar i { display: block; height: 100%; width: 0; background: var(--cy); }
+#rb-s { font: 500 calc(var(--fs) * .9)/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink); opacity: .85; }
+@media (max-height: 520px) { #reboot { padding-bottom: 14vh; } .rb-box { gap: 6px; } #rb-t { font-size: 14px; } #rb-s { font-size: 10px; } }
 #warp { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at 50% 46%, var(--ink-hi) 0%, var(--rim-cyan) 42%, var(--teal-hi) 100%); }
 /* the HUD powers up when the run starts: no delay and no fill, so if it never runs the HUD is simply there */
 :root:not(.prelaunch) .hud-block { animation: hud-boot .42s var(--ez); }

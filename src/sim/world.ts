@@ -29,7 +29,7 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_CARD, PAINT_LINE, PAINT_WAKE, YARD_ZAP, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, YARD_DONE, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
+import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_CARD, PAINT_LINE, PAINT_WAKE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, YARD_DONE, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
 import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
 import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_EVERY_ALERT, FLAK_R, SiteBrain, type Mood } from './site';
@@ -1149,11 +1149,14 @@ export class World implements EncounterHost {
   /** Ned's yard: how long she has held in its ring (the ring fills as it goes), and when the work was done (runTime; Infinity: not yet). */
   yardT = 0;
   yardAt = Infinity;
-  /** The autopilot's part in Ned's yard: 0 none, 1 flying to the pad, 2 held while the zaps run (yardT counts), 3 unused, 4 rebooted and flying out. */
+  /** The autopilot's part in Ned's yard: 0 none, 1 flying to the pad, 2 held while the zaps run (yardT counts), 3 shut down with the rebooting loader (yardT counts), 4 rebooted and flying out. */
   yardPhase = 0;
+  /** The shut-down screen with its rebooting loader: 0 to 1 through the reboot, -1 when it is not up. */
+  get yardReboot(): number { return this.yardPhase === 3 ? Math.min(1, this.yardT / YARD_REBOOT) : -1; }
   /** How glitched the HUD is, 0 to 1 (1: dark): rising through the zaps, dark at the reboot, flickering back after. */
   get yardGlitch(): number {
     if (this.yardPhase === 2) return Math.min(1, this.yardT / YARD_ZAP) * 0.85;
+    if (this.yardPhase === 3) return 1;
     if (this.yardAt === Infinity) return 0;
     const e = this.runTime - this.yardAt;
     if (e < YARD_DARK) return 1;
@@ -1210,8 +1213,9 @@ export class World implements EncounterHost {
       if ((d < 4 && speed < 0.4) || this.yardT > 12) { this.yardPhase = 2; this.yardT = 0; }
       return;
     }
-    // held on the pad while the zaps run, then the reboot: the work is done
-    if (this.yardT < YARD_ZAP) return;
+    // held on the pad while the zaps run, then the ship shuts down and reboots (the loader), and then the work shows
+    if (this.yardPhase === 2) { if (this.yardT >= YARD_ZAP) { this.yardPhase = 3; this.yardT = 0; } return; }
+    if (this.yardT < YARD_REBOOT) return;
     this.yardPhase = 4;
     this.yardT = 0;
     this.yardAt = this.runTime;
