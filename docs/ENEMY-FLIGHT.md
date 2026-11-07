@@ -94,6 +94,38 @@ Built on the same style (a roll of the id, no draws), hostile hulls only:
   fire timer every step until it is lined up, so there is no timer to sync.)
   Arcade pilot: 9 of 48 at the cap, still neutral.
 
+## The pack (second look, 2026-11-07)
+
+The owner flew it: better, but still static, hulls attacking one by one
+with little coordination. The fix is a pack layer over the hulls
+(`src/sim/tactics.ts`, `World.pack`). When two or more light hulls (scouts,
+raptors, hunters) are fighting or closing within 150 units, the pack calls a
+play, drafts the nearest (up to its size), and gives each a station round the
+ship. Members fly to their stations (`muster` mode: cloakers stay hidden,
+guns on you; only the bait and a wheel's ring fire while they hold), and when every station is taken, or
+the set time runs out, all of them go at once. After its run a member is its
+own hull again; the next play is called 5 to 9 s after the last ends, a
+breather between strikes. A hull holding its station does not peel out of
+your sights: the set is the moment to shoot it.
+
+| Play | Hulls | What you see |
+|---|---|---|
+| pincer | 2-3 | stations on both beams (and astern for three), one run from every side |
+| hammer | 2-4 | a bait weaving off your nose; the rest swing round astern and hit your tail together |
+| wheel | 3-5 | a ring round you, turning and closing, shooting; then everyone breaks in |
+| sweep | 2-4 | a line abreast out ahead, then straight through you on parallel lines |
+
+Stations lead the ship's drift, so a pack keeps formation on a moving ship.
+Plays are rows in `PLAYS`; the geometry is `station`. In seeded arcade runs
+the pack calls about 15 plays in 7 minutes (one every 25 s or so).
+
+Arcade pilot (12 runs per strategy, same seeds), before and after: reaching
+the 10:00 cap 9 of 48 before, 8 of 48 after; mean time 7:01 / 8:43 / 7:38 /
+8:06 before, 6:06 / 8:13 / 7:52 / 7:26 after (random, laser+defence,
+torpedo+laser, mine+mobility). A little harder, mostly for the pilot that
+picks upgrades at random. The first cut (plays every 2.5 to 5 s, everyone
+firing from their stations) cost about a minute a run and was eased back.
+
 ## Not measured
 
 Feel on a real device, and how it reads through the chase camera, is the

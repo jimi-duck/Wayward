@@ -8,6 +8,7 @@ import type { Rng } from './rng';
 import type { ShipState } from './ship';
 import { HZ, PX } from './tuning';
 import { PACING, type Approach } from './pacing';
+import { station, type Part } from './tactics';
 
 // ── the enemy roster ──────────────────────────────────────────────────────
 // The original's seven hulls and five factions, rebuilt for a 3D sky. The
@@ -62,7 +63,7 @@ type Tactic = 'dogfight' | 'ram' | 'hunt' | 'broadside' | 'snipe' | 'grind' | 'a
 type Fire = 'fan' | 'burst' | 'plasma' | 'lead' | 'beam' | 'none';
 export type Mode =
   | 'approach' | 'setup' | 'run' | 'extend' | 'line' | 'hold' | 'cover' | 'peek' | 'seek' | 'spin' | 'leave' | 'cross'
-  | 'patrol' | 'watch' | 'brawl' | 'drift';
+  | 'patrol' | 'watch' | 'brawl' | 'drift' | 'muster';
 
 /**
  * A hull that is not here to fight (sim/stage.ts): traffic, visitors, the unknown. It moves on a script
@@ -379,6 +380,8 @@ export interface Alien {
   peeks: number; peelT: number;
   /** Ran from the fight to call for help: the world sends the reinforcements when it is out of sight. */
   help: boolean;
+  /** Its part in the pack's current play (sim/tactics.ts), if it has one. */
+  play?: Part;
   xp: number;
   /** How it closes on the ship before it fights (sim/pacing.ts). */
   approach: Approach;
@@ -684,7 +687,7 @@ function threat(al: Alien, bolts: readonly Incoming[]): Incoming | null {
  */
 function peel(al: Alien, s: ShipState): void {
   const st = al.style;
-  if (st.peel <= 0 || al.fleeing || al.mode === 'approach' || al.mode === 'patrol' || al.mode === 'watch' || al.mode === 'brawl') return;
+  if (st.peel <= 0 || al.fleeing || al.mode === 'muster' || al.mode === 'approach' || al.mode === 'patrol' || al.mode === 'watch' || al.mode === 'brawl') return;
   if (al.peelT > 0) return;
   const dx = al.x - s.x, dz = al.z - s.z, d = Math.hypot(dx, dz);
   if (d > 70 || d < 8) return;
@@ -811,7 +814,7 @@ function nextLeg(al: Alien, rng: Rng): void {
 }
 
 /** Modes a cloaking hull stays hidden in: everything but the attack itself. */
-const HIDDEN: ReadonlySet<Mode> = new Set(['approach', 'setup', 'extend', 'cover', 'leave', 'seek']);
+const HIDDEN: ReadonlySet<Mode> = new Set(['approach', 'setup', 'extend', 'cover', 'leave', 'seek', 'muster']);
 
 /** Move one hull a step. */
 export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, webs: Web[], rng: Rng, events: GameEvent[]): void {
@@ -968,12 +971,39 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
       const sp = Math.hypot(al.vx, al.vz) || 1;
       steer(al, al.x + (al.vx / sp) * 30, cy, al.z + (al.vz / sp) * 30, dash, acc, dt);
       if (al.modeT <= 0) {
+        // its part in the pack's play is over: its own hull again
+        al.play = undefined;
         if (++al.runs >= RUNS && !al.escort) leave(al);
         else if (T.tactic === 'ram') { al.mode = 'line'; al.modeT = 1.2 + (al.id % 5) * 0.16; }
         else { al.mode = 'setup'; al.modeT = 5 + (al.style.flank ? frac(al.id, 40 + al.runs) * 1.2 : 0); if (rng.next() < 0.7) al.slide = al.slide === 1 ? -1 : 1; rollPass(al, rng); }
       }
       break;
     }
+    // the pack's play (sim/tactics.ts): to its station, guns on you, then in with the rest at once
+    case 'muster': {
+      const p = al.play;
+      if (!p) { al.mode = 'setup'; al.modeT = 4; rollPass(al, rng); break; }
+      p.t += dt;
+      if (al.modeT <= 0) p.go = true;
+      if (!p.go) {
+        const st = station(p, s);
+        const far = Math.hypot(st.x - al.x, st.z - al.z);
+        steer(al, st.x + wx * 0.4, cy, st.z + wz * 0.4, dash, acc * 1.3, dt, 5);
+        // on station it turns its guns on you; on the way it flies its line
+        if (far < 14) faceTo = aim;
+        break;
+      }
+      al.pass.off = p.off;
+      if (p.role === 'hammer' || p.role === 'line') al.slide = p.off >= 0 ? 1 : -1;
+      if (T.tactic === 'ram') {
+        al.mode = 'run'; al.modeT = 1.6; al.face = aim;
+        al.vx = Math.cos(aim) * dash * 0.8; al.vz = -Math.sin(aim) * dash * 0.8;
+      } else if (T.tactic === 'hunt') {
+        al.mode = 'run'; al.modeT = 0; al.play = undefined;
+      } else { al.mode = 'run'; al.modeT = 3.5; }
+      break;
+    }
+
     case 'line':
       // the raptor lines up on the plane, nose on, then commits
       steer(al, s.x - ux * 34 + wx, cy, s.z - uz * 34 + wz, speed, acc, dt);
@@ -1079,9 +1109,9 @@ export function alienFire(al: Alien, s: ShipState, t: number, shots: Shot[], bul
   const nose = Math.abs(angleDelta(al.face, aim));
   const ready = (() => {
     switch (T.tactic) {
-      case 'dogfight': return (al.mode === 'run' || al.mode === 'peek') && nose < 0.5 && d < 45;
+      case 'dogfight': return ((al.mode === 'run' || al.mode === 'peek') && nose < 0.5 && d < 45) || (al.mode === 'muster' && (al.play?.role === 'bait' || al.play?.role === 'ring') && nose < 0.3 && d < 50);
       case 'ram': return al.mode === 'run';
-      case 'hunt': return nose < 0.9 && (al.mode === 'run' || al.mode === 'peek');
+      case 'hunt': return nose < 0.9 && (al.mode === 'run' || al.mode === 'peek' || (al.mode === 'muster' && (al.play?.role === 'bait' || al.play?.role === 'ring')));
       case 'broadside': case 'snipe': return al.mode === 'peek' || al.mode === 'hold';
       case 'grind': return d < 38 && Math.abs(al.y) < 3;
       default: return false;

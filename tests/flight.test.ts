@@ -225,3 +225,61 @@ describe('enemy personalities: the pack', () => {
     expect(times.size).toBeGreaterThan(2);
   });
 });
+
+describe('the pack: hulls attack together', () => {
+  /** Three light hulls already fighting, round a still ship. */
+  function pack(seed: number, kinds: Array<'scout' | 'raptor' | 'stalker'> = ['scout', 'scout', 'scout']) {
+    const w = calm(seed);
+    w.pack.next = 0;
+    const hs = kinds.map((k, i) => {
+      const a = spawnAlien(k, w.ship, 0, w.rng, { x: Math.cos(i * 2) * 70, y: 0, z: Math.sin(i * 2) * 70 });
+      a.escort = false; a.mode = 'setup'; a.modeT = 5; a.style.skulk = false; a.style.coward = false;
+      w.aliens.push(a);
+      return a;
+    });
+    return { w, hs };
+  }
+
+  it('calls a play and sends its members in at the same moment', () => {
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const { w, hs } = pack(seed);
+      const went = new Map<number, number>();
+      for (let i = 0; i < 15 * 60; i++) {
+        w.ship.invuln = 1;
+        w.step(STEP, idle);
+        for (const a of hs) if (!went.has(a.id) && a.play?.go) went.set(a.id, i);
+      }
+      expect(Object.values(w.pack.called).reduce((x, y) => x + y, 0)).toBeGreaterThan(0);
+      const ts = [...went.values()];
+      expect(ts.length).toBeGreaterThanOrEqual(2);
+      // the first play's members break together (within a step or two)
+      expect(Math.min(...ts.slice(0, 2)) - Math.max(...ts.slice(0, 2))).toBeGreaterThan(-3);
+    }
+  });
+
+  it('spreads a pincer round the ship, not in a queue', () => {
+    let spread = 0;
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+      const { w, hs } = pack(seed, ['scout', 'scout']);
+      for (let i = 0; i < 4 * 60 && !hs.every((a) => a.play); i++) { w.ship.invuln = 1; w.step(STEP, idle); }
+      for (let i = 0; i < 3 * 60 && hs.every((a) => a.play && !a.play.go); i++) { w.ship.invuln = 1; w.step(STEP, idle); }
+      const b = hs.map((a) => Math.atan2(-(a.z - w.ship.z), a.x - w.ship.x));
+      if (Math.abs(Math.atan2(Math.sin(b[0]! - b[1]!), Math.cos(b[0]! - b[1]!))) > 1.2) spread++;
+    }
+    expect(spread).toBeGreaterThanOrEqual(6);
+  });
+
+  it('calls more than one kind of play over a long fight', () => {
+    const w = calm(12);
+    w.pack.next = 0;
+    for (let i = 0; i < 180 * 60; i++) {
+      w.ship.invuln = 1;
+      if (i % 60 === 0 && w.aliens.filter((a) => a.kind === 'scout').length < 4) {
+        const a = w.spawnHostile('scout', { x: w.ship.x + 60, y: 0, z: w.ship.z + (i % 120) - 60 });
+        a.mode = 'setup'; a.style.coward = false;
+      }
+      w.step(STEP, idle);
+    }
+    expect(Object.values(w.pack.called).filter((n) => n > 0).length).toBeGreaterThanOrEqual(3);
+  });
+});
