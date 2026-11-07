@@ -142,9 +142,9 @@ export class Desk {
     this.queue = this.queue.filter((a) => (a.eager || now - a.at < DESK.stale[a.tier]) && !(a.port && docked));
   }
 
-  /** The card to open now, if any: the heaviest first, and nothing lighter while a heavier one waits, unless the lighter is a scene's call and the heavier has to wait its gap. */
-  next(busy: Busy, now: number): Ask | null {
-    const order = [...this.queue].sort((a, b) => RANK[b.tier] - RANK[a.tier] || a.at - b.at);
+  /** The card to open now, if any (`eagerOnly`: a scene's call only): the heaviest first, and nothing lighter while a heavier one waits, unless the lighter is a scene's call and the heavier has to wait its gap. */
+  next(busy: Busy, now: number, eagerOnly = false): Ask | null {
+    const order = [...this.queue].filter((a) => !eagerOnly || a.eager).sort((a, b) => RANK[b.tier] - RANK[a.tier] || a.at - b.at);
     const top = order[0] && RANK[order[0].tier];
     const pick = order.find((a) => (RANK[a.tier] === top || a.eager) && this.may(a.tier, busy, now, a.eager, this.chain.has(a.def.id)));
     if (!pick) return null;

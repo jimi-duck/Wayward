@@ -124,8 +124,8 @@ export class Floor {
   /** Story lines still to be said: a card waits for them, so the story keeps its order. */
   get holding(): boolean { return this.q.some((l) => l.keep); }
 
-  /** A card waits while a story line is queued or any line is still on screen: it never cuts a voice off. */
-  busy(now: number): boolean { return this.hush || this.holding || now < this.floorUntil; }
+  /** A card waits while a story line is queued or any line is still on screen: it never cuts a voice off. A job's call (`job`) waits for a line on screen and a queued notice (the arrival's title first), not for queued radio lines: they follow it (owner, 6 November 2026: jobs sooner). */
+  busy(now: number, job = false): boolean { return this.hush || (job ? this.q.some((l) => l.keep && l.kind === 'signal') : this.holding) || now < this.floorUntil; }
 
   /** Lines still waiting. */
   get waiting(): number { return this.q.length; }
