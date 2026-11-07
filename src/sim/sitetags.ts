@@ -40,9 +40,9 @@ export function siteTags(w: World): SiteTag[] {
   const near = (x: number, z: number) => Math.hypot(x - s.x, z - s.z) < TAG_R;
   if (b.port && near(b.port.x, b.port.z) && !b.def.first) {
     const shut = w.portMood === 'shut';
-    out.push({ x: b.port.x + 17, z: b.port.z - 6, y: 16, name: b.port.name, line: shut ? t('Shield up · fight at the ring') : t(HOLDER_LINE[portStyleOf(b.def.holder)]), warn: shut });
+    out.push({ x: b.port.x + 17, z: b.port.z - 6, y: 6, name: b.port.name, line: shut ? t('Shield up · fight at the ring') : t(HOLDER_LINE[portStyleOf(b.def.holder)]), warn: shut });
   }
-  if (b.audit && !lockLifted(w.flags) && near(b.audit.x, b.audit.z)) out.push({ x: b.audit.x, z: b.audit.z, y: 18, name: b.audit.name, line: t('Company checkpoint · hulls are inspected'), warn: true });
+  if (b.audit && !lockLifted(w.flags) && near(b.audit.x, b.audit.z)) out.push({ x: b.audit.x, z: b.audit.z, y: 6, name: b.audit.name, line: t('Company checkpoint · hulls are inspected'), warn: true });
   const g = w.gantry;
   if (g && near(g.x, g.z)) {
     const line = g.state === 'working' ? t('Mending · hold still on the pad')
@@ -51,26 +51,26 @@ export function siteTags(w: World): SiteTag[] {
           : g.state === 'refuses' ? t('Won’t service a flagged hull')
             : g.state === 'full' ? t('Plating full · nothing to mend')
               : t('Stop on the pad · mends a plate ({n} left)', { n: String(g.uses) });
-    out.push({ x: g.x, z: g.z, y: 12, name: t('Repair gantry'), line, warn: g.state === 'shut' || g.state === 'refuses' });
+    out.push({ x: g.x, z: g.z, y: 3, name: t('Repair gantry'), line, warn: g.state === 'shut' || g.state === 'refuses' });
   }
   const m = w.market;
   if (m && near(m.x, m.z)) {
     const line = m.state === 'sold' ? t('Sold out') : m.state === 'shut' ? t('Stalls shut · fight near') : t('Slow down on the deck to trade');
-    out.push({ x: m.x, z: m.z, y: 10, name: t('Dust Market'), line, warn: m.state === 'shut' });
+    out.push({ x: m.x, z: m.z, y: 3, name: t('Dust Market'), line, warn: m.state === 'shut' });
   }
   const bg = w.barge;
-  if (bg && near(bg.x, bg.z)) out.push({ x: bg.x, z: bg.z, y: 7, name: t('Refinery barge'), line: bg.mood === 'fleeing' ? t('Running from the fight') : t('Grinds rock · spills Cyrite for you'), warn: bg.mood === 'fleeing' });
+  if (bg && near(bg.x, bg.z)) out.push({ x: bg.x, z: bg.z, y: 3, name: t('Refinery barge'), line: bg.mood === 'fleeing' ? t('Running from the fight') : t('Grinds rock · spills Cyrite for you'), warn: bg.mood === 'fleeing' });
   const dn = w.den;
-  if (dn && dn.seen && dn.state !== 'moving' && near(dn.x, dn.z)) out.push({ x: dn.x, z: dn.z, y: 12, name: t('Raider den'), line: dn.state === 'awake' ? t('Launching raiders · shoot the dock') : t('Raider nest · wakes if you come close'), warn: true });
+  if (dn && dn.seen && dn.state !== 'moving' && near(dn.x, dn.z)) out.push({ x: dn.x, z: dn.z, y: 5, name: t('Raider den'), line: dn.state === 'awake' ? t('Launching raiders · shoot the dock') : t('Raider nest · wakes if you come close'), warn: true });
   const sd = w.thrSeed;
   if (sd && sd.state !== 'dead' && near(sd.x, sd.z)) {
     const line = sd.state === 'studied' ? t('Studied · leave it or burn it') : sd.state === 'quiet' ? t('Quiet · stay still to study it') : t('Thren growth · hold still near it to study');
-    out.push({ x: sd.x, z: sd.z, y: sd.r + 3, name: t('Thren seed'), line });
+    out.push({ x: sd.x, z: sd.z, y: sd.r, name: t('Thren seed'), line });
   }
   const rp = w.traffic?.relayPost;
   if (rp && near(rp.x, rp.z)) {
     const off = w.runTime < rp.jammedUntil;
-    out.push({ x: rp.x, z: rp.z, y: 10, name: t('Custody relay post'), line: off ? t('Offline · jammed') : t('Reports flagged hulls · hover close to jam'), warn: !off });
+    out.push({ x: rp.x, z: rp.z, y: 4, name: t('Custody relay post'), line: off ? t('Offline · jammed') : t('Reports flagged hulls · hover close to jam'), warn: !off });
   }
   return out.sort((p, q) => Math.hypot(p.x - s.x, p.z - s.z) - Math.hypot(q.x - s.x, q.z - s.z));
 }
