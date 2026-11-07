@@ -8,6 +8,8 @@ import { RELAY_JAM_R, RELAY_R } from '../sim/traffic';
 import { setBuoyMood } from './monuments';
 import { GANTRY_R } from '../sim/gantry';
 import { MARKET_R } from '../sim/market';
+import { DEPOT_AT } from '../sim/solids';
+import { animateStation, buildStation, clothMats, pools } from './stations';
 
 import { MOOD_AMBER, MOOD_LIGHT, portStyleOf, type Mood, type PortStyle } from '../sim/site';
 import type { Effects } from './fx';
@@ -289,52 +291,9 @@ export function crate(k: Kit, key: string, x: number, y: number, z: number, rot:
   for (let i = -1; i <= 1; i += 2) k.box('dark', [0.06, h, d + 0.05], [x + Math.cos(rot) * i * w * 0.32, y, z - Math.sin(rot) * i * w * 0.32], [0, rot, 0]);
 }
 
-/** The paint each holder gives its port (the base `paint` key), and the stone of a Holdfast's rock. */
-const STYLE_PAINT: Record<PortStyle, number> = { frontier: 0xf2b21f, kellern: 0xcfd2d6, gutter: 0x7a5a3c, holdfast: 0x8c8068, guild: 0x4f8088 };
-const styleMats = new Map<PortStyle, Material>();
+/** The stone of a Holdfast's rock, the den and the seed. */
 let stoneMat: Material | null = null;
-const stoneOf = (): Material => (stoneMat ??= metal({ tint: 0x6f675c, roughness: 0.95, metalness: 0.04, scale: 1.6, bump: 0.02, worn: 0.5 }));
-const paintFor = (st: PortStyle): Material => {
-  let m = styleMats.get(st);
-  if (!m) { m = st === 'frontier' ? materials().paint! : metal({ tint: STYLE_PAINT[st], roughness: 0.66, metalness: 0.08 }); styleMats.set(st, m); }
-  return m;
-};
-
-/** The parts a holder adds to the depot: what makes a Kellern yard, a Gutter hulk-port, a Holdfast rock hub or a Dust Traders' raft read at a glance. All drawn in the same kit, baked with the rest. */
-function styleParts(k: Kit, rnd: () => number, st: PortStyle): void {
-  if (st === 'kellern') {
-    // an inspection arch over the approach, with an amber scan strip: a checkpoint with berths
-    for (const s of [-1, 1]) { k.box('hull', [1.2, 9, 1.2], [-24, 4, s * 7]); k.box('dark', [1.5, 0.5, 1.5], [-24, -0.2, s * 7]); k.box('lamp', [0.3, 0.3, 0.3], [-24, 8.7, s * 7]); }
-    k.box('paint', [1.4, 1.2, 15.6], [-24, 8.6, 0]);
-    k.box('amber', [0.3, 0.3, 14], [-24.8, 8.6, 0]);
-  } else if (st === 'gutter') {
-    // a gutted hull bolted on at an angle, scrap plates, and a patchwork of lamps
-    k.box('dark', [18, 3.4, 5], [8, 6, -12], [0.1, 0.3, 0.32]);
-    k.box('hull', [10, 1.2, 5.4], [14, 7.8, -13.6], [0.1, 0.3, 0.32]);
-    for (let i = 0; i < 7; i++) k.box(i % 2 ? 'hull' : 'slate', [2 + rnd() * 3, 0.25, 1.5 + rnd() * 2], [-8 + rnd() * 20, 3 + rnd() * 5, -8 + rnd() * 16], [rnd(), rnd() * 3, rnd()]);
-    for (let i = 0; i < 6; i++) k.box('lamp', [0.2, 0.2, 0.2], [-6 + rnd() * 18, 1 + rnd() * 4, -10 + rnd() * 20]);
-  } else if (st === 'holdfast') {
-    // the hub is grown into a rock: a rough mass the habitat blocks sit against
-    const g = new IcosahedronGeometry(10, 2), pos = g.attributes.position!;
-    for (let i = 0; i < pos.count; i++) {
-      const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i), n = 1 + 0.22 * Math.sin(x * 0.9 + z * 0.4) * Math.cos(y * 0.7 + x * 0.3) + 0.1 * Math.sin(z * 1.7);
-      pos.setXYZ(i, x * n * 1.15, y * n * 0.7, z * n);
-    }
-    g.computeVertexNormals();
-    k.add('stone', g, [6, -3.2, 12]);
-    for (let i = 0; i < 9; i++) k.box('win', [0.34, 0.2, 0.06], [-1 + rnd() * 14, -1 + rnd() * 3, 5.2 + rnd() * 2]);
-    for (let i = 0; i < 3; i++) k.box('dark', [0.9, 0.9, 2.2], [2 + i * 4, 1.4, 17.2], [0, 0, 0]);
-  } else if (st === 'guild') {
-    // a raft: a wide low deck round the berth with awnings and strings of lanterns
-    k.cyl('dark', 17, 17.5, 0.35, [0, -1.6, 0], 'y', 36);
-    for (let i = 0; i < 12; i++) {
-      const a = (i / 12) * TAU, x = Math.cos(a) * 16.5, z = Math.sin(a) * 16.5;
-      k.box('paint', [3.4, 0.14, 2.2], [x, 2.4, z], [0, -a, 0]);
-      for (const e of [-1, 1]) k.box('dark', [0.1, 4, 0.1], [x + Math.sin(a) * e * 1.5, 0.4, z - Math.cos(a) * e * 1.5]);
-      k.box('lamp', [0.2, 0.2, 0.2], [x, 2.1, z]);
-    }
-  }
-}
+export const stoneOf = (): Material => (stoneMat ??= metal({ tint: 0x6f675c, roughness: 0.95, metalness: 0.04, scale: 1.6, bump: 0.02, worn: 0.5 }));
 
 /** The Dust Market: a round raft deck with a ring of awnings and lantern posts round a mast hung with a banner, two moored skiffs. */
 export function buildMarket(lamp: Material): Group {
@@ -346,14 +305,16 @@ export function buildMarket(lamp: Material): Group {
   k.box('lamp', [0.5, 0.5, 0.5], [0, 9.6, 0]);
   for (let i = 0; i < 8; i++) {
     const a = (i / 8) * TAU, x = Math.cos(a) * 5.8, z = Math.sin(a) * 5.8;
-    k.box('paint', [3.2, 0.14, 2.2], [x, 3.3, z], [0, -a, 0]);
+    k.box(`c${i % 4}`, [3.2, 0.14, 2.2], [x, 3.3, z], [0, -a, 0.18]);
+    k.box(`c${(i + 2) % 4}`, [0.08, 0.5, 2.2], [x + Math.cos(a) * 1.6, 3.0, z + Math.sin(a) * 1.6], [0, -a, 0]);
     for (const e of [-1, 1]) k.box('dark', [0.1, 3, 0.1], [x + Math.sin(a) * e * 1.4, 1.8, z - Math.cos(a) * e * 1.4]);
     k.box('hull', [1.6, 0.9, 1.1], [x * 0.85, 0.9, z * 0.85], [0, -a, 0]);
+    for (let c = 0; c < 2; c++) crate(k, `c${(i + c + 1) % 4}`, x * 0.85 + Math.sin(a) * (c - 0.5) * 1.2, 0.4, z * 0.85 - Math.cos(a) * (c - 0.5) * 1.2, -a, 0.5, 0.4, 0.4);
     k.box('lamp', [0.18, 0.18, 0.18], [x, 3.0, z]);
   }
   for (const e of [-1, 1]) { k.box('slate', [4, 0.8, 1.4], [e * 11, 0.3, e * 3], [0, 0.5 * e, 0]); k.box('win', [0.3, 0.14, 0.06], [e * 11, 0.9, e * 3 + 0.75]); }
   k.greebles('hull', rnd, -5, 5, -5, 5, 0.9, 10, 0.5);
-  return k.build({ ...materials(), lamp, win: windowMaterial() }, 0.5);
+  return k.build({ ...materials(), ...clothMats(), lamp, win: windowMaterial() }, 0.5);
 }
 
 /** The repair gantry: a hex cradle pad with two pylons and an overhead arm of clamp pads, hazard stripes on the pad. */
@@ -362,6 +323,12 @@ export function buildGantry(lamp: Material): Group {
   k.cyl('dark', 9, 10, 0.7, [0, 0, 0], 'y', 6);
   k.cyl('hull', 7, 7.6, 0.4, [0, 0.5, 0], 'y', 6);
   stripes(k, 0, 0.75, 0, 'x', 12, 1.2, 4);
+  // the pad's rim: lamps in the gantry's own colour (teal ready, amber refusing), so the pad says from afar whether it will mend you
+  for (let i = 0; i < 18; i++) { const a = (i / 18) * TAU; k.box('lamp', [0.3, 0.14, 0.3], [Math.cos(a) * 8.6, 0.42, Math.sin(a) * 8.6]); }
+  k.ring('paint', 4.2, 0.12, [0, 0.74, 0], 'y', 32);
+  // the arm's welders and a crate of plate at the foot of each pylon
+  for (const x of [-4, 4]) { k.box('paint', [0.5, 0.5, 0.5], [x, 3.4, 0]); k.box('lamp', [0.12, 0.12, 0.12], [x, 3.1, 0]); }
+  for (const e of [-1, 1]) crate(k, 'slate', e * 7.5 - e * 1.6, 1.1, e * 3.5 + e * 1.4, 0.3, 1.4, 0.8, 0.9);
   for (const e of [-1, 1]) {
     k.box('hull', [1.4, 11, 1.4], [-7.5 + (e + 1) * 7.5, 5.8, e * 3.5]);
     k.box('dark', [1.8, 0.5, 1.8], [-7.5 + (e + 1) * 7.5, 0.6, e * 3.5]);
@@ -397,7 +364,7 @@ export function buildBarge(lamp: Material): Group {
 }
 
 /** A rough lump of rock: an icosahedron pushed about by a few sines, squashed by `sq`. */
-function lump(r: number, n: number, sq: V3 = [1, 0.75, 1]): BufferGeometry {
+export function lump(r: number, n: number, sq: V3 = [1, 0.75, 1]): BufferGeometry {
   const g = new IcosahedronGeometry(r, 2), pos = g.attributes.position!;
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
@@ -459,95 +426,9 @@ export function buildRelayPost(lamp: Material): Group {
   return k.build({ ...materials(), lamp }, 0.5);
 }
 
-export function buildPort(style: PortStyle = 'frontier', own?: { lamp: Material; win: Material }): Group {
-  const k = new Kit(), rnd = seeded(9);
-  // the hub: a drum core on a broad skirt, a lit habitat ring round it, a control drum on top with a window band
-  k.cyl('hull', 4.5, 5.5, 3, [0, 0, 0], 'y', 28);
-  k.cyl('dark', 5.9, 5.9, 0.4, [0, -1.2, 0], 'y', 28);
-  k.cyl('paint', 3, 3.6, 1.6, [0, 2.2, 0], 'y', 20);
-  k.cyl('dark', 3.1, 3.1, 0.22, [0, 3.1, 0], 'y', 20);
-  k.cyl('hull', 2.4, 3, 1.0, [0, 3.7, 0], 'y', 20);
-  k.ring('dark', 5.55, 0.1, [0, 0.9, 0], 'y', 32);
-  k.ring('dark', 4.6, 0.08, [0, -0.6, 0], 'y', 32);
-  for (let i = 0; i < 36; i++) { const a = (i / 36) * TAU; if (rnd() > 0.22) k.box('win', [0.34, 0.2, 0.06], [Math.cos(a) * 3.62, 2.2, Math.sin(a) * 3.62], [0, -a + Math.PI / 2 - Math.PI / 2, 0]); }
-  for (let i = 0; i < 24; i++) { const a = (i / 24) * TAU; if (rnd() > 0.2) k.box('win', [0.28, 0.16, 0.06], [Math.cos(a) * 3.02, 3.7, Math.sin(a) * 3.02], [0, -a, 0]); }
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * TAU, ca = Math.cos(a), sa = Math.sin(a);
-    k.box('hull', [2.6, 1.6, 2.2], [ca * 7, 0.2, sa * 7], [0, -a, 0]);
-    k.box('paint', [2.2, 0.16, 1.8], [ca * 7, 1.08, sa * 7], [0, -a, 0]);
-    k.box('dark', [0.5, 0.5, 2.2], [Math.cos(a + 0.26) * 7, -0.2, Math.sin(a + 0.26) * 7], [0, -a - 0.26, 0]);
-    // a deck of windows on each block, and a vent stack
-    windowRow(k, rnd, [ca * 8.34 - sa * 0.8, 0.5, sa * 8.34 + ca * 0.8], [ca * 8.34 + sa * 0.8, 0.5, sa * 8.34 - ca * 0.8], 3, [0.06, 0.2, 0.3], [0, -a, 0]);
-    windowRow(k, rnd, [ca * 8.34 - sa * 0.8, 0.0, sa * 8.34 + ca * 0.8], [ca * 8.34 + sa * 0.8, 0.0, sa * 8.34 - ca * 0.8], 3, [0.06, 0.2, 0.3], [0, -a, 0]);
-    k.cyl('dark', 0.22, 0.22, 0.7, [ca * 6.4 + sa * 0.5, 1.5, sa * 6.4 - ca * 0.5], 'y', 6);
-  }
-  for (let i = 0; i < 16; i++) { const a = (i / 16) * TAU; k.box('lamp', [0.18, 0.12, 0.18], [Math.cos(a) * 4.6, 1.5, Math.sin(a) * 4.6]); }
-  // two docking arms reaching to the berth: clamps, fenders, floodlight poles, hazard stripes at the tips
-  for (const s of [-1, 1]) {
-    k.box('dark', [14, 0.7, 0.9], [-8, -0.2, s * 2.6]);
-    k.box('hull', [1.4, 0.9, 1.4], [-15, -0.2, s * 2.6]);
-    k.box('paint', [0.5, 1.6, 0.5], [-14, 0.8, s * 2.6]);
-    k.box('lamp', [0.22, 0.22, 0.22], [-14, 1.7, s * 2.6]);
-    for (let j = 0; j < 4; j++) k.box('dark', [0.12, 1.3, 0.12], [-3 - j * 3, 0.5, s * 2.6]);
-    for (const d of [-1, 1]) { strut(k, 'dark', [-15.4, -0.2, s * 2.6 + d * 0.7], [-16.6, 0.2, s * 2.6 + d * 1.1], 0.13, 5); k.box('hull', [0.5, 0.5, 0.22], [-16.7, 0.2, s * 2.6 + d * 1.15]); }
-    k.box('paint', [2.4, 0.1, 0.92], [-14.6, 0.16, s * 2.6]);
-    stripes(k, -9, 0.2, s * 2.6, 'x', 8, 0.5, 5);
-    for (let j = 0; j < 3; j++) { const px = -5 - j * 4.2; strut(k, 'dark', [px, 0.1, s * 3.1], [px, 2.2, s * 3.1], 0.05, 4); k.box('win', [0.32, 0.16, 0.32], [px, 2.3, s * 3.1]); }
-  }
-  // cargo yard between the arms and the tanks
-  for (let i = 0; i < 6; i++) crate(k, ['paint', 'slate', 'hull'][i % 3]!, -3.2 - (i % 3) * 1.8, 0.1, 4.8 + Math.floor(i / 3) * 1.3, (rnd() - 0.5) * 0.3, 1.6, 0.95, 1.05);
-  for (let i = 0; i < 4; i++) crate(k, ['slate', 'paint'][i % 2]!, -7.4 - (i % 2) * 1.8, 0.1, -5.2 - Math.floor(i / 2) * 1.3, (rnd() - 0.5) * 0.3, 1.6, 0.95, 1.05);
-  crate(k, 'paint', -3.5, 1.1, 4.8, 0.05, 1.5, 0.9, 1.0);
-  k.box('dark', [0.6, 7, 0.6], [4, 3.5, 4]);
-  k.box('paint', [9, 0.6, 0.8], [0.5, 7, 4], [0, 0.3, 0]);
-  k.box('dark', [0.1, 3, 0.1], [-3.6, 5.4, 4]);
-  // the tank farm: pressure spheres in cradles, two long capsule tanks, manifold pipes to the hub
-  for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * TAU + 0.4, tx = Math.cos(a) * 12.5, tz = Math.sin(a) * 12.5;
-    if (i % 2) {
-      k.cyl('paint', 1.5, 1.5, 4.6, [tx, 2.4, tz], 'x', 16);
-      for (const e of [-1, 1]) k.add('paint', new SphereGeometry(1.5, 14, 8, 0, TAU, 0, Math.PI / 2).rotateZ(-e * Math.PI / 2), [tx + e * 2.3, 2.4, tz]);
-      for (const e of [-1.4, 0, 1.4]) k.ring('dark', 1.52, 0.08, [tx + e, 2.4, tz], 'x', 16);
-      for (const e of [-1.6, 1.6]) k.box('dark', [0.4, 1.8, 2.6], [tx + e, 0.7, tz]);
-      k.cyl('dark', 0.3, 0.3, 0.5, [tx, 4.1, tz], 'y', 8);
-    } else tank(k, tx, tz, 1.9, a);
-    k.cyl('dark', 0.2, 0.2, 7, [Math.cos(a) * 9, 0, Math.sin(a) * 9], 'x', 6);
-    k.box('lamp', [0.2, 0.2, 0.2], [tx, 5.2, tz]);
-  }
-  // second level: a long truss spine under the arms, cable runs hub to tanks, radiator fins and a dish
-  truss(k, [-17, -0.9, -2.6], [-5, -0.9, -2.6], 1.0, 8, 3);
-  truss(k, [-17, -0.9, 2.6], [-5, -0.9, 2.6], 1.0, 8, 3);
-  for (let i = 0; i < 4; i++) { const x = -16 + i * 3.4; strut(k, 'hull', [x, -0.9, -2.6], [x, -0.9, 2.6], 0.08, 4); }
-  for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * TAU + 0.4;
-    cable(k, [Math.cos(a) * 6, 1.4, Math.sin(a) * 6], [Math.cos(a) * 12.3, 2.7, Math.sin(a) * 12.3], 1.2, 0.09);
-    cable(k, [Math.cos(a + 0.12) * 6, 1.0, Math.sin(a + 0.12) * 6], [Math.cos(a + 0.12) * 12.3, 2.3, Math.sin(a + 0.12) * 12.3], 0.7, 0.05);
-  }
-  // the crane: boom, back-stay, two hanging hook lines and a cargo pod on them
-  strut(k, 'paint', [4, 7, 4], [-6.5, 8.6, 4], 0.22, 5);
-  strut(k, 'dark', [4, 7, 4], [8.5, 6.2, 4], 0.1, 4);
-  strut(k, 'dark', [-5.8, 8.5, 3.7], [-5.8, 2.7, 3.7], 0.04, 3);
-  strut(k, 'dark', [-5.8, 8.5, 4.3], [-5.8, 2.7, 4.3], 0.04, 3);
-  k.box('paint', [1.6, 1.0, 1.1], [-5.8, 2.2, 4]);
-  k.box('dark', [1.7, 0.1, 1.2], [-5.8, 2.7, 4]);
-  // radiators: four fins off the hub, a comms dish on a boom
-  for (let i = 0; i < 4; i++) {
-    const a = (i / 4) * TAU + 0.78;
-    k.box('hull', [0.1, 3.4, 5.2], [Math.cos(a) * 5.4, 3.7, Math.sin(a) * 5.4], [0, -a, 0]);
-    for (let j = 0; j < 4; j++) k.box('dark', [0.14, 3.5, 0.08], [Math.cos(a) * 5.4, 3.7, Math.sin(a) * 5.4 + 0], [0, -a, 0]);
-    strut(k, 'dark', [Math.cos(a) * 4.6, 2.4, Math.sin(a) * 4.6], [Math.cos(a) * 5.3, 4.8, Math.sin(a) * 5.3], 0.12, 4);
-  }
-  strut(k, 'dark', [0, 3, 0], [2.4, 7.4, -3.6], 0.14, 5);
-  k.add('hull', new CylinderGeometry(1.7, 0.2, 0.55, 14, 1, true), [2.4, 7.9, -3.6], [0.3, 0, 0.5]);
-  k.box('lamp', [0.18, 0.18, 0.18], [2.4, 7.6, -3.6]);
-  // the beacon mast: the light you steer for
-  k.box('dark', [0.8, 14, 0.8], [-3, 7, -3]);
-  k.box('dark', [2.4, 0.3, 0.3], [-3, 10, -3]);
-  k.box('amber', [0.25, 11, 0.25], [-3.45, 6.5, -3]);
-  k.box('lamp', [1.2, 1.2, 1.2], [-3, 14.6, -3]);
-  k.greebles('hull', rnd, -4, 4, -4, 4, 1.6, 14, 0.8);
-  if (style !== 'frontier') styleParts(k, seeded(31), style);
-  return k.build({ ...materials(), paint: paintFor(style), stone: stoneOf(), lamp: own?.lamp ?? materials().lamp!, win: own?.win ?? windowMaterial() }, 0.6);
+/** A holder's depot (render/stations.ts), named on its board. */
+export function buildPort(style: PortStyle = 'frontier', own?: { lamp: Material; win: Material }, name = 'Frontier Supply'): Group {
+  return buildStation(style, name, own);
 }
 
 
@@ -639,8 +520,8 @@ export class BreakoutView {
   private faced: unknown = null;
   private readonly port = new Group();
   /** The depots built so far, by holder's look; one shows. Built the first time a system wants it. */
-  private readonly depots = new Map<PortStyle, Group>();
-  private depot: PortStyle = 'frontier';
+  private readonly depots = new Map<string, Group>();
+  private depot = '';
   /** The depot's own lamps and windows, tinted by its mood (sim/site.ts). */
   private readonly lamp = (materials().lamp as MeshBasicMaterial).clone();
   private readonly win = windowMaterial().clone();
@@ -720,9 +601,6 @@ export class BreakoutView {
     this.gate.add(this.lanehaze);
     this.lane.add(this.laneRing, this.laneField);
     // the depot stands off to one side of its berth; the cyan ring is where you dock
-    const depot = this.depotOf('frontier');
-    depot.visible = true;
-    this.port.add(depot);
     this.portRing = flatRing(9, 0.25, CYAN, 0.6);
     this.portRing.position.y = 1.4;
     this.portField = flatRing(SAFE_R, 0.3, CYAN, 0.1);
@@ -751,11 +629,13 @@ export class BreakoutView {
     this.gantryRing = flatRing(GANTRY_R, 0.25, CYAN, 0.4);
     this.gantryRing.position.y = 1.2;
     this.gantry.add(this.gantryRing);
+    pools(this.gantry, CYAN.clone().multiplyScalar(0.3), [[0, 0.8, 0, 7]], 0.35);
     this.gantry.visible = false;
     this.market.add(buildMarket(this.marketLamp));
     const mring = flatRing(MARKET_R, 0.25, CYAN, 0.3);
     mring.position.y = 0.6;
     this.market.add(mring);
+    pools(this.market, new Color(1.6, 1.15, 0.55), [[0, 0.5, 0, 8]], 0.22);
     this.market.visible = false;
     this.den.add(buildDen(this.denLamp));
     this.den.visible = false;
@@ -772,13 +652,14 @@ export class BreakoutView {
   }
 
   /** The depot of a look, built the first time and kept; it stands off to one side of its berth. */
-  private depotOf(st: PortStyle): Group {
-    let g = this.depots.get(st);
+  private depotOf(st: PortStyle, name: string): Group {
+    const key = `${st}|${name}`;
+    let g = this.depots.get(key);
     if (!g) {
-      g = buildPort(st, { lamp: this.lamp, win: this.win });
-      g.position.set(17, 0, -6);
+      g = buildPort(st, { lamp: this.lamp, win: this.win }, name);
+      g.position.set(DEPOT_AT.x, 0, DEPOT_AT.z);
       g.visible = false;
-      this.depots.set(st, g);
+      this.depots.set(key, g);
       this.port.add(g);
     }
     return g;
@@ -865,13 +746,15 @@ export class BreakoutView {
     if (this.faced !== b || world.review || Math.hypot(ship.x - b.lane.x, ship.z - b.lane.z) > 150) { this.faced = b; this.gate.rotation.y = Math.atan2(-(ship.z - b.lane.z), ship.x - b.lane.x); }
     if (b.port) {
       this.port.position.set(b.port.x, -2, b.port.z);
-      const st = portStyleOf(b.def.holder);
-      if (st !== this.depot || !this.depots.get(st)?.visible) {
+      const st = b.def.first ? 'frontier' : portStyleOf(b.def.holder), key = `${st}|${b.port.name}`;
+      if (key !== this.depot || !this.depots.get(key)?.visible) {
         const old = this.depots.get(this.depot);
         if (old) old.visible = false;
-        this.depot = st;
-        this.depotOf(st).visible = true;
+        this.depot = key;
+        this.depotOf(st, b.port.name).visible = true;
       }
+      const dep = this.depots.get(key);
+      if (dep) animateStation(dep, this.time, dt);
       this.lights(world.portMood, dt);
     } else if (this.moodAmber > 0) { this.moodAmber = 0; setBuoyMood(0); }
     // a road gate's relay (the Narrows and every arrival after it): dark until the key is answered, then lit section by section from the bottom over a few seconds
@@ -889,7 +772,7 @@ export class BreakoutView {
     if (b.audit) {
       this.audit.position.set(b.audit.x, -2, b.audit.z);
       // the yard faces the way you came in, and holds still from there
-      if (this.auditFaced !== b) { this.auditFaced = b; this.audit.rotation.y = Math.atan2(-(ship.z - b.audit.z), ship.x - b.audit.x) + Math.PI; }
+      if (this.auditFaced !== b) { this.auditFaced = b; this.audit.rotation.y = b.audit.face ?? Math.atan2(-(ship.z - b.audit.z), ship.x - b.audit.x) + Math.PI; }
       (this.auditRing.material as MeshBasicMaterial).opacity = 0.22 + 0.1 * Math.sin(this.time * 1.7);
     }
     // the throat brightens as the tank fills and blazes while the drive spools

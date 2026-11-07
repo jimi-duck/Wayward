@@ -13,6 +13,7 @@ import { lessonOf } from '../sim/tutor';
 import { NEON_CSS } from './colors';
 import { t as tr } from '../i18n';
 import { lockLifted } from '../sim/postjump';
+import { siteTags, TAG_R } from '../sim/sitetags';
 
 // ── targeting, in the world ───────────────────────────────────────────────
 // What the targeting computer is looking at, drawn where it is:
@@ -331,10 +332,14 @@ export class Targeting {
         const here = [...world.seenPlaces()].sort((p, q) => Number(primary(q.x, q.z)) - Number(primary(p.x, p.z)));
         for (const wp of here) {
           const d = Math.hypot(wp.x - s.x, wp.z - s.z);
+          // near, a depot or the audit dock names itself on its own model (sim/sitetags.ts), so the berth mark only shows the way in
+          if (d < TAG_R && ((wp.kind === 'port' && !world.bk.def.first) || (wp.kind === 'audit' && !lockLifted(world.flags)))) { put(wp.x, 0.5, wp.z, 'm dia obj far', ''); continue; }
           put(wp.x, 0.5, wp.z, primary(wp.x, wp.z) ? 'm dia obj far pri' : 'm dia obj far', `${tr(wp.name)}\n${range(d)}`);
         }
       }
       if (ev && !primary(ev.x, ev.z)) putEvent();
+      // the built places near you: what each is, and what it does for you now
+      if (!les) for (const tg of siteTags(world)) put(tg.x, tg.y, tg.z, tg.warn ? 'm tag site warn' : 'm tag site', `${tg.name}\n${tg.line}`);
       const boss = world.command.boss;
       if (boss && !boss.leaving && boss.cloak < 0.5 && boss.id !== t?.id) put(boss.x, boss.y, boss.z, 'm cap', tr(boss.name));
       // things to go and get
