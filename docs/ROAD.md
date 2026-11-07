@@ -46,7 +46,7 @@ code carries it.
   waits on the relay handshake holds the gate for good; anything else lets go
   after `GATE_HOLD` (240 s) and is carried to play first at the next stop.
   The Slow Door also holds for `SLOW_DOOR` (180 s) from arrival.
-- A stop's main card comes before its job; a stop has one, a few two.
+- A stop's job rings first, as soon as the arrival's scan is done, and its main card follows (owner, 7 November 2026); a stop has one main card, a few two.
 - Every arrival has the same steps: approach, handshake at the relay mast
   (`relay_<gate>`), Ada's note, the answer, the way on. The gate's own card
   comes from `gateCheck` in `sim/journey.ts`.

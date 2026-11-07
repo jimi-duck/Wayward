@@ -94,9 +94,9 @@ The call rings on arrival, three seconds into the sortie, wherever the site is:
 the desk waits only four seconds (`DESK.arriveCall`), eight since the last card closed
 (`DESK.eager`) and three of clear sky after a hostile (`DESK.eagerSettle`), and never drops it
 for waiting. A fight, mining or tight flying holds it back (it pauses like any call, and never
-rings over the training). On the road a stop's main story card comes first and the job follows it by
-eight seconds, the floor's gap between cards shortened to match. The road pilot (6 November 2026) heard
-a job a median of 20 s after arrival, nine in ten within 38 s. Where the story is heaviest there is
+rings over the training). On the road the job rings first, as soon as the arrival's scan is done (owner, 7 November 2026): the
+stop's story card waits while the job's call is waiting (`World.scriptFree`) and follows it. The road pilot
+heard a job a median of 14 s after arrival, nine in ten within 27 s. Where the story is heaviest there is
 no job: Halden's Reach (the Warden's record) gave its job to Northfold, and Kessler's Wreck
 (Ada's black box) its job to Penny Cross. The job is pinned on the
 HUD, the compass and the radar with its name and range, a quiet "On the scope"

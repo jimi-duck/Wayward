@@ -11,23 +11,23 @@ as it can, and does not read. Pilot numbers, not playtests.
 
 | Strategy | Policy | Threshold | Minutes | Wrecks | Endings open | Dropped | Twice |
 |---|---|---|---|---|---|---|---|
-| torpedo+defence | run | yes | 175 | 0 | unite, vanish | none | none |
-| torpedo+defence | run | yes | 167 | 0 | unite, vanish | none | none |
-| torpedo+defence | bluff | yes | 175 | 0 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | bluff | yes | 161 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 168 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 175 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | run | yes | 178 | 0 | unite, vanish | none | none |
+| torpedo+defence | run | yes | 176 | 1 | unite, vanish | none | none |
+| torpedo+defence | bluff | yes | 173 | 1 | unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 183 | 0 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 176 | 1 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 200 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
 
 ## Leg by leg
 
 | Leg | Minutes (mean) | Wrecks (mean) |
 |---|---|---|
-| The Reach | 26 | 0.0 |
-| The Marches | 18 | 0.0 |
-| The Salvage Belt | 21 | 0.0 |
-| The Drift Deep | 21 | 0.0 |
-| The Breaker Yards | 22 | 0.0 |
-| The Free Ports | 20 | 0.0 |
+| The Reach | 26 | 0.3 |
+| The Marches | 23 | 0.0 |
+| The Salvage Belt | 22 | 0.0 |
+| The Drift Deep | 20 | 0.0 |
+| The Breaker Yards | 25 | 0.2 |
+| The Free Ports | 21 | 0.0 |
 | The Hollows | 25 | 0.0 |
 | The Last Lanes | 18 | 0.0 |
 
@@ -38,10 +38,10 @@ never chases a goal, so this shows what is reachable, not how often a player win
 
 | Job | Won | Lost | Declined | Ignored |
 |---|---|---|---|---|
-| nothing_to_declare | 2 | 2 | 2 | 0 |
-| follow_cyrite | 2 | 2 | 2 | 0 |
+| nothing_to_declare | 1 | 2 | 2 | 0 |
+| follow_cyrite | 2 | 1 | 2 | 0 |
 | pirate_toll | 1 | 1 | 4 | 0 |
-| lifeboat_wake | 2 | 2 | 2 | 0 |
+| lifeboat_wake | 4 | 0 | 2 | 0 |
 | keep_distance | 2 | 2 | 2 | 0 |
 | wanted | 2 | 2 | 2 | 0 |
 | missing_shift | 2 | 2 | 2 | 0 |
@@ -60,7 +60,7 @@ never chases a goal, so this shows what is reachable, not how often a player win
 | needle | 0 | 4 | 2 | 0 |
 | drift_cache | 0 | 4 | 2 | 0 |
 | voice_wire | 0 | 4 | 2 | 0 |
-| kill_zone | 2 | 0 | 4 | 0 |
+| kill_zone | 1 | 1 | 4 | 0 |
 | dead_drop | 0 | 4 | 2 | 0 |
 | be_bait | 4 | 0 | 2 | 0 |
 | lose_prefect | 0 | 4 | 2 | 0 |

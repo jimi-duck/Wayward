@@ -122,11 +122,12 @@ export class Script {
   pending(): string[] { return [...(this.holding ? [this.holding.row] : []), ...this.queue.map((q) => q.id), ...this.released]; }
   /** Whether a story line is waiting (the radio's chatter holds back for it). */
   waiting(): boolean { return this.queue.length > 0 || this.holding !== null; }
-  /** Whether a hub beat is still due or out: a job's call waits for it. A row that waits on a flag or an earlier row holds only once that has come. */
-  holdsJob(flags: ReadonlySet<string>, tank = 0): boolean {
-    if (this.holding) return true;
-    // a stop's main card comes before any job there (docs/overhaul/BEAT_MAP.md §0.2)
-    return this.mine.some((r) => (r.holdsJob || (r.main && 'card' in r.do)) && !this.seen.has(r.id) && this.cond(r, flags, tank) && this.due(r, flags, tank));
+  /**
+   * Whether a story card is out: a job's call waits for it. A stop's main card no longer comes first: the job rings as soon as the
+   * arrival's scan is done and the story follows it (owner, 7 November 2026, replacing docs/overhaul/BEAT_MAP.md §0.2).
+   */
+  holdsJob(_flags?: ReadonlySet<string>, _tank = 0): boolean {
+    return this.holding !== null;
   }
 
   /**
