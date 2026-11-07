@@ -21,6 +21,13 @@ the player picks German (or `?lang=de`); it no longer follows the browser.
   warm or strange but must read clearly the first time. Calloway is controlled
   and human, frontier characters plain and distinct, the Voice precise and
   literal, the Thren strange and not explained early.
+- **People talk like people.** Down to earth, never like a machine. Everyone
+  who speaks uses contractions (I'm, don't, you're); only the Voice, the Thren,
+  Pell and the Nine sound mechanical. Friends say Juno's name and a word of
+  feeling where it fits ("I'm sorry", "hang in there"); no report-speak ("I
+  suggest fitting torpedoes"). Sam's code card, in the owner's own words, is
+  the reference voice. Official notices stay formal but plain: whole
+  sentences, no stacked nouns ("The vessel will be recovered and impounded").
 - **Respect the player's time.** Short sentences, active voice, familiar words.
   No filler, repeated warnings or unexplained abbreviations.
 - **Consistent terms.** Cyrite, jump fluid, supplies, work bay, Custody, the Offices of
