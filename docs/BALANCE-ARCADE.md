@@ -5,7 +5,7 @@ Krail is from wrecks / from rock. The pilot flies the same seeds every time.
 
 | Strategy | Mean time | Contacts | Krail wreck / rock | Wreck share | First refit | Refits | Score | Survived |
 |---|---|---|---|---|---|---|---|---|
-| random | 6:06 | 20.2 | 474 / 172 | 73% | 0:53 | 11.3 | 46,594 | 0/12 |
-| laser+defence | 8:13 | 28.3 | 959 / 583 | 62% | 0:53 | 17.9 | 351,181 | 4/12 |
-| torpedo+laser | 7:52 | 33.3 | 1038 / 251 | 81% | 0:53 | 18.8 | 114,725 | 1/12 |
-| mine+mobility | 7:26 | 27.4 | 703 / 195 | 78% | 0:53 | 15.4 | 66,686 | 3/12 |
+| random | 7:10 | 23.2 | 597 / 224 | 73% | 0:53 | 14.8 | 67,428 | 1/12 |
+| laser+defence | 8:33 | 31.2 | 1011 / 561 | 64% | 0:53 | 18.3 | 306,314 | 4/12 |
+| torpedo+laser | 7:15 | 30.3 | 946 / 238 | 80% | 0:53 | 17.1 | 113,252 | 2/12 |
+| mine+mobility | 6:37 | 24.3 | 581 / 182 | 76% | 0:53 | 12.5 | 56,962 | 1/12 |

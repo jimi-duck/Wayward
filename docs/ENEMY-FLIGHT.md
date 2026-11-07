@@ -102,7 +102,7 @@ with little coordination. The fix is a pack layer over the hulls
 raptors, hunters) are fighting or closing within 150 units, the pack calls a
 play, drafts the nearest (up to its size), and gives each a station round the
 ship. Members fly to their stations (`muster` mode: cloakers stay hidden,
-guns on you; only the bait and a wheel's ring fire while they hold), and when every station is taken, or
+guns on you; only the bait fires while they hold), and when every station is taken, or
 the set time runs out, all of them go at once. After its run a member is its
 own hull again; the next play is called 5 to 9 s after the last ends, a
 breather between strikes. A hull holding its station does not peel out of
@@ -119,12 +119,24 @@ Stations lead the ship's drift, so a pack keeps formation on a moving ship.
 Plays are rows in `PLAYS`; the geometry is `station`. In seeded arcade runs
 the pack calls about 15 plays in 7 minutes (one every 25 s or so).
 
-Arcade pilot (12 runs per strategy, same seeds), before and after: reaching
-the 10:00 cap 9 of 48 before, 8 of 48 after; mean time 7:01 / 8:43 / 7:38 /
-8:06 before, 6:06 / 8:13 / 7:52 / 7:26 after (random, laser+defence,
-torpedo+laser, mine+mobility). A little harder, mostly for the pilot that
-picks upgrades at random. The first cut (plays every 2.5 to 5 s, everyone
-firing from their stations) cost about a minute a run and was eased back.
+**The tell.** No HUD text (the flight path stays clear): a pack holding its
+stations blinks its running lights quickly and in step, and on the go every
+member lights its drives at once (`Alien.burst`, drawn in
+`render/enemies.ts`). Hunters keep their own rhythm once they are on your
+tail.
+
+**Less hovering.** A cruiser with no bulwark to hide behind used to hold
+range and slide a few units; now it circles you slowly at a little past its
+range (55% of its speed), broadside or guns on you, and reverses every 4 to
+8 s.
+
+Arcade pilot (12 runs per strategy, same seeds), main against this branch:
+reaching the 10:00 cap 9 of 48 against 8 of 48; mean time 7:01 / 8:43 /
+7:38 / 8:06 against 7:10 / 8:33 / 7:15 / 6:37 (random, laser+defence,
+torpedo+laser, mine+mobility). A little harder, about 30 s a run, mostly for
+the mine pilot. Earlier cuts were harder (3 to 5 of 48: plays every 2.5 to
+5 s, everyone firing from their stations, cruisers circling at full speed)
+and were eased back.
 
 ## Not measured
 

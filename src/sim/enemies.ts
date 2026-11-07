@@ -382,6 +382,8 @@ export interface Alien {
   help: boolean;
   /** Its part in the pack's current play (sim/tactics.ts), if it has one. */
   play?: Part;
+  /** Seconds left of the afterburn it lights when the pack goes (the renderer's tell). */
+  burst?: number;
   xp: number;
   /** How it closes on the ship before it fights (sim/pacing.ts). */
   approach: Approach;
@@ -828,6 +830,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
   if (al.mark > 0) al.mark = Math.max(0, al.mark - dt);
   if (al.bumpT > 0) al.bumpT = Math.max(0, al.bumpT - dt);
   if (al.peelT > 0) al.peelT = Math.max(0, al.peelT - dt);
+  if (al.burst) al.burst = Math.max(0, al.burst - dt);
   if (al.roll >= 0 && (al.roll += dt) >= JINK_ROLL) al.roll = -1;
   if (T.ttl > 0 && !al.fleeing && !al.ward && (al.ttl -= dt) <= 0) leave(al);
   // a coward runs from a fight it is losing, and calls for help
@@ -994,6 +997,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
         break;
       }
       al.pass.off = p.off;
+      al.burst = 0.9;
       if (p.role === 'hammer' || p.role === 'line') al.slide = p.off >= 0 ? 1 : -1;
       if (T.tactic === 'ram') {
         al.mode = 'run'; al.modeT = 1.6; al.face = aim;
@@ -1045,15 +1049,19 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
       break;
     }
     case 'hold':
-      // no cover in reach: hold range and slide
-      steer(al, s.x - ux * range - uz * al.slide * 10, cy, s.z - uz * range + ux * al.slide * 10, speed, acc, dt);
+    {
+      // no cover in reach: circle you at its range, guns (or broadside) on you, and now and then reverse
+      const a = Math.atan2(-(al.z - s.z), al.x - s.x) + al.slide * 0.3;
+      // a slow circle, a little wide: it moves, but a cruiser is still a target, not a dodger
+      steer(al, s.x + Math.cos(a) * range * 1.1, cy, s.z - Math.sin(a) * range * 1.1, speed * 0.55, acc, dt, 2);
       faceTo = T.tactic === 'broadside' ? aim + (Math.PI / 2) * al.slide : aim;
       if (al.modeT <= 0) {
         al.slide = al.slide === 1 ? -1 : 1;
-        al.modeT = 3;
+        al.modeT = 4 + frac(al.id, 50 + Math.floor(al.age)) * 4;
         if (coverFor(al, s, arena.bulwarks, arena.rocks)) { al.mode = 'cover'; al.modeT = 1; }
       }
       break;
+    }
 
     // the weaver
     case 'seek': {
@@ -1109,9 +1117,9 @@ export function alienFire(al: Alien, s: ShipState, t: number, shots: Shot[], bul
   const nose = Math.abs(angleDelta(al.face, aim));
   const ready = (() => {
     switch (T.tactic) {
-      case 'dogfight': return ((al.mode === 'run' || al.mode === 'peek') && nose < 0.5 && d < 45) || (al.mode === 'muster' && (al.play?.role === 'bait' || al.play?.role === 'ring') && nose < 0.3 && d < 50);
+      case 'dogfight': return ((al.mode === 'run' || al.mode === 'peek') && nose < 0.5 && d < 45) || (al.mode === 'muster' && al.play?.role === 'bait' && nose < 0.3 && d < 50);
       case 'ram': return al.mode === 'run';
-      case 'hunt': return nose < 0.9 && (al.mode === 'run' || al.mode === 'peek' || (al.mode === 'muster' && (al.play?.role === 'bait' || al.play?.role === 'ring')));
+      case 'hunt': return nose < 0.9 && (al.mode === 'run' || al.mode === 'peek' || (al.mode === 'muster' && al.play?.role === 'bait'));
       case 'broadside': case 'snipe': return al.mode === 'peek' || al.mode === 'hold';
       case 'grind': return d < 38 && Math.abs(al.y) < 3;
       default: return false;
