@@ -54,8 +54,8 @@ export function planetOf(system: string): (typeof PLANETS)[number] {
 }
 export const DEBRIEFS = ['castoff', 'limping'] as const;
 /** One painted backdrop per refit bay tab (Suggested plus the nine in `content/web.ts`). */
-/** The refit bay's 24 specialisations and 5 salvaged techs: each has an inspector picture (a node id in `content/web.ts`). */
-export const SPECS = ['ph_cone', 'ph_lance', 'ph_array', 'tp_heavy', 'tp_swarm', 'tp_precision', 'mn_field', 'mn_chain', 'mn_gravity', 'pl_ignite', 'pl_wake', 'cl_storm', 'cl_juggernaut', 'mo_drift', 'mo_evasion', 'df_fortress', 'df_reactive', 'df_regenerative', 'pl_corona', 'cl_shock', 'mo_afterburner', 'ut_prospector', 'ut_salvager', 'ut_scanner', 'tech_gutter', 'tech_custody', 'tech_office', 'tech_voice', 'tech_thren'] as const;
+/** The refit bay's 26 specialisations and 5 salvaged techs: each has an inspector picture (a node id in `content/web.ts`). */
+export const SPECS = ['ph_cone', 'ph_lance', 'ph_array', 'tp_heavy', 'tp_swarm', 'tp_precision', 'mn_field', 'mn_chain', 'mn_gravity', 'pl_ignite', 'pl_wake', 'cl_storm', 'cl_juggernaut', 'mo_drift', 'mo_evasion', 'df_fortress', 'df_reactive', 'df_regenerative', 'pl_corona', 'cl_shock', 'mo_afterburner', 'ut_prospector', 'ut_salvager', 'ut_scanner', 'tech_gutter', 'tech_custody', 'tech_office', 'tech_voice', 'tech_thren', 'ph_chain', 'tp_well'] as const;
 export const BAYBANNERS = ['suggested', 'hull', 'weapons', 'ordnance', 'engines', 'defence', 'utility', 'signals', 'reactor', 'synergies'] as const;
 
 /** Formats the loader takes, best first. */
