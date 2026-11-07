@@ -189,8 +189,8 @@ export const ARCADE_ROCK = 0.85;
 
 /** Surge core: the window a kill keeps the surge alive, and the damage each stacked kill adds. */
 export const SURGE = { window: 6, damage: 0.08 } as const;
-/** Wake deflectors: how far round the ship rock is shoved (at a stand and at full speed), and how hard. */
-export const DEFLECT = { near: 3.5, far: 8, push: 14 } as const;
+/** Deflectors: how far round the ship rock drifts away, how hard it is eased, and the most outward speed it is given (units a second). */
+export const DEFLECT = { reach: 8, push: 10, drift: 5 } as const;
 /** Singularity warhead: how long its well lasts, how far it reaches past the blast and how hard it drags. */
 export const WELL = { life: 2.4, reach: 2.2, pull: 26 } as const;
 /** Chain lances: how far a lance looks for the next hull, and how much of its damage it keeps. */

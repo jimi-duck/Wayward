@@ -118,7 +118,7 @@ Ten new parts that change how you fly and fight (numbers in `sim/tuning.ts` `SUR
 | Slipstream (3 steps) | Reactor | Laser bank refills up to +30% a step faster at full speed (cap +120%) |
 | Coolant flush | Reactor | A barrel roll refills half the bank and racks a torpedo |
 | Surge core | Reactor | Kills within 6 s stack, up to 5, +8% damage each |
-| Deflectors (wake deflectors), Bow wave (2) | Hull | Rock near the ship is shoved clear, wider at speed; Bow wave cracks rock shoved ahead (cap 9/s) |
+| Deflectors, Bow wave (2) | Hull | Every rock within 8 units drifts gently away, at most 5 units a second (no shove, no effect drawn); Bow wave cracks rock drifting off ahead at speed (cap 9/s) |
 | Point defence, tracking (3) | Defence | Turret shoots one enemy bolt in reach every 1.6 s (floor 0.35 s) |
 | Chain lances, Long chain (2) | Weapons (laser specialisation) | A lance that hits a hull jumps on, 75% damage, up to 3 jumps |
 | Singularity warhead | Ordnance (torpedo specialisation) | A blast leaves a 2.4 s well that drags hulls, rock and enemy fire in |
