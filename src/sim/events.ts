@@ -73,6 +73,12 @@ export type GameEvent =
   | { type: 'tractor' }
   | { type: 'mineLaid'; x: number; z: number }
   | { type: 'arc'; points: number[] }
+  /** A barrel roll vented the coolant loops (Coolant flush). */
+  | { type: 'flush'; x: number; z: number }
+  /** A kill stacked the surge core: how deep, of how many. */
+  | { type: 'surge'; n: number; max: number }
+  /** A torpedo left a singularity well. */
+  | { type: 'well'; x: number; z: number; r: number }
   | { type: 'chain'; count: number; mult: number }
   | { type: 'strike'; x: number; z: number; r: number; kind: string }
   | { type: 'sectorEvent'; id: string; name: string; text: string }

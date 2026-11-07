@@ -45,7 +45,7 @@ describe('the web', () => {
     for (const t of TAB_ORDER) {
       const nodes = WEB.filter((w) => w.tab === t);
       expect(nodes.length, TABS[t].name).toBeGreaterThan(0);
-      expect(nodes.length, TABS[t].name).toBeLessThanOrEqual(17);
+      expect(nodes.length, TABS[t].name).toBeLessThanOrEqual(18);
       expect(Math.max(...nodes.map((w) => w.tier))).toBeLessThanOrEqual(4);
     }
   });

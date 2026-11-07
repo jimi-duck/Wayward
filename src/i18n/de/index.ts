@@ -1,3 +1,4 @@
+import { ARMS } from './arms';
 import { CARDS } from './cards';
 import { COPY } from './copy';
 import { COURSE } from './course';
@@ -27,7 +28,7 @@ import { REWORK, REWORK_KEEP } from './rework';
 //   space  · the shared world's features and expanses (content/features.ts)
 //   scenes · situations: their calls, goals and the Archive's sightings (content/situations.ts)
 
-export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...REACH_DE, ...OVERHAUL, ...SIGNALS, ...REWORK };
+export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...REACH_DE, ...OVERHAUL, ...SIGNALS, ...REWORK, ...ARMS };
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([

@@ -163,6 +163,31 @@ export interface Stats {
   /** Seconds a blast snares the hulls it catches. */
   snare: number;
 
+  // the reactor, wired into flight and fire (content/upgrades.ts, `rx_*`)
+  /** Slipstream coupling: extra laser-bank refill at full speed, as a share (0.35: a third faster). */
+  flux: number;
+  /** Coolant flush: a barrel roll refills this share of the bank and racks a torpedo; 0 for never. */
+  rollFlush: number;
+  /** Surge core: kills in quick succession stack this many times, each worth `SURGE.damage` more damage; 0 for none. */
+  surge: number;
+
+  // wake deflectors (`mo_deflector`)
+  /** How hard the ship shoves rock out of its way; 0 for off. */
+  deflect: number;
+  /** Bow wave: damage a second to rock shoved aside at speed; 0 for none. */
+  bowWave: number;
+
+  // point defence (`df_flak`)
+  /** Seconds between enemy bolts shot down; 0 for off. */
+  flakEvery: number;
+  flakRange: number;
+
+  // new weapon behaviour
+  /** Chain lances: onward jumps a lance makes from the first hull it hits. */
+  laserChain: number;
+  /** Singularity warhead: a torpedo blast leaves a well that drags hulls and rock together. */
+  torpWell: boolean;
+
   // encounter control (sim/pacing.ts)
   /** Multiplier on how far off patrols and watchers notice you: lower is quieter. */
   notice: number;
@@ -199,6 +224,7 @@ export const BASE: Readonly<Stats> = Object.freeze({
   dmgAll: 1, plasmaCorona: false, ramArc: false,
   crystalChance: 1, repairChance: 1, powerTime: 1, boostRate: 1, eliteLoot: 1,
   disruptor: 0, rollCloak: 0, snare: 0,
+  flux: 0, rollFlush: 0, surge: 0, deflect: 0, bowWave: 0, flakEvery: 0, flakRange: 14, laserChain: 0, torpWell: false,
   notice: 1, lull: 1,
 });
 
@@ -249,6 +275,12 @@ export const CAPS = {
   /** Quiet running: patrols still see you this close, and quiet spells stretch this far at most. */
   notice: 0.55,
   lull: 1.6,
+  /** Slipstream coupling: at most this much faster a bank refill at full speed. */
+  flux: 1.2,
+  bowWave: 9,
+  flakEvery: 0.35,
+  flakRange: 26,
+  laserChain: 3,
 } as const;
 
 /** Clamp a finished block. Mutates and returns it. */
@@ -292,6 +324,11 @@ export function capStats(s: Stats): Stats {
   s.repairMax = Math.min(Math.round(s.repairMax), CAPS.repairMax);
   s.notice = Math.max(s.notice, CAPS.notice);
   s.lull = Math.min(s.lull, CAPS.lull);
+  s.flux = Math.min(s.flux, CAPS.flux);
+  s.bowWave = Math.min(s.bowWave, CAPS.bowWave);
+  if (s.flakEvery > 0) s.flakEvery = Math.max(s.flakEvery, CAPS.flakEvery);
+  s.flakRange = Math.min(s.flakRange, CAPS.flakRange);
+  s.laserChain = Math.min(Math.round(s.laserChain), CAPS.laserChain);
   return s;
 }
 
