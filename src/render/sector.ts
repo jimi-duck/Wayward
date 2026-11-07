@@ -523,9 +523,6 @@ export class Sector {
           this.fx.flash(e.x, e.y, e.z, 1.6, BOLT, 0.08);
           this.fx.burst(e.x, e.y, e.z, 8, LANCE_SPARK, 10, 0.18, 0.3);
           break;
-        case 'deflect':
-          this.fx.ring(e.x, 0.1, e.z, 3 + e.speed * 4, SHIELD, 0.3);
-          break;
         case 'strike':
           if (e.kind === 'lightning') {
             this.arsenal.arc([e.x, 30, e.z, e.x, 0, e.z, e.x, 18, e.z, e.x + 3, 0, e.z - 2]);

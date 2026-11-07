@@ -292,7 +292,6 @@ export class World implements EncounterHost {
   private wells: Array<{ x: number; z: number; life: number; r: number }> = [];
   /** Seconds to the point-defence turret's next shot. */
   private pdT = 0;
-  private deflectT = 0;
   /** The secret: barrel rolls in a row in the Story, each within ROLL_CHAIN_GAP seconds of the last. */
   private rollChain = 0;
   private rollChainAt = -Infinity;
@@ -2775,30 +2774,23 @@ export class World implements EncounterHost {
     this.events.push({ type: 'surge', n: this.surgeN, max: n, x: this.ship.x, z: this.ship.z });
   }
 
-  /** Wake deflectors: rock round the ship is shoved clear, wider the faster you fly; the bow wave cracks what it shoves ahead. */
+  /** Deflectors: every rock near the ship drifts gently away from it, big or small; the bow wave cracks what drifts off ahead at speed. */
   private stepDeflect(dt: number): void {
     const st = this.stats, s = this.ship;
     if (st.deflect <= 0 || !this.alive) return;
     const frac = Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(this.hull));
-    const reach = DEFLECT.near + (DEFLECT.far - DEFLECT.near) * frac;
     const hx = Math.cos(s.heading), hz = -Math.sin(s.heading);
-    if (frac > 0.3 && (this.deflectT -= dt) <= 0 && this.field.rocks.some((r) => Math.hypot(r.x - s.x, r.z - s.z) < reach + r.r)) {
-      this.deflectT = 0.3;
-      this.events.push({ type: 'deflect', x: s.x + hx * 2, z: s.z + hz * 2, heading: s.heading, speed: frac });
-    }
     for (const r of [...this.field.rocks]) {
-      const dx = r.x - s.x, dz = r.z - s.z, d = Math.hypot(dx, dz) || 1, lim = reach + r.r;
+      const dx = r.x - s.x, dz = r.z - s.z, d = Math.hypot(dx, dz) || 1, lim = DEFLECT.reach + r.r;
       if (d >= lim) continue;
-      const fall = 1 - d / lim, ahead = (dx * hx + dz * hz) / d;
-      // away from the ship, and to whichever side of its line the rock sits: a rock dead ahead goes round, not back
-      const side = dx * -hz + dz * hx >= 0 ? 1 : -1;
-      let nx = dx / d + -hz * side * 0.9 * Math.max(0, ahead), nz = dz / d + hx * side * 0.9 * Math.max(0, ahead);
-      const nl = Math.hypot(nx, nz) || 1; nx /= nl; nz /= nl;
-      const a = (DEFLECT.push * st.deflect * fall) / (0.6 + 0.12 * r.r * r.r);
-      r.vx += nx * a * dt; r.vz += nz * a * dt;
-      const v = Math.hypot(r.vx, r.vz);
-      if (v > 36) { r.vx *= 36 / v; r.vz *= 36 / v; }
-      if (st.bowWave > 0 && ahead > 0.3 && frac > 0.45) this.damageRock(r, st.bowWave * frac * fall * dt, 'ram', r.x, 0, r.z, true);
+      const nx = dx / d, nz = dz / d, fall = 1 - d / lim;
+      // a slow, steady drift outward: never faster than DEFLECT.drift away from the ship, so nothing is flung
+      const out = r.vx * nx + r.vz * nz, room = DEFLECT.drift * st.deflect - out;
+      if (room > 0) {
+        const dv = Math.min(room, (DEFLECT.push * st.deflect * fall * dt) / (0.8 + 0.04 * r.r * r.r));
+        r.vx += nx * dv; r.vz += nz * dv;
+      }
+      if (st.bowWave > 0 && (dx * hx + dz * hz) / d > 0.3 && frac > 0.45) this.damageRock(r, st.bowWave * frac * fall * dt, 'ram', r.x, 0, r.z, true);
     }
   }
 

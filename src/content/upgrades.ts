@@ -415,8 +415,8 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'mo_deflector', name: 'Deflectors', branch: 'mobility', cat: 'ship', kind: 'system', max: 1, tags: ['mobility', 'unlock', 'control'],
     weight: 1.2,
-    text: 'Rock is shoved out of your path and your wake, so you can fly through a field.',
-    note: 'Big rock moves slowly. The faster you fly, the wider the clearing.',
+    text: 'Rock near you drifts gently away, big or small, so a field opens round you.',
+    note: 'A slow drift, not a shove: fly fast and you still have to steer.',
     apply: (s) => { s.deflect = 1; },
   },
   {

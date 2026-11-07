@@ -79,8 +79,6 @@ export type GameEvent =
   | { type: 'surge'; n: number; max: number; x: number; z: number }
   /** The turret shot down an enemy bolt. */
   | { type: 'flak'; x: number; y: number; z: number }
-  /** The wake deflectors are shoving rock: where the bow wave is, and how fast the ship goes (0 to 1). */
-  | { type: 'deflect'; x: number; z: number; heading: number; speed: number }
   /** A torpedo left a singularity well. */
   | { type: 'well'; x: number; z: number; r: number }
   | { type: 'chain'; count: number; mult: number }

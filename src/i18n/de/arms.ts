@@ -16,8 +16,8 @@ export const ARMS: Record<string, string> = {
   'Up to five kills deep. Six seconds without one and it fades.': 'Bis zu fünf Abschüsse tief. Sechs Sekunden ohne einen, und er verblasst.',
   // wake deflectors
   'Deflectors': 'Deflektoren',
-  'Rock is shoved out of your path and your wake, so you can fly through a field.': 'Fels wird aus deinem Weg und deinem Kielwasser gedrückt, du fliegst quer durchs Feld.',
-  'Big rock moves slowly. The faster you fly, the wider the clearing.': 'Große Brocken bewegen sich langsam. Je schneller du fliegst, desto breiter die Schneise.',
+  'Rock near you drifts gently away, big or small, so a field opens round you.': 'Fels in deiner Nähe treibt sanft weg, ob groß oder klein, und das Feld öffnet sich um dich.',
+  'A slow drift, not a shove: fly fast and you still have to steer.': 'Ein langsames Treiben, kein Stoß: Wer schnell fliegt, muss trotzdem lenken.',
   'Bow wave': 'Bugwelle',
   'Rock shoved aside at speed cracks, and gives up its Cyrite.': 'Fels, den du mit Tempo beiseite schiebst, bricht und gibt sein Cyrit her.',
   // point defence

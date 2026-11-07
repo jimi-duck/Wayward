@@ -92,19 +92,22 @@ describe('the reactor, wired in', () => {
   });
 });
 
-describe('wake deflectors', () => {
-  it('shove rock aside from a ship that flies at it, and leave it alone without them', () => {
-    const run = (deflect: boolean) => {
+describe('deflectors', () => {
+  it('ease every rock near the ship gently away, big or small, and leave it alone without them', () => {
+    const run = (deflect: boolean, r0: number) => {
       const w = quiet();
       fit(w, deflect ? { mo_deflector: 1 } : {});
-      w.ship.heading = Math.PI / 2; // nose toward -z
-      const r = rock(0.5, -9);
+      const r = rock(0, -7, r0);
       w.field.rocks = [r];
-      w.ship.vz = -30;
-      step(w, 20);
-      return Math.hypot(r.vx, r.vz - 0) + Math.abs(r.x);
+      step(w, 60);
+      return { away: -r.vz, speed: Math.hypot(r.vx, r.vz) };
     };
-    expect(run(true)).toBeGreaterThan(run(false) + 1);
+    for (const size of [1.05, 1.9, 3.2]) {
+      const on = run(true, size), off = run(false, size);
+      expect(on.away, `size ${size}`).toBeGreaterThan(off.away + 0.5);
+      // a drift, not a shove
+      expect(on.speed, `size ${size}`).toBeLessThanOrEqual(5.01);
+    }
   });
 
   it('the bow wave cracks rock shoved aside at speed', () => {
