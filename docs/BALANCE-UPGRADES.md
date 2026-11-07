@@ -123,4 +123,4 @@ Ten new parts that change how you fly and fight (numbers in `sim/tuning.ts` `SUR
 | Chain lances, Long chain (2) | Weapons (laser specialisation) | A lance that hits a hull jumps on, 75% damage, up to 3 jumps |
 | Singularity warhead | Ordnance (torpedo specialisation) | A blast leaves a 2.4 s well that drags hulls, rock and enemy fire in |
 
-Pilot (`UPG_LEGS=70`, wide build, seeds 3000, 3013, 3026): all three flew 70 systems without a wreck, and the pilot fitted deflectors and point defence unprompted. The pilot cannot judge feel. The bay icons are stand-ins drawn by `tools/make-arms-icons.py`.
+Pilot (`UPG_LEGS=70`, wide build, seeds 3000, 3013, 3026): all three flew 70 systems without a wreck, and the pilot fitted deflectors and point defence unprompted. The pilot cannot judge feel. Icons and the two inspector pictures are the owner's art (2026-11-07).
