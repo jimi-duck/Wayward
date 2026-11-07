@@ -121,8 +121,6 @@ const BELT_ROWS: Row[] = [
   card('bk_box', 'b_kessler', flag('frag_blackbox'), 'story_ada', { holdsJob: true }),
   notice('bk_wall', 'b_kessler', after('bk_box'), 'teal', 'The Wall', 'Ada Aster · died 25 years ago', { wall: 'ada_died' }),
   radio('bk_after', 'b_kessler', after('bk_wall', 2), 'Dov Kessler', 'miners', '“Granddaughter. Hm. I’ll paint her name on the gate.”'),
-  pike('bk_pike_lost', 'b_kessler', 'job_dead_drop_lost', '“Pickets at a drop only four people knew. One of them’s me. I’m checking the other three.”'),
-  pike('bk_pike_won', 'b_kessler', 'job_dead_drop_won', '“Drop’s clean. Somebody still talked, though. I’ll find who.”'),
   objective('bk_gate', 'b_kessler', leave(), 'Jump to Saltmarsh'),
 
   // 5 · Saltmarsh (breather): the first sighting, a river of motes; it turns toward a full tank
@@ -279,6 +277,9 @@ const PORTS_ROWS: Row[] = [
   objective('fp_objective', 'f_penny', arrive(), 'Penny Cross · something answers a full tank'),
   analyst('fp_survey', 'f_penny', 'job_something_dark_won', '“It answers only when your tank is full. Every time. I think you’ve worked out what that means.”', { wall: 'clue_cyrite' }),
   notice('fp_wall', 'f_penny', after('fp_survey'), 'teal', 'The Wall', 'Cyrite draws them'),
+  // Pike's dead drop moved here from Kessler's Wreck, whose two story cards leave no room for a job (owner, 6 November 2026)
+  pike('fp_pike_lost', 'f_penny', 'job_dead_drop_lost', '“Pickets at a drop only four people knew. One of them’s me. I’m checking the other three.”'),
+  pike('fp_pike_won', 'f_penny', 'job_dead_drop_won', '“Drop’s clean. Somebody still talked, though. I’ll find who.”'),
   objective('fp_gate', 'f_penny', leave(), 'Jump to Mirren’s Pier'),
 
   // 4 · Mirren's Pier (turn): Old Mirren and the Forty; the Account, now Draper by name
