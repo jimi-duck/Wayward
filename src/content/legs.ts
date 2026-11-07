@@ -158,7 +158,7 @@ export const NOTE_8 = {
 export const ROAD_OFFERS: CardDef[] = [
   offer({
     id: 'offer_see', gist: 'Calloway asks about the motes', from: 'Governor Idris Calloway · Offices of Peace', title: 'What did you see?',
-    text: '“At the Slow Door, something gathered on the gate. Tell me what it did. Exactly. I will pay in days.”',
+    text: '“At the Slow Door, something gathered on the gate. Tell me what it did. Exactly. I’ll pay in days.”',
     choices: [
       { id: 'tell', label: 'Tell her', tone: 'help', hint: 'She gets your readings. You get a day.', win: { text: 'She listens without interrupting · a day gained', flag: 'calloway_curious', hunt: 1 } },
       { id: 'ask', label: 'Ask why she wants to know', tone: 'bluff', hint: 'Ask her a question back.', win: { text: '‘Because I have seen it before.’ · she closes the channel', flag: 'calloway_seen_before' } },
@@ -167,7 +167,7 @@ export const ROAD_OFFERS: CardDef[] = [
   }),
   offer({
     id: 'offer_stop', gist: 'Calloway offers to meet alone', from: 'Governor Idris Calloway · Offices of Peace', title: 'Stop, and I stop',
-    text: '“One system from the end. Power down and I will meet you alone. No Draper. I am offering because I am afraid of him too.”',
+    text: '“One system from the end. Power down and I’ll meet you alone. No Draper. I’m offering because I’m afraid of him too.”',
     choices: [
       { id: 'accept', label: 'Power down', tone: 'help', hint: 'Her fleet holds back. Fire on her ships and she will know.', win: { text: 'She comes alone · her fleet holds back a day', flag: 'calloway_alone', hunt: 1, notice: { custody: -6, office: -6 } } },
       { id: 'refuse', label: 'Keep flying', tone: 'refuse', hint: 'Nothing changes before the Threshold.', win: { text: '“Then at the Threshold, Juno.”' } },

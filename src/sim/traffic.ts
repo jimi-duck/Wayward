@@ -411,7 +411,7 @@ export class Traffic {
     if (!alarm) {
       if (now - this.warnAt > 12) {
         this.warnAt = now;
-        w.events.push({ type: 'ping', id: `traffic_warn_${Math.floor(now)}`, from: t('Dock control'), caller: 'custody', text: t('“Cease fire. That is a working hull. Next shot calls security.”'), moment: 'calm', system: w.sortie.name });
+        w.events.push({ type: 'ping', id: `traffic_warn_${Math.floor(now)}`, from: t('Dock control'), caller: 'custody', text: t('“Cease fire. That’s a working hull. Next shot calls security.”'), moment: 'calm', system: w.sortie.name });
       }
       return;
     }

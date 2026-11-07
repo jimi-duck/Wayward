@@ -304,7 +304,7 @@ export class Run {
         tg.vx = tg.vz = 0;
         tg.ax = tg.x; tg.az = tg.z;
         this.hold = 0;
-        w.events.push({ type: 'ping', id: `mis_${this.def.id}_down`, from: t(W.tag), caller: 'unknown', text: t('“Engines out. We are dead in space.”'), moment: 'calm', system: w.sortie.name });
+        w.events.push({ type: 'ping', id: `mis_${this.def.id}_down`, from: t(W.tag), caller: 'unknown', text: t('“Engines out. We’re dead in space.”'), moment: 'calm', system: w.sortie.name });
       } else {
         // a fleeing target keeps away from the ship, inside the sector; a runner holds its course
         if (this.def.goal.pace) {

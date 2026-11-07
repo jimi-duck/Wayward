@@ -181,7 +181,7 @@ export const REWORK: Record<string, string> = {
   'Tarik flies it alone.': 'Tarik fliegt sie allein.',
   'Tarik shrugs and goes': 'Tarik zuckt mit den Schultern und fliegt los',
   'Joss Peller · inside the cradle': 'Joss Peller · in der Wiege',
-  '“Forty of us are inside. Custody locks us in until the yard finishes. Cut the frame open before it closes. We have a hundred seconds.”': '„Wir sind vierzig hier drin. Die Custody schließt uns ein, bis die Werft fertig ist. Schneid den Rahmen auf, bevor er zugeht. Wir haben hundert Sekunden.“',
+  '“There’s forty of us inside. Custody’s locking us in until the yard’s done. Cut the frame open before it closes. We’ve got a hundred seconds.”': '„Wir sind vierzig hier drin. Custody sperrt uns ein, bis die Werft fertig ist. Schneid den Rahmen auf, bevor er zugeht. Wir haben hundert Sekunden.“',
   'Cut the workers free': 'Schneid die Arbeiter frei',
   'Hold at the frame until it opens. Custody cutters will come.': 'Halt am Rahmen, bis er aufgeht. Custody-Kutter werden kommen.',
   'You turn for the frame': 'Du drehst zum Rahmen',
