@@ -380,6 +380,11 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 #marks .m.tag { width: 8px; height: 8px; margin: -4px 0 0 -4px; }
 #marks .m.tag::before { content: ""; position: absolute; inset: 0; border: 1px solid var(--cy); border-radius: 50%; }
 #marks .m.tag::after { color: var(--ink-2); }
+/* a built place near you: what it is and what it does, a square teal mark (amber when it will not serve you now) */
+#marks .m.tag.site { width: 10px; height: 10px; margin: -5px 0 0 -5px; }
+#marks .m.tag.site::before { border: 1.5px solid var(--cy); border-radius: 0; rotate: 45deg; box-shadow: 0 0 0 3px rgba(var(--void-rgb), .28); }
+#marks .m.tag.site::after { color: var(--ink); }
+#marks .m.tag.site.warn::before { border-color: var(--caution); }
 
 /* off screen: a pointer on the edge for the capital ship and the objective */
 .ptr { position: absolute; left: 0; top: 0; display: none; --pc: var(--alert); }

@@ -52,6 +52,8 @@ export interface Waypoint {
   z: number;
   /** Inside this radius: docking range, or the lane's throat. */
   r: number;
+  /** The audit dock only: its turn (radians about y), so its arch faces the way the ship comes in. Render and solids both read it. */
+  face?: number;
 }
 
 /** The audit dock's ring (units): the company's yard in the first system past Cerro. It takes no docking; it is the first mark on the way. */
@@ -393,9 +395,14 @@ export function course(heading: number, x = 0, z = 0, def: SortieDef = HOME): { 
   return {
     lane: { kind: 'lane', name: 'Jump Gate', x: x + fx * def.lane, z: z + fz * def.lane, r: LANE_R },
     port: def.port ? { kind: 'port', name: def.port.name, ...(def.first ? at(FIRST_DEPOT) : { x: x + fx * along + rx * PORT_OFF, z: z + fz * along + rz * PORT_OFF }), r: PORT_R } : null,
-    audit: def.audit ? { kind: 'audit', name: def.audit, ...at(FIRST_AUDIT), r: AUDIT_R } : null,
+    audit: def.audit ? auditAt(at(FIRST_AUDIT), x, z, def.audit) : null,
     yard: def.first ? { kind: 'yard', name: 'Ned’s yard', ...at(FIRST_YARD), r: YARD_R } : null,
   };
+}
+
+/** The audit dock at `p`, its arch turned to face the course's start (x0, z0): the way she comes in. */
+function auditAt(p: { x: number; z: number }, x0: number, z0: number, name: string): Waypoint {
+  return { kind: 'audit', name, ...p, r: AUDIT_R, face: Math.atan2(-(z0 - p.z), x0 - p.x) + Math.PI };
 }
 
 /** Where the Narrows' relay mast stands against its gate (units): off the ring, never in the lane. */

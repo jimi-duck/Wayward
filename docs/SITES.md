@@ -19,12 +19,21 @@ amber and never red: red is the threat's colour only.
 
 ## Port looks by holder
 
-One kit, five looks (`buildPort(style)`, built the first time a system wants it
-and kept): Frontier Supply's yellow depot (also Voice, Thren and nobody's),
-Kellern's off-white yard with an inspection arch, the Gutter's rust hulk-port
-with a gutted hull bolted on, a Holdfast's hub grown into a rock, and the Dust
-Traders' raft with awnings and lanterns. The holder comes from the chart row via
-`SortieDef.holder`. The first system past Cerro keeps its own hand-laid depot.
+Each holder builds its own depot (`render/stations.ts`, `buildStation(style, name)`,
+built the first time a system wants it and kept). All share one footprint: the hub
+in the middle, two docking arms straddling the berth, and the holder's own parts
+where `sim/solids.ts` puts them, so what you see is what you bump.
+
+| Holder | Look |
+|---|---|
+| Frontier Supply (also Voice, Thren, nobody's) | the yellow fuel depot: habitat ring, tank farm, crane, beacon mast, a turning dish |
+| Kellern | an off-white octagonal tower in navy bands, cool windows, a glass bridge, a landing deck with teal edge lamps, a claims office over a skybridge, and a checkpoint arch over the approach with a teal scan strip |
+| the Gutter | a patched drum in scaffold and sodium lamps, a salvage crane that swings, and a gutted freighter lying behind it, ribs showing, its bridge still lit; the name in stuttering teal neon |
+| a Holdfast | a hub dug into a rock: habitat blocks in the rock face, green-lit greenhouse domes, four flak turrets that turn |
+| the Dust Traders | a raft of planks, a tented hall, stall tents in saffron, teal, plum and cream, lanterns strung hall to tent, two moored skiffs |
+
+Every depot carries its name on a lit board facing the berth, warm light pools on
+its decks, white strobes on its high points, and no red anywhere.
 
 ## What a holder's port does
 
@@ -179,16 +188,36 @@ five of the first nine stops are Kellern.
 
 ## Solid places
 
-Every built thing is solid to the player (`sim/solids.ts`, `World.stepSolids`): the
-depot (a 9-unit core at its berth's side), the audit dock, the relay post and mast,
-Ned's yard (its rock, never the pad), neutral traffic (a ward's hull; a ram no longer hurts it or you), the barge, the gantry (7), the Dust Market (9), the den (12), the seed, and a
-situation's site (settlement 12, wreck 8, and so on). The ship is pushed back out
-and its inward way is lost. A bump faster than 3 units/s flashes the shield
-(`shieldHit` with source `solid`, at most every 0.5 s): no charge, no plate, no
-grace, no HUD note. The Jump Gate, the berths and the seam and hole sites are
-flown through. Lane Control's recovery and the jump have the helm, so they skip it.
-The cores are the bodies, not the rings that show where a thing works, so docking,
-hailing and mending still work from the ring.
+Every built thing is solid to the player (`sim/solids.ts`, `World.stepSolids`), and
+every ring stays open: what stands is what you would hit, never the place you go.
+
+- **Depot:** the hub and the holder's parts (tanks, Kellern's office and arch legs,
+  the Gutter's freighter, a Holdfast's rocks, the Traders' tents and skiffs). The
+  arms and the berth between them are open.
+- **Audit dock:** the arch's legs, the office block, the mast, two tanks. You fly
+  under the arch. It faces the course's start (`Waypoint.face`), so the sim and
+  the model agree.
+- **Repair gantry:** its two pylons only. You stop on the pad between them.
+- **Dust Market:** the stall ring round the mast (7). The deck outside it, inside
+  the 16-unit trading ring, is open.
+- Ned's yard (its rock, never the pad), the relay post and mast, neutral traffic,
+  the barge (9), the den (12), the seed, and a situation's site (settlement 12,
+  wreck 8, and so on).
+
+The ship is pushed back out and its inward way is lost. A bump faster than 3
+units/s flashes the shield (`shieldHit` with source `solid`, at most every 0.5 s):
+no charge, no plate, no grace, no HUD note. The Jump Gate and the seam and hole
+sites are flown through. Lane Control's recovery and the jump have the helm, so
+they skip it.
+
+## Names on the spot
+
+Within 240 units every built place names itself beside its model
+(`sim/sitetags.ts`, drawn by `ui/targeting.ts`): what it is, and one line on what
+it does for you now, amber when it will not ("Repair gantry · Stop on the pad ·
+mends a plate (3 left)", "Dust Market · Stalls shut · fight near", "Raider den ·
+Launching raiders · shoot the dock"). A depot's line says who runs it. Near, the
+depot's tag replaces the berth's far label.
 
 ## Not measured
 
@@ -197,3 +226,6 @@ phone has run them. The den and seed were flown only by a plain script (no
 dodging, no rock cover), never by a person; the render of both is judged from
 the bench (`tools/sites.html?prop=den|seed`) only. A new look is built the first time it is needed (about
 250 ms for the depot on the cloud machine, a phone will take longer).
+The five depots (2026-11-07) were judged from the bench
+(`tools/sites.html?prop=port&style=kellern&name=…`) and software-GL shots only;
+their cost on a phone GPU (light pools are additive) is not measured.
