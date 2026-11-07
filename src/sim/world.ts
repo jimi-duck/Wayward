@@ -1861,9 +1861,9 @@ export class World implements EncounterHost {
   /** A hub beat of the stop's script is still due: a job's call waits for it. */
   scriptHoldsJob(): boolean { return !!this.script?.holdsJob(this.flags, this.tankCap ? this.fuel / this.tankCap : 0); }
 
-  /** A free moment for the story: nothing hostile near or firing, no card or call open, no job fight, not in a ring or a jump (a road gate's ring is fine). */
+  /** A free moment for the story: nothing hostile near or firing, no card or call open or a job's call waiting to ring (it goes first), no job fight, not in a ring or a jump (a road gate's ring is fine). */
   private scriptFree(busy: Busy, t: number): boolean {
-    return busy === 'free' && !this.call && !this.comms && !this.floor.busy(t) && (!this.safe || this.bk?.def.script === 'narrows' || !!this.bk?.def.relay || this.holdAt < Infinity) && !this.stage?.taken && t - this.desk.lastThreat >= DESK.settle.major && t - this.desk.lastMine >= DESK.mineSettle;
+    return busy === 'free' && !this.call && !this.comms && !this.desk.eagerWaiting() && !this.floor.busy(t) && (!this.safe || this.bk?.def.script === 'narrows' || !!this.bk?.def.relay || this.holdAt < Infinity) && !this.stage?.taken && t - this.desk.lastThreat >= DESK.settle.major && t - this.desk.lastMine >= DESK.mineSettle;
   }
 
   /** Days until Custody's pursuit is here, in half days (Infinity off the road, in the first system past Cerro, at a breather, or with no pursuit): the HUD's readout. */
