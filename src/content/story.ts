@@ -343,7 +343,7 @@ export const STORY_CARDS: CardDef[] = [
     herald: { headline: 'Hidden archive unlocked', reason: 'Found in the ship database' },
     from: 'Ship database · stored message', title: 'For whoever flies her next',
     letter: { head: [['To', 'Whoever flies her next'], ['From', 'No name given'], ['Kept in', 'Crew notes, hidden']], sign: '— No name. In case they read this before you do.' },
-    text: 'If you’re reading this, the owner lock is off and she answers to you now. I hid this where the company’s audits never look.\nSeventy years ago the gates to the outer worlds went dark. We were told the Krail was running out, and the worlds left outside became the Scatter.\nI pulled the reserve log for that day. Krail reserves: 94%. Logged the same day someone signed the order to close the gates.\nI don’t know what that number leaves out. I only know it doesn’t fit what we were told.\nStart at Halden’s Reach and follow the record. The relays there still answer to the right key.',
+    text: 'If you’re reading this, the lock’s off and she’s yours now. I hid this where the company’s auditors never bother looking.\nSeventy years ago the gates to the outer worlds went dark. They said the Krail had run out, and everyone left outside became the Scatter.\nBut the reserve log for that day says Krail reserves: 94%. The same day someone signed the order to shut the gates.\nI don’t know the whole story. I know it’s not the one they told us.\nStart at Halden’s Reach. The relays there still answer to the right key.',
     cargo: 'The Wayward · a stored message in the hull’s archive',
     choices: [
       { id: 'lead', label: 'Set course: Halden’s Reach', tone: 'help', hint: '',
@@ -448,7 +448,7 @@ export const STORY_CARDS: CardDef[] = [
     id: 'warden_note_1', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
     from: 'Ship database · Warden’s note 1 of 8', title: 'Warden’s note 1 of 8',
     letter: { head: [['To', 'Whoever the relays let through'], ['From', 'A. Aster, Narrows watch'], ['Kept in', 'Narrows relay, Warden channel']], sign: '— A.' },
-    text: 'The Narrows was mine the night they closed it. I was told to switch it off and forget the key. I switched it off. I did not forget.\nEight relays on this road still know my key, and the Net stopped listening to them years ago. Each keeps a piece of what I saw.\nEach will say my name out loud when you pass, and they will hear it. I’m sorry for that part. Keep moving.\nFind the Drift. They never stopped moving.',
+    text: 'The Narrows was mine the night they closed it. They told me to switch it off and forget the key. I switched it off. I never forgot.\nEight relays on this road still know my key. Each one keeps a piece of what I saw.\nEach will say my name out loud when you pass, and they’ll hear it. Sorry about that part. Keep moving.\nFind the Drift. They never stopped moving.',
     cargo: 'The Wayward · a note kept in the relay',
     choices: [
       { id: 'close', label: 'Close the note', tone: 'help', hint: '', win: { text: 'Warden’s note 1 of 8 · on the Wall', flag: 'warden_note_1' } },
