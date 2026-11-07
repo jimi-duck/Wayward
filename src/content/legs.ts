@@ -25,9 +25,9 @@ function note(n: number, w: { gist: string; from: string; title: string; kept: s
 
 export const NOTE_CARDS: CardDef[] = [
   note(2, { gist: 'Ada’s second note · the lost ships', from: 'Ship database · Warden’s note 2 of 8', title: 'Warden’s note 2 of 8', kept: 'The Rift relay, Warden channel', close: 'Warden’s note 2 of 8 · on the Wall' }, [
-    'Twenty-three ships were out past the Narrows that night. Control turned every one away from the core and gave no reason.',
-    'I logged them as they went: hull, master, souls aboard. I could have read the names on the open band. I read them to myself.',
-    'The Drift kept better books than I did, and they kept them out loud. Remember that I didn’t.',
+    'Twenty-three ships were out past the Narrows that night. Control turned every one of them away and never said why.',
+    'I logged them as they went. Hull, master, souls aboard. I never read the names out. I should have.',
+    'The Drift did. They kept better books than me, and they kept them out loud.',
     'Listen to the wrecks. One of them is mine.',
   ]),
   story({
@@ -45,29 +45,29 @@ export const NOTE_CARDS: CardDef[] = [
     choices: [{ id: 'close', label: 'Close the recording', tone: 'help', hint: '', win: { text: 'Warden’s note 3 of 8 · on the Wall', flag: 'warden_note_3' } }],
   }),
   note(4, { gist: 'Ada’s fourth note · the ring', from: 'Ship database · Warden’s note 4 of 8', title: 'Warden’s note 4 of 8', kept: 'The Slow Door relay, Warden channel', close: 'Warden’s note 4 of 8 · on the Wall' }, [
-    'Draw every closed relay on one chart and they make a circle. I did it on the back of a ration card, in a Drift galley, with a stranger’s pencil.',
-    'The ring isn’t a border. It’s a fence, and we are on the wrong side of it, with whatever it was built to fence.',
-    'They were never keeping us in. They were keeping something out, and we were the cheapest wall they had.',
+    'Put every closed relay on one chart and you get a circle. I drew it on the back of a ration card, in a Drift galley.',
+    'It isn’t a border. It’s a fence, and we’re on the wrong side of it.',
+    'They were never keeping us in. They were keeping something out, and we were the cheapest wall going.',
     'Find who built the fence. The yards remember.',
   ]),
   note(5, { gist: 'Ada’s fifth note · the list, and a confession', from: 'Ship database · Warden’s note 5 of 8', title: 'Warden’s note 5 of 8', kept: 'The Breaker relay, Warden channel', close: 'Warden’s note 5 of 8 · on the Wall' }, [
     'Thirty-one breakers, built at Yard Nine. Signed for by Kellern, the Guild and the Offices of Peace.',
-    'The Survey Office supplied the engineer, and it was not a person. You will meet it.',
-    'Now the part I have been putting off for four relays. The readings that made the case, the lanes failing, the pressure moving toward the core, were mine.',
-    'I carried them into the room myself.',
+    'The Survey Office sent the engineer, and it wasn’t a person. You’ll meet it.',
+    'Now the part I’ve been putting off. The readings that made the case for closing the lanes were mine.',
+    'I carried them into that room myself.',
     'Find the room. The free ports kept the names.',
   ]),
   note(6, { gist: 'Ada’s sixth note · the room', from: 'Ship database · Warden’s note 6 of 8', title: 'Warden’s note 6 of 8', kept: 'The Tollgate relay, Warden channel', close: 'Warden’s note 6 of 8 · on the Wall' }, [
-    'Forty in the room. Two Wardens, Halvard Brook and me. I gave the readings.',
-    'Lucan Calloway asked for ten years and a public warning. The board said a warning would crash Krail by morning.',
+    'Forty people in the room. Two Wardens, Halvard Brook and me. I gave the readings.',
+    'Lucan Calloway asked for ten years and a public warning. The board said a warning would crash Krail overnight.',
     'He said, “Then I’ll sign it, and you’ll fund the ships.” They never funded the ships.',
-    'I watched him sign. I said nothing at all. I have been saying it ever since, to relays.',
-    'Go where the lanes began. Ask what is waiting there.',
+    'I watched him sign and said nothing. I’ve been saying it to relays ever since.',
+    'Go where the lanes began. Ask what’s waiting there.',
   ]),
   note(7, { gist: 'Ada’s seventh note · what the lanes are', from: 'Ship database · Warden’s note 7 of 8', title: 'Warden’s note 7 of 8', kept: 'The Seam relay, Warden channel', close: 'Warden’s note 7 of 8 · on the Wall' }, [
-    'The lanes are not ours. We found them and hung lamps on them. Cyrite is what the Thren leave behind, the way a reef leaves coral.',
-    'We burn it to cross their home, and they come for it, the way you would come for your own bones.',
-    'The Voice was built to talk to them. My key is one of three that tells it what to say. I never used it. I was afraid of the answer.',
+    'The lanes aren’t ours. We found them and hung lamps on them. Cyrite is what the Thren leave behind, like coral on a reef.',
+    'We burn it to cross their home, and they come for it, the way you’d come for your own bones.',
+    'The Voice was built to talk to them. My key is one of three that tell it what to say. I never used it. I was scared of the answer.',
     'The Threshold. The last relay.',
   ]),
 
@@ -135,17 +135,17 @@ export const NOTE_8 = {
   kept: {
     sign: '— Gran',
     lines: [
-      'Juno. The routine knows your name now, so I can use it. I moved this hull to the top of your list. I’m sorry.',
-      'I couldn’t think of anyone I’d trust with it, and I had never met you. You were two in the last picture I saw.',
-      'Whatever you do at that gate, do it because you chose it. I have had enough of people signing things for other people.',
+      'Juno. The routine knows your name now, so I can finally use it. I put this hull at the top of your list. I’m sorry.',
+      'There was nobody else I’d trust with it, and I’d never even met you. You were two in the last picture I saw.',
+      'Whatever you do at that gate, do it because you chose to. I’ve had enough of people signing things for other people.',
       'Keep moving if you want. Stop if you want.',
     ],
   },
   burned: {
     sign: '— A.',
     lines: [
-      'To whoever flies her. I hoped the routine would learn your name by now. It didn’t, so you must have stopped it, and that is your right.',
-      'Whatever you do at that gate, do it because you chose it. I have had enough of people signing things for other people.',
+      'To whoever flies her. I hoped the routine would have learned your name by now. It hasn’t, so you must have stopped it. That’s your right.',
+      'Whatever you do at that gate, do it because you chose to. I’ve had enough of people signing things for other people.',
     ],
   },
 } as const;

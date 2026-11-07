@@ -75,7 +75,7 @@ export const ARRIVAL_ROWS: Row[] = [
   radio('tg_cal', 'tollgate', flag('warden_note_6'), 'Governor Idris Calloway', 'calloway', '“Ten years. Nobody ever told me he asked.”', { if: { has: ['field_talked'] } }),
   radio('tg_brook', 'tollgate', after('tg_cal', 3), 'Adam Brook', 'kellern', '“Halvard Brook was my grandfather. For my father, I said. It was for him too.”', { if: { has: ['brook_free'] } }),
   radio('tg_brook_b', 'tollgate', flag('warden_note_6'), 'Adam Brook', 'kellern', '“Halvard Brook was my grandfather. For my father, I said. It was for him too.”', { if: { has: ['brook_free'], not: ['field_talked'] } }),
-  objective('tg_gate', 'tollgate', flag('warden_note_6'), 'Jump to Ashdeep', 'Go where the lanes began. Ask what is waiting there.'),
+  objective('tg_gate', 'tollgate', flag('warden_note_6'), 'Jump to Ashdeep', 'Go where the lanes began. Ask what’s waiting there.'),
 
   // ── Arrival 7 · the Seam: the Voice is the relay. It asks for the key; then the implant ──
   objective('se_obj', 'seam', arrive(), 'Open the Seam', 'The relay is awake'),
