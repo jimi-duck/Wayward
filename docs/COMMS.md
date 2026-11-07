@@ -54,7 +54,7 @@ Every card is offered to the desk; nothing opens itself.
    next card 20 s after the last unless it answers it. A card waits while a story
    line is still queued or on screen, so the story keeps its order. Chatter that
    waits over 25 s is dropped; a story line never is.
-   A job's call waits 30 s after a card. Custody's pursuit in days is a readout
+   A job's call follows a card by 8 s (`DESK.eager`, for the desk and the floor alike). Custody's pursuit in days is a readout
    under the objective, not a notice.
 
 ## What each piece of the panel earns

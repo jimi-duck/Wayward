@@ -1974,9 +1974,9 @@ export class World implements EncounterHost {
     }
 
     // deliver the one that is next, if the moment is right: a story line still waiting goes first, and a card is FLOOR.moments after the last
-    // ...but the archive's message follows the paint card closely, once the herald has said it was found
+    // ...but the archive's message follows the paint card closely, once the herald has said it was found, and a job follows the story card by DESK.eager
     const chained = this.wakeHerald && this.cardsSeen.has(YARD_DONE) && !this.cardsSeen.has(WAKE_BEAT);
-    if (!this.call && !this.floor.busy(t) && this.floor.mayMoment(t, chained ? 4 : undefined)) {
+    if (!this.call && !this.floor.busy(t) && this.floor.mayMoment(t, chained ? 4 : d.eagerWaiting() ? DESK.eager : undefined)) {
       const a = d.next(busy, t);
       if (a) {
         const pre = a.def.trigger === 'chance' || a.def.trigger === 'follow' || a.def.trigger === 'port' || a.def.trigger === undefined;

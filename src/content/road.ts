@@ -35,8 +35,8 @@ export interface RoadStop {
 
 export const ROAD: RoadStop[] = [
   { kind: 'port', holder: 'kellern', role: 'start', script: 'audit' },
-  { name: 'Northfold', purpose: 'quiet landfall', kind: 'transit', holder: 'none', port: null, role: 'landfall', script: 'northfold' },
-  { name: 'Halden’s Reach', purpose: 'find the Warden’s record', kind: 'port', holder: 'kellern', port: 'Kellern Fuel Dock', role: 'hub', job: 'nothing_to_declare', script: 'halden' },
+  { name: 'Northfold', purpose: 'quiet landfall', kind: 'transit', holder: 'none', port: null, role: 'landfall', job: 'nothing_to_declare', script: 'northfold' },
+  { name: 'Halden’s Reach', purpose: 'find the Warden’s record', kind: 'port', holder: 'kellern', port: 'Kellern Fuel Dock', role: 'hub', script: 'halden' },
   { name: 'Hollis', purpose: 'mine, and fill the tank', kind: 'mining', holder: 'none', port: null, role: 'work', job: 'follow_cyrite', script: 'hollis' },
   { name: 'Marlow', purpose: 'someone here keeps the real books', kind: 'port', holder: 'kellern', port: 'Kellern Claim Office', role: 'turn', script: 'marlow' },
   { name: 'Vesta', purpose: 'rest here, or keep moving', kind: 'transit', holder: 'none', port: null, quiet: true, role: 'breather', script: 'vesta' },
@@ -74,7 +74,7 @@ const BELT: RoadStop[] = [
   stop('landfall', 'Breakwater', 'transit', 'none', 'b_breakwater', { purpose: 'listen to the wrecks', job: 'one_filter' }),
   stop('hub', 'Scrap Exchange', 'port', 'guild', 'b_exchange', { port: 'Dust Traders Exchange', purpose: 'everyone knows what you carry', job: 'ransom_crew' }),
   stop('work', 'The Graveyard', 'mining', 'guild', 'b_graveyard', { purpose: 'a wreck that remembers', job: 'wreck_remembered' }),
-  stop('turn', 'Kessler’s Wreck', 'contested', 'guild', 'b_kessler', { purpose: 'a recorder that still runs', job: 'dead_drop' }),
+  stop('turn', 'Kessler’s Wreck', 'contested', 'guild', 'b_kessler', { purpose: 'a recorder that still runs' }),
   stop('breather', 'Saltmarsh', 'transit', 'none', 'b_saltmarsh', { purpose: 'something crosses the lane', scene: 'thren_swarm' }),
   stop('pressure', 'Kiln', 'contested', 'gutter', 'b_kiln', { purpose: 'someone is selling routes', job: 'the_witness' }),
   stop('reckoning', 'Tarik’s Lamps', 'transit', 'guild', 'b_tarik', { port: 'Salvage Barge', purpose: 'the charts they burned', job: 'long_walk' }),
@@ -106,7 +106,7 @@ const YARDS: RoadStop[] = [
 const PORTS: RoadStop[] = [
   stop('landfall', 'Saltquay', 'transit', 'none', 'f_saltquay', { purpose: 'the free ports kept the names', scene: 'voice_guide' }),
   stop('hub', 'Duarte Harbour', 'port', 'guild', 'f_duarte', { port: 'Dust Traders Exchange', purpose: 'a berth, no questions' }),
-  stop('work', 'Penny Cross', 'mining', 'gutter', 'f_penny', { purpose: 'something answers a full tank' }),
+  stop('work', 'Penny Cross', 'mining', 'gutter', 'f_penny', { purpose: 'something answers a full tank', job: 'dead_drop' }),
   stop('turn', 'Mirren’s Pier', 'transit', 'none', 'f_mirren', { purpose: 'forty names in a box', job: 'be_bait' }),
   stop('breather', 'Lucky Haven', 'transit', 'none', 'f_haven', { purpose: 'people who live with them' }),
   stop('pressure', 'Gilt Market', 'contested', 'gutter', 'f_gilt', { purpose: 'everyone wants a copy', job: 'lose_prefect' }),

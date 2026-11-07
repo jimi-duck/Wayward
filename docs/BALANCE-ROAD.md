@@ -9,14 +9,14 @@ pilot who keeps moving; it does not read, and it does not linger. These are pilo
 
 | Strategy | Policy | At the Narrows | Stuck | Time on the road | Wrecks |
 |---|---|---|---|---|---|
-| random | run | 3/3 | 0 | 28:25 | 0.0 |
-| random | bluff | 3/3 | 0 | 24:40 | 0.0 |
-| random | fight | 3/3 | 0 | 27:28 | 0.0 |
-| torpedo+defence | run | 3/3 | 0 | 27:16 | 0.0 |
-| torpedo+defence | bluff | 3/3 | 0 | 23:55 | 0.0 |
-| torpedo+defence | fight | 3/3 | 0 | 26:51 | 0.0 |
+| random | run | 3/3 | 0 | 27:41 | 0.0 |
+| random | bluff | 3/3 | 0 | 22:11 | 0.3 |
+| random | fight | 3/3 | 0 | 28:17 | 0.0 |
+| torpedo+defence | run | 3/3 | 0 | 27:27 | 0.0 |
+| torpedo+defence | bluff | 3/3 | 0 | 24:26 | 0.0 |
+| torpedo+defence | fight | 3/3 | 0 | 26:32 | 0.0 |
 
-Whole leg, those that arrived (18): 26:26 on average, against a target of about 40 minutes.
+Whole leg, those that arrived (18): 26:05 on average, against a target of about 40 minutes.
 
 ## Stop by stop
 
@@ -27,13 +27,13 @@ Whole leg, those that arrived (18): 26:26 on average, against a target of about 
 |---|---|---|---|---|---|---|---|---|
 | Cerro | 18 | 4:39 | 0.0 → 49.4 | 6.0 → 0.0 | 0.0 → — | 0.0 | 0.0 | 0% |
 | Marwick | 6 | 1:51 | 74.0 → 12.5 | 0.0 → 0.0 | 1.5 → 1.0 | 0.0 | 0.0 | 0% |
-| Northfold | 18 | 1:07 | 15.4 → 33.3 | 0.0 → 0.0 | 1.0 → 1.0 | 5.0 | 0.0 | 0% |
-| Halden’s Reach | 18 | 1:01 | 33.3 → 11.7 | 0.0 → 0.0 | 1.0 → 1.0 | 6.2 | 0.8 | 0% |
-| Hollis | 18 | 1:08 | 11.7 → 37.5 | 0.0 → 0.0 | 0.7 → 0.5 | 8.0 | 0.0 | 0% |
-| Marlow | 18 | 2:16 | 37.5 → 24.1 | 0.0 → 0.0 | 0.8 → 0.0 | 8.0 | 0.0 | 0% |
-| Vesta | 18 | 1:53 | 24.1 → 53.6 | 0.0 → 0.0 | 1.0 → — | 6.2 | 0.3 | 0% |
-| Branford | 18 | 2:41 | 53.6 → 101.1 | 4.7 → 0.0 | 0.8 → 0.3 | 5.9 | 0.0 | 0% |
-| Copperline | 18 | 2:28 | 101.1 → 34.8 | 0.0 → 0.0 | 0.8 → 0.6 | 5.4 | 0.0 | 0% |
-| The Narrows | 18 | 7:25 | 34.8 → 73.1 | 0.0 → 0.0 | 0.7 → 0.0 | 11.7 | 1.6 | 0% |
+| Northfold | 18 | 1:03 | 15.4 → 44.1 | 0.0 → 0.0 | 1.0 → 1.0 | 5.7 | 0.0 | 0% |
+| Halden’s Reach | 18 | 1:13 | 44.1 → 17.9 | 0.0 → 0.0 | 1.0 → 1.0 | 6.9 | 0.1 | 0% |
+| Hollis | 18 | 1:08 | 17.9 → 50.5 | 0.0 → 0.0 | 1.0 → 1.0 | 7.5 | 0.0 | 0% |
+| Marlow | 18 | 2:20 | 50.5 → 35.3 | 0.0 → 0.0 | 1.1 → 0.5 | 8.0 | 0.0 | 0% |
+| Vesta | 18 | 1:53 | 35.3 → 65.8 | 0.0 → 0.0 | 1.5 → — | 5.6 | 0.2 | 0% |
+| Branford | 18 | 2:38 | 65.8 → 107.9 | 4.7 → 0.0 | 1.5 → 0.8 | 5.8 | 0.0 | 0% |
+| Copperline | 18 | 2:29 | 107.9 → 40.9 | 0.0 → 0.0 | 1.3 → 2.4 | 5.4 | 0.0 | 0% |
+| The Narrows | 18 | 6:56 | 40.9 → 73.2 | 0.0 → 0.4 | 1.2 → 0.7 | 10.2 | 1.9 | 6% |
 | Marrest | 6 | 1:54 | 56.3 → 11.7 | 0.0 → 0.0 | 1.5 → 1.0 | 0.0 | 0.0 | 0% |
 | Pellwick | 6 | 1:37 | 18.0 → 22.0 | 0.0 → 0.0 | 1.5 → 1.0 | 0.0 | 0.0 | 0% |

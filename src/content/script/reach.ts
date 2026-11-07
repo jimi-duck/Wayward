@@ -11,7 +11,7 @@ const sam = (id: string, stop: string, on: Row['on'], text: string, extra: Parti
 const notice = (id: string, stop: string, on: Row['on'], tone: 'teal' | 'amber' | 'red' | 'white', headline: string, reason?: string, extra: Partial<Row> = {}): Row => ({ id, stop, on, do: { notice: { tone, headline, reason } }, ...extra });
 const objective = (id: string, stop: string, on: Row['on'], main: string, quiet?: string): Row => ({ id, stop, on, do: { objective: { main, quiet } } });
 const voice = (from: string, caller: string) => (id: string, stop: string, flag: string, text: string, cond: Row['if'] = undefined): Row => ({ id, stop, on: { on: 'flag', flag }, do: { radio: { from, caller, text } }, ...(cond ? { if: cond } : {}) });
-const pike = (id: string, flag: string, text: string, cond?: Row['if']): Row => voice('Owen Pike', 'gutter')(id, 'halden', flag, text, cond);
+const pike = (id: string, flag: string, text: string, cond?: Row['if']): Row => voice('Owen Pike', 'gutter')(id, 'northfold', flag, text, cond);
 const hester = (id: string, flag: string, text: string): Row => voice('Hester', 'miners')(id, 'branford', flag, text);
 const card = (id: string, stop: string, on: Row['on'], def: string, extra: Partial<Row> = {}): Row => ({ id, stop, on, do: { card: def }, ...extra });
 
@@ -25,6 +25,10 @@ export const REACH: Row[] = [
   objective('nf_objective', 'northfold', { on: 'arrive' }, 'Next: Halden’s Reach · find the Warden’s record', 'The Narrows · 7 jumps'),
   sam('nf_sam_1', 'northfold', { on: 'free' }, '“Every lane out of here is watched but one. Whoever left you that message picked a quiet one.”'),
   sam('nf_sam_2', 'northfold', { on: 'after', row: 'nf_sam_1' }, '“My signal won’t reach past the Narrows. Make the most of me while you can.”'),
+  // the Quiet Line's first job, at the quiet landfall so Halden is the Warden's alone (owner, 6 November 2026) (content/missions.ts nothing_to_declare): Owen Pike answers by what the player did; flags from sim/stage.ts
+  pike('hr_pike_won', 'job_nothing_to_declare_won', '“Medicine through, and nobody saw you. Good. I’ll call again.”', { not: ['job_nothing_to_declare_sell'] }),
+  pike('hr_pike_sold', 'job_nothing_to_declare_sell', '“Custody paid you thirty-five. The hospice paid the rest.”'),
+  pike('hr_pike_no', 'job_nothing_to_declare_declined', '“No offence taken. The Line’s patient.”'),
   objective('nf_gate', 'northfold', { on: 'leave' }, 'Jump to Halden’s Reach'),
 
   // ── Stop 2 · Halden's Reach (hub) ──
@@ -36,10 +40,6 @@ export const REACH: Row[] = [
   card('hr_warden', 'halden', { on: 'after', row: 'hr_sam', delay: 4 }, 'story_order', { holdsJob: true, main: true }),
   card('hr_order', '*', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] }, holdsJob: true }),
   card('hr_hand', '*', { on: 'flag', flag: 'clue_order_sig' }, 'story_handwriting', { if: { not: ['ada_named'] }, holdsJob: true }),
-  // the Quiet Line's first job (content/missions.ts nothing_to_declare): Owen Pike answers by what the player did; flags from sim/stage.ts
-  pike('hr_pike_won', 'job_nothing_to_declare_won', '“Medicine through, and nobody saw you. Good. I’ll call again.”', { not: ['job_nothing_to_declare_sell'] }),
-  pike('hr_pike_sold', 'job_nothing_to_declare_sell', '“Custody paid you thirty-five. The hospice paid the rest.”'),
-  pike('hr_pike_no', 'job_nothing_to_declare_declined', '“No offence taken. The Line’s patient.”'),
   objective('hr_gate', 'halden', { on: 'leave' }, 'Jump to Hollis'),
 
   // ── Stop 3 · Hollis (work): the ghost and the job's thread lines follow ──

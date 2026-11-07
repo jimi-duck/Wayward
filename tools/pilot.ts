@@ -114,7 +114,7 @@ export interface PilotResult {
  * reads the intent estimate: the report shows what a player who always
  * answers the same way gets.
  */
-function pickAnswer(w: World, policy: Policy): string {
+export function pickAnswer(w: World, policy: Policy): string {
   const o = (w.comms ?? w.call)!;
   for (const tone of PREFER[policy]) {
     const c = o.choices.find((ch) => ch.ok && ch.tone === tone && (tone !== 'bluff' || ch.odds === null || ch.odds >= 0.4));

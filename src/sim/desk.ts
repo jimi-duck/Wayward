@@ -42,8 +42,8 @@ export const DESK = {
   mineSettle: 3,
   /** Seconds since the last card closed before this weight may open. */
   gap: { major: 180, important: 150, routine: 220, ambient: 0 } as Record<Weight, number>,
-  /** What an eager (scene) call waits instead: seconds since the last card closed, and seconds of clear sky after the last hostile. A job rings after the arrival has settled (the floor, sim/floor.ts, keeps it off the story). */
-  eager: 20,
+  /** What an eager (scene) call waits instead: seconds since the last card closed, and seconds of clear sky after the last hostile. A job follows the stop's story card by this much, and the floor (sim/floor.ts) uses the same gap for it (owner, 6 November 2026: jobs sooner, and with the story). */
+  eager: 8,
   /** A card that follows another closely (the archive's message after the paint card): seconds since the last card closed. */
   chain: 4,
   eagerSettle: 3,
@@ -109,6 +109,9 @@ export class Desk {
     if (this.queue.some((a) => a.def.id === def.id)) return;
     this.queue.push({ def, tier, at: now, port, eager });
   }
+
+  /** Whether a scene's call (a job) is waiting: the floor lets it follow a card sooner. */
+  eagerWaiting(): boolean { return this.queue.some((a) => a.eager); }
 
   /** Whether a card is waiting its turn. */
   waiting(id: string): boolean { return this.queue.some((a) => a.def.id === id); }

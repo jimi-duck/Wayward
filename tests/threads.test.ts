@@ -32,7 +32,7 @@ describe('the threads', () => {
 });
 
 /** A road journey at stop `i`, flown for `secs` with the job kept; `answer` is what each job call is answered with. */
-// four minutes: a job call waits 20 s after a card, and every line takes its turn (sim/floor.ts)
+// four minutes: a job call waits 8 s after a card, and every line takes its turn (sim/floor.ts)
 function fly(i: number, card: string, answer: string, secs = 240): { pings: string[]; flags: Set<string> } {
   const j = newJourney(5, false, 'road');
   const line = j.chart.systems.filter((s) => s.col >= 1 && s.col <= i + 1).sort((a, b) => a.col - b.col);
@@ -57,9 +57,9 @@ function fly(i: number, card: string, answer: string, secs = 240): { pings: stri
 
 describe('the replies', () => {
   it('Pike answers a refusal and a sale', () => {
-    const no = fly(2, 'sc_declare', 'no');
+    const no = fly(1, 'sc_declare', 'no');
     expect(no.pings).toContain('“No offence taken. The Line’s patient.”');
-    const sold = fly(2, 'sc_declare', 'sell');
+    const sold = fly(1, 'sc_declare', 'sell');
     expect(sold.pings).toContain('“Custody paid you thirty-five. The hospice paid the rest.”');
     expect(sold.pings).not.toContain('“Medicine through, and nobody saw you. Good. I’ll call again.”');
   });
