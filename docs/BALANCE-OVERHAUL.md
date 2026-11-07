@@ -13,9 +13,9 @@ as it can, and does not read. Pilot numbers, not playtests.
 |---|---|---|---|---|---|---|---|
 | torpedo+defence | run | yes | 175 | 0 | unite, vanish | none | none |
 | torpedo+defence | run | yes | 167 | 0 | unite, vanish | none | none |
-| torpedo+defence | bluff | yes | 164 | 0 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | bluff | yes | 157 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 170 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 175 | 0 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 161 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 168 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
 | torpedo+defence | fight | yes | 175 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
 
 ## Leg by leg
@@ -24,11 +24,11 @@ as it can, and does not read. Pilot numbers, not playtests.
 |---|---|---|
 | The Reach | 26 | 0.0 |
 | The Marches | 18 | 0.0 |
-| The Salvage Belt | 20 | 0.0 |
-| The Drift Deep | 20 | 0.0 |
+| The Salvage Belt | 21 | 0.0 |
+| The Drift Deep | 21 | 0.0 |
 | The Breaker Yards | 22 | 0.0 |
 | The Free Ports | 20 | 0.0 |
-| The Hollows | 24 | 0.0 |
+| The Hollows | 25 | 0.0 |
 | The Last Lanes | 18 | 0.0 |
 
 ## Jobs on the road
