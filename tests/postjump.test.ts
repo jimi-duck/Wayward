@@ -315,9 +315,12 @@ describe('the paint bay (owner 2026-11-05)', () => {
     w.step(STEP, input());
     expect(w.yardPhase).toBe(1);
     // she is flown to the pad and held, and the glitch climbs while the zaps run
-    let glitch = 0;
-    for (let i = 0; i < Math.round(20 / STEP) && w.yardPhase < 4; i++) { w.step(STEP, { ...input(), thrust: 1, turn: 1 }); w.events.length = 0; glitch = Math.max(glitch, w.yardGlitch); if (w.yardPhase < 4) expect(w.flags.has('hull_repainted')).toBe(false); }
+    let glitch = 0, loader = -1;
+    for (let i = 0; i < Math.round(20 / STEP) && w.yardPhase < 4; i++) { w.step(STEP, { ...input(), thrust: 1, turn: 1 }); w.events.length = 0; glitch = Math.max(glitch, w.yardGlitch); loader = Math.max(loader, w.yardReboot); if (w.yardPhase < 4) expect(w.flags.has('hull_repainted')).toBe(false); }
     expect(glitch).toBeGreaterThan(0.5);
+    // the ship shut down first: the rebooting loader ran to the end before the work showed
+    expect(loader).toBeGreaterThan(0.9);
+    expect(w.yardReboot).toBe(-1);
     expect(w.yardPhase).toBe(4);
     expect(Math.hypot(w.ship.x - p.x, w.ship.z - p.z)).toBeLessThan(8);
     // the reboot: the flags, a dark HUD, then it flickers back
