@@ -525,7 +525,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_missing', kind: 'distress', caller: 'miners', tier: 'important',
     thread: { chip: 'Hester’s crews', line: '“Nine people, gone quiet at Gannet. Bring them home.”' },
     from: 'Union clerk', title: 'The Missing Shift',
-    text: '“Nine miners have been silent since yesterday. Their last beacon came from the wreck field. Bring one supply in case they survived.”',
+    text: '“Nine miners have gone quiet since yesterday. Their last beacon came from the wreck field. Bring a supply, in case they made it.”',
     cargo: 'A wreck · one faint beacon',
     choices: [
       { id: 'search', label: 'Search the wreck field', tone: 'help', hint: 'Bring 1 supply, fly to their last beacon and hold close. Short? Half pay.', win: { text: 'Heading to the wreck' } },
@@ -581,7 +581,7 @@ export const MISSION_CARDS: CardDef[] = [
   mission({
     id: 'sc_dead_drop', kind: 'job', caller: 'gutter', tier: 'important',
     from: 'A broker · no name', title: 'The Dead Drop',
-    text: '“A package is waiting at the beacon. Collect it and bring it back. Someone may have been tipped off, so watch for an ambush on the way out.”',
+    text: '“There’s a package waiting at the beacon. Grab it and bring it back. Someone might’ve been tipped off, so watch for an ambush on the way out.”',
     cargo: 'A beacon · one small package',
     choices: [
       { id: 'fetch', label: 'Collect the package', tone: 'trade', hint: 'Hold position at the beacon; hostile ships may be waiting for you to leave.', win: { text: 'Heading to the beacon' } },
@@ -592,7 +592,7 @@ export const MISSION_CARDS: CardDef[] = [
   mission({
     id: 'sc_long_walk', kind: 'plea', caller: 'miners', tier: 'important',
     from: 'Hauler Dunne', title: 'Escort the Hauler',
-    text: '“I have one working drive and half my speed. Escort me to the lane and my crew will pay what they can. Raiders will come.”',
+    text: '“I’ve got one working drive and half my speed. Get me to the lane and my crew will pay what they can. Raiders will come, though.”',
     cargo: 'A hauler · one drive, slow, heavy',
     choices: [
       { id: 'escort', label: 'Escort the hauler', tone: 'help', hint: 'Stay beside the hauler and match its slower pace. Raiders arrive in about 30 seconds.', win: { text: 'She limps ahead, and you fall in beside her' } },
@@ -733,7 +733,7 @@ export const MISSION_CARDS: CardDef[] = [
   mission({
     id: 'sc_cradle', kind: 'distress', caller: 'miners', tier: 'important',
     from: 'Joss Peller · inside the cradle', title: 'The Cradle Crew',
-    text: '“Forty of us are inside. Custody locks us in until the yard finishes. Cut the frame open before it closes. We have a hundred seconds.”',
+    text: '“There’s forty of us inside. Custody’s locking us in until the yard’s done. Cut the frame open before it closes. We’ve got a hundred seconds.”',
     cargo: 'A Custody cradle · workers sealed in its frame, lights still on',
     choices: [
       { id: 'cut', label: 'Cut the workers free', tone: 'help', hint: 'Hold at the frame until it opens. Custody cutters will come.', win: { text: 'You turn for the frame' } },
