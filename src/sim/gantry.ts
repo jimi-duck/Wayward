@@ -51,7 +51,7 @@ export class Gantry {
   private tell(w: World): void {
     if (w.runTime - this.toldAt < 20) return;
     this.toldAt = w.runTime;
-    const text = this.state === 'shut' ? t('“Gantry locked. Fight in range.”') : this.state === 'refuses' ? t('“Hull flagged. Gantry will not service you.”') : t('“Plating is full. Nothing to mend.”');
+    const text = this.state === 'shut' ? t('“Gantry locked. Fight in range.”') : this.state === 'refuses' ? t('“Hull flagged. Gantry won’t service you.”') : t('“Plating is full. Nothing to mend.”');
     w.events.push({ type: 'ping', id: `gantry_${this.state}`, from: t('Repair gantry'), caller: 'unknown', text, moment: 'calm', system: w.sortie.name });
   }
 }

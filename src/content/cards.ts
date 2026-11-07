@@ -83,10 +83,10 @@ export const CARDS: CardDef[] = [
   {
     id: 'port_check', kind: 'checkpoint', caller: 'frontier', trigger: 'port', when: { kind: 'home' },
     from: 'Frontier Supply · dock control', title: 'Scan required before docking',
-    text: '“New order from the moon, hauler. Every ship must be scanned before we open the docking clamps.” The dockmaster clearly dislikes the rule.',
+    text: '“New order from the moon, hauler. Everyone gets scanned before we open the clamps. Sorry.” The dockmaster clearly dislikes the rule.',
     lines: [
       { if: { heatMin: 0.5 }, text: 'A Custody notice on the dock board shows your ship.' },
-      { if: { standing: ['frontier', 1] }, text: '“You helped us before. Perhaps the scanner has a fault today.”' },
+      { if: { standing: ['frontier', 1] }, text: '“You helped us before. Maybe the scanner’s playing up today.”' },
     ],
     cargo: 'Fuel dock · two tugs · one scanner', fee: { base: 20, heat: 30 },
     truths: [
@@ -122,7 +122,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'krail_seller', kind: 'trade', caller: 'miners', when: { after: 60, short: true }, weight: 1.2, repeat: true,
     from: 'Independent prospector · Old Hesketh', title: 'A quick deal on Cyrite',
-    text: '“Eight Cyrite, fresh from the vein. Pay for four now and I will ask no questions.” Your tank is {short} short of the jump.',
+    text: '“Eight Cyrite, fresh from the vein. Pay for four now and I’ll ask no questions.” Your tank is {short} short of the jump.',
     ships: [], cargo: 'Prospector’s tug · a few crates',
     truths: [
       { id: 'pure', weight: 2, read: 'Spectral scan: pure violet Cyrite, full grade.' },
@@ -140,7 +140,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'ares_tender', kind: 'trade', caller: 'frontier', when: { after: 90, chits: 45 }, repeat: true,
     from: 'Ares Drive · service tender', title: 'Supplies or an instant repair',
-    text: '“Ares Drive, spares and service. Nine Cyrite buys six supplies, or eight Cyrite covers a hull plate right now.”',
+    text: '“Ares Drive, spares and service. Nine Cyrite gets you six supplies, or eight gets you a hull plate on the spot.”',
     lines: [{ if: { hurt: true }, text: 'Your hull has two breaches. The tender crew can see the damage.' }],
     ships: [{ variant: 'freighter', n: 1 }], cargo: 'Service tender · spares racks',
     choices: [
@@ -152,8 +152,8 @@ export const CARDS: CardDef[] = [
   {
     id: 'fuel_runner', kind: 'trade', caller: 'gutter', when: { after: 120, short: true, heatMin: 0.2 }, repeat: true,
     from: 'Fuel runner · call sign Tallow', title: 'Cyrite at a price',
-    text: '“Heard a hauler is running dry. I can get you six Cyrite: pay two supplies now, or owe me a favour. Your call, Wayward.”',
-    lines: [{ if: { flag: 'gutter_friend' }, text: '“A friend of a friend. I will give you a fair deal.”' }],
+    text: '“Heard a hauler’s running dry. I can get you six Cyrite. Two supplies now, or you owe me a favour. Your call, Wayward.”',
+    lines: [{ if: { flag: 'gutter_friend' }, text: '“A friend of a friend. I’ll give you a fair deal.”' }],
     cargo: 'Runner’s skiff · tanks sloshing',
     choices: [
       { id: 'pay', label: 'Pay 2 supplies', tone: 'pay', hint: 'Pay now and settle the deal here.', cost: { supplies: 2 }, win: { text: '6 Cyrite added to your hold', cyrite: 6 } },
@@ -167,7 +167,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'forger', kind: 'trade', caller: 'unknown', when: { flag: 'forger_known', noFlag: 'codes' }, weight: 3,
     from: 'A name at Frontier Supply', title: 'Forged codes for sale',
-    text: '“Registry codes from a hauler the company wrote off. They should pass a lane scan, but I would not bet my ship on them. Eight Cyrite.”',
+    text: '“Registry codes from a hauler the company wrote off. They should pass a lane scan, but I wouldn’t bet my ship on them. Eight Cyrite.”',
     cargo: 'A data spike, warm from somebody’s pocket',
     truths: [
       { id: 'real', weight: 3, read: 'The checksum matches an Obedience-class registry.' },
@@ -187,7 +187,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'stowaways', kind: 'plea', caller: 'miners', when: { kind: 'home', after: 30, heatMax: 0.6 }, weight: 1.2,
     from: 'Shift worker · Kellern habitat 4', title: 'A family needs a way out',
-    text: '“You are the one who took the hauler. Everyone knows. I have two children and a work quota I will never meet. Please get us out.”',
+    text: '“You’re the one who took the hauler, aren’t you? Everyone knows. I’ve got two kids and a quota I’ll never meet. Please, get us out.”',
     cargo: 'A tug with three people in it',
     choices: [
       {
@@ -200,7 +200,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'foreman', kind: 'plea', caller: 'kellern', when: { kind: 'home', after: 70 },
     from: 'Kellern Mining · Foreman Draper', title: 'Bring the Wayward back',
-    text: '“Bring the hauler back and I will say you were coerced. You will lose wages and get a warning. Keep running, and Custody takes over.”',
+    text: '“Bring the hauler back and I’ll say you were coerced. You’ll lose wages and get a warning. Keep running, and Custody takes over.”',
     lines: [{ if: { flag: 'passengers' }, text: '“Bring the Okafor family back too.”' }],
     cargo: 'Mining office channel',
     choices: [
@@ -212,7 +212,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'hungry_crew', kind: 'plea', caller: 'gutter', when: { after: 50, cyrite: 4 }, repeat: true,
     from: 'Gutter crew · the Leaky Tin', title: 'A crew running out of power',
-    text: '“Our reactor is dying, and so are we. Three Cyrite would get us to the belt. Help us and we will remember it.”',
+    text: '“Our reactor’s dying, and so are we. Three Cyrite would get us to the belt. Help us and we won’t forget it.”',
     ships: [{ variant: 'scout', n: 2 }], cargo: 'Two fighters running on fumes',
     truths: [
       { id: 'genuine', weight: 2, read: 'Their reactor is almost cold.' },
@@ -249,7 +249,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'haul_job', kind: 'job', caller: 'frontier', when: { kind: 'home', after: 35 }, weight: 1.2,
     from: 'Frontier Supply · stores', title: 'A crate to deliver',
-    text: '“Our ship is grounded, but this crate has to reach the next dock. Carry it and we will pay sixty, plus our goodwill.”',
+    text: '“Our ship is grounded, but this crate has to reach the next dock. Carry it and we’ll pay sixty, plus our goodwill.”',
     cargo: 'Fuel dock stores · running low',
     choices: [
       { id: 'take', label: 'Accept delivery job', tone: 'help', hint: 'Deliver the sealed crate to the next dock for 60 and improved standing.', win: { text: 'Job accepted · deliver the crate to the next dock', job: { id: 'haul', text: 'Deliver the sealed crate to the next dock', at: 'port', pay: { text: 'Crate delivered · payment received', chits: 60, standing: { frontier: 1 } } } } },
@@ -259,7 +259,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'salvage_job', kind: 'job', caller: 'frontier', when: { after: 80 }, repeat: true,
     from: 'Ares Drive · salvage desk', title: 'Deliver salvaged supplies',
-    text: '“Custody wrecks carry useful supplies. Bring six to our dock and we pay seventy. We do not ask where you got them.”',
+    text: '“Custody wrecks carry useful supplies. Bring six to our dock and we pay seventy. We don’t ask where you got them.”',
     cargo: 'Salvage desk',
     choices: [
       { id: 'take', label: 'Accept delivery job', tone: 'help', hint: 'Deliver 6 supplies to Ares Drive for 70. You will need 14 Cyrite to acquire them.', win: { text: 'Job accepted · deliver 6 supplies to Ares Drive', job: { id: 'salvage', text: 'Deliver 6 supplies to Ares Drive', at: 'port', give: { supplies: 6 }, pay: { text: 'Supplies delivered · payment received', chits: 70, standing: { frontier: 1 } } } } },
@@ -269,7 +269,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'courier', kind: 'job', caller: 'guild', when: { after: 55 }, repeat: true,
     from: 'Dust Traders Guild · courier', title: 'Deliver a sealed case',
-    text: '“Take this case to the far side of the lane. Do not open it. Eight Cyrite now, the rest when you arrive.”',
+    text: '“Take this case to the far side of the lane. Don’t open it. Eight Cyrite now, the rest when you arrive.”',
     cargo: 'A case, sealed, heavier than it looks',
     truths: [
       { id: 'clean', weight: 3, read: 'The case gives off no signal on any band.' },
@@ -287,7 +287,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'decoy', kind: 'job', caller: 'gutter', when: { kind: 'home', after: 140, heatMax: 0.75 },
     from: 'Gutter fixer · Mags', title: 'Draw the patrol away',
-    text: '“We need to slip past the moon. Turn your transponder on and draw the patrols away. We will pay ten Cyrite.”',
+    text: '“We need to slip past the moon. Turn your transponder on and draw the patrols away. We’ll pay ten Cyrite.”',
     lines: [{ if: { flag: 'gutter_friend' }, text: '“The Leaky Tin says you can be trusted.”' }],
     cargo: 'Fixer’s channel',
     choices: [
@@ -300,7 +300,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'sweep_warning', kind: 'warning', caller: 'miners', when: { kind: 'home', after: 45, heatMin: 0.15 },
     from: 'An old shift partner', title: 'A patrol sweep is coming',
-    text: '“Juno, it is Sol. A Custody sweep is coming from the moon. I can send you their patrol pattern for a little something.”',
+    text: '“Juno, it’s Sol. There’s a Custody sweep coming off the moon. I can send you their patrol pattern, for a little something.”',
     cargo: 'A private channel',
     truths: [
       { id: 'true', weight: 3, read: 'Sol’s channel is secure.' },
@@ -323,7 +323,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'office_watch', kind: 'warning', caller: 'unknown', when: { after: 110, noFlag: 'freqs' },
     from: 'A scrambled voice', title: 'The Offices are listening',
-    text: '“The Offices monitor every channel near the Jump Gate. I can sell you the frequencies they use. Four Cyrite.”',
+    text: '“The Offices listen to every channel near the Jump Gate. I can sell you the frequencies they use. Four Cyrite.”',
     cargo: 'A scrambled channel',
     truths: [
       { id: 'real', weight: 3, read: 'The signal comes from the port’s own antenna.' },
@@ -341,10 +341,10 @@ export const CARDS: CardDef[] = [
   {
     id: 'calloway', kind: 'warning', caller: 'calloway', when: { after: 150 }, weight: 2, face: CALLOWAY_FACE,
     from: 'Governor Idris Calloway · Offices of Peace', title: 'Come home, Juno',
-    text: '“Juno, Idris Calloway. I am not your enemy. That archive is not worth your life. Tell me where you are going.”',
+    text: '“Juno, Idris Calloway. I’m not your enemy. That archive isn’t worth your life. Tell me where you’re going.”',
     lines: [
       { if: { flag: 'passengers' }, text: '“And the Okafors. They have children, Juno.”' },
-      { if: { heatMin: 0.7 }, text: '“That is a lot of noise for someone trying to disappear.”' },
+      { if: { heatMin: 0.7 }, text: '“That’s a lot of noise for someone trying to disappear.”' },
     ],
     cargo: 'A Governor’s channel · priority override',
     choices: [
@@ -389,7 +389,7 @@ export const CARDS: CardDef[] = [
         lose: { text: 'Fake spotted · weapons hot', spawn: [{ variant: 'picket', n: 2 }], heat: 0.06 },
       },
       {
-        id: 'bluff', label: '“You are out of your sector”', tone: 'bluff', hint: 'Pull rank you do not have.', odds: { base: 0.55, heat: -0.6, standing: { custody: 0.1 } },
+        id: 'bluff', label: '“You’re out of your sector”', tone: 'bluff', hint: 'Pull rank you do not have.', odds: { base: 0.55, heat: -0.6, standing: { custody: 0.1 } },
         win: { text: 'PF-226 checks his chart and backs off' },
         lose: { text: 'He checks your hull instead · weapons hot', spawn: [{ variant: 'picket', n: 2 }], heat: 0.08 },
       },
@@ -441,7 +441,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'distress_tug', kind: 'distress', caller: 'miners', when: { after: 40 }, weight: 1.2, repeat: true,
     from: 'Mining tug · Persistence', title: 'Reactor failing',
-    text: '“Any ship, any ship. Persistence, reactor scram, four aboard. We cannot hold it.”',
+    text: '“Any ship, any ship. Persistence, reactor scram, four aboard. We can’t hold it.”',
     cargo: 'Ore tug · four crew', ships: [],
     truths: [
       { id: 'genuine', weight: 2.2, read: 'Reactor signature failing' },
@@ -469,7 +469,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'distress_freighter', kind: 'distress', caller: 'guild', when: { after: 100 }, repeat: true,
     from: 'Guild freighter · Long Reckoning', title: 'Raiders on us',
-    text: '“Gutter raiders on our tail. We cannot outrun them. Anyone with guns, please.”',
+    text: '“Gutter raiders on our tail. We can’t outrun them. Anyone with guns, please.”',
     lines: [{ if: { standing: ['guild', 1] }, text: '“Wayward? The Guild knows you.”' }],
     ships: [{ variant: 'scout', n: 2 }, { variant: 'raptor', n: 1 }], cargo: 'Freighter, full · raiders, empty',
     choices: [
@@ -600,7 +600,7 @@ export const CARDS: CardDef[] = [
       {
         id: 'talk', label: 'Tell her the file is already out', tone: 'bluff', hint: 'If she buys it, she has to stop and check. If not, she knows you’re bluffing.',
         loseIf: ['patient'], odds: { base: 0.5, flags: { calloway_told: 0.2 }, learn: 'bluff' },
-        win: { text: '“If that is true…” · she breaks off to check', hunt: 2, flag: 'calloway_lied' },
+        win: { text: '“If that’s true…” · she breaks off to check', hunt: 2, flag: 'calloway_lied' },
         lose: { text: '“No, Juno. You still have it.” · she opens fire', calloway: 'fight', flag: 'calloway_lied' },
       },
       {
@@ -621,12 +621,12 @@ export const CARDS: CardDef[] = [
     text: '“I’m one lane behind you, Juno. Every system you stop in, I stop in.”',
     lines: [
       { if: { flag: 'calloway_told' }, text: '“I keep thinking about what you told me. It doesn’t change my job.”' },
-      { if: { netted: true }, text: '“And the Net is already here. Where do you think you are going?”' },
+      { if: { netted: true }, text: '“And the Net is already here. Where do you think you’re going?”' },
       { if: { wise: ['lie', 2] }, text: '“Whatever heading you send, I’ll check twice. You’ve lied before.”' },
-      { if: { hunch: 'port' }, text: '“You like ports, Juno. So do I. I have been reading their dock logs.”' },
-      { if: { hunch: 'mining' }, text: '“Another rock field? You are a creature of habit.”' },
+      { if: { hunch: 'port' }, text: '“You like ports, Juno. So do I. I’ve been reading their dock logs.”' },
+      { if: { hunch: 'mining' }, text: '“Another rock field? You’re a creature of habit.”' },
       { if: { hunch: 'contested' }, text: '“You always go where the shooting is. Like following a flare.”' },
-      { if: { hunch: 'transit' }, text: '“The quiet lanes again. I have stopped asking where you went.”' },
+      { if: { hunch: 'transit' }, text: '“The quiet lanes again. I’ve stopped asking where you went.”' },
     ],
     cargo: 'A Governor’s channel · priority override',
     choices: [
@@ -640,7 +640,7 @@ export const CARDS: CardDef[] = [
     from: 'Raiders · the Lane Wardens', title: 'This lane has a keeper',
     text: '“Nobody uses the old lane without paying. {fee} Cyrite, and you’re through.”',
     lines: [
-      { if: { standing: ['gutter', 1] }, text: '“You are the one who helped the Leaky Tin. Maybe half.”' },
+      { if: { standing: ['gutter', 1] }, text: '“You’re the one who helped the Leaky Tin. Maybe half.”' },
       { if: { kind: 'contested' }, text: 'Two more raiders sit in the lane’s shadow.' },
       { if: { notice: ['gutter', 'toll'] }, text: '“And the price is up for a crew-killer.”' },
     ],
@@ -660,8 +660,8 @@ export const CARDS: CardDef[] = [
   {
     id: 'claim_holdfast', kind: 'shakedown', caller: 'frontier', trigger: 'offer', repeat: true,
     from: 'Holdfast crew · claim tender', title: 'This seam is staked',
-    text: '“You are working a Holdfast seam. {fee} Cyrite for the rock you have taken, or you leave it.”',
-    lines: [{ if: { standing: ['frontier', 1] }, text: '“You are known here. Pay the short rate.”' }],
+    text: '“You’re working a Holdfast seam. {fee} Cyrite for the rock you have taken, or you leave it.”',
+    lines: [{ if: { standing: ['frontier', 1] }, text: '“You’re known here. Pay the short rate.”' }],
     ships: [{ variant: 'scout', n: 2 }], cargo: 'Holdfast crew · light hulls',
     fee: { base: 20 },
     choices: [
@@ -675,7 +675,7 @@ export const CARDS: CardDef[] = [
     id: 'claim_guild', kind: 'shakedown', caller: 'guild', trigger: 'offer', repeat: true,
     from: 'Salvage crew · claim cutter', title: 'This field is staked',
     text: '“Wreck field is under claim. {fee} Cyrite for what you have lifted, or the cutters clear you out.”',
-    lines: [{ if: { standing: ['guild', 1] }, text: '“Guild papers? Then it is only a fee.”' }],
+    lines: [{ if: { standing: ['guild', 1] }, text: '“Guild papers? Then it’s only a fee.”' }],
     ships: [{ variant: 'raptor', n: 2 }], cargo: 'Salvage crew · fast cutters',
     fee: { base: 30 },
     choices: [
@@ -779,8 +779,8 @@ export const CARDS: CardDef[] = [
   {
     id: 'holdout', kind: 'plea', caller: 'miners', when: { after: 60, netted: false, kind: ['mining', 'port', 'contested'] }, weight: 1.2, boost: { if: { here: 'holdfast' }, mult: 3 }, repeat: true,
     from: 'A claim settlement · the Holdfast', title: 'Help us hold out',
-    text: '“Custody surveyors came this morning. When the Net gets here, we lose everything. Cyrite for our shield would keep them out a while.”',
-    lines: [{ if: { standing: ['miners', 2] }, text: '“The miners say you are one of us.”' }],
+    text: '“Custody surveyors came through this morning. When the Net gets here, we lose everything. Some Cyrite for our shield would keep them out a while.”',
+    lines: [{ if: { standing: ['miners', 2] }, text: '“The miners say you’re one of us.”' }],
     cargo: 'A settlement · forty people, one generator',
     truths: [
       { id: 'true', weight: 3, read: 'Their generator draws exactly what they say' },
@@ -861,7 +861,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'runner_favour', kind: 'job', caller: 'gutter', trigger: 'follow',
     from: 'Fuel runner · call sign Tallow', title: 'The favour',
-    text: '“Time to settle up, Wayward. Six supplies, or carry something to the dock for me. Not paying is also a choice.”',
+    text: '“Time to settle up, Wayward. Six supplies, or carry something to the dock for me. Or don’t pay, and see how that goes.”',
     cargo: 'Runner’s channel',
     choices: [
       { id: 'parts', label: 'Give six supplies', tone: 'pay', hint: 'Settled.', cost: { supplies: 6 }, win: { text: 'Debt settled with Tallow', unflag: 'owes_runner', standing: { gutter: 1 } } },
@@ -883,7 +883,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'foreman_again', kind: 'plea', caller: 'kellern', trigger: 'follow', when: { flag: 'stalled' },
     from: 'Kellern Mining · Foreman Draper', title: 'Time is up',
-    text: '“I gave you time, Juno. What is it going to be?”',
+    text: '“I gave you time, Juno. What’s it going to be?”',
     cargo: 'Mining office channel',
     choices: [
       { id: 'stall', label: 'Stall again', tone: 'bluff', hint: 'He might buy it twice.', odds: { base: 0.35 }, win: { text: 'Draper gives you an hour', heat: -0.05 }, lose: { text: 'Draper hands it to the Custody', heat: 0.18 } },
@@ -904,7 +904,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'freighter_thanks', kind: 'trade', caller: 'guild', trigger: 'follow',
     from: 'Guild freighter · Long Reckoning', title: 'The Guild pays its debts',
-    text: '“Long Reckoning, still in one piece thanks to you. Take this. The Guild will hear your name.”',
+    text: '“Long Reckoning here, still in one piece thanks to you. Take this. I’ll make sure the Guild hears your name.”',
     cargo: 'A freighter, grateful',
     choices: [
       { id: 'krail', label: 'Take the Cyrite', tone: 'trade', hint: 'Eight Cyrite.', win: { text: 'Eight Cyrite from the Long Reckoning', cyrite: 8, standing: { guild: 2 } } },

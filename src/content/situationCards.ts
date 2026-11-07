@@ -16,7 +16,7 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_trader', kind: 'trade', caller: 'frontier', tier: 'routine',
     from: 'Owen Pike · independent hauler', title: 'Trade for supplies',
-    text: '“I am running light, but I sell supplies at a fair price. Cyrite buys most things out here: repairs, supplies and favours.”',
+    text: '“I’m running light, but I sell supplies at a fair price. Cyrite buys most things out here: repairs, supplies and favours.”',
     cargo: 'A hauler · hold half empty',
     choices: [
       { id: 'food', label: 'Buy 3 supplies', tone: 'pay', hint: 'Pay 4 Cyrite for 3 supplies. Supplies help you survive away from ports.', cost: { chits: 20 }, win: { text: '3 supplies added to your hold', supplies: 3 } },
@@ -48,7 +48,7 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_roundup', kind: 'plea', caller: 'miners', tier: 'major',
     from: 'Settlement steward · a closed dock', title: 'Custody took the barge crew',
-    text: '“Custody took eleven workers off the barge for a ‘head count’. They are holding them at the dock, with guards on the approach.”',
+    text: '“Custody took eleven workers off the barge for a ‘head count’. They’re holding them at the dock, with guards on the approach.”',
     cargo: 'A settlement · two pickets on the dock',
     choices: [
       { id: 'clerk', label: 'Pay the dock clerk', tone: 'pay', hint: 'Pay 6 Cyrite to free the barge quietly. You will need to fly there.', win: { text: 'You turn for the dock' } },
@@ -87,7 +87,7 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_convoy', kind: 'job', caller: 'guild', tier: 'important',
     from: 'Convoy master Aisha Reen', title: 'Escort the convoy to the lane',
-    text: '“Three unarmed haulers have raiders waiting on their route. Fly alongside us to the Jump Gate and we will pay ten Cyrite.”',
+    text: '“Three unarmed haulers have raiders waiting on their route. Fly alongside us to the Jump Gate and we’ll pay ten Cyrite.”',
     cargo: 'A convoy · three haulers, heavy with ore',
     choices: [
       { id: 'escort', label: 'Escort the convoy', tone: 'help', hint: 'Stay near the haulers until they reach the lane. Raiders may attack.', win: { text: 'The convoy forms up on your wing' } },
@@ -109,7 +109,7 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_resistance', kind: 'plea', caller: 'frontier', tier: 'important',
     from: 'A cell that has not been counted', title: 'The resistance needs supplies',
-    text: '“A hidden relay. A cargo hold full of people the Net has not counted. Bring four supplies for the antenna, and we can stay hidden.”',
+    text: '“A hidden relay. A cargo hold full of people the Net hasn’t counted. Bring four supplies for the antenna, and we can stay hidden.”',
     cargo: 'A hidden hold · lamps off',
     choices: [
       { id: 'supply', label: 'Deliver 4 supplies', tone: 'help', hint: 'Deliver 4 supplies to the resistance. The Net’s reach will weaken here.', win: { text: 'Heading to the resistance cell' } },
@@ -138,7 +138,7 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_lockdown', kind: 'checkpoint', caller: 'custody', tier: 'major',
     from: 'Net lockdown · Picket line', title: 'Unlisted hulls report',
-    text: '“This route is closed to hulls that are not on the register. Your transponder is not on the register. Report, or be reported.”',
+    text: '“This route is closed to hulls that aren’t on the register. Your transponder isn’t on the register. Report, or be reported.”',
     lines: [{ if: { flag: 'contraband' }, text: 'The sealed crate in your hold will show on a scan.' }],
     cargo: 'Three pickets · the line is full',
     choices: [
@@ -287,7 +287,7 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_yard_hulk', kind: 'plea', caller: 'kellern', tier: 'important',
     from: 'Yard foreman · a Custody cradle', title: 'Do not come close',
-    text: '“We are dismantling something we were not supposed to find. The crews say it hums at night. If anyone asks, it is a hulk.”',
+    text: '“We’re dismantling something we were not supposed to find. The crews say it hums at night. If anyone asks, it’s a hulk.”',
     cargo: 'A Custody yard · one cradle, covered',
     choices: [
       { id: 'cut', label: 'Cut it loose', tone: 'help', hint: 'Three parts at the cradle. The Thren have looked for it. The Custody will know.', win: { text: 'You turn for the cradle' } },

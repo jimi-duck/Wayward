@@ -285,7 +285,7 @@ describe('Calloway at the Threshold', () => {
     const c = finaleCard(newDossier(), { caught: 1, beaten: 0 }, ['sig_used', 'field_dropped', 'noor_met', 'seam_key_given', 'draper_recorded']);
     expect(c.text).toContain('He asked for ten years.');
     expect(c.text).toContain('every full tank home');
-    expect(c.text).toContain('a machine that cannot say no');
+    expect(c.text).toContain('a machine that can’t say no');
     expect(c.text).toContain('He will still try to sell you.');
     expect(c.text.endsWith('“The Threshold is behind me. Power down.”')).toBe(true);
   });

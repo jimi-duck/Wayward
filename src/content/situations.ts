@@ -317,7 +317,7 @@ export const SITUATIONS: SituationDef[] = [
     kinds: ['mining', 'contested'], regions: [1, 7], weight: 0.6,
     prop: 'seam', actors: [act('mote', 4, 'hold', 'territorial', 'Thren', { from: 'site', ring: 85 }), act('weaver', 1, 'hold', 'territorial', 'Thren', { from: 'site', ring: 85 })],
     at: 30, hail: 9999, goal: CALL, seen: ['saw_thren', 'thren_territory'],
-    say: [{ on: 'near', from: 'Scope', text: '“They are holding position around the seam. Every one of them is facing outward.”' }],
+    say: [{ on: 'near', from: 'Scope', text: '“They’re holding position around the seam. Every one of them is facing outward.”' }],
   },
   {
     id: 'thren_exchange', name: 'A Strange Offer', blurb: 'A Thren object holds position beside Cyrite and seems to be waiting.', group: 'unknown',
@@ -336,14 +336,14 @@ export const SITUATIONS: SituationDef[] = [
     kinds: ['transit', 'mining', 'contested'], regions: [3, 7], weight: 0.5,
     actors: [act('mote', 3, 'follow', 'wary', 'Unknown contacts', { from: 'astern', ring: 120, pace: 0.9 })],
     at: 60, hail: 9999, goal: CALL, seen: ['saw_thren', 'thren_lane'],
-    say: [{ on: 'start', from: 'Navigation', text: '“the Jump Gate is drifting. It is not us. Something else is moving it.”' }],
+    say: [{ on: 'start', from: 'Navigation', text: '“the Jump Gate is drifting. It’s not us. Something else is moving it.”' }],
   },
   {
     id: 'thren_watch', name: 'They line the lane', blurb: 'The Thren are lined up along a lane. They face the way you are going.', group: 'unknown',
     kinds: ['transit', 'contested', 'mining'], regions: [5, 7], weight: 0.5,
     prop: 'lane', actors: [act('mote', 6, 'hold', 'territorial', 'Thren', { from: 'site', ring: 60 }), act('shard', 1, 'hold', 'territorial', 'Thren', { from: 'site', ring: 60 })],
     at: 30, hail: 9999, goal: CALL, seen: ['saw_thren', 'thren_lane', 'thren_watch'],
-    say: [{ on: 'near', from: 'Scope', text: '“It is a line. It is exactly a line. Nobody drew it.”' }],
+    say: [{ on: 'near', from: 'Scope', text: '“It’s a line. It’s exactly a line. Nobody drew it.”' }],
   },
 
   // ══ unknown: the Voice ═══════════════════════════════════════════════════
@@ -399,7 +399,7 @@ export const SITUATIONS: SituationDef[] = [
     kinds: ['transit', 'mining', 'contested'], regions: [2, 7], weight: 0.5,
     actors: [act('probe', 1, 'follow', 'wary', 'Unknown ship', { from: 'astern', ring: 160, pace: 1 })],
     at: 55, hail: 9999, goal: CALL, seen: ['saw_unknown_ship'],
-    say: [{ on: 'near', from: 'Scope', text: '“It has been behind us for six minutes. It does not hide and it does not close.”' }],
+    say: [{ on: 'near', from: 'Scope', text: '“It has been behind us for six minutes. It doesn’t hide and it doesn’t close.”' }],
   },
   {
     id: 'yard_hulk', name: 'A Thren hulk in a Custody yard', blurb: 'A Custody yard, and something on the cradle that is not a ship.', group: 'corporate',
@@ -417,7 +417,7 @@ export const SITUATIONS: SituationDef[] = [
     kinds: ['mining', 'contested', 'transit'], regions: [6, 7], weight: 0.5,
     prop: 'foundry', actors: [act('drone', 2, 'hold', 'wary', 'Foundry', { from: 'site', ring: 40 }), act('mote', 5, 'orbit', 'wary', 'Thren', { from: 'site', ring: 50, pace: 0.5 })],
     at: 30, hail: 9999, goal: CALL, seen: ['saw_voice', 'saw_thren', 'both_seen'],
-    say: [{ on: 'near', from: 'Scope', text: '“They are not fighting. The drones are letting them through the gates.”' }],
+    say: [{ on: 'near', from: 'Scope', text: '“They’re not fighting. The drones are letting them through the gates.”' }],
   },
   {
     id: 'lane_signal', name: 'A signal that answers', blurb: 'A pattern in the noise that changes when you listen.', group: 'unknown',
