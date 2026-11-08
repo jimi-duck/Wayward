@@ -5,7 +5,7 @@ import type { GameEvent } from '../sim/events';
 import { artOf, oddsWord } from './comms';
 import { artImg, artUrl } from './art';
 import { CALLOWAY_ID } from '../content/art';
-import { icon } from './icons';
+import { paint } from './icons';
 import { NEON_CSS } from './colors';
 import { $, h } from './dom';
 import { INK } from './palette';
@@ -268,7 +268,7 @@ export class Radio {
     art.classList.toggle('emblem', !pic && !!emblem);
     if (emblem) art.style.setProperty('--emblem', `url("${emblem}")`); else art.style.removeProperty('--emblem');
     // no picture and no emblem: the words take the whole width rather than leave an empty slab
-    art.replaceChildren(...(pic ? [pic] : emblem ? [] : [icon('i-job')]));
+    art.replaceChildren(...(pic ? [pic] : emblem ? [] : [paint('job')]));
     art.hidden = !pic && !emblem;
     card.classList.toggle('noart', art.hidden);
     card.classList.toggle('emblem-only', !pic && !!emblem);

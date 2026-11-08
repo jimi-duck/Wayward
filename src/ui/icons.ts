@@ -20,3 +20,10 @@ export function nodeIcon(id: string): HTMLElement {
   el.style.setProperty('--img', `url(${new URL(`${import.meta.env.BASE_URL}icons/node/${id}.png`, document.baseURI).href})`);
   return el;
 }
+
+/** A painted glyph that stands where a line icon would: it takes the `.ico` size and colour rules of its place. */
+export function paint(id: string): HTMLElement {
+  const el = nodeIcon(id);
+  el.classList.add('ico');
+  return el;
+}

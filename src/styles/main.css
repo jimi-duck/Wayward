@@ -92,6 +92,7 @@ html, body {
 .k, .lbl { font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
 .val { font: 600 calc(var(--fs) * 1.7)/1 var(--font-rail); letter-spacing: .04em; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ico { width: 13px; height: 13px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: square; stroke-linejoin: miter; }
+.ico.ico-img { width: 13px; height: 13px; stroke: none; }
 kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; padding: 0 3px;
   font: 500 8px/1 var(--font-mono); color: var(--ink-2); border: 1px solid rgba(var(--white-rgb), .3); }
 
