@@ -762,12 +762,16 @@ export class Hud {
         } else {
           // a stop's script names the next place (sim/script.ts); the chase and an empty tank still come first
           const named = !bk.chase && ready ? goal.main : undefined;
-          text($('obj-t'), named ?? t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
-          text($('obj-left'), ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
+          // the gate waits on a relay not yet answered: the mast is the course, with its range
+          const mast = world.gateRelay;
+          text($('obj-t'), mast ? t('Reach the relay mast') : named ?? t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
+          text($('obj-left'), mast ? range(Math.hypot(mast.x - s.x, mast.z - s.z)) : ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
           ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
         }
         text($('obj-s'), recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact')
-          : world.gateWhy === 'resetting after the key' ? t('Jump Gate resetting') : world.gateWhy ? `${t('Jump Gate holding')} · ${t(world.gateWhy)}` : '');
+          : world.gateWhy === 'resetting after the key' ? t('Jump Gate resetting')
+          : world.gateWhy === 'the gate is opening' ? `${t('Jump Gate opens')} · ${Math.floor(world.gateEta / 60)}:${String(world.gateEta % 60).padStart(2, '0')}`
+          : world.gateWhy ? `${t('Jump Gate shut')} · ${t(world.gateWhy)}` : '');
         const lines: string[] = [];
         if (paintAt(world)) {
           lines.push(`${t('Make her yours')} · ${t('free')}`);

@@ -112,3 +112,15 @@ describe('chapter one: the first system past Cerro, on every seed', () => {
     expect(sortieDef(j).first).toBeFalsy();
   });
 });
+
+describe('a shut Jump Gate says why, from afar', () => {
+  it('the paint bay holds the gate while the hull is grey, at any distance, and lets go once she is painted', () => {
+    const w = level(past(3, ['ship_stolen', 'paint_due']));
+    expect(lockLifted(w.flags)).toBe(true);
+    fly(w, 2);
+    expect(w.gateWhy).toBe('Ned’s yard first');
+    w.flags.add('hull_repainted');
+    fly(w, 1);
+    expect(w.gateWhy).toBe('');
+  });
+});

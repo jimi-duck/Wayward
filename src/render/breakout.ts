@@ -25,6 +25,8 @@ const AMBER = new Color(3.6, 2, 0.45);
 const CYAN = new Color(0.4, 2.4, 3.2);
 /** The gate's light strips at full: teal, held low so they read as lit panels, not a glow. */
 const STRIP = new Color(0.3, 1.25, 1.4);
+/** The strips while the gate holds her: a low, dull caution gold (brand: gold is caution only). */
+const HELD = new Color(0.55, 0.4, 0.1);
 
 let mats: Record<string, Material> | null = null;
 /** The materials the Breakout's structures share (also the situations' sites, render/site.ts). */
@@ -517,6 +519,8 @@ export class BreakoutView {
   private readonly lane = new Group();
   /** The ring and its bases, turned to face the way you arrive. */
   private readonly gate = new Group();
+  /** 0 to 1: how shut the gate looks (eased). */
+  private shut = 0;
   private faced: unknown = null;
   private readonly port = new Group();
   /** The depots built so far, by holder's look; one shows. Built the first time a system wants it. */
@@ -778,14 +782,17 @@ export class BreakoutView {
     // the throat brightens as the tank fills and blazes while the drive spools
     const ready = world.fuel >= b.jumpCost ? 1 : 0.35;
     const spool = Math.min(1, b.spool / b.spoolNeed);
+    const shut = world.gateWhy !== '' && spool === 0 && !jump;
+    this.shut += ((shut ? 1 : 0) - this.shut) * Math.min(1, dt * 3);
     this.throat.rotation.x += dt * (0.2 + spool * 3);
     (this.lanehaze.material as SpriteMaterial).opacity = 0.022 + 0.034 * ready + 0.15 * spool;
-    (this.throat.material as MeshBasicMaterial).opacity = 0.015 + 0.025 * ready + 0.18 * spool + 0.4 * (jump?.flare ?? 0);
+    (this.throat.material as MeshBasicMaterial).opacity = (1 - 0.8 * this.shut) * (0.015 + 0.025 * ready + 0.18 * spool + 0.4 * (jump?.flare ?? 0));
     // (the flat marker rings on the plane let go as the jump begins: nothing cuts across the view)
     const away = jump ? 1 - smooth01(jump.t / 0.3) : 1;
     (this.laneRing.material as MeshBasicMaterial).opacity = (0.25 + 0.25 * ready + 0.12 * Math.sin(this.time * 3) * ready) * away;
     // the light strips: dim while the tank is short, full when ready, brighter as the drive spools
-    (materials().strip as MeshBasicMaterial).color.copy(STRIP).multiplyScalar(0.4 + 0.45 * ready + 0.4 * spool + 1.5 * (jump?.flare ?? 0));
+    // a gate that is holding her (world.gateWhy) shows it: the strips go a dull, low amber and the throat stays dark, from any distance
+    (materials().strip as MeshBasicMaterial).color.copy(STRIP).multiplyScalar(0.4 + 0.45 * ready + 0.4 * spool + 1.5 * (jump?.flare ?? 0)).lerp(HELD, this.shut * 0.85);
     // the skin: fills in as the drive charges, blazes at the crossing, then a ripple runs out of the ring
     const skin = jump ? (0.6 + 0.4 * smooth01(jump.t / 0.2)) * (1 - smooth01((jump.t - jump.cross - 0.15) / 0.55)) : spool * ready * 0.55;
     const u = (this.membrane.material as ShaderMaterial).uniforms;
