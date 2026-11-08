@@ -247,7 +247,7 @@ Nine people (and machines). The most important faces in the game.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call: top left of the transmission. The drawn face is used if this is missing.
-- **Prompt:** Subject: Captain Sister Vera Hask, who flies the Last Mercy for the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Personality: Ambusher. Thirties, thin, still. “Sister” of a salvage cult: hooded, a patched robe over armour, small bone-coloured charms. Behind: dark, a single red status light, rock close at the window. Face (from the game's portrait): brown skin, a deep hood framing the face (black), a narrow visor across the eyes, a fine circuit-line implant at the temple, a narrow jaw. Mood: how they sound when they first open a channel: A soft voice on an open band: “Sister Vera Hask, of the Last Mercy. I will be quick.” (portrait framing: section 5)
+- **Prompt:** Subject: Captain Sister Vera Hask, who flies the Last Mercy for the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Personality: Ambusher. Thirties, thin, still. “Sister” of a salvage cult: hooded, a patched robe over armour, small bone-coloured charms. Behind: dark, a single red status light, rock close at the window. Face (from the game's portrait): brown skin, a deep hood framing the face (black), a narrow visor across the eyes, a fine circuit-line implant at the temple, a narrow jaw. Mood: how they sound when they first open a channel: A soft voice on an open band: “Sister Vera Hask, of the Last Mercy. I’ll be quick.” (portrait framing: section 5)
 
 #### captains/ashgrove
 
@@ -299,7 +299,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "A way out" (story_sam), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Sam Okoro, private channel. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: Juno. Keep this off the open channel. This code overrides the recovery autopilot. The debt stays in your name, but she’s yours to fly. Fly to Ned Varga’s yard, off the lane. Fly into his ring and let go. Ned takes the he (portrait framing: section 5)
+- **Prompt:** Subject: Sam Okoro, private channel. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: Juno, it’s me. Keep this off the open channel. This code overrides the autopilot. The debt’s still there, and they’ll be looking for you, but this is your chance to get out. Head to Ned’s yard, he owes me one. He’ll repr (portrait framing: section 5)
 
 #### contacts/story_yard_done
 
@@ -315,7 +315,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "I was on the relay that night" (story_warden), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Ilse Marrow, retired Lane Warden. Ilse Marrow, retired Lane Warden: eighties, upright, sharp-eyed; a faded Warden coat without insignia, a cane. A small kitchen or a relay station’s old console behind. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “I heard about your file. Seventy years ago I ran the Narrows relay. The lanes didn’t fail. We were told to turn them off.” (portrait framing: section 5)
+- **Prompt:** Subject: Ilse Marrow, retired Lane Warden. Ilse Marrow, retired Lane Warden: eighties, upright, sharp-eyed; a faded Warden coat without insignia, a cane. A small kitchen or a relay station’s old console behind. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “So you’re the one with the file. I ran the Narrows relay seventy years ago. The lanes never failed. We were told to switch them off.” (portrait framing: section 5)
 
 #### contacts/story_ledger
 
@@ -371,7 +371,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "A lane ahead" (story_ferry), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Ossie Raine, the Quiet Ferry. Ossie Raine of the Quiet Ferry: thirties, calm, a ferryman’s patience; plain dark jacket, a small ship’s bell on a cord. A dim, tidy cab. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Nobody hunts out here. I can carry you a lane ahead. Forty-one passengers, and they’d like the company. Stores, no questions.” (portrait framing: section 5)
+- **Prompt:** Subject: Ossie Raine, the Quiet Ferry. Ossie Raine of the Quiet Ferry: thirties, calm, a ferryman’s patience; plain dark jacket, a small ship’s bell on a cord. A dim, tidy cab. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Nobody hunts out here. I can take you a lane ahead. Forty-one passengers, and they’d like the company. Bring some stores and I won’t ask questions.” (portrait framing: section 5)
 
 #### contacts/story_workorder
 
@@ -395,7 +395,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "A berth, no questions" (story_harbour), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Ines Duarte, harbour-master, the Dust Traders. Ines Duarte, harbour-master for the Dust Traders: fifties, polished, amused; a cream coat, a brass harbour tag, a tablet of berth lists. A busy dock office window. Their people: the Dust Traders Guild, merchants and salvage brokers: practical long coats in cream and brown over work clothes, ledger tablets, brass-coloured tags, a trader’s ease. Mood: what they say to the player: “A berth for the Wayward, and no questions. The Guild only wants to know you as a friend. We are very good friends.” (portrait framing: section 5)
+- **Prompt:** Subject: Ines Duarte, harbour-master, the Dust Traders. Ines Duarte, harbour-master for the Dust Traders: fifties, polished, amused; a cream coat, a brass harbour tag, a tablet of berth lists. A busy dock office window. Their people: the Dust Traders Guild, merchants and salvage brokers: practical long coats in cream and brown over work clothes, ledger tablets, brass-coloured tags, a trader’s ease. Mood: what they say to the player: “A berth for the Wayward, and no questions. The Guild only wants to know you as a friend. We make very good friends.” (portrait framing: section 5)
 
 #### contacts/story_kesh
 
@@ -403,7 +403,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "Val talks too much" (story_kesh), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Kesh, a fixer of the Gutter. Kesh, Gutter fixer: thirties, lean, quick grin, scrap-plate jacket with a stitched debt tally on one sleeve. A cramped skiff cab. Their people: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Mood: what they say to the player: “I work for Val. I also have ears. She is shopping your heading to the Offices. Pay my debt and I look the other way.” (portrait framing: section 5)
+- **Prompt:** Subject: Kesh, a fixer of the Gutter. Kesh, Gutter fixer: thirties, lean, quick grin, scrap-plate jacket with a stitched debt tally on one sleeve. A cramped skiff cab. Their people: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Mood: what they say to the player: “I work for Val, but I’ve got ears. She’s selling your heading to the Offices. Clear my debt and I’ll look the other way.” (portrait framing: section 5)
 
 #### contacts/story_ada
 
@@ -443,7 +443,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "The Narrows" (story_calloway_narrows), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Governor Idris Calloway, CCV Patience. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “I have read Ada Aster’s file too, Juno. Not all of it. Enough to want the rest. Tell me where you are going, and I will not stop you.” (portrait framing: section 5)
+- **Prompt:** Subject: Governor Idris Calloway, CCV Patience. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “I’ve read Ada Aster’s file too, Juno. Not all of it. Enough to want the rest. Tell me where you’re going, and I won’t stop you.” (portrait framing: section 5)
 
 #### contacts/story_witnesses
 
@@ -475,7 +475,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "Bring the Wayward back" (foreman), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Kellern Mining, Foreman Draper. Foreman Draper of Kellern Mining: fifties, heavy, a tired decent man with a boss’s voice; amber hi-vis over grey overalls, company badge, a hard hat under one arm. A yard office behind him. Their people: Kellern Mining, a heavy-industry company: amber, cream and dark grey. Hi-vis stripes, barcode strips, hazard triangles, company logos on everything, a name tag with a number. Mood: what they say to the player: “Bring the hauler back and I will say you were coerced. You will lose wages and get a warning. Keep running, and Custody takes over.” (portrait framing: section 5)
+- **Prompt:** Subject: Kellern Mining, Foreman Draper. Foreman Draper of Kellern Mining: fifties, heavy, a tired decent man with a boss’s voice; amber hi-vis over grey overalls, company badge, a hard hat under one arm. A yard office behind him. Their people: Kellern Mining, a heavy-industry company: amber, cream and dark grey. Hi-vis stripes, barcode strips, hazard triangles, company logos on everything, a name tag with a number. Mood: what they say to the player: “Bring the hauler back and I’ll say you were coerced. You’ll lose wages and get a warning. Keep running, and Custody takes over.” (portrait framing: section 5)
 
 #### contacts/krail_seller
 
@@ -483,7 +483,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "A quick deal on Cyrite" (krail_seller), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Independent prospector, Old Hesketh. Old Hesketh, independent prospector: sixties, sun-and-dust skin, white stubble, patched mining suit, a lamp on his forehead. The cockpit of a small tug behind him, a few crates. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Eight Cyrite, fresh from the vein. Pay for four now and I will ask no questions.” Your tank is {short} short of the jump. (portrait framing: section 5)
+- **Prompt:** Subject: Independent prospector, Old Hesketh. Old Hesketh, independent prospector: sixties, sun-and-dust skin, white stubble, patched mining suit, a lamp on his forehead. The cockpit of a small tug behind him, a few crates. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Eight Cyrite, fresh from the vein. Pay for four now and I’ll ask no questions.” Your tank is {short} short of the jump. (portrait framing: section 5)
 
 #### contacts/fuel_runner
 
@@ -491,7 +491,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "Cyrite at a price" (fuel_runner), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Fuel runner, call sign Tallow. Tallow, a fuel runner: thirties, wiry, cheerful and not to be trusted; oil-stained jacket with a hand-painted call sign, a siphon hose over one shoulder. Fuel cans in a cramped cab. Their people: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Mood: what they say to the player: “Heard a hauler is running dry. I can get you six Cyrite: pay two supplies now, or owe me a favour. Your call, Wayward.” (portrait framing: section 5)
+- **Prompt:** Subject: Fuel runner, call sign Tallow. Tallow, a fuel runner: thirties, wiry, cheerful and not to be trusted; oil-stained jacket with a hand-painted call sign, a siphon hose over one shoulder. Fuel cans in a cramped cab. Their people: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Mood: what they say to the player: “Heard a hauler’s running dry. I can get you six Cyrite. Two supplies now, or you owe me a favour. Your call, Wayward.” (portrait framing: section 5)
 
 ### Batch D: Ship profiles (18)
 
@@ -1111,7 +1111,7 @@ Optional: the same captains, scarred. Only after batch B is approved, using thos
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call from a captain you have already scarred; the plain portrait is used if this is missing.
-- **Prompt:** Subject: Captain Sister Vera Hask, who flies the Last Mercy for the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Personality: Ambusher. Thirties, thin, still. “Sister” of a salvage cult: hooded, a patched robe over armour, small bone-coloured charms. Behind: dark, a single red status light, rock close at the window. Face (from the game's portrait): brown skin, a deep hood framing the face (black), a narrow visor across the eyes, a fine circuit-line implant at the temple, a narrow jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: A soft voice on an open band: “Sister Vera Hask, of the Last Mercy. I will be quick.” (portrait framing: section 5)
+- **Prompt:** Subject: Captain Sister Vera Hask, who flies the Last Mercy for the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Personality: Ambusher. Thirties, thin, still. “Sister” of a salvage cult: hooded, a patched robe over armour, small bone-coloured charms. Behind: dark, a single red status light, rock close at the window. Face (from the game's portrait): brown skin, a deep hood framing the face (black), a narrow visor across the eyes, a fine circuit-line implant at the temple, a narrow jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: A soft voice on an open band: “Sister Vera Hask, of the Last Mercy. I’ll be quick.” (portrait framing: section 5)
 
 #### captains/ashgrove-scarred
 

@@ -9,7 +9,7 @@ import { PORT_NAMES } from './systems';
 // prompt for every one. docs/ART-SLOTS.md says what each is for and how to
 // brief it; src/art/README.md says how to drop the files in.
 
-export type SlotId = 'captain' | 'contact' | 'emblem' | 'ship' | 'place' | 'ending' | 'sighting' | 'file' | 'region' | 'fleet' | 'job' | 'phenomenon' | 'gate' | 'planet' | 'debrief' | 'baybanner' | 'spec';
+export type SlotId = 'captain' | 'contact' | 'emblem' | 'ship' | 'place' | 'ending' | 'sighting' | 'file' | 'region' | 'fleet' | 'job' | 'phenomenon' | 'gate' | 'planet' | 'debrief' | 'baybanner' | 'spec' | 'unlock' | 'survival' | 'kind';
 
 export interface SlotDef {
   id: SlotId;
@@ -42,6 +42,9 @@ export const SLOTS: Record<SlotId, SlotDef> = {
   debrief:  { id: 'debrief',  dir: 'debrief',   w: 1280, h: 720,  alpha: false, shownIn: '' },
   baybanner: { id: 'baybanner', dir: 'baybanners', w: 1280, h: 720, alpha: false, shownIn: '' },
   spec:     { id: 'spec',     dir: 'specs',     w: 1280, h: 720,  alpha: false, shownIn: '' },
+  unlock:   { id: 'unlock',   dir: 'unlocks',   w: 1280, h: 720,  alpha: false, shownIn: 'Archive, beside an earned unlock' },
+  survival: { id: 'survival', dir: 'survivals', w: 1280, h: 720,  alpha: false, shownIn: 'start menu, under the difficulty choice' },
+  kind:     { id: 'kind',     dir: 'kinds',     w: 1280, h: 720,  alpha: false, shownIn: 'jump chart, beside each system' },
 };
 
 /** The planets the fuel stops hang over, and the two debrief scenes. */
@@ -111,4 +114,15 @@ export const FLEET = [
  * The cards that open at a place, and the place scene each shows (a `jobs` picture, tall like the job scenes):
  * the depot, the audit dock, the Dust Market raft and Ned's yard.
  */
-export const PLACE_SCENES: Record<string, string> = { depot_hail: 'sc_depot', audit_hail: 'sc_audit', market_stall: 'sc_market', story_yard_done: 'sc_yard' };
+export const PLACE_SCENES: Record<string, string> = {
+  depot_hail: 'sc_depot', audit_hail: 'sc_audit', market_stall: 'sc_market', story_yard_done: 'sc_yard',
+  // story beats: the Narrows checkpoint, the Last Toll, the Voice's foundry, the Thren, the helm, the Long Walk, Kessel Hold, the damping field
+  narrows_checkpoint: 'sc_narrows', story_toll: 'sc_lasttoll', story_voice: 'sc_foundry', story_thren: 'sc_followers', story_implant: 'sc_helm',
+  story_drift: 'sc_longwalk', story_oduya_rigs: 'sc_kessel', story_tollgate: 'sc_dampfield',
+};
+
+/** An unlock's own picture (`unlocks/`), or the inspector picture of the thing it opens (`specs/`) where the upgrade is drawn already. */
+export const UNLOCK_PICS = ['u_derelict', 'u_anomaly', 'u_ion', 'u_gold', 'u_ramjet'] as const;
+export const UNLOCK_SPEC: Record<string, string> = { u_swarm: 'tp_swarm', u_graviton: 'mn_gravity', u_regenerative: 'df_regenerative', u_juggernaut: 'cl_juggernaut' };
+/** The kinds of system the chart draws a picture for. */
+export const KINDS = ['port', 'mining', 'contested', 'transit'] as const;

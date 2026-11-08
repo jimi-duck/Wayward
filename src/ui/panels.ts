@@ -8,7 +8,7 @@ import { FEATURES, FEATURE_ORDER, metFlag } from '../content/features';
 import { grants, type Profile, type Recorded } from '../meta/profile';
 import { identity, type Levels } from '../sim/build';
 import { artImg } from './art';
-import type { SlotId } from '../content/art';
+import { UNLOCK_SPEC, type SlotId } from '../content/art';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { VARIANTS } from '../sim/enemies';
 import type { RunStats } from '../sim/run';
@@ -294,6 +294,9 @@ export class StartOptions {
   /** The difficulty's preview: its line, the three pips and, in Story, what a wreck costs. */
   private preview(id: SurvivalId): void {
     const K = SURVIVAL[id];
+    const pic = artImg('survival', id, 'sv-img');
+    $('sv-pic').hidden = !pic;
+    $('sv-pic').replaceChildren(...(pic ? [pic] : []));
     $('sv-t').textContent = t(K.tag);
     $('diff-s').textContent = t(K.text);
     const pips = (n: number, cls: string) => h('i', cls, '', ...[1, 2, 3].map((k) => h('s', k <= n ? 'on' : '')));
@@ -332,7 +335,8 @@ export class StartOptions {
       const list = $('logbook-l');
       list.replaceChildren(...UNLOCKS.map((u) => {
         const got = p.earned.includes(u.id);
-        return h('li', got ? 'on' : '', '', h('b', '', got ? t(u.name) : '???'), h('span', 'kind', t(u.kind)), h('p', '', t(got ? u.text : u.hint)));
+        const spec = UNLOCK_SPEC[u.id];
+        return pictured(h('li', got ? 'on' : '', '', h('b', '', got ? t(u.name) : '???'), h('span', 'kind', t(u.kind)), h('p', '', t(got ? u.text : u.hint))), spec ? 'spec' : 'unlock', spec ?? u.id, got);
       }));
       $('logbook-s').textContent = [plural(a.journeys.length, '{n} journey', '{n} journeys'), t('{n} of {of} endings', { n: a.endings.length, of: ENDINGS.length }), t('{n} of {of} pieces of the Severance', { n: a.records.length, of: FRAGMENTS_ALL.length }), t('{n} of {of} sightings', { n: (a.sightings ?? []).filter((x) => OBSERVATIONS.some((o) => o.flag === x)).length, of: OBSERVATIONS.length }), t('{n} of {of} unlocks', { n: p.earned.length, of: UNLOCKS.length }), t('none of it makes the ship stronger')].join(' · ');
     }

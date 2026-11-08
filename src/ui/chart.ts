@@ -106,6 +106,11 @@ const GLYPH: Record<string, string> = {
   hull: 'M2.5 2.5h11v6L8 14 2.5 8.5zM5.5 6h5',
   arrow: 'M2 8h11M9 4l4 4-4 4',
 };
+/** A picture of the kind of system (a port, a mining system, a contested one, a transit), where the build has one: desktop only. */
+function kindPic(kind: string): HTMLImageElement | null {
+  return matchMedia('(max-height: 520px), (max-width: 600px)').matches ? null : artImg('kind', kind, 'ch-kpic');
+}
+
 export function glyph(name: string): SVGElement {
   const e = svg('svg', { viewBox: '0 0 16 16', class: 'cg', 'aria-hidden': 'true', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
   e.append(svg('path', { d: GLYPH[name] ?? GLYPH.transit! }));
@@ -389,7 +394,7 @@ export class ChartPanel {
       // one stats line: days, fluid (gold when the tank is short), the way to the goal, and where the Wanted level goes
       const stat = (cls: string, text: string) => h('span', cls, text);
       const b = h('button', `ch-opt ${f.stance}${i === this.sel ? ' sel' : ''}`, '',
-        h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), glyph(s.kind), h('b', '', s.name), h('span', `chip d${f.danger}`, t(STANCE_WORD[f.stance])), ...(this.expected.has(s.id) ? [h('span', 'chip her', t('Calloway may expect this'))] : [])),
+        h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), kindPic(s.kind) ?? glyph(s.kind), h('b', '', s.name), h('span', `chip d${f.danger}`, t(STANCE_WORD[f.stance])), ...(this.expected.has(s.id) ? [h('span', 'chip her', t('Calloway may expect this'))] : [])),
         h('div', 'ch-o2', '',
           stat('', days(f.days)),
           stat(f.short ? 'short' : '', `${f.fuel} ${t('fluid')}`),

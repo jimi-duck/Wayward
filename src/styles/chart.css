@@ -63,6 +63,7 @@
 .ch-opt:focus-visible { outline: 2px solid var(--pick-hi); outline-offset: 2px; }
 .ch-o1 { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .ch-o1 kbd { flex: none; }
+.ch-kpic { flex: none; width: 64px; height: 36px; object-fit: cover; border: 1px solid var(--line); clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px); }
 .ch-o1 .cg { flex: none; width: 18px; height: 18px; color: var(--ink-2); }
 .ch-opt.sel .ch-o1 .cg { color: var(--pick-hi); }
 .ch-o1 b { flex: 1 1 auto; min-width: 0; font: 600 17px/1.15 var(--font-rail); letter-spacing: .03em; overflow-wrap: anywhere; }
