@@ -46,6 +46,13 @@ code carries it.
   waits on the relay handshake holds the gate for good; anything else lets go
   after `GATE_HOLD` (240 s) and is carried to play first at the next stop.
   The Slow Door also holds for `SLOW_DOOR` (180 s) from arrival.
+- A shut gate shows it from any distance (`World.holdOf`, `gateWhy`): the
+  ring's strips go a low caution gold and the throat stays dark; the HUD
+  sub-line reads "Jump Gate shut · <reason>" (the Slow Door counts down, a key
+  just accepted reads "resetting"); a waiting relay makes the mast the
+  objective, with its range. The notice still fires once, at the gate.
+  Reasons: Ned's yard first, reach the relay mast, the gate is opening, a call
+  is coming in. A short tank is the tank bar, as before.
 - A stop's job rings first, as soon as the arrival's scan is done, and its main card follows (owner, 7 November 2026); a stop has one main card, a few two.
 - Every arrival has the same steps: approach, handshake at the relay mast
   (`relay_<gate>`), Ada's note, the answer, the way on. The gate's own card

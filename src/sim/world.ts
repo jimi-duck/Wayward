@@ -1046,7 +1046,8 @@ export class World implements EncounterHost {
     // the Narrows gate holds her while its scene plays: no spooling, so the script's lines are not held back as a jump's
     const inReach = dl < Math.max(APPROACH, b.spoolNeed * 46);
     const gateHeld = inReach && this.gateHeld();
-    if (!gateHeld) this.gateWhy = '';
+    // from afar the gate is just as shut: the HUD and the ring show it (quietly; the notice waits until she is at the gate)
+    if (!gateHeld) this.gateWhy = inReach ? '' : (this.holdOf()?.why ?? '');
     // a gate that held her and now lets her go says so
     if (inReach && !gateHeld && this.holdNoted && this.holdNoted !== 'open') {
       this.holdNoted = 'open';
@@ -1794,32 +1795,51 @@ export class World implements EncounterHost {
    * stop. The Slow Door also takes SLOW_DOOR seconds to open. Called only with the gate in reach.
    */
   private gateHeld(): boolean {
-    const sc = this.script, b = this.bk;
-    // the hull is still the company's grey (owner, 5 November 2026): the gate waits for the paint bay
-    if (b?.def.first && b.yard && paintDue(this.flags)) {
-      this.gateWhy = 'Ned’s yard first';
-      if (this.holdNoted !== this.gateWhy) { this.holdNoted = this.gateWhy; this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: this.gateWhy }); }
-      return true;
-    }
-    if (!sc || !b || this.gateLet) return false;
-    const tank = this.tankCap ? this.fuel / this.tankCap : 0;
-    const o = sc.owed(this.flags, tank);
-    const slow = b.def.script === 'slowdoor' && this.runTime - this.desk.arrived < SLOW_DOOR;
-    if (!o.any && !slow) return false;
-    // with the Warden key in, the gate is resetting: say so, so a gate that will not take her yet is never a mystery (the owner, 31 October 2026)
-    const lit = this.flags.has(relayFlag(b.def.script ?? ''));
-    this.gateWhy = o.handshake ? 'answer the relay first' : slow ? 'the gate is opening' : lit ? 'resetting after the key' : 'a call is coming in';
-    if (this.holdNoted !== this.gateWhy) {
-      this.holdNoted = this.gateWhy;
-      this.events.push(lit && !o.handshake && !slow
+    const sc = this.script;
+    const h = this.holdOf();
+    if (!h) return false;
+    if (this.holdNoted !== h.why) {
+      this.holdNoted = h.why;
+      // with the Warden key in, the gate is resetting: say so, so a gate that will not take her yet is never a mystery (the owner, 31 October 2026)
+      this.events.push(h.resetting
         ? { type: 'storyNotice', tone: 'amber', headline: 'Jump Gate resetting', reason: 'Warden key accepted · opens in a moment' }
-        : { type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: this.gateWhy });
+        : { type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: h.why });
     }
-    if (o.handshake) return true;
+    this.gateWhy = h.why;
+    if (h.paint || h.handshake) return true;
     if (this.holdAt === Infinity) this.holdAt = this.runTime;
-    if (!slow && this.runTime - this.holdAt >= GATE_HOLD) { sc.release(this.flags, tank); this.gateLet = true; return false; }
+    if (!h.slow && this.runTime - this.holdAt >= GATE_HOLD) { sc!.release(this.flags, this.tankCap ? this.fuel / this.tankCap : 0); this.gateLet = true; return false; }
     return true;
   }
+
+  /**
+   * What holds the Jump Gate now, at any distance and with no side effects ('' reasons are never returned): the paint bay, a relay not yet
+   * answered, the Slow Door, a beat owed. The gate's look and the HUD read it from afar, so a shut gate never looks open.
+   */
+  private holdOf(): { why: string; paint: boolean; handshake: boolean; slow: boolean; resetting: boolean } | null {
+    const sc = this.script, b = this.bk;
+    // the hull is still the company's grey (owner, 5 November 2026): the gate waits for the paint bay
+    if (b?.def.first && b.yard && paintDue(this.flags)) return { why: 'Ned’s yard first', paint: true, handshake: false, slow: false, resetting: false };
+    if (!sc || !b || this.gateLet) return null;
+    const o = sc.owed(this.flags, this.tankCap ? this.fuel / this.tankCap : 0);
+    const slow = b.def.script === 'slowdoor' && this.runTime - this.desk.arrived < SLOW_DOOR;
+    if (!o.any && !slow) return null;
+    const lit = this.flags.has(relayFlag(b.def.script ?? ''));
+    const resetting = lit && !o.handshake && !slow;
+    return { why: o.handshake ? 'reach the relay mast' : slow ? 'the gate is opening' : lit ? 'resetting after the key' : 'a call is coming in', paint: false, handshake: o.handshake, slow, resetting };
+  }
+
+  /** Seconds the Slow Door still needs (0 elsewhere, and once it is open). */
+  get gateEta(): number {
+    return this.bk?.def.script === 'slowdoor' && !this.gateLet ? Math.max(0, Math.ceil(SLOW_DOOR - (this.runTime - this.desk.arrived))) : 0;
+  }
+
+  /** Where the relay mast stands that the gate waits on, while it waits on it (the HUD names its range). */
+  get gateRelay(): { x: number; z: number } | null {
+    const b = this.bk;
+    return b && this.gateWhy === 'reach the relay mast' ? relayOf(b) : null;
+  }
+
   /** Why the Jump Gate is holding her now, in English for t() ('' when it is not): the HUD's sub-line. */
   gateWhy = '';
 
