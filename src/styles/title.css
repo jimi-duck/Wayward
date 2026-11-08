@@ -75,6 +75,10 @@
 
 /* what the picked difficulty means: one cyan line and three small meters */
 .sv-pre { display: grid; gap: 7px; margin-left: 18px; padding: 8px 12px; width: calc(100% - 18px); background: rgba(var(--void-rgb), .62); border-left: 1px solid var(--cy-dim); }
+.sv-pic { width: min(260px, 100%); aspect-ratio: 16 / 9; overflow: hidden; border: 1px solid rgba(var(--white-rgb), .25); }
+.sv-pic[hidden] { display: none; }
+.sv-img { display: block; width: 100%; height: 100%; object-fit: cover; }
+@media (max-height: 520px), (max-width: 600px) { .sv-pic { display: none; } }
 .sv-t { font: 700 13px/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--industrial-white); }
 .diff-s { display: none; }
 .sv-rule { font: 400 12px/1.35 var(--font-display); color: var(--ink); }

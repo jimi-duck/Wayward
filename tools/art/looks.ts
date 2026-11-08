@@ -201,8 +201,36 @@ export const DEBRIEF_LOOK: Record<string, string> = {
   limping: 'the damaged Wayward approaching a port on one engine, trailing vented gas, a figure watching from the dock',
 };
 
+/** The pictures of the start menu, the Archive's unlocks and the chart's system kinds. */
+export const UNLOCK_LOOK: Record<string, string> = {
+  u_derelict: 'a dead hull drifting in the dark with a cutting-lamp rig fixed to it, sparks and amber work lights; salvage, not danger',
+  u_anomaly: 'a ring of bent starlight, stars and debris smeared round an invisible centre; eerie and quiet, restrained glow, no neon',
+  u_ion: 'the Wayward\'s engine pods burning a deep ember red-orange exhaust, a cosmetic colour, seen from behind and slightly below',
+  u_gold: 'the Wayward\'s engine pods burning a warm dull-gold exhaust, a cosmetic colour, seen from behind and slightly below',
+  u_ramjet: 'the Wayward\'s bow scoop lit white-hot at the intake, long speed streaks and ion dust sweeping back',
+};
+export const SURVIVAL_LOOK: Record<string, string> = {
+  drifter: 'the Wayward drifting slowly through a quiet field of sparse rocks under a soft nebula, no enemies, long calm light',
+  prospector: 'the Wayward mining a big cyrite-veined rock with a teal laser, one distant patrol, steady work',
+  raider: 'the Wayward stripping a broken capital-ship wreck with a tractor beam while hostile ships close in; tense, scavenging',
+};
+export const KIND_LOOK: Record<string, string> = {
+  port: 'a lane port station with a docking ring and fuel tanks, amber work lights, traffic arriving; safe and busy',
+  mining: 'a dense rock field with ore glints and mining laser flashes, a small rig and tug at work; heavy, industrial',
+  contested: 'a tense standoff, a Custody cutter and raider ships facing each other across a lane, the Wayward between them',
+  transit: 'an almost empty straight lane with a distant jump gate, long and quiet, a few drifting rocks, the Wayward alone',
+};
+
 /** What each job looks like as a scene: the moment, not the whole story. */
 export const JOB_SCENE: Record<string, string> = {
+  sc_narrows: 'the Narrows checkpoint: a Custody inspection station across a narrow gap between two rock walls, a gate arch with teal scanning beams, the black-and-white inspector\'s cutter with thin red piping parked beside it; the Wayward small at the arch',
+  sc_lasttoll: 'the Last Toll: an archive station at the very end of the lanes, a vast quiet block of stacked record vaults with one row of warm amber windows lit and a dark toll arch; calm, melancholy, the Wayward small and slow before it',
+  sc_foundry: 'the Voice\'s foundry: a huge dormant factory hull whose whole wall is terminals, every screen lit teal in unison, conveyor arms folded, one lit docking cradle waiting; the Wayward small before it',
+  sc_followers: 'the Thren following: a slow loose formation of grey-violet Thren objects trailing the Wayward, every one turned to follow her; calm and uncanny, not a monster',
+  sc_helm: 'the Wayward\'s own cockpit seen from behind the pilot seat: a dark cabin of old patched controls, a helm panel where a thin teal routine thread of light is paused mid-line, stars beyond the glass; no pilot visible',
+  sc_longwalk: 'the Long Walk: a long column of old patched Drift ships crossing a dark lane at walking pace, lamps low, a single frail light in each viewport; the Wayward alongside at the tail',
+  sc_kessel: 'Kessel Hold under attack: a rig-ringed mining hold station, rigs burning in the dark, raider silhouettes closing, defenders\' lamps still lit; the Wayward small and arriving',
+  sc_dampfield: 'the damping field: a jump-gate ring with its teal damping ring lit and a heavy black-and-white Continuance cutter parked at it, waiting; the Wayward small and slowing before it',
   sc_depot: 'the Frontier Supply Depot, a yellow-orange industrial depot with a docking ring, a damping-field ring in teal, work lights, fuel tanks and cargo racks; one hauler berthed, the Wayward approaching the ring',
   sc_audit: 'Kellern Audit Dock, an off-white company yard with an inspection arch, stencilled bay numbers and cold white work lights; a teal scanning beam sweeping a waiting hull; Custody grey-black and a thin red stripe on the arch',
   sc_market: 'the Dust Market, a raft of Dust Traders\' stalls adrift on a lane: awnings, hanging lanterns in warm amber, crates of warheads and plating, tethered skiffs, the back deck open to space; the Wayward slowing alongside',
