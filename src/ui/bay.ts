@@ -9,7 +9,7 @@ import { profileOf } from '../sim/profile';
 import { stepOf } from '../sim/tutor';
 import type { World } from '../sim/world';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
-import { icon, nodeIcon } from './icons';
+import { icon, nodeIcon, paint } from './icons';
 import { artImg, artUrl } from './art';
 import { opsOf, opsText } from './ops';
 import { tick } from './tick';
@@ -41,7 +41,7 @@ type View = 'picks' | Tab;
 const ROLE_NAME: Record<PickRole, string> = { weapons: 'Weapons', defence: 'Defence', ship: 'Ship' };
 
 const TAB_ICON: Record<View, string> = {
-  picks: 'i-event', hull: 'i-hull', weapons: 'i-laser', ordnance: 'i-torp', engines: 'i-engine', defence: 'i-shield', utility: 'i-rock', signals: 'i-signal', reactor: 'i-core', synergies: 'i-link',
+  picks: 'tab_picks', hull: 'tab_hull', weapons: 'tab_weapons', ordnance: 'tab_ordnance', engines: 'tab_engines', defence: 'tab_defence', utility: 'tab_utility', signals: 'tab_signals', reactor: 'tab_reactor', synergies: 'tab_synergies',
 };
 
 /**
@@ -333,7 +333,7 @@ export class BayPanel {
   private confirm(w: World, id: string): void {
     this.closing = true;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, bay = $('bay');
-    $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.purse))), h('span', '', t('Cyrite')));
+    $('bay-krail').replaceChildren(paint('cyrite'), h('b', '', num(Math.floor(w.purse))), h('span', '', t('Cyrite')));
     this.budgetBar(w);
     this.papers(w);
     [...$('bay-web').querySelectorAll('.pick-card')].forEach((c, k) => {
@@ -442,7 +442,7 @@ export class BayPanel {
     const o = opsOf(w);
     $('bay-ops').className = `ops ${o}`;
     $('bay-ops').textContent = opsText(o);
-    $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.purse))), h('span', '', t('Cyrite')));
+    $('bay-krail').replaceChildren(paint('cyrite'), h('b', '', num(Math.floor(w.purse))), h('span', '', t('Cyrite')));
     this.papers(w);
     $('bay').classList.toggle('picks', this.view === 'picks');
     $('bay').classList.toggle('arcade', isArcade(w));
@@ -542,8 +542,8 @@ export class BayPanel {
       const name = v === 'picks' ? t(arcade ? 'Pick one' : 'Suggested') : t(TABS[v].name);
       // a locked tab (the Arcade's) shows a padlock where the others show their state mark
       const mark = v === 'picks' || locked ? 'none' : this.markOf(w, v);
-      const b = h('button', `bay-tab${v === this.view ? ' on' : ''}${v === 'picks' ? ' sug' : ''}${locked ? ' locked' : ''}${mark !== 'none' ? ` m-${mark}` : ''}`, '', icon(TAB_ICON[v]), h('span', 'bt-n', name),
-        locked ? icon('i-lock') : mark !== 'none' ? h('i', `bt-m ${mark}`, MARK_GLYPH[mark]) : null) as HTMLButtonElement;
+      const b = h('button', `bay-tab${v === this.view ? ' on' : ''}${v === 'picks' ? ' sug' : ''}${locked ? ' locked' : ''}${mark !== 'none' ? ` m-${mark}` : ''}`, '', paint(TAB_ICON[v]), h('span', 'bt-n', name),
+        locked ? paint('lock') : mark !== 'none' ? h('i', `bt-m ${mark}`, MARK_GLYPH[mark]) : null) as HTMLButtonElement;
       if (mark !== 'none') b.setAttribute('aria-description', t(MARK_WORD[mark]));
       b.type = 'button';
       b.setAttribute('role', 'tab');
@@ -551,7 +551,7 @@ export class BayPanel {
       if (locked) { b.setAttribute('aria-disabled', 'true'); b.tabIndex = -1; b.title = t('Story mode: plan your own build'); }
       b.addEventListener('click', (e) => { e.stopPropagation(); this.go(v); });
       return b;
-    }), ...(arcade ? [h('p', 'bay-lock-note', '', icon('i-lock'), document.createTextNode(` ${t('Story: full refit control')}`))] : []), this.profile(w));
+    }), ...(arcade ? [h('p', 'bay-lock-note', '', paint('lock'), document.createTextNode(` ${t('Story: full refit control')}`))] : []), this.profile(w));
   }
 
   /** The ship's papers along the foot of the web: her designation, and what the registry says of her. Quiet; desktop only. */
@@ -612,7 +612,7 @@ export class BayPanel {
     });
     const empty = h('p', 'pick-none', t(w.bk ? 'No upgrade available yet · collect salvage to earn Cyrite' : 'Nothing to fit yet · break rock for Cyrite'));
     const arcade = isArcade(w);
-    $('bay-tab-h').replaceChildren(icon('i-event'), h('span', 'bw-n', t(arcade ? 'Pick one' : 'Suggested')), h('span', 'bw-s', t(w.bk && arcade ? 'Your first refit' : arcade ? 'Three refits for your ship' : 'Picked for your ship')));
+    $('bay-tab-h').replaceChildren(paint('tab_picks'), h('span', 'bw-n', t(arcade ? 'Pick one' : 'Suggested')), h('span', 'bw-s', t(w.bk && arcade ? 'Your first refit' : arcade ? 'Three refits for your ship' : 'Picked for your ship')));
     $('bay-web').replaceChildren(h('div', 'pick-row', '', ...(cards.length ? cards : [empty])),
       h('p', 'pick-more', t('Want to plan your own build? Pick a part of the ship on the left.')));
     $('bay-insp').replaceChildren();
@@ -683,7 +683,7 @@ export class BayPanel {
     const X = (n: WebNode) => ((n.tier - 0.5) / Math.max(tiers, 3)) * 100;
     const Y = (n: WebNode) => ((n.row + 0.5) / Math.max(rows, 3)) * 100;
     const mark = this.markOf(w, tab);
-    $('bay-tab-h').replaceChildren(icon(TAB_ICON[tab]), h('span', 'bw-n', t(TABS[tab].name)), h('span', 'bw-s', t(TABS[tab].sub)),
+    $('bay-tab-h').replaceChildren(paint(TAB_ICON[tab]), h('span', 'bw-n', t(TABS[tab].name)), h('span', 'bw-s', t(TABS[tab].sub)),
       ...(mark !== 'none' ? [h('span', `bw-m ${mark}`, '', h('i', '', MARK_GLYPH[mark]), h('span', '', t(MARK_WORD[mark])))] : []));
 
     // the links behind, as hardware: a bus a parent's children share (a fork, drawn as a junction),

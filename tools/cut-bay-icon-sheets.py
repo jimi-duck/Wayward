@@ -26,6 +26,9 @@ ORDER = {
     'redraw-5': 'rx_core rx_sinks sy_arc_shield sy_arc_torps sy_detonator sy_plasma_torps sy_ramjet tech_custody tech_gutter tech_office tech_thren tech_voice',
     'redraw-6': 'tp_bay tp_cluster tp_heavy tp_magazine tp_painter tp_precision tp_swarm tp_swarm_volley tp_tracking tp_yield ut_matrix ut_prospector',
     'redraw-7': 'ut_quiet ut_salvager ut_scanner ut_tactical ut_tractor',
+    'ui-1': 'tab_picks tab_hull tab_weapons tab_ordnance tab_engines tab_defence tab_utility tab_signals tab_reactor tab_synergies job gear',
+    'ui-2': 'lock fluid supplies cyrite kind_port kind_mining kind_contested kind_transit alert hostile capital event',
+    'redo-8': 'hl_frame mo_dampers mo_jets mn_layer ut_quiet cl_arc_reach ph_pierce md_baffles rx_sinks tp_bay mo_deflector mn_racks',
 }
 
 

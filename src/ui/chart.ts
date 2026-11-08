@@ -1,3 +1,4 @@
+import { paint } from './icons';
 import type { SystemKind } from '../content/systems';
 import { overRatings, weightFuel } from '../sim/budgets';
 import { expects, fileLines } from '../sim/calloway';
@@ -111,6 +112,15 @@ function kindPic(kind: string): HTMLImageElement | null {
   return matchMedia('(max-height: 520px), (max-width: 600px)').matches ? null : artImg('kind', kind, 'ch-kpic');
 }
 
+const PAINTED = new Set(['fluid', 'cyrite', 'supplies']);
+function painted(id: string): Element { const el = paint(id); el.classList.add('cg'); return el; }
+/** The painted glyph of a system kind (a mask, sized like the line glyphs), else the line glyph. */
+function kindIcon(kind: string): Element {
+  if (!['port', 'mining', 'contested', 'transit'].includes(kind)) return glyph(kind);
+  const el = paint(`kind_${kind}`);
+  el.classList.add('cg');
+  return el;
+}
 export function glyph(name: string): SVGElement {
   const e = svg('svg', { viewBox: '0 0 16 16', class: 'cg', 'aria-hidden': 'true', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
   e.append(svg('path', { d: GLYPH[name] ?? GLYPH.transit! }));
@@ -143,14 +153,14 @@ export function fillWall(j: Journey, to: { s: HTMLElement; lead: HTMLElement; li
 /** The stores, one slim row: what the jumps burn, what buys, what the trip eats, what keeps the hull. Low is caution gold, critical red. */
 export function storeCells(j: Journey, short: boolean): HTMLElement[] {
   const c = j.carry;
-  const cell = (ic: string, k: string, v: string, cls = '', why = '') => { const e = h('span', cls, '', h('span', 'k', '', glyph(ic), h('span', 'kt', k)), h('b', '', v)); if (why) e.title = why; return e; };
+  const cell = (ic: string, k: string, v: string, cls = '', why = '') => { const e = h('span', cls, '', h('span', 'k', '', (PAINTED.has(ic) ? painted(ic) : glyph(ic)), h('span', 'kt', k)), h('b', '', v)); if (why) e.title = why; return e; };
   const tank = short ? (c.fuel < 1 ? 'crit' : 'low') : '';
   const food = c.supplies <= 0 ? 'crit' : c.supplies <= LOW_SUPPLIES ? 'low' : '';
   const hull = c.plates <= 1 ? 'crit' : c.plates <= 2 ? 'low' : '';
   return [
-    cell('drop', t('Jump fluid'), String(Math.floor(c.fuel)), tank, t('Jump fluid: the drive burns it to jump. The ship refines what you mine into the tank first.')),
-    cell('gem', t('Cyrite'), num(c.cyrite), '', t('Cyrite is your money, for upgrades and ports. What the tank cannot hold stays Cyrite.')),
-    cell('box', t('Supplies'), String(c.supplies), food, t('Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.')),
+    cell('fluid', t('Jump fluid'), String(Math.floor(c.fuel)), tank, t('Jump fluid: the drive burns it to jump. The ship refines what you mine into the tank first.')),
+    cell('cyrite', t('Cyrite'), num(c.cyrite), '', t('Cyrite is your money, for upgrades and ports. What the tank cannot hold stays Cyrite.')),
+    cell('supplies', t('Supplies'), String(c.supplies), food, t('Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.')),
     cell('hull', t('Hull'), String(c.plates), hull, t('Hull plates: each is one hit the Wayward can take.')),
   ];
 }
@@ -394,7 +404,7 @@ export class ChartPanel {
       // one stats line: days, fluid (gold when the tank is short), the way to the goal, and where the Wanted level goes
       const stat = (cls: string, text: string) => h('span', cls, text);
       const b = h('button', `ch-opt ${f.stance}${i === this.sel ? ' sel' : ''}`, '',
-        h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), kindPic(s.kind) ?? glyph(s.kind), h('b', '', s.name), h('span', `chip d${f.danger}`, t(STANCE_WORD[f.stance])), ...(this.expected.has(s.id) ? [h('span', 'chip her', t('Calloway may expect this'))] : [])),
+        h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), kindPic(s.kind) ?? kindIcon(s.kind), h('b', '', s.name), h('span', `chip d${f.danger}`, t(STANCE_WORD[f.stance])), ...(this.expected.has(s.id) ? [h('span', 'chip her', t('Calloway may expect this'))] : [])),
         h('div', 'ch-o2', '',
           stat('', days(f.days)),
           stat(f.short ? 'short' : '', `${f.fuel} ${t('fluid')}`),

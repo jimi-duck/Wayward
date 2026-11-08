@@ -1,7 +1,7 @@
 import { tradeoff, type TradeEntry, type Tradeoff } from '../sim/tradeoff';
 import type { World } from '../sim/world';
 import { h } from './dom';
-import { icon } from './icons';
+import { paint } from './icons';
 import { t } from '../i18n';
 
 // The whole trade of a part as a row of chips beside its Fit button (sim/tradeoff.ts does the sums):
@@ -44,7 +44,7 @@ export function tradeRow(w: World, id: string, small = false): HTMLElement | nul
   const chips = chipsOf(w, tradeoff(w.levels, id, !w.bk));
   if (!chips.length) return null;
   const fold = chips.length > MAX_CHIPS, shown = fold ? MAX_CHIPS - 1 : chips.length;
-  const el = (c: Chip, hidden = false) => h('span', `tr-chip ${c.tone}${hidden ? ' tr-hide' : ''}`, '', ...(c.fluid ? [icon('i-fluid')] : []), document.createTextNode(c.text));
+  const el = (c: Chip, hidden = false) => h('span', `tr-chip ${c.tone}${hidden ? ' tr-hide' : ''}`, '', ...(c.fluid ? [paint('fluid')] : []), document.createTextNode(c.text));
   const row = h('div', `tr-row${small ? ' small' : ''}`, '', ...chips.slice(0, shown).map((c) => el(c)), ...chips.slice(shown).map((c) => el(c, true)));
   row.setAttribute('role', 'group');
   row.setAttribute('aria-label', t('What this changes'));
