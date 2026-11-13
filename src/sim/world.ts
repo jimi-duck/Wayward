@@ -38,6 +38,7 @@ import { Barge, bargeBerth } from './barge';
 import { Gantry, gantryBerth } from './gantry';
 import { ThrenSeed, seedBerth, seedLine, SEED_CYRITE, SEED_PARTS } from './thrseed';
 import { livingOf } from './living';
+import { GATE_OPEN, HOLD_FIRE, NOTE, PATIENCE, PATIENCE_AT, PATIENCE_CARD, REBOOT, REBOOTING, type NarrowsState } from './narrows';
 import { BUMP_QUIET, BUMP_SPEED, solidsOf } from './solids';
 import { Den, denBerth, DEN_BOUNTY, DEN_CYRITE, DEN_HP, DEN_PARTS, DEN_R } from './den';
 import { Market, marketBerth } from './market';
@@ -1035,8 +1036,8 @@ export class World implements EncounterHost {
         this.openComms((b.def.home && CARD_BY_ID.story_registry) || (b.def.checkpoint && CARD_BY_ID[b.def.checkpoint]) || CARD_BY_ID.checkpoint!);
       } else {
         b.blockade = 'done';
-        // an open lane's toll is not every jump's: a roll, and not on the heels of another call; none in the first system past Cerro, whose story is enough
-        const def = !b.def.quiet && !b.def.safe && !b.def.first && this.deskRng.next() < DESK.toll && this.desk.may('major', 'free', this.runTime) ? pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll') : null;
+        // an open lane's toll is not every jump's: a roll, and not on the heels of another call; none in the first system past Cerro, whose story is enough, nor at a road gate, whose arrival is authored
+        const def = !b.def.quiet && !b.def.safe && !b.def.first && !b.def.relay && this.deskRng.next() < DESK.toll && this.desk.may('major', 'free', this.runTime) ? pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll') : null;
         if (def) this.openComms(def);
       }
     }
@@ -1586,7 +1587,7 @@ export class World implements EncounterHost {
   private stepFieldWall(): void {
     const b = this.bk;
     if (!b) return;
-    const rings = [b.lane, ...(b.port ? [b.port] : [])];
+    const rings = [...(this.fieldDown ? [] : [b.lane]), ...(b.port ? [b.port] : [])];
     const inside = (x: number, z: number) => rings.some((k) => Math.hypot(x - k.x, z - k.z) < SAFE_R);
     for (const list of [this.bolts, this.torps, this.shots, this.webs] as Array<Array<{ x: number; z: number }>>) {
       for (let i = list.length - 1; i >= 0; i--) if (inside(list[i]!.x, list[i]!.z)) list.splice(i, 1);
@@ -1619,7 +1620,7 @@ export class World implements EncounterHost {
     const b = this.bk;
     if (!b || !this.alive) return null;
     const s = this.ship;
-    if (Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < SAFE_R) return 'lane';
+    if (!this.fieldDown && Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < SAFE_R) return 'lane';
     if (b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < SAFE_R) return 'port';
     return null;
   }
@@ -1798,7 +1799,8 @@ export class World implements EncounterHost {
     const sc = this.script;
     const h = this.holdOf();
     if (!h) return false;
-    if (this.holdNoted !== h.why) {
+    // (the Narrows' reboot has its own notice, as the gate goes down)
+    if (this.holdNoted !== h.why && h.why !== 'the gate is rebooting') {
       this.holdNoted = h.why;
       // with the Warden key in, the gate is resetting: say so, so a gate that will not take her yet is never a mystery (the owner, 31 October 2026)
       this.events.push(h.resetting
@@ -1821,6 +1823,12 @@ export class World implements EncounterHost {
     // the hull is still the company's grey (owner, 5 November 2026): the gate waits for the paint bay
     if (b?.def.first && b.yard && paintDue(this.flags)) return { why: 'Ned’s yard first', paint: true, handshake: false, slow: false, resetting: false };
     if (!sc || !b || this.gateLet) return null;
+    // the Narrows: locked by Custody until Ada's key is in, then down while it reboots under her key (sim/narrows.ts)
+    if (b.def.script === 'narrows' && this.narrows !== 'done') {
+      const key = this.flags.has(relayFlag('narrows'));
+      if (key) return { why: 'the gate is rebooting', paint: false, handshake: false, slow: true, resetting: false };
+      return { why: 'locked by Custody', paint: false, handshake: true, slow: false, resetting: false };
+    }
     const o = sc.owed(this.flags, this.tankCap ? this.fuel / this.tankCap : 0);
     const slow = b.def.script === 'slowdoor' && this.runTime - this.desk.arrived < SLOW_DOOR;
     if (!o.any && !slow) return null;
@@ -1831,13 +1839,14 @@ export class World implements EncounterHost {
 
   /** Seconds the Slow Door still needs (0 elsewhere, and once it is open). */
   get gateEta(): number {
+    if (this.bk?.def.script === 'narrows' && this.narrows !== 'done') return this.narrows === 'reboot' ? Math.max(0, Math.ceil(REBOOT - (this.runTime - this.narrowsAt))) : REBOOT;
     return this.bk?.def.script === 'slowdoor' && !this.gateLet ? Math.max(0, Math.ceil(SLOW_DOOR - (this.runTime - this.desk.arrived))) : 0;
   }
 
   /** Where the relay mast stands that the gate waits on, while it waits on it (the HUD names its range). */
   get gateRelay(): { x: number; z: number } | null {
     const b = this.bk;
-    return b && this.gateWhy === 'reach the relay mast' ? relayOf(b) : null;
+    return b && (this.gateWhy === 'reach the relay mast' || this.gateWhy === 'locked by Custody') ? relayOf(b) : null;
   }
 
   /** Why the Jump Gate is holding her now, in English for t() ('' when it is not): the HUD's sub-line. */
@@ -1876,6 +1885,63 @@ export class World implements EncounterHost {
   private gateLet = false;
   /** The hold's reason last told to her ('' when none): a new reason is told again, and the gate opening is told once. */
   private holdNoted = '';
+
+  /** The Narrows' scene (sim/narrows.ts): where it stands, when the gate went down, the blockade's hulls, and what is done. */
+  private narrows: NarrowsState | null = null;
+  private narrowsAt = 0;
+  private narrowsHulls: number[] = [];
+  private patienceSaid = false;
+  private patienceAnswered = false;
+
+  /** The Narrows gate is down and its damping field with it: no safe ring, and hostile hulls come in. */
+  get fieldDown(): boolean { return this.narrows === 'reboot'; }
+
+  /**
+   * The Narrows, once Ada's note has closed: the gate reboots under her key with its field down, the blockade comes, the Patience
+   * calls in the middle of it, and her answer changes the fight. A journey that reaches the Narrows with the note read finds it open.
+   */
+  private stepNarrows(t: number): void {
+    const f = this.flags;
+    this.narrows ??= f.has(NOTE) ? 'done' : 'idle';
+    if (this.narrows === 'done' || this.comms || this.call) return;
+    if (this.narrows === 'idle') {
+      if (!f.has(NOTE)) return;
+      this.narrows = 'reboot';
+      this.narrowsAt = t;
+      f.add(REBOOTING);
+      f.add('ashgrove_met');
+      this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Jump Gate rebooting', reason: 'damping field down' });
+      this.holdNoted = 'the gate is rebooting';
+      // a "locked" notice still waiting its turn is out of date now
+      this.floor.drop((e) => e.type === 'storyNotice' && e.headline === 'Jump Gate holding');
+      // the blockade: the Kind Regard and her pickets, from the gate's side
+      this.narrowsHulls = this.applyOutcome({ text: '', spawn: [{ variant: 'lancer', n: 1, from: 'ahead' }, { variant: 'picket', n: 2, from: 'ahead' }] }, 0, []);
+      return;
+    }
+    const since = t - this.narrowsAt;
+    if (!this.patienceSaid && since >= PATIENCE_AT) {
+      this.patienceSaid = true;
+      this.events.push({ type: 'storyNotice', tone: 'red', headline: 'CCV Patience inbound', reason: 'a Governor’s ship' });
+    }
+    const card = CARD_BY_ID[PATIENCE];
+    if (card && this.patienceSaid && since >= PATIENCE_AT + PATIENCE_CARD && !this.cardsSeen.has(PATIENCE) && this.phase === 'play') { this.openComms(card); return; }
+    if (this.cardsSeen.has(PATIENCE) && !this.patienceAnswered) {
+      this.patienceAnswered = true;
+      if (f.has(HOLD_FIRE)) {
+        // she calls the blockade off: the Kind Regard and her pickets break away
+        for (const al of this.aliens) if (this.narrowsHulls.includes(al.id) || al.faction === 'custody') leave(al);
+        this.events.push({ type: 'ping', id: 'narrows_hold', from: tr('Governor Idris Calloway'), caller: 'calloway', text: tr('“Kind Regard, hold your fire. She’s mine to talk to.”'), moment: 'calm', system: this.bk?.def.name ?? '' });
+      } else if (f.has('calloway_lie_caught')) {
+        this.narrowsHulls.push(...this.applyOutcome({ text: '', spawn: [{ variant: 'picket', n: 2, from: 'ahead' }] }, 0, []));
+      }
+    }
+    if (since >= REBOOT && this.cardsSeen.has(PATIENCE)) {
+      this.narrows = 'done';
+      f.add(GATE_OPEN);
+      this.holdNoted = 'open';
+      this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Jump Gate open', reason: 'fly through' });
+    }
+  }
 
   /** A hub beat of the stop's script is still due: a job's call waits for it. */
   scriptHoldsJob(): boolean { return !!this.script?.holdsJob(this.flags, this.tankCap ? this.fuel / this.tankCap : 0); }
@@ -1981,6 +2047,7 @@ export class World implements EncounterHost {
     if (this.flags.has(ON_ROAD)) derive(this.flags);
     else for (const [clue, sig] of SIG_CLUES) if (this.flags.has(clue)) this.flags.add(sig);
     if (this.script) for (const o of this.script.step(this.scriptCtx(busy, t))) this.playOutput(o);
+    if (b.def.script === 'narrows' && this.flags.has(ON_ROAD)) this.stepNarrows(t);
     // the first system's docks always call when you come up on them, the depot once and the audit dock while its lock holds
     if (b.def.first && !this.docked) {
       const near = (p: { x: number; z: number } | null) => !!p && Math.hypot(s.x - p.x, s.z - p.z) < PORT_CALL;
@@ -2529,7 +2596,7 @@ export class World implements EncounterHost {
     const s = this.ship;
     const arena: Arena = { bulwarks: this.field.bulwarks, rocks: this.field.rocks, aliens: this.aliens, bolts: this.bolts, notice: this.stats.notice };
     const well = this.encounter?.id === 'anomaly' && live(this.encounter) && !this.encounter.anchored ? this.encounter : null;
-    const safe = !!this.safe, keep = this.bk ? [this.bk.lane, ...(this.bk.port ? [this.bk.port] : []), ...(this.bk.audit ? [this.bk.audit] : [])] : [];
+    const safe = !!this.safe, keep = this.bk ? [...(this.fieldDown ? [] : [this.bk.lane]), ...(this.bk.port ? [this.bk.port] : []), ...(this.bk.audit ? [this.bk.audit] : [])] : [];
     // the pack calls its plays before anyone moves (sim/tactics.ts)
     if (this.alive && !safe) this.pack.step(dt, this.aliens, s, this.rng);
     for (let i = this.aliens.length - 1; i >= 0; i--) {
@@ -3330,6 +3397,8 @@ export class World implements EncounterHost {
     if (this.bk) {
       // the Story mode: the Custody notices
       this.bk.heat = Math.min(1, this.bk.heat + (al.faction === 'custody' ? HEAT_KILL_CUSTODY : HEAT_KILL) * this.survival.heat.kill);
+      // one of Ashgrove's own, at the Narrows: he will remember it (content/script/legs.ts)
+      if (this.narrows === 'reboot' && this.narrowsHulls.includes(al.id)) this.flags.add('ashgrove_crossed');
       if (!this.aliens.some((a) => !a.escort && !a.extra)) this.rest();
     }
     const chance = (al.elite ? REPAIR_CHANCE_ELITE : REPAIR_CHANCE) * this.stats.repairChance;

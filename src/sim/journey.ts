@@ -271,14 +271,13 @@ export function sortieDef(j: Journey): SortieDef {
 }
 
 /**
- * The card that holds a road gate, if any (content/story.ts): Ashgrove at the Narrows and again at the Rift, the pickets Val sold
+ * The card that holds a road gate, if any (content/story.ts): Ashgrove at the Rift (the Narrows is a scene of its own, sim/narrows.ts), the pickets Val sold
  * your heading to at the Scrapgate (unless she was paid), the cranes at the Breaker when the strike did not hold, and Calloway's
  * damping field at the Tollgate. The Threshold's is her last meeting (sim/calloway.ts), dealt as before.
  */
 export function gateCheck(script: string | undefined, flags: readonly string[]): string | null {
   const has = (f: string) => flags.includes(f);
   switch (script) {
-    case 'narrows': return 'narrows_checkpoint';
     case 'rift': return 'rift_checkpoint';
     case 'scrapgate': return has('vell_betrayed') && !has('vell_paid') ? 'scrapgate_pickets' : null;
     case 'breaker': return has('strike_held') ? null : 'breaker_lockdown';
