@@ -132,8 +132,9 @@ export class Desk {
   may(tier: Weight, busy: Busy, now: number, eager = false, chain = false): boolean {
     if (busy === 'transit' || busy === 'fight') return false;
     if (tier === 'ambient') return true;
-    if (busy !== 'free' || (tier !== 'major' && now - this.arrived < (eager ? DESK.arriveCall : DESK.arrive))) return false;
-    if (now - this.lastThreat < (eager ? DESK.eagerSettle : DESK.settle[tier]) || now - this.lastMine < DESK.mineSettle) return false;
+    // a scene's call is the point of the system: it rings over mining and tight flying too (the world is paused while it is up), never over a fight
+    if ((busy !== 'free' && !(eager && (busy === 'mining' || busy === 'tight'))) || (tier !== 'major' && now - this.arrived < (eager ? DESK.arriveCall : DESK.arrive))) return false;
+    if (now - this.lastThreat < (eager ? DESK.eagerSettle : DESK.settle[tier]) || (!eager && now - this.lastMine < DESK.mineSettle)) return false;
     return now - this.lastClose >= (chain ? DESK.chain : eager ? Math.min(DESK.eager, DESK.gap[tier]) : DESK.gap[tier]);
   }
 

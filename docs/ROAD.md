@@ -54,6 +54,8 @@ code carries it.
   Reasons: Ned's yard first, reach the relay mast, the gate is opening, a call
   is coming in. A short tank is the tank bar, as before.
 - A stop's job rings first, as soon as the arrival's scan is done, and its main card follows (owner, 7 November 2026); a stop has one main card, a few two.
+- A call rings the moment the arrival's hush ends (9 s), and no later: it waits only for a line still on screen, not for notices or radio lines queued behind it, and it rings over mining and tight flying (the world is paused while it is up), never over a fight or the training. Every road scene with a call that is not a major card (Longwater, Davit Dock, Saltquay) rings on arrival too, not when the ship nears its site. Pilot, whole road, 2 seeds, 56 calls: all rang at 9.0 s (before: median 14 s, longest 55 s). A person who fights on arrival waits for the fight to end, by design (13 November 2026).
+- The offer's Reward column is read off the win outcome: Cyrite and supplies, then standing, Wanted and story chips in the card's short words, and "Debt −20 CR" on a step of the Account (`sim/jobpay.ts`).
 - Every arrival has the same steps: approach, handshake at the relay mast
   (`relay_<gate>`), Ada's note, the answer, the way on. The gate's own card
   comes from `gateCheck` in `sim/journey.ts`.

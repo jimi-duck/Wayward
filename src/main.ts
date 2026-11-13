@@ -13,7 +13,7 @@ import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
 import { chapterSave, clearJourney, hasBackup, loadJourney, restartChapter, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
 import { recap } from './sim/chapters';
-import { bounty } from './sim/mission';
+import { jobReward } from './sim/jobpay';
 import { cy } from './sim/purse';
 import { ARCADE_SURVIVAL } from './content/survival';
 import { autoCourse, bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
@@ -150,10 +150,7 @@ function boot(review: typeof import('./review') | null): void {
   const jobTerms = (o: Open): JobTerms | null => {
     const st = world.stage, win = st?.def.win;
     if (!st || st.def.card !== o.def.id || !win) return null;
-    const pay = bounty(win, world.pay);
-    const cyrite = cy(typeof pay.chits === 'number' ? pay.chits : 0) + (typeof pay.cyrite === 'number' ? pay.cyrite : 0);
-    const supplies = typeof pay.supplies === 'number' ? pay.supplies : 0;
-    return { reward: [...(cyrite > 0 ? [t('Up to {n} Cyrite', { n: num(cyrite) })] : []), ...(supplies > 0 ? [t('+{n} supplies', { n: supplies })] : [])], limit: st.def.goal.limit ?? 0 };
+    return { reward: jobReward(st.def.id, win, world.pay, num), limit: st.def.goal.limit ?? 0 };
   };
   const radio = new Radio((id) => radioAnswer(id), () => radioBlocked(), jobTerms);
   /** The card the comms panel is showing, so a slowed card that timed out can be taken down. */
