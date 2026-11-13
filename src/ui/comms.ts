@@ -511,6 +511,7 @@ export class CommsPanel {
       return;
     }
     const m = sv.main;
+    const sd = sv.side;
     const opener = d ? item(h('button', `ng-n ${d.row ? 'ns-c' : 'ns-open'}${m.role === 'cyan' ? '' : ` ${m.role}`}`, '',
       d.row ? h('kbd', '', String(view.choices.length + 1)) : null, h('span', 'ns-l', d.open), d.row ? null : h('b', '', '→')),
     () => this.setDoc(view, sv, true), d.row ? view.choices.length + 1 : 0) : null;
@@ -562,7 +563,9 @@ export class CommsPanel {
     if (face && !pic) face.innerHTML = view.face!;
     const who = m.who ? h('div', `ns-who${face ? '' : ' bare'}`, '', face, h('div', '', '', h('b', '', m.who.name), m.who.role ? h('span', '', m.who.role) : null)) : null;
     const timer = sv.timer ? h('div', 'ns-timer', '', h('i')) : null;
-    const panel = h('section', `ng ${m.role} ns-p ns-main${tpl ? ` ns-${sv.tpl}` : ''}`, '',
+    // a plain one-answer message (a person handing something over): the compact card with the amber selection
+    const hand = !tpl && m.role === 'cyan' && view.choices.length === 1 && !m.hero && !m.facts && !m.rows.length && m.rx == null && !d && (!!(m.letter && sd) || !m.letter);
+    const panel = h('section', `ng ${m.role} ns-p ns-main${tpl ? ` ns-${sv.tpl}` : ''}${hand ? ' ns-hand' : ''}`, '',
       head(m),
       timer,
       who,
@@ -571,21 +574,22 @@ export class CommsPanel {
       m.sub ? h('p', tpl ? 'ns-sub ns-ctx' : 'ns-sub', m.sub) : null,
       // a written message: who it is for and from, then the writer's own paragraphs and sign-off
       ...(m.letter ? [
+        // who handed it over, in one line at the top of the same card (never a second card beneath)
+        sd ? h('p', 'ns-lead', '', h('b', '', sd.from), document.createTextNode(sd.lines.join(' '))) : null,
         h('dl', 'ns-mail', '', ...m.letter.head.map(([k, v]) => h('div', '', '', h('dt', '', k), h('dd', '', v)))),
         h('div', 'ns-letter', '', ...m.lines.map((l) => h('p', '', l)), h('p', 'ns-sign', m.letter.sign)),
       ] : [quotes(m.lines)]),
       main.length ? h('div', `ns-rows${m.facts ? ' ns-facts' : ''}`, '', ...main) : null,
       m.note && !folded ? h('p', 'ns-note', m.note) : null,
       h('div', 'ns-acts', '', ...acts, ...(opener && d!.row ? [opener] : [])), keyRow);
-    const sd = sv.side;
-    const side = sd ? h('section', `ng ${sd.role} ns-p ns-side`, '', head(sd),
+    const side = sd && !m.letter ? h('section', `ng ${sd.role} ns-p ns-side`, '', head(sd),
       sd.title ? h('h2', 'ns-t', sd.title) : null, sd.sub ? h('p', 'ns-sub', sd.sub) : null,
       sd.label ? h('p', 'ns-label', sd.label) : null, quotes(sd.lines)) : null;
     // a voice on the radio sits beside the card, to its left; a status line sits under it
-    const lay = sd ? (sd.title ? 'row' : 'col') : tpl ? 'col' : 'one';
+    const lay = sd && !m.letter ? (sd.title ? 'row' : 'col') : tpl ? 'col' : 'one';
     $('cm-ng').dataset.lay = lay;
     // a card that opens at a place shows the place beside it, as tall as the card; phones on their side and upright phones go without it
-    const scene = lay !== 'row' && view.art.scene && !matchMedia('(max-height: 520px), (max-width: 600px)').matches ? artImg('job', view.art.scene, 'ns-scene-img') : null;
+    const scene = lay !== 'row' && view.art.scene && !matchMedia('(max-height: 640px), (max-width: 1099px)').matches ? artImg('job', view.art.scene, 'ns-scene-img') : null;
     $('cm-ng').replaceChildren(...(lay === 'row' ? [side!, panel] : [h('div', `ns-stack${scene ? ' scened' : ''}`, '', panel, side, scene ? h('figure', 'ns-scene', '', scene) : null)]));
     // the arrows walk the actions in reading order; the selection starts on the first answer
     this.items.sort((a, b) => (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
