@@ -1513,3 +1513,6 @@ html:not(.breakout).touch-ui:not(.pad-ui) #pause .term-s.full { display: none; }
 html.photo #photo-hint { display: block; animation: ph-hint 4s linear forwards; }
 @keyframes ph-hint { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
 html.photo #hud, html.photo #pause, html.photo #touch, html.photo #pause-b, html.photo #rv-labels, html.photo #rv-btn, html.photo #rv { visibility: hidden; }
+
+/* a card on the table hides the pause card: its words must not show through the glass */
+html:has(#comms:not([hidden])) #pause { display: none; }

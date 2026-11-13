@@ -282,3 +282,12 @@ Screenshots at 1600x900 and 568x320, English, every changed pop-up next to
 the mockup: rim, tight glow, see-through glass, role colour, no
 clipping, every answer reachable on the phone. For motion, sample the animations at fixed times
 (pause them and set `currentTime`; headless frames are too slow to catch them live) and check once with reduced motion.
+
+## Never squished (13 November 2026)
+
+- Answers keep their chips on their own line under the words (phones on their side keep them at the right), so a title never wraps in a narrow column.
+- A card's picture shows only from 1100px wide and 640px high; below that it goes before the text column is squeezed (the text column is never under 520px beside a picture).
+- On a short screen the card tightens (padding, answer height) so the last answer stays in view; phones on their side hide the title and show the hint only on the chosen answer.
+- The chosen answer on a template card or a one-answer message (`.ns-hand`) is the job offer's amber rim on a solid dark plate, never a pale fill.
+- An open card hides the pause card behind it, so nothing shows through the glass.
+- A message someone hands over (the order) is one card: the speaker's line leads inside it, no second card below.
