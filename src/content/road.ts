@@ -35,7 +35,7 @@ export interface RoadStop {
 
 export const ROAD: RoadStop[] = [
   { kind: 'port', holder: 'kellern', role: 'start', script: 'audit' },
-  { name: 'Northfold', purpose: 'quiet landfall', kind: 'transit', holder: 'none', port: null, role: 'landfall', job: 'nothing_to_declare', script: 'northfold' },
+  { name: 'Northfold', purpose: 'the quiet way to Halden’s Reach', kind: 'transit', holder: 'none', port: null, role: 'landfall', job: 'nothing_to_declare', script: 'northfold' },
   { name: 'Halden’s Reach', purpose: 'find the Warden’s record', kind: 'port', holder: 'kellern', port: 'Kellern Fuel Dock', role: 'hub', script: 'halden' },
   { name: 'Hollis', purpose: 'mine, and fill the tank', kind: 'mining', holder: 'none', port: null, role: 'work', job: 'follow_cyrite', script: 'hollis' },
   { name: 'Marlow', purpose: 'someone here keeps the real books', kind: 'port', holder: 'kellern', port: 'Kellern Claim Office', role: 'turn', script: 'marlow' },
@@ -132,7 +132,7 @@ const LAST: RoadStop[] = [
   stop('turn', 'Dimrim', 'mining', 'none', 'l_dimrim', { purpose: 'the second question' }),
   stop('breather', 'Lone Step', 'transit', 'none', 'l_step', { purpose: 'the third question' }),
   stop('pressure', 'Dusk Mark', 'contested', 'voice', 'l_dusk', { purpose: 'instruments disagree', scene: 'unknown_pulse' }),
-  stop('reckoning', 'Wane Rest', 'transit', 'none', 'l_wane', { purpose: 'the Threshold is behind her' }),
+  stop('reckoning', 'Wane Rest', 'transit', 'none', 'l_wane', { purpose: 'the Threshold is ahead' }),
 ];
 
 /** Every leg of the road, the Reach first (its audit dock included). */

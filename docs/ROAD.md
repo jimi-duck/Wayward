@@ -72,7 +72,7 @@ code carries it.
 - Quiet Line, Hester's crews, the Survey and the Account. A step counts when
   its job was won, not settled aside (sold, told, warned, stripped). Hester's
   count loses 1 for the Heavy Tanker and 2 for the Stolen Payroll. The debt is
-  80 CR less 14 a step of the Account.
+  60 CR less 20 a step of the Account.
 - `derive` rebuilds `relays_<n>` and `thread_<id>_<n>` every step, so the
   flags never drift from the jobs. It also sets, once, the three proofs the
   Tollgate's signature needs, each by either route: `sig_paid` (the Reach
