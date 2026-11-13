@@ -87,9 +87,28 @@ code carries it.
 
 ## The Narrows and the ghost
 
-The Narrows is a `gate`-kind system with script key `narrows`: a blockade
-card (Ashgrove), the relay mast (`RELAY_OFF` in `sim/breakout.ts`), Ada's
-first note and the Patience. The ghost at Hollis (`sim/ghost.ts`) is a
+The Narrows is a `gate`-kind system with script key `narrows`, played as one
+scene (owner, 13 November 2026; `sim/narrows.ts`, run by `World.stepNarrows`):
+
+1. **Locked.** Custody has locked the Jump Gate (Ashgrove says so on the
+   radio); the objective is Ada's relay (`RELAY_OFF` in `sim/breakout.ts`).
+   There is no checkpoint card here: Ashgrove's first card is at the Rift.
+2. **The key.** At the mast, "Warden key accepted" and Ada's first note.
+3. **Gate down.** As the note closes the gate reboots under her key for
+   `REBOOT` (90 s): the ring is dark, its damping field is off
+   (`World.fieldDown`: no safe ring, hostile hulls come in), and the Kind
+   Regard and two pickets come for her. The HUD counts it down.
+4. **The Patience.** 25 s in, Calloway's card. The truth, or a lie she
+   believes, calls the pickets off (`patience_hold`); a lie caught brings
+   two more; cutting the channel leaves them on her. Killing one of
+   Ashgrove's hulls here sets `ashgrove_crossed`.
+5. **The way out.** The gate opens (`narrows_gate_open`), Sam signs off.
+
+Script rows marked `urgent` play during the fight. `npm run pilot:narrows`
+flies the scene alone on a starter fit (8 seeds a policy, 13 November 2026):
+through 6, 7 and 7 of 8 by the fight, bluff and run policies, about 5 to 6
+minutes, against 7 of 8 for each on the old scene with the same fit. Pilot
+numbers, not playtests. The ghost at Hollis (`sim/ghost.ts`) is a
 passive contact outside `aliens`: it holds, matches speed, and is never
 explained.
 

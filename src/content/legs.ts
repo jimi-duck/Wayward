@@ -73,17 +73,17 @@ export const NOTE_CARDS: CardDef[] = [
 
   // ── the gates' cards ─────────────────────────────────────────────────────
   story({
-    // Ashgrove again, at the Rift: the registry worked once; Sam's codes are a long shot now
-    id: 'rift_checkpoint', gist: 'Ashgrove holds the gate again', kind: 'checkpoint', caller: 'custody',
+    // Ashgrove's checkpoint, at the Rift: he locked the Narrows gate and watched it go dark; this time he asks first
+    id: 'rift_checkpoint', gist: 'Ashgrove holds the gate', kind: 'checkpoint', caller: 'custody',
     from: 'Inspector Ashgrove · Offices of Peace · Kind Regard', title: 'Checkpoint, again',
-    text: '“Good afternoon again. That registry worked once. I’d think hard before sending it twice.”',
+    text: '“Good afternoon. Ashgrove, Kind Regard. You left the Narrows in a hurry. Send your registry, please.”',
     ships: [{ variant: 'lancer', n: 1 }, { variant: 'picket', n: 2 }], cargo: 'Custody blockade · the Kind Regard',
     choices: [
-      { id: 'codes', label: 'Transmit Sam’s codes', tone: 'bluff', hint: 'Ashgrove has seen these codes before. A long shot.', odds: { base: 0.3, heat: -0.25 },
-        win: { text: '“Twice. I’ll be blowed.” · waved on', blockade: 'pass' },
+      { id: 'codes', label: 'Transmit Sam’s codes', tone: 'bluff', hint: 'A Kellern code on a Kellern hull. He saw the Narrows, though.', odds: { base: 0.6, heat: -0.25 },
+        win: { text: 'Codes accepted · Ashgrove waves you on', blockade: 'pass', flag: 'codes_passed' },
         lose: { text: '“I did warn you.” · weapons warm', blockade: 'fight', heat: 0.1, flag: 'ashgrove_crossed' } },
-      { id: 'talk', label: 'Talk your way through', tone: 'bluff', hint: 'He knows your face now. Harder than last time.', odds: { base: 0.4, heat: -0.3 },
-        win: { text: '“Mind how you go. Again.” · cleared', blockade: 'pass' },
+      { id: 'talk', label: 'Talk your way through', tone: 'bluff', hint: 'He knows your hull from the Narrows. Harder.', odds: { base: 0.4, heat: -0.3 },
+        win: { text: '“Mind how you go.” · cleared', blockade: 'pass' },
         lose: { text: '“Not today.” · weapons warm', blockade: 'fight', heat: 0.1, flag: 'ashgrove_crossed' } },
       { id: 'run', label: 'Run the gate', tone: 'run', hint: 'Under their guns. Their field slows the drive.',
         win: { text: 'You break through the blockade · the system is alerted', blockade: 'run', flag: 'ashgrove_crossed' } },

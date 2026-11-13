@@ -764,12 +764,13 @@ export class Hud {
           const named = !bk.chase && ready ? goal.main : undefined;
           // the gate waits on a relay not yet answered: the mast is the course, with its range
           const mast = world.gateRelay;
-          text($('obj-t'), mast ? t('Reach the relay mast') : named ?? t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
+          text($('obj-t'), mast ? named ?? t('Reach the relay mast') : named ?? t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
           text($('obj-left'), mast ? range(Math.hypot(mast.x - s.x, mast.z - s.z)) : ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
           ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
         }
         text($('obj-s'), recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact')
           : world.gateWhy === 'resetting after the key' ? t('Jump Gate resetting')
+          : world.gateWhy === 'the gate is rebooting' ? `${t('Jump Gate rebooting')} · ${Math.floor(world.gateEta / 60)}:${String(world.gateEta % 60).padStart(2, '0')}`
           : world.gateWhy === 'the gate is opening' ? `${t('Jump Gate opens')} · ${Math.floor(world.gateEta / 60)}:${String(world.gateEta % 60).padStart(2, '0')}`
           : world.gateWhy ? `${t('Jump Gate shut')} · ${t(world.gateWhy)}` : '');
         const lines: string[] = [];

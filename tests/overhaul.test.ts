@@ -59,7 +59,7 @@ describe('the road', () => {
   });
 
   it('sends each gate its own card, and none where the journey earned a clear one', () => {
-    expect(gateCheck('narrows', [])).toBe('narrows_checkpoint');
+    expect(gateCheck('narrows', [])).toBeNull();
     expect(gateCheck('rift', [])).toBe('rift_checkpoint');
     expect(gateCheck('scrapgate', [])).toBeNull();
     expect(gateCheck('scrapgate', ['vell_betrayed'])).toBe('scrapgate_pickets');

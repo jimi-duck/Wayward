@@ -521,6 +521,8 @@ export class BreakoutView {
   private readonly gate = new Group();
   /** 0 to 1: how shut the gate looks (eased). */
   private shut = 0;
+  /** The gate's damping field, 0 while the Narrows gate is down. */
+  private fieldOn = 1;
   private faced: unknown = null;
   private readonly port = new Group();
   /** The depots built so far, by holder's look; one shows. Built the first time a system wants it. */
@@ -802,7 +804,9 @@ export class BreakoutView {
     this.membrane.visible = skin > 0.01 || (jump !== null && jump.t > jump.cross && jump.t < jump.cross + 1);
     // the damping field's edge: a thin teal line, a little brighter while you are inside it
     const inside = world.safe ? 0.08 : 0;
-    (this.laneField.material as MeshBasicMaterial).opacity = (0.09 + inside + 0.02 * Math.sin(this.time * 1.2)) * away;
+    // the Narrows' gate down (world.fieldDown): no field at all while it reboots
+    this.fieldOn += ((world.fieldDown ? 0 : 1) - this.fieldOn) * Math.min(1, dt * 2);
+    (this.laneField.material as MeshBasicMaterial).opacity = (0.09 + inside + 0.02 * Math.sin(this.time * 1.2)) * away * this.fieldOn;
     // the depot shield while a fight is on: the edge brightens and a faint dome fades in
     this.shieldLevel += ((world.shield ? 1 : 0) - this.shieldLevel) * Math.min(1, dt * 6);
     (this.portField.material as MeshBasicMaterial).opacity = 0.09 + inside + 0.02 * Math.sin(this.time * 1.2 + 1) + 0.3 * this.shieldLevel;

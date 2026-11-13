@@ -65,6 +65,8 @@ export interface Row {
   stale?: number;
   /** A main beat of its stop: the Jump Gate holds until it has played, and a release carries it to the next stop. */
   main?: boolean;
+  /** A line for the fight itself (the Narrows' reboot): it plays while the player fights, not only in a quiet moment. */
+  urgent?: boolean;
 }
 
 /** What the world tells the script each step. */
@@ -245,9 +247,9 @@ export class Script {
     if (!head || c.t - this.last < GAP) return out;
     const row = this.all.get(head.id);
     if (!row) { this.queue.shift(); return out; }
-    const quiet = c.busy !== 'fight' && c.busy !== 'transit';
+    const quiet = c.busy !== 'transit' && (c.busy !== 'fight' || !!row.urgent);
     // a carried row waits for a free moment, as does any card
-    if (!quiet || ((head.carried || 'card' in row.do) && !c.free)) return out;
+    if (!quiet || ((head.carried || 'card' in row.do) && !c.free && !row.urgent)) return out;
     this.queue.shift();
     // a card counts as played once it is answered, so a jump before then carries it
     const card = 'card' in row.do ? row.do.card : null;

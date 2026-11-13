@@ -448,7 +448,7 @@ export const STORY_CARDS: CardDef[] = [
     id: 'warden_note_1', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
     from: 'Ship database · Warden’s note 1 of 8', title: 'Warden’s note 1 of 8',
     letter: { head: [['To', 'Whoever the relays let through'], ['From', 'A. Aster, Narrows watch'], ['Kept in', 'Narrows relay, Warden channel']], sign: '— A.' },
-    text: 'The Narrows was mine the night they closed it. They told me to switch it off and forget the key. I switched it off. I never forgot.\nEight relays on this road still know my key. Each one keeps a piece of what I saw.\nEach will say my name out loud when you pass, and they’ll hear it. Sorry about that part. Keep moving.\nFind the Drift. They never stopped moving.',
+    text: 'The Narrows was mine the night they closed it. They told me to switch it off and forget the key. I switched it off. I never forgot.\nEight relays on this road still know my key. Each one keeps a piece of what I saw.\nEach will say my name out loud when you pass, and they’ll hear it.\nThis gate will go dark while it remembers me. Sorry about that part. Hold on, then keep moving.\nFind the Drift. They never stopped moving.',
     cargo: 'The Wayward · a note kept in the relay',
     choices: [
       { id: 'close', label: 'Close the note', tone: 'help', hint: '', win: { text: 'Warden’s note 1 of 8 · on the Wall', flag: 'warden_note_1' } },
@@ -460,16 +460,16 @@ export const STORY_CARDS: CardDef[] = [
     id: 'story_calloway_narrows', kind: 'warning', caller: 'calloway',
     from: 'Governor Idris Calloway · CCV Patience', title: 'The Narrows',
     text: '“I’ve read Ada Aster’s file too, Juno. Not all of it. Enough to want the rest. Tell me where you’re going, and I won’t stop you.”',
-    cargo: 'The Patience · weapons cold, for now',
+    cargo: 'The Patience · her pickets on you',
     lines: [
       { if: { flag: 'relay_broadcast' }, text: '“Your grandmother’s relay just told the whole Reach who you are.”' },
       { if: { flag: 'relay_broadcast' }, text: '“You can tell me the rest.”' },
       { if: { flag: 'brook_free' }, text: '“Your clerk is making copies. That was unkind to him.”' },
     ],
     choices: [
-      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She holds her fire. She will remember you were honest.', win: { text: '“Thank you.” · she holds her fire, and knows', flag: ['calloway_ada', 'calloway_told', 'calloway_asked'], hunt: 1 } },
-      { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A gamble; she has her father’s ear for one.', odds: { base: 0.45 }, win: { text: 'She believes you · a day gained', flag: ['calloway_ada', 'calloway_asked'], hunt: 1 }, lose: { text: '“Not a good one.” · she marks you', flag: ['calloway_ada', 'calloway_asked', 'calloway_lie_caught'], heat: 0.1 } },
-      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust nobody from the Offices.', win: { text: 'The Patience turns away', flag: 'calloway_asked' } },
+      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She calls off the pickets. She will remember you were honest.', win: { text: '“Thank you.” · she calls off the pickets, and knows', flag: ['calloway_ada', 'calloway_told', 'calloway_asked', 'patience_hold'], hunt: 1 } },
+      { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A gamble. If she buys it, the pickets go. If not, more come.', odds: { base: 0.45 }, win: { text: 'She believes you · the pickets go, a day gained', flag: ['calloway_ada', 'calloway_asked', 'patience_hold'], hunt: 1 }, lose: { text: '“Not a good one.” · two more pickets', flag: ['calloway_ada', 'calloway_asked', 'calloway_lie_caught'], heat: 0.1 } },
+      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust nobody from the Offices. The pickets stay on you.', win: { text: 'The Patience turns away · the pickets stay', flag: 'calloway_asked' } },
     ],
   }),
   story({
