@@ -278,7 +278,7 @@ export class Radio {
     this.stated = costs;
     const asks = [...costs, ...(terms?.limit ? [t('{n} s', { n: terms.limit })] : [])];
     const pays = terms?.reward ?? [];
-    const col = (k: string, items: string[], cls: string, none: string) => h('div', 'rd-col', '', h('span', 'k', k), h('div', 'rd-items', '', ...(items.length ? items.map((x) => h('span', cls, x)) : [h('span', 'g-none', none)])));
+    const col = (k: string, items: string[], cls: string, none: string) => h('div', 'rd-col', '', h('span', 'k', k), h('div', 'rd-items', '', ...(items.length ? items.map((x) => h('span', cls === 'g-gain' && /^−/.test(x) ? 'g-loss' : cls, x)) : [h('span', 'g-none', none)])));
     // never a placeholder (pop-up guidelines v0.1): no deadline says so, and a reward that is not set shows no column
     sheet.replaceChildren(col(t(costs.length ? 'Requires' : 'Time limit'), asks, 'g-loss', t('No deadline')), ...(pays.length ? [col(t('Reward'), pays, 'g-gain', '')] : []));
   }

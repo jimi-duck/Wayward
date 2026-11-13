@@ -103,6 +103,7 @@ export const ECONOMY: Record<string, string> = {
   'Time limit': 'Zeitlimit',
   'Up to {n} Cyrite': 'Bis zu {n} Cyrit',
   '+{n} supplies': '+{n} Vorräte',
+  'Debt −{n} CR': 'Schulden −{n} CR',
   'Requires': 'Verlangt',
   'Nothing': 'Nichts',
   'Reward': 'Belohnung',

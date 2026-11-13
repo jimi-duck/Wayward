@@ -67,6 +67,8 @@ export class Stage {
   actors: Alien[] = [];
   /** begun: the scene is on (past its time); offered: the call is with the desk; taken: the goal is on. */
   begun = false; offered = false; taken = false;
+  /** The call rings on arrival, wherever the site is: every job, and on the road every scene with a call that is not a major card (owner, 13 November 2026: calls late, half way through the system). */
+  private early: boolean;
   /** The sortie second its call first rang (null until it does): the pilot's time to offer. */
   rangAt: number | null = null;
   result: SitResult | null = null;
@@ -84,6 +86,7 @@ export class Stage {
   constructor(def: SituationDef, at: string, w: World) {
     this.def = def;
     this.at = at;
+    this.early = JOB_IDS.has(def.id);
     const b = w.bk!;
     this.sx = w.ship.x; this.sz = w.ship.z;
     this.lx = b.lane.x; this.lz = b.lane.z;
@@ -185,16 +188,18 @@ export class Stage {
   // ── the step ───────────────────────────────────────────────────────────
   step(w: World, dt: number): void {
     const d = this.def, now = w.runTime;
+    // the world's flags are read in after the stage is made, so a road scene's call is decided here
+    if (!this.early && d.card && w.flags.has(ON_ROAD)) { const card = CARD_BY_ID[d.card]; this.early = !!card && weightOf(card) !== 'major'; }
     if (this.result && !this.actors.length) return;
     // a scene that waits on a flag (Sable's crossing waits for her to be taken on): until it is set, nothing here
     if (d.needs && !this.begun && !w.flags.has(d.needs)) return;
     const near = this.dist(w);
 
     if (!this.result) {
-      if (!this.begun && now >= (JOB_IDS.has(d.id) ? Math.min(d.at, JOB_AT) : d.at)) this.begin(w);
+      if (!this.begun && now >= (this.early ? Math.min(d.at, JOB_AT) : d.at)) this.begin(w);
       // the call
-      // a job rings on arrival, wherever its site is; never over the training; a plain scene rings when the ship is near
-      const rings = JOB_IDS.has(d.id) ? !w.tutor && !w.scriptHoldsJob() : near <= d.hail;
+      // a job rings on arrival, wherever its site is (so does a road scene with a call); never over the training; any other scene rings when the ship is near
+      const rings = this.early ? !w.tutor && !w.scriptHoldsJob() : near <= d.hail;
       if (this.begun && d.card && !this.offered && rings && w.phase === 'play') {
         const card = CARD_BY_ID[d.card];
         if (card) { w.desk.offer(card, weightOf(card), now, false, true); this.offered = true; }
@@ -408,7 +413,7 @@ export class Stage {
   /** A job in the sky that has not been taken on: on the scope, with its call still to ring. */
   get onScope(): boolean { return this.begun && this.heard && !this.taken && !this.result && this.def.goal.kind !== 'call'; }
   /** A job is heard once its call has rung; a plain scene needs no call to be seen. */
-  private get heard(): boolean { return !JOB_IDS.has(this.def.id) || this.rangAt !== null; }
+  private get heard(): boolean { return !this.early || this.rangAt !== null; }
 
   // ── the end ────────────────────────────────────────────────────────────
   /** A job of the road's threads leaves a flag for each answer and each ending, which the stop's script answers on the radio (content/script/). */

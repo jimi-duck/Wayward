@@ -161,3 +161,16 @@ describe('lines tied to an event', () => {
     expect(play(g, 1, 30).map(([, id]) => id)).toEqual([]);
   });
 });
+
+describe('a job\u2019s call', () => {
+  it('waits for the line on screen, not for notices and radio lines still queued', () => {
+    const f = new Floor();
+    const ev: GameEvent[] = [signal('The Wall'), signal('Penny Cross'), voice('story_x')];
+    f.take(ev, 10);
+    expect(f.busy(10)).toBe(true);
+    expect(f.busy(10, true)).toBe(false);
+    f.step(10, true);
+    expect(f.busy(10.5, true)).toBe(true);
+    expect(f.busy(10 + FLOOR.signal + 0.1, true)).toBe(false);
+  });
+});

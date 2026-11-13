@@ -59,6 +59,18 @@ describe('the desk', () => {
     expect(p.next('free', 20 + DESK.eager + 0.1)).toBeNull();
   });
 
+  it('rings a scene\u2019s call over mining and tight flying, but never in a fight', () => {
+    const d = desk();
+    d.arrived = 0;
+    d.offer(CARD_BY_ID.haul_job!, 'routine', 0, false, true);
+    d.watch('mining', 10);
+    expect(d.next('mining', 10)).not.toBeNull();
+    d.offer(CARD_BY_ID.haul_job!, 'routine', 0, false, true);
+    expect(d.next('tight', 10)).not.toBeNull();
+    d.offer(CARD_BY_ID.haul_job!, 'routine', 0, false, true);
+    expect(d.next('fight', 10)).toBeNull();
+  });
+
   it('keeps off the player while the beam is on rock, and flying tight', () => {
     const d = desk();
     d.offer(CARD_BY_ID.haul_job!, 'routine', 0);
