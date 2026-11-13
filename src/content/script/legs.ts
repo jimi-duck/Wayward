@@ -404,7 +404,7 @@ const LAST_ROWS: Row[] = [
 
   // 7 · Wane Rest (reckoning): Draper's fleet hails; beyond the ring they are gathering; Sam on the line, if the relays carry him
   notice('lw_notice', 'l_wane', arrive(), 'teal', 'Wane Rest', 'the last stop · the Threshold beyond'),
-  objective('lw_objective', 'l_wane', arrive(), 'Wane Rest · the Threshold is behind her'),
+  objective('lw_objective', 'l_wane', arrive(), 'Wane Rest · the Threshold is ahead'),
   radio('lw_draper', 'l_wane', free(8), 'Director Draper', 'office', '“Last chance to sell, Juno. Past that gate it’s a recovery, and I recover everything.”'),
   notice('lw_motes', 'l_wane', leave(), 'white', 'Beyond the ring', 'they are gathering'),
   radio('lw_sam', 'l_wane', after('lw_motes', 3), SAM[0], SAM[1], '“{relays} relays. I can hear you, Juno. Whatever you pick, I’m on the line.”', { if: { has: ['relays_4'] } }),

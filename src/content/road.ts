@@ -132,7 +132,7 @@ const LAST: RoadStop[] = [
   stop('turn', 'Dimrim', 'mining', 'none', 'l_dimrim', { purpose: 'the second question' }),
   stop('breather', 'Lone Step', 'transit', 'none', 'l_step', { purpose: 'the third question' }),
   stop('pressure', 'Dusk Mark', 'contested', 'voice', 'l_dusk', { purpose: 'instruments disagree', scene: 'unknown_pulse' }),
-  stop('reckoning', 'Wane Rest', 'transit', 'none', 'l_wane', { purpose: 'the Threshold is behind her' }),
+  stop('reckoning', 'Wane Rest', 'transit', 'none', 'l_wane', { purpose: 'the Threshold is ahead' }),
 ];
 
 /** Every leg of the road, the Reach first (its audit dock included). */

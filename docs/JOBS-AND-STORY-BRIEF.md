@@ -176,7 +176,7 @@ The **Accord** was a free union of worlds linked by jump lanes and powered by **
 | The Last Lanes | 4 | Dimrim | mining | none | — | turn | the second question |  |  |
 | The Last Lanes | 5 | Lone Step | transit · quiet | none | — | breather | the third question |  |  |
 | The Last Lanes | 6 | Dusk Mark | contested | voice | — | pressure | instruments disagree |  | `unknown_pulse` |
-| The Last Lanes | 7 | Wane Rest | transit | none | — | reckoning | the Threshold is behind her |  |  |
+| The Last Lanes | 7 | Wane Rest | transit | none | — | reckoning | the Threshold is ahead |  |  |
 
 
 
@@ -2090,9 +2090,9 @@ Burned (the routine was stopped):
       * Keep flying (refuse): Nothing changes before the Threshold. => “Then at the Threshold, Juno.” {}
   - [leave] OBJECTIVE Jump to Wane Rest / 
 
-### 7. Wane Rest [transit, none, port none, reckoning] purpose="the Threshold is behind her" job=- scene=- script=l_wane
+### 7. Wane Rest [transit, none, port none, reckoning] purpose="the Threshold is ahead" job=- scene=- script=l_wane
   - [arrive+2s] NOTICE[teal] Wane Rest · the last stop · the Threshold beyond
-  - [arrive+2s] OBJECTIVE Wane Rest · the Threshold is behind her / 
+  - [arrive+2s] OBJECTIVE Wane Rest · the Threshold is ahead / 
   - [free+8s] RADIO Director Draper: “Last chance to sell, Juno. Past that gate it’s a recovery, and I recover everything.”
   - [leave] NOTICE[white] Beyond the ring · they are gathering
   - [after lw_motes+3s IF {"has":["relays_4"]}] RADIO Sam Okoro: “{relays} relays. I can hear you, Juno. Whatever you pick, I’m on the line.”
