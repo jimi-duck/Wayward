@@ -275,6 +275,8 @@ export class PortPanel {
       });
     };
     buy('fuel', w.fluidPrice, w.fuel >= w.tankCap, (n, c) => t('Bought {n} jump fluid · −{c} Cyrite', { n, c: num(c) }));
+    // no Charter at a Kellern port: the Bonded rate (sim/charter.ts), said once on the fuel line
+    if (w.bondedRate && !first) sub.fuel = `${sub.fuel} · ${t('Bonded rate · posted {p}', { p: num(w.postedFluid) })}`;
     buy('supplies', P.supplies, w.supplies >= w.supplyMax, (n, c) => t('Bought {n} supplies · −{c} Cyrite', { n, c: num(c) }));
     entries.push({ key: 'cast', ok: true, go: () => this.leave() });
     return { entries, bay: [bay], act, sub };

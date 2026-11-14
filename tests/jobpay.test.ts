@@ -12,7 +12,8 @@ describe('what a job offer says it pays', () => {
     expect(r.length).toBeGreaterThan(2);
   });
   it('names the breach debt for a step of the Account, and only there', () => {
-    expect(jobReward('wanted', SITUATION_BY_ID.wanted!.win!, 1, num)).toContain('Debt \u221220 CR');
+    expect(jobReward('wanted', SITUATION_BY_ID.wanted!.win!, 1, num)).toContain('Debt \u2212250 CR');
+    expect(jobReward('recovery_order', SITUATION_BY_ID.recovery_order!.win!, 1, num)).toContain('Debt \u2212300 CR');
     expect(jobReward('dead_drop', SITUATION_BY_ID.dead_drop!.win!, 1, num).join()).not.toMatch(/Debt/);
   });
 });

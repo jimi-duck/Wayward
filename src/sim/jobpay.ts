@@ -2,7 +2,7 @@ import type { Ctx, Outcome } from './comms';
 import { gains } from './gains';
 import { bounty } from './mission';
 import { cy } from './purse';
-import { DEBT_STEP, THREADS } from './threads';
+import { DEBT_TAKES, THREADS } from './threads';
 import { t } from '../i18n';
 
 // ── what a job offer says it pays ─────────────────────────────────────────
@@ -23,7 +23,7 @@ export function jobReward(job: string, win: Outcome, k: number, num: (n: number)
   return [
     ...(cyrite > 0 ? [t('Up to {n} Cyrite', { n: num(cyrite) })] : []),
     ...(supplies > 0 ? [t('+{n} supplies', { n: supplies })] : []),
-    ...(ACCOUNT.includes(job) ? [t('Debt −{n} CR', { n: DEBT_STEP })] : []),
+    ...(ACCOUNT.includes(job) && DEBT_TAKES[job] ? [t('Debt −{n} CR', { n: DEBT_TAKES[job] })] : []),
     ...rest,
   ];
 }

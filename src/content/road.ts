@@ -115,7 +115,7 @@ const PORTS: RoadStop[] = [
 
 /** The Hollows: what it was for. */
 const HOLLOWS: RoadStop[] = [
-  stop('landfall', 'Ashdeep', 'transit', 'none', 'h_ashdeep', { purpose: 'where the lanes began', job: 'no_return' }),
+  stop('landfall', 'Ashdeep', 'transit', 'none', 'h_ashdeep', { purpose: 'where the lanes began' }),
   stop('hub', 'Hollowforge', 'mining', 'voice', 'h_forge', { purpose: 'a pattern on the scope' }),
   stop('work', 'Coldvault', 'contested', 'voice', 'h_vault', { purpose: 'a tug for your registry', job: 'recovery_order' }),
   stop('turn', 'Palecairn', 'transit', 'thren', 'h_cairn', { purpose: 'two voices want something', job: 'sables_crossing' }),

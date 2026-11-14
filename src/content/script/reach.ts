@@ -72,8 +72,11 @@ export const REACH: Row[] = [
   notice('ve_ghost', 'vesta', { on: 'settle' }, 'teal', 'The Wall', 'unknown contact logged', { if: { has: ['clue_ghost'] } }),
   // Juno cut Ilse off: her recording carries the order, and Ada's name, here
   card('ve_ilse', 'vesta', { on: 'settle' }, 'ilse_recording', { if: { not: ['frag_order'] }, main: true }),
-  { id: 've_hester', stop: 'vesta', on: { on: 'settle' }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. My prospector says you’re decent. There’s a toll on our lane at Branford we can’t pay.”' } } },
-  sam('ve_sam', 'vesta', { on: 'after', row: 've_hester' }, '“Ada Aster. Dad said the Wardens were the Reach’s last honest people. So does Eben, at the yards.”', { if: { has: ['ada_named'] } }),
+  // Hester's opener remembers what Juno did for her prospector at Hollis (helped, robbed, or never met)
+  { id: 've_hester', stop: 'vesta', if: { has: ['job_follow_cyrite_won'], not: ['job_follow_cyrite_rob'] }, on: { on: 'settle' }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. My prospector says you’re decent. There’s a toll on our lane at Branford we can’t pay.”' } } },
+  { id: 've_hester_rob', stop: 'vesta', if: { has: ['job_follow_cyrite_rob'] }, on: { on: 'settle' }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. My prospector says you robbed her. I still need a ship. Branford’s toll, we can’t pay.”' } } },
+  { id: 've_hester_new', stop: 'vesta', if: { not: ['job_follow_cyrite_won', 'job_follow_cyrite_rob'] }, on: { on: 'settle' }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. Heard you’re flying alone. There’s a toll on our lane at Branford we can’t pay.”' } } },
+  sam('ve_sam', 'vesta', { on: 'settle' }, '“Ada Aster. Dad said the Wardens were the Reach’s last honest people. So does Eben, at the yards.”', { if: { has: ['ada_named'] } }),
   // only if she stays: a flavour line, dropped if she jumps first
   sam('ve_stay', 'vesta', { on: 'after', row: 've_sam', delay: 20 }, '“You don’t have to talk. I’ll just stay on the line a bit.”', { stale: 30 }),
   objective('ve_gate', 'vesta', { on: 'leave' }, 'Jump to Branford'),

@@ -1,5 +1,7 @@
 # WAYWARD — Master Brief for Claude Code
 
+> **Superseded in part, 14 November 2026.** [STORY_DIRECTION.md](STORY_DIRECTION.md) is the owner's newer direction (themes, the Charter, the central revelation, no bloodline lock, Unite as a confederation, fixed and open canon). Where they differ, it wins.
+
 **Purpose:** Rewrite and deepen the complete Story Mode narrative, then implement it in the existing game in a technically safe, testable, and incremental way.
 
 **How to use this file:** Open Claude Code at the root of `jimi-duck/Wayward`. Paste the **Execution Prompt** in Section 1, or ask Claude Code to read this entire file and treat it as the active project brief. Keep this file available in the repository during the work, preferably as `docs/CLAUDE_STORY_REWRITE_BRIEF.md`.

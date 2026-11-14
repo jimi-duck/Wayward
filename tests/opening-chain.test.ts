@@ -84,7 +84,7 @@ describe('the opening chain beyond the gate', () => {
     const c = w.result().carry;
     expect(c.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'archive_woke', 'clue_reserves']));
   });
-  it('adds up (opening sheets B and F): a projection, not a balance, and a breach bill of 80 CR kept apart from it', () => {
+  it('adds up (opening sheets B and F): a projection, not a balance, and a breach bill of 800 CR kept apart from it', () => {
     const bay = ledgerFor('bay');
     const credit = (rows: LedgerRow[], k: string) => rows.find((r) => r.k === k)?.cr;
     // B: 100 CR gross − 98 CR charges = 2 CR, on delivery; the launcher's 20 CR is among the charges
@@ -106,16 +106,17 @@ describe('the opening chain beyond the gate', () => {
     expect(CREDIT_START).toBeLessThan(GROSS);
     // financed, not bought: no cost at the bay
     expect(CARD_BY_ID.story_bay!.choices[0]!.cost).toBeUndefined();
-    // F: 25 CR penalty + 35 CR lease + 20 CR financed launcher = 80 CR, never netted against the projection
+    // F: 500 CR penalty + 280 CR lease + 20 CR financed launcher = 800 CR, never netted against the projection
+    expect(owed()).toBe(800);
     const invoice = ledgerFor('invoice');
     expect(credit(invoice, 'Penalty')).toBe(PENALTY);
     expect(credit(invoice, 'Lease')).toBe(LEASE_DUE);
     expect(credit(invoice, 'Financed launcher')).toBe(upgradePrice());
     expect(credit(invoice, 'Total outstanding')).toBe(owed());
     expect(credit(ledgerFor('breach'), 'Outstanding')).toBe(owed());
-    expect([PENALTY, LEASE_DUE, upgradePrice()]).toEqual([25, 35, 20]);
-    expect(owed()).toBe(80);
-    expect(invoice.map((r) => r.cr)).toEqual([25, 35, 20, 80]);
+    expect([PENALTY, LEASE_DUE, upgradePrice()]).toEqual([500, 280, 20]);
+    expect(owed()).toBe(800);
+    expect(invoice.map((r) => r.cr)).toEqual([500, 280, 20, 800]);
     // no settlement row on the invoice: the projected 2 CR is never deducted
     expect(invoice.some((r) => /settlement|balance/i.test(r.k))).toBe(false);
   });

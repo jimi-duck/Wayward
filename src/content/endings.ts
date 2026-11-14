@@ -67,7 +67,7 @@ export interface EndingDef {
    * The road's epilogue (docs/overhaul/SCRIPT_EN_DE.md §12): an opener, then at most one line of each slot in this order, the
    * thread payoff, a person and a cost, then Oren's third answer and the closing line, always shown.
    */
-  road: { open: string; lines: Array<{ slot: 'thread' | 'person' | 'cost'; if?: Need; text: string }>; close: string };
+  road: { open: string; lines: Array<{ slot: 'thread' | 'person' | 'cost' | 'charter'; if?: Need; text: string }>; close: string };
 }
 
 /** Oren's third question, answered on the road: one line shared by every ending. */
@@ -92,9 +92,11 @@ export const ENDINGS: EndingDef[] = [
         { slot: 'thread', if: { flags: ['field_line', 'thread_line_3'] }, text: 'It doesn’t leave on one ship. Quill and a hundred hulls carry copies into the core.' },
         { slot: 'person', if: { flags: ['frag_blackbox', 'ada_heard'] }, text: 'Ada’s voice goes first. “My name is Ada. I helped.”' },
         { slot: 'person', if: { flags: ['copy_warden'] }, text: 'Ilse Marrow reads the order aloud at Halden’s Reach. She stops twice. Not from age.' },
+        { slot: 'person', if: { flags: ['brook_struck'] }, text: 'Adam Brook reads Kellern’s real books on air. He gives his name as Contract Resident Brook.' },
         { slot: 'person', if: { flags: ['brook_free'] }, text: 'Adam Brook reads Kellern’s real books on air, grandfather’s name and all.' },
         { slot: 'person', if: { flags: ['sable_home'] }, text: 'In the swarm lane, Sable hears every word. She sends one pattern back.' },
         { slot: 'cost', text: 'Within a month the Scatter demands its lanes back. Somewhere past the ring, a relay lights without a key.' },
+        { slot: 'charter', text: 'Everyone learns the Severance struck every Charter in the Scatter. At some gates the queues riot. At others they just keep queueing.' },
       ],
       close: 'Everyone knows. That was the easy part.',
     },
@@ -108,23 +110,25 @@ export const ENDINGS: EndingDef[] = [
       { if: { flags: ['calloway_told'] }, text: 'Idris Calloway quits on an open channel. She reads the file aloud first.' },
       { if: { calm: ['office'] }, text: 'The Offices of Peace call it a forgery, then stop calling it anything.' },
       { if: { flags: ['ada_heard'] }, text: 'Ada Aster’s own voice opens the broadcast. Seventy years late, she is heard.' },
-      { if: { flags: ['sig_used'] }, text: 'Deputy Governor Lior Calloway’s signature is on the first page. His daughter does not deny it.' },
+      { if: { flags: ['sig_used'] }, text: 'Lucan Calloway’s signature is on the first page. His daughter does not deny it.' },
       { if: { flags: ['brook_free'] }, text: 'Adam Brook walks free and reads Kellern’s real books on air.' },
       { if: { flags: ['oren_truth'] }, text: 'You said you wanted the truth heard. It is, on every band at once.' },
       { text: 'The lanes stay dark. But now everyone knows who turned them off.' },
     ],
   },
   {
-    id: 'unite', name: 'Unite', pitch: 'Bring the Scatter together for the first time in seventy years.',
+    id: 'unite', name: 'Unite', pitch: 'A confederation: councils, crews and fleets as equals, with no governor.',
     needs: 'Needs: friends (standing 2) with two of miners, Frontier, Guild, Gutter. Or one, plus Contacts 2 or an ally. Or Kessel Hold and the Long Walk.',
     ways: [{ friends: 2 }, { friends: 1, marks: { contacts: 2 } }, { allFlags: ['pact_holdfast', 'pact_drift'] }, { friends: 1, flags: ['pact_holdfast', 'pact_drift'] }],
     file: 'SEVERANCE · the copy read at the Threshold moot',
     road: {
-      open: 'Kessel Hold calls the first moot with more than one Holdfast in it.',
+      open: 'Kessel Hold calls a moot of every Holdfast, crew and fleet that will come. Nobody chairs it.',
       lines: [
         { slot: 'thread', if: { flags: ['thread_crews_3'] }, text: 'Hester’s crews come with their strike fund and their own list. Your name is on it.' },
         { slot: 'person', if: { flags: ['pact_drift', 'wren_trust'] }, text: 'The Long Walk turns its fleet toward the meeting. Wren flies point. Ma Saffi reads the list first.' },
         { slot: 'cost', if: { flags: ['job_missing_payroll_won', 'job_drift_cache_won', 'job_heavy_tanker_won'] }, text: 'Not everyone comes. Some remember the wages, the cache, the wreck. A union built on a debt is still in debt.' },
+        { slot: 'cost', if: { flags: ['saints_helped'] }, text: 'The Saints come too. Half the moot won’t sit at a table with them. The other half won’t sit without them.' },
+        { slot: 'charter', text: 'The confederation recognises no Charter. Any hull may pass its gates. The core does not agree, so the line now runs between two worlds.' },
       ],
       close: 'Divided on purpose. Together by choice. For now.',
     },
@@ -157,6 +161,7 @@ export const ENDINGS: EndingDef[] = [
         { slot: 'person', if: { flags: ['ring_sold'] }, text: 'Calloway already has the ring’s centre. You sold it to her, and she uses it first.' },
         { slot: 'person', if: { flags: ['draper_revealed', 'broker'] }, text: 'Three days later the file turns up in Draper’s hands. It turns out Val has a buyer too.' },
         { slot: 'cost', text: 'The truth is an asset now. It comes out when it is useful, and stays in when it isn’t.' },
+        { slot: 'charter', text: 'You are paid in a real Charter. You fly the Chartered lane past the queue you came from, and nobody stops you.' },
       ],
       close: 'You are free. That was the deal.',
     },
@@ -185,6 +190,7 @@ export const ENDINGS: EndingDef[] = [
         { slot: 'person', if: { flags: ['ring_sold'] }, text: 'She already has the ring’s centre. You sold it to her. She reads it before your file.' },
         { slot: 'person', if: { flags: ['sig_used'] }, text: 'It says her father asked for ten years. It does not say how many he got.' },
         { slot: 'cost', text: 'The lanes stay closed. The contracts are rewritten. Kellern’s rates drop by a third. People notice.' },
+        { slot: 'charter', text: 'Merit Grants are issued at last: a dozen a year, to the deserving. A ladder with a handful of rungs, and a door that still decides who climbs.' },
       ],
       close: 'Your new registry has your real name on it.',
     },
@@ -211,6 +217,7 @@ export const ENDINGS: EndingDef[] = [
         { slot: 'thread', if: { flags: ['thread_survey_3', 'survey_map', 'ring_mapped'] }, text: 'Beyond the ring, the motes stop gathering. The lanes go quiet in a way they haven’t been for seventy years.' },
         { slot: 'person', if: { flags: ['sable_home', 'sable_trust'] }, text: 'Sable stays in the lane. She sends one pattern back. It might mean goodbye.' },
         { slot: 'cost', text: 'Nobody will cross again. Not the core’s pickets. Not the Ferry. Not anybody’s granddaughter.' },
+        { slot: 'charter', text: 'Nobody passes now, so nobody needs a Charter. Nobody leaves, either.' },
       ],
       close: 'You decided for everyone. Somebody had to. That is what they said, too.',
     },
@@ -236,6 +243,7 @@ export const ENDINGS: EndingDef[] = [
         { slot: 'person', if: { flags: ['implant_burned'] }, text: 'The helm is yours alone. Nobody, living or otherwise, knows your name.' },
         { slot: 'person', if: { flags: ['implant_kept', 'implant_rewritten'] }, text: 'Some nights the routine opens a note you haven’t read. You don’t read it yet.' },
         { slot: 'cost', text: 'The file is still aboard. Calloway keeps looking. So does Draper. One day someone else will need it.' },
+        { slot: 'charter', text: 'In the last shot, the work lane at the gate is still full.' },
       ],
       close: 'Keep moving.',
     },

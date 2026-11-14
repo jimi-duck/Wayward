@@ -39,7 +39,8 @@ const MARCHES_ROWS: Row[] = [
   // 2 · Kessel Hold (hub): Oduya and the moot; then Quiet Line 2, the patrol codes
   notice('mk_notice', 'm_kessel', arrive(), 'teal', 'Kessel Hold', 'Holdfast port · the moot sits'),
   objective('mk_objective', 'm_kessel', arrive(), 'Kessel Hold · the moot wants your file', 'Holdfast port · refit bay open'),
-  main('mk_moot', 'm_kessel', free(6), 'story_moot'),
+  // the moot argues first (content/script/resistance.ts), then Oduya asks
+  main('mk_moot', 'm_kessel', after('rs_moot_val', 3), 'story_moot'),
   pike('mk_pike_won', 'm_kessel', 'job_keep_distance_won', '“Clean copy. Somebody walks home past a checkpoint tonight.”', { if: { not: ['job_keep_distance_sell'] } }),
   pike('mk_pike_sold', 'm_kessel', 'job_keep_distance_sell', '“You sold the timings. The Line will hear who to.”'),
   objective('mk_gate', 'm_kessel', leave(), 'Jump to Tamsin Field'),
@@ -206,7 +207,7 @@ const YARDS_ROWS: Row[] = [
   // 1 · Cutton (landfall): Calloway asks what gathered on the Slow Door
   notice('yc_notice', 'y_cutton', arrive(), 'teal', 'Cutton', 'the Breaker Yards · Custody watches'),
   objective('yc_objective', 'y_cutton', arrive(), 'Next: Yard Nine', 'The Breaker · 7 jumps'),
-  card('yc_see', 'y_cutton', free(40), 'offer_see', { if: { has: ['slow_motes'] } }),
+  // Calloway's question at Cutton is cut (story direction plan): her best scene is the Tollgate
   // the cradle crew (standalone): Joss answers
   radio('yc_joss', 'y_cutton', flag('job_cradle_crew_won'), 'Joss Peller', 'miners', '“Forty. I counted them twice. Thank you.”'),
   radio('yc_joss_fuel', 'y_cutton', flag('job_cradle_crew_fuel'), 'Joss Peller', 'miners', '“You took the fuel and left us. Fine. We’ll remember.”'),
@@ -243,7 +244,8 @@ const YARDS_ROWS: Row[] = [
   // 6 · Torchwall (pressure): Marit Voss and the strike; Hester's crossing
   notice('yt_notice', 'y_torch', arrive(), 'amber', 'Torchwall', 'yard crossing · crews restless'),
   objective('yt_objective', 'y_torch', arrive(), 'Torchwall · the crews may strike'),
-  main('yt_marit', 'y_torch', free(6), 'story_crew'),
+  // the committee argues first (content/script/resistance.ts), then Marit asks
+  main('yt_marit', 'y_torch', after('rs_vote_marit', 14), 'story_crew'),
   radio('yt_hester', 'y_torch', flag('crews_stood'), HESTER[0], HESTER[1], '“Every crew you helped is standing at the Breaker. I didn’t ask them. That’s the point.”', { if: { has: ['thread_crews_3'] } }),
   // the cradle's echo, and Hester's rig
   radio('yt_cradle', 'y_torch', after('yt_marit', 3), 'Marit Voss', 'frontier', '“Forty of your people walked out at Cutton. They’re in our crews now.”', { if: { has: ['cradle_freed'] } }),
@@ -300,11 +302,12 @@ const PORTS_ROWS: Row[] = [
   radio('fh_kids_full', 'f_haven', after('fh_glass', 4), 'A child on the dock', 'frontier', '“They’re all looking at your ship. They like you!”', { if: { full: true } }),
   objective('fh_gate', 'f_haven', leave(), 'Jump to Gilt Market'),
 
-  // 6 · Gilt Market (pressure): Ines's price, Val's reckoning, Corin Ashe if he was exposed or used; Quiet Line 7
+  // 6 · Gilt Market (pressure): Thane's hearing, Ines's price, Corin Ashe if he was exposed or used; Quiet Line 7
   notice('fg_notice', 'f_gilt', arrive(), 'amber', 'Gilt Market', 'Gutter market · everyone wants a copy'),
   objective('fg_objective', 'f_gilt', arrive(), 'Gilt Market · everyone wants a copy'),
-  main('fg_ines', 'f_gilt', free(6), 'story_ines_offer', { if: { has: ['ines_berth'] } }),
-  main('fg_val', 'f_gilt', free(30), 'story_vell_reckoning', { if: { has: ['broker'] } }),
+  // Ines's offer is optional (not a main beat): the hearing is Gilt Market's main card
+  card('fg_ines', 'f_gilt', free(6), 'story_ines_offer', { if: { has: ['ines_berth'] } }),
+  // Val's reckoning is cut (story direction plan): her story ends at the Scrapgate
   radio('fg_ashe', 'f_gilt', free(14), 'Corin Ashe', 'office', '“They pulled me off the Ferry. I read the reports I filed on you. I’m not filing any more.”', { if: { has: ['agent_exposed'] } }),
   radio('fg_ashe_used', 'f_gilt', free(14), 'Corin Ashe', 'office', '“They pulled me off the Ferry. I read the reports I filed on you. I’m not filing any more.”', { if: { has: ['agent_used'], not: ['agent_exposed'] } }),
   pike('fg_pike', 'f_gilt', 'job_lose_prefect_won', '“Her relay’s blind. That’s three for the Line. Quill is counting.”'),
@@ -323,7 +326,8 @@ const HOLLOWS_ROWS: Row[] = [
   notice('ha_notice', 'h_ashdeep', arrive(), 'teal', 'Ashdeep', 'the Hollows · nothing human lives here'),
   notice('ha_act', 'h_ashdeep', arrive(6), 'white', 'Act III', 'what the file is worth'),
   objective('ha_objective', 'h_ashdeep', arrive(), 'Next: Hollowforge', 'The Seam · 7 jumps'),
-  analyst('ha_hole', 'h_ashdeep', 'job_no_return_won', '“Three readings, the last one inside. Nobody gets that close. Keep your scope on.”'),
+  // the black-hole job is cut (story direction plan): its reading folds into the Thren story here
+  radio('ha_reading', 'h_ashdeep', free(20), ANALYST[0], ANALYST[1], '“Survey reading from Ashdeep: Thren pressure tracks the extraction rate, year on year. It’s in the file they buried.”'),
   objective('ha_gate', 'h_ashdeep', leave(), 'Jump to Hollowforge'),
 
   // 2 · Hollowforge (hub): the Thren speak, the Voice translating
@@ -406,8 +410,8 @@ const LAST_ROWS: Row[] = [
   notice('lw_notice', 'l_wane', arrive(), 'teal', 'Wane Rest', 'the last stop · the Threshold beyond'),
   objective('lw_objective', 'l_wane', arrive(), 'Wane Rest · the Threshold is ahead'),
   radio('lw_draper', 'l_wane', free(8), 'Director Draper', 'office', '“Last chance to sell, Juno. Past that gate it’s a recovery, and I recover everything.”'),
-  notice('lw_motes', 'l_wane', leave(), 'white', 'Beyond the ring', 'they are gathering'),
-  radio('lw_sam', 'l_wane', after('lw_motes', 3), SAM[0], SAM[1], '“{relays} relays. I can hear you, Juno. Whatever you pick, I’m on the line.”', { if: { has: ['relays_4'] } }),
+  // the gathering is the Threshold scene's now (content/script/threshold.ts)
+  radio('lw_sam', 'l_wane', after('th_gather', 36), SAM[0], SAM[1], '“{relays} relays. I can hear you, Juno. Whatever you pick, I’m on the line.”', { if: { has: ['relays_4'] } }),
 ];
 
 export const LEG_ROWS: Row[] = [...MARCHES_ROWS, ...BELT_ROWS, ...DEEP_ROWS, ...YARDS_ROWS, ...PORTS_ROWS, ...HOLLOWS_ROWS, ...LAST_ROWS];

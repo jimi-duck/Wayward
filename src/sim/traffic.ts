@@ -2,6 +2,7 @@ import { t } from '../i18n';
 import { Rng } from './rng';
 import { leave, provoke, VARIANTS, type Alien } from './enemies';
 import { lockLifted } from './postjump';
+import { STRIP_HEAT, stripCharter } from './charter';
 import type { World } from './world';
 
 // ── the working traffic of the first system past Cerro ────────────────────
@@ -341,6 +342,11 @@ export class Traffic {
       p.phase = 'look'; p.since = now;
       w.events.push({ type: 'ping', id: `patrol_${this.patrolled}`, from: t('Custody patrol'), caller: 'custody', text: t('“Routine check. Hold your course.”'), moment: 'calm', system: w.sortie.name });
     } else if (p.phase === 'look' && now - p.since >= PATROL_LOOK) {
+      // a forged Charter does not survive a close look (sim/charter.ts)
+      if (stripCharter(w.flags)) {
+        b.heat = Math.min(1, b.heat + STRIP_HEAT);
+        w.events.push({ type: 'ping', id: `patrol_charter_${this.patrolled}`, from: t('Custody patrol'), caller: 'custody', text: t('“That Charter’s seal isn’t on the register. Confiscated. Contract resident Aster, noted.”'), moment: 'calm', system: w.sortie.name });
+      }
       if (b.heat >= PATROL_FLAG) {
         w.events.push({ type: 'ping', id: `patrol_flag_${this.patrolled}`, from: t('Custody patrol'), caller: 'custody', text: t('“Your hull is flagged. Stand down.”'), moment: 'calm', system: w.sortie.name });
         this.turn(w, p.al);

@@ -452,7 +452,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_wanted', kind: 'job', caller: 'custody', tier: 'important',
-    thread: { chip: 'The Account', line: '“Ms Aster. Your breach balance stands at sixty. One bounty settles a third of it. Alive, please.”' },
+    thread: { chip: 'The Account', line: '“Ms Aster. Your breach balance stands at 800 CR. This bounty takes 250 off it. Alive, please.”' },
     from: 'Kellern Recovery · through a Custody broker', title: 'Wanted: Alive',
     text: '“Brannock ran from a Kellern debt camp. Kellern pays the bounty, double if she lives. Disable her engines without destroying the ship.”',
     cargo: 'A runner · fast for her size, one drive',
@@ -747,8 +747,8 @@ export const MISSION_CARDS: CardDef[] = [
     from: 'Kellern Recovery · tug KR-9', title: 'Recovery Order',
     text: '“Recovery order on the Wayward’s registry. Heave to and hand over the key, or we take it from the hull.”',
     cargo: 'A tug · two escorts, grapples out',
-    // the balance: sixty, less twenty for each Account step won before (sim/threads.ts)
-    fee: { base: 300, flags: { thread_account_1: 2 / 3, thread_account_2: 0.5 }, flat: true },
+    // the balance (sim/threads.ts debtLeft), in chits: 800 CR, then 550 after one Account step won, then 300 after two
+    fee: { base: 4000, flags: { thread_account_1: 550 / 800, thread_account_2: 300 / 550 }, flat: true },
     choices: [
       { id: 'strike', label: 'Cripple the tug, take the key', tone: 'fight', hint: 'Disable its engines, then close in. Sink it and the key goes too.', win: { text: 'You turn for the tug' } },
       { id: 'pay', label: 'Pay the balance and walk', tone: 'pay', hint: 'Pay what is left of the debt. The tug turns back.', cost: { chits: 'fee' }, win: { text: 'Balance paid · the tug turns back', flag: 'account_paid' } },

@@ -2,6 +2,10 @@ import type { CardDef } from '../sim/comms';
 import { CALLOWAY_FACE, OFFERS } from './calloway';
 import { REGISTRY_CARD, STORY_CARDS } from './story';
 import { NOTE_CARDS, ROAD_OFFERS } from './legs';
+import { CHARTER_CARDS } from './charter';
+import { RESISTANCE_CARDS } from './resistance';
+import { THREN_CARDS } from './thren';
+import { HEARING_CARDS } from './hearing';
 import { SCENE_CARDS } from './situationCards';
 
 // ── comms cards ───────────────────────────────────────────────────────────
@@ -26,7 +30,7 @@ export const FLAGS: Record<string, string> = {
   gutter_friend: 'a friend in the Gutter',
   clue_sig_reach: 'the initials on the authorisation',
   clue_sig_yards: 'the Governor’s cipher',
-  clue_sig_ports: 'Lior Calloway’s signature',
+  clue_sig_ports: 'Lucan Calloway’s signature',
   vell_betrayed: 'proof Val sold your heading',
   sig_paid: 'the ledger, or the order',
   sig_built: 'the work order, or the hull serial',
@@ -964,6 +968,12 @@ export const CARDS: CardDef[] = [
   // the road past the Reach: Ada's notes and the cards that hold its gates (content/legs.ts)
   ...NOTE_CARDS,
   ...ROAD_OFFERS,
+  // the forged Charter (content/charter.ts)
+  ...CHARTER_CARDS,
+  // the divided resistance (content/resistance.ts)
+  ...RESISTANCE_CARDS,
+  ...THREN_CARDS,
+  ...HEARING_CARDS,
 
   // what is going on in a system: the calls situations make (content/situations.ts)
   ...SCENE_CARDS,

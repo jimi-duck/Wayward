@@ -38,12 +38,13 @@ export const upgradePrice = (): number => cost(LESSON_NODE, 1, false);
 export const projectedAfterLauncher = (price = upgradePrice()): number => NET - price;
 
 /**
- * What the company bills when the contract breaches (the opening handover, 2026-10-23: 25 + 35 + 20 = 80 CR): the short-delivery penalty,
- * the lease that was due anyway, and the launcher it financed. The projected settlement is never netted against it.
+ * What the company bills when the contract breaches (owner, 14 November 2026: 500 + 280 + 20 = 800 CR, was 80): the short-delivery
+ * penalty, the lease that was due anyway, and the launcher it financed. A debt no contract of hers could ever pay: that is the point.
+ * The projected settlement is never netted against it. Kellern Recovery's Account (sim/threads.ts) starts from the same figure.
  */
-export const PENALTY = 25;
+export const PENALTY = 500;
 /** The lease that falls due on breach (the 2026-10-23 handover): its own figure, not the share the projection takes. */
-export const LEASE_DUE = 35;
+export const LEASE_DUE = 280;
 /** What Juno owes once the contract breaches. */
 export const owed = (price = upgradePrice()): number => PENALTY + LEASE_DUE + price;
 

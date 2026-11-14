@@ -25,7 +25,7 @@ refinery. She cooks as she collects.
 
 | Thing | What it is | Where it comes from | Where it goes |
 |---|---|---|---|
-| **Jump fluid** | The drive tank: exactly the plotted lane's jump, no more (replot to a dearer lane and it asks for a little more). | The refinery, from every Cyrite you pick up or are paid, until the tank is full. Ports sell a top-up. | The jump (one lane's worth, plus a heavy ship's surcharge). Cards can ask for it (a Thren swarm takes five). |
+| **Jump fluid** | The drive tank: exactly the plotted lane's jump, no more (replot to a dearer lane and it asks for a little more). | The refinery, from every Cyrite you pick up or are paid, until the tank is full. Ports sell a top-up; on the road a Kellern port charges the Bonded rate (posted × 1.4, rounded up) unless Juno carries a forged Charter ([ROAD.md](ROAD.md)). | The jump (one lane's worth, plus a heavy ship's surcharge). Cards can ask for it (a Thren swarm takes five). |
 | **Cyrite** | The purse, in both modes. | What the tank cannot take: rock, scrap, wrecks, jobs, favours, places. | The bay (one price, yard work included), the ports (supplies, plates, fluid), card costs. |
 | **Supplies** | The galley and the spares in one stock (max 16, racks add 4 a mark). | Crates on wrecks and capital ships, cards, places, ports. | A lane's days (1 a day), the drive's wear (2 a jump), a plate patch (3). |
 

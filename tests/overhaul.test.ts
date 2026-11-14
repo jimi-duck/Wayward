@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { GATES, LEGS } from '../src/content/road';
 import { SCRIPT } from '../src/content/script';
-import { CARD_BY_ID, choiceView } from '../src/sim/comms';
+import { CARD_BY_ID, choiceView, feeFor, type Ctx as CardCtx } from '../src/sim/comms';
+import { owed } from '../src/sim/contract';
 import { ENDINGS, ENDING_BY_ID } from '../src/content/endings';
 import type { SortieResult } from '../src/sim/breakout';
 import { jumps, regionOf, type Chart } from '../src/sim/chart';
@@ -10,7 +11,7 @@ import { derive } from '../src/sim/evidence';
 import { endSortie, gateCheck, newJourney, options, plot, sortieDef, type Journey } from '../src/sim/journey';
 import { legOf, roadRegion, scriptKey, stopAt } from '../src/sim/road';
 import { Script, type Ctx, type Output, type Row } from '../src/sim/script';
-import { count, debtLeft } from '../src/sim/threads';
+import { ACCOUNT_DEBT, count, debtLeft } from '../src/sim/threads';
 import { newRun } from '../src/sim/run';
 import { migrate } from '../src/meta/save';
 import { finaleCard } from '../src/sim/calloway';
@@ -61,9 +62,11 @@ describe('the road', () => {
   it('sends each gate its own card, and none where the journey earned a clear one', () => {
     expect(gateCheck('narrows', [])).toBeNull();
     expect(gateCheck('rift', [])).toBe('rift_checkpoint');
-    expect(gateCheck('scrapgate', [])).toBeNull();
+    // the Belt chase ends at the Scrapgate unless Val was paid to forget the heading, or her channel was jammed
+    expect(gateCheck('scrapgate', [])).toBe('scrapgate_pickets');
     expect(gateCheck('scrapgate', ['vell_betrayed'])).toBe('scrapgate_pickets');
     expect(gateCheck('scrapgate', ['vell_betrayed', 'vell_paid'])).toBeNull();
+    expect(gateCheck('scrapgate', ['vell_exposed'])).toBeNull();
     expect(gateCheck('breaker', [])).toBe('breaker_lockdown');
     expect(gateCheck('breaker', ['strike_held'])).toBeNull();
     expect(gateCheck('tollgate', [])).toBe('story_tollgate');
@@ -166,12 +169,19 @@ describe('the threads', () => {
     expect(count([...f, 'job_missing_payroll_won', 'job_missing_payroll_warn'], 'crews')).toBe(4);
   });
 
-  it('take the debt down 20 a step, from sixty to nothing at the third', () => {
-    expect(debtLeft([])).toBe(60);
-    expect(debtLeft(['job_wanted_won'])).toBe(40);
-    expect(debtLeft(['job_wanted_won', 'job_wanted_warn'])).toBe(60);
-    expect(debtLeft(['job_wanted_won', 'job_heavy_tanker_won', 'job_missing_payroll_won', 'job_drift_cache_won'])).toBe(20);
+  it('take the debt down from the breach bill, 800, to nothing at the third', () => {
+    expect(ACCOUNT_DEBT).toBe(owed());
+    expect(debtLeft([])).toBe(800);
+    expect(debtLeft(['job_wanted_won'])).toBe(550);
+    expect(debtLeft(['job_wanted_won', 'job_wanted_warn'])).toBe(800);
+    expect(debtLeft(['job_wanted_won', 'job_heavy_tanker_won', 'job_missing_payroll_won', 'job_drift_cache_won'])).toBe(300);
     expect(debtLeft(['job_wanted_won', 'job_heavy_tanker_won', 'job_recovery_order_won'])).toBe(0);
+    // the tug's "Pay the balance" asks exactly what is left, in Cyrite
+    const tug = CARD_BY_ID.sc_recovery!;
+    const fee = (f: string[]) => feeFor(tug, { heat: 0, flags: new Set(f) } as unknown as CardCtx);
+    expect(fee([])).toBe(800);
+    expect(fee(['thread_account_1'])).toBe(550);
+    expect(fee(['thread_account_1', 'thread_account_2'])).toBe(300);
   });
 
   it('keep their step flags in step with the flags, every time', () => {
@@ -259,7 +269,7 @@ describe('the endings on the road', () => {
     expect(open(toThreshold({ flags: ['lane_keys'] }))).toContain('seal');
   });
 
-  it('reads each ending as the road’s: an opener, one line a slot at most, Oren’s answer, and the close', () => {
+  it('reads each ending as the road’s: an opener, one line a slot at most (the Charter’s among them), Oren’s answer, and the close', () => {
     const j = toThreshold({ flags: ['voice_read', 'field_line', 'copy_warden', 'oren_truth'] });
     const lines = epilogue(j, 'broadcast');
     const r = ENDING_BY_ID.broadcast.road;
@@ -267,7 +277,8 @@ describe('the endings on the road', () => {
     expect(lines.at(-1)).toBe(r.close);
     expect(lines).toContain('It doesn’t leave on one ship. Quill and a hundred hulls carry copies into the core.');
     expect(lines).toContain('You said it was for the truth. Oren writes that down.');
-    expect(lines.length).toBeLessThanOrEqual(6);
+    expect(lines).toContain(r.lines.find((l) => l.slot === 'charter')!.text);
+    expect(lines.length).toBeLessThanOrEqual(7);
     for (const e of ENDINGS) {
       expect(epilogue(toThreshold(), e.id)[0]).toBe(e.road.open);
       expect(epilogue(toThreshold(), e.id).at(-1)).toBe(e.road.close);

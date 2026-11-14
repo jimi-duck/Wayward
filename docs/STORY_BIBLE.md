@@ -1,5 +1,7 @@
 # Story bible
 
+> **Direction, 14 November 2026.** [STORY_DIRECTION.md](STORY_DIRECTION.md) sets the three themes (genocide, authoritarianism, the pursuit of freedom), the two classes (Chartered and Bonded), the central revelation and the decisions on the keys and Unite. Where it differs from this bible, it wins.
+
 The one source of truth for the Story's canon. The owner's brief is
 [CLAUDE_STORY_REWRITE_BRIEF.md](CLAUDE_STORY_REWRITE_BRIEF.md); where this file
 and the brief differ, the brief wins and this file is wrong. Where this file and
@@ -68,17 +70,20 @@ cheaper Krail.
 
 ## 3. The society (what play must show)
 
-Three material positions, shown through prices, contracts, port access, scans
-and dialogue, never a class simulator.
+Two classes, set by the Charter, the right of passage (full rules in
+[STORY_DIRECTION.md](STORY_DIRECTION.md) §2). Shown through gates, prices,
+berths, pay and people, never a score.
 
-- **Core citizens.** Clean stations, reliable lanes, high Scores. Many believe.
+- **The Chartered.** Cross any gate on their own word, posted fuel price, any
+  berth, own their gear, heard in court. A minority; hereditary. Many believe.
   Seen in the Reach's controlled ports and the Net's billboards.
-- **Licensed workers.** Miners, haulers, mechanics, yard crews. Legally free,
-  economically bound: leased gear, rationed fuel, deductions, score-linked
-  access. Juno starts here. Seen in the Cerro work order and the Breaker Yards.
-- **The unregistered.** Refugees, failed workers, stateless families,
-  dissidents. "Allocation risks." Not inherently virtuous or criminal. Seen in
-  the Drift, the Gutter and the Quiet Ferry.
+- **The Bonded** ("contract residents"). Tied to a contract site, gate passes
+  from the employer, rationed fluid, leased gear, no standing. Juno starts here.
+  Seen in the Cerro work order and the Breaker Yards. The whole Scatter lost
+  its Charter on Severance night, so everyone there is outside the system:
+  refugees, failed workers, stateless families, dissidents, "allocation
+  risks", not inherently virtuous or criminal. Seen in the Drift, the Gutter
+  and the Quiet Ferry.
 
 Voice of the regime: administrative and plausible. "Maintaining continuity."
 "Allocation is based on verified contribution." "The system is operating as
@@ -92,7 +97,7 @@ annotated.
 | About 100 years ago | The Accord links the worlds by jump lanes. Krail and Cyrite seams are worked. | Golden age. | Cyrite extraction goes industrial. |
 | About 75 years ago | Deep Cyrite seams opened at scale. | A productivity record. | Something answers: the Thren. |
 | 70 years ago, day 1 | The Severance: the outer lanes go dark. | A Krail shortage; the lanes failed from neglect. | The lanes were shut by signed order. Krail reserves stood at 94%. |
-| Same night | Lane Warden Ada Aster, on the Narrows relay's sister watch, is "lost in service". | Lost in service. | She hid the archive and a dead-man routine for her bloodline. |
+| Same night | Lane Warden Ada Aster, on the Narrows relay's sister watch, is "lost in service". | Lost in service. | She hid the archive and a dead-man routine. Her family's Charter is withdrawn. |
 | Years 1 to 10 | The breakers (lane closers) are built in the Breaker Yards. The Forty are in the room; many keep silent for Krail rights, contracts or safety. | None. | Cover-up. |
 | Years 10 to 70 | The Emergency becomes the Continuance. Companies own the mines, leases, housing and food. The Net spreads. | Stability. | Purge, asset seizure, permanent power. |
 | 27 years ago | Juno Aster is born in Cerro. | | |
@@ -105,8 +110,10 @@ annotated.
   profit and safety. Her arc is not "become a flawless revolutionary". It is:
   decide what freedom costs, whom she owes and what to do with the truth.
 - **Ada Aster**, her grandmother, a Lane Warden on the night of the Severance,
-  declared "lost in service". She built (or preserved) a dead-man routine that
-  wakes when a Warden-bloodline pilot takes the helm of the hauler. Whether she
+  declared "lost in service". She built (or preserved) a dead-man routine in the
+  hauler. The keys work in any hand (owner, 14 November 2026): there is no
+  bloodline lock, and Juno is not a chosen one. The routine nudged her onto the
+  hull; note 8 admits it, and Juno resents it. Whether she
   meant to expose the Continuance, protect someone, keep the lane keys, or all
   three is revealed in steps. **Cerro** gives the wake and the reserves figure;
   **the Salvage Belt** gives Ada's own voice; **the Hollows** gives her reason
@@ -172,16 +179,22 @@ believes or can do.
 | Flag | Clue | Certainty | Where | Effect |
 |---|---|---|---|---|
 | `archive_woke` | The archive woke on Juno's hand | fact | `story_wake`, the last card of the opening chain beyond the gate | Sets the Score drop; Wall entry. |
-| `clue_archive_log` | The Warden Line log: routine ADA-1, bloodline lock | fact | Cerro wake card, "open the log" (optional) | Deep layer; Ada's name early. |
+| `clue_archive_log` | The Warden Line log: routine ADA-1 | fact | Cerro wake card, "open the log" (optional) | Deep layer; Ada's name early. |
 | `clue_reserves` | Krail reserves 94% on the shutdown date | fact | `story_wake` (both answers) | The Act I reveal. |
 | `clue_order_sig` | The closing order, signed L. C. | fact | Reach, Ilse's order as a document (`story_order`); at Vesta from her recording (`ilse_recording`) if she was cut off | The first L. C. Played on the Warden's Road only (`?road`). |
 | `ada_named` | Ada Aster, the archive's writer | fact | Reach, `story_handwriting`; at Vesta from her recording | The leg goal reads "the relay Ada watched". Road only. |
 | `clue_sig_reach` | "L. C." on the authorisation line | inference | Reach, the ledger | One of three for the signature. On the road it is the second L. C., after the order. |
 | `clue_sig_yards` | The Governor's cipher on the work order | inference | Breaker Yards | Two of three. |
-| `clue_sig_ports` | Lior Calloway's full signature in the minutes | fact (with the others) | Free Ports | Three of three: leverage, once (`sig_used`). |
+| `clue_sig_ports` | Lucan Calloway's full signature in the minutes | fact (with the others) | Free Ports | Three of three: leverage, once (`sig_used`). |
 | `clue_scarred` | Thren-scarred hulls under restriction | fact | Breaker Yards | Points at the Thren early. |
 | `clue_agent` | An Office agent aboard the Quiet Ferry | fact | Drift Deep | Expose, protect or use. |
 | `clue_cyrite` | Cyrite draws the Thren | fact | Hollows | Act III reveal. |
+| `clue_allocation` | The allocation tables: fuel set for dependency, no Merit Grant in forty years | fact | Marlow, Brook (`ev_allocation`, with the ledger) | Present day (STORY_DIRECTION §3). Answers "Merit Grants remain open". |
+| `clue_debt_clause` | The debt transfer clause: the Asters Bonded since Ada | fact | Tamsin Field, Kellern Accounts (`ev_debt`) | Present day. Ties to `ada_named`, `clue_allocation`. |
+| `clue_attrition` | The attrition schedule: deaths priced into contracts | fact | Kiln, Brother Orrin (`ev_attrition`); else Tarik's Lamps | Present day; the genocide's intent. |
+| `clue_survey` | The sealed Survey reports: readings rise with extraction | fact | Lantern Mile, the analyst (`ev_survey`) | Present day. Ties to `frag_charts`, `clue_cyrite`. |
+
+Wall rows may carry `says` (the broadcast they answer, shown as "They say") and `links` (shown as "Ties to" once both rows are found).
 
 A **lead** is one line on the Wall: where to look next, and what it would
 change. The Wall always shows one, derived from the first missing fragment of the
@@ -194,7 +207,7 @@ Naming convention: `<who>_met`, `<who>_<outcome>`.
 
 ### Governor Idris Calloway (Offices of Peace)
 Believes the Continuance is necessary because she has seen what happens when
-central control fails. Her secret: her father, Governor **Lior Calloway**, signed
+central control fails. Her secret: her father, **Lucan Calloway**, Chair of the Emergency Authority, signed
 the Severance order. Three set pieces:
 1. **The Narrows** (`story_calloway_narrows`, planned): a personal hail. She
    has read Ada's file too. Flag `calloway_ada`.
@@ -382,9 +395,9 @@ Recorded 2026-10-18, branch `story-rewrite` from `main` at `1e318c4`:
 
 ## Naming (third pass)
 
-The people and titles follow the owner's third naming pass: Tam is Sam Okoro; Ansel is Adam Brook; Speaker Oduya is Councillor Oduya; Mother Saffi is Ma Saffi; Vell is Val; Dov Kessler; Ossie Raine; Tarik Silva; Ben Anand; Keeper Oren is Oren Lisle, the archivist; Owen Pike; Hester; Brother Orrin (not Witness); Noor Haddad, aide to the Governor. Prefect Idris Calloway is Governor Idris Calloway and Prefect Lior Calloway is Deputy Governor Lior Calloway. Captain Isla Vance, Captain Hale Sorensen, Brennan Kade, Sister Vera Hask, Inspector Ashgrove (the title Inquisitor is gone), and The Nine (was the Chorus of Nine). Systems: Marlow, Northfold, Hollis, Vesta, Branford. Regions, factions, gates and ports keep their names. Flag and card ids (`tam_codes`, `story_vell_betray`, ...) keep the old spelling so saves still read. Procedural system names: about six in ten are plain words, about four in ten a real name plus a place-word (Hadley’s Rest, Morgan Deep), chosen from the same two draws as before so a seed lays out as it did.
+The people and titles follow the owner's third naming pass: Tam is Sam Okoro; Ansel is Adam Brook; Speaker Oduya is Councillor Oduya; Mother Saffi is Ma Saffi; Vell is Val; Dov Kessler; Ossie Raine; Tarik Silva; Ben Anand; Keeper Oren is Oren Lisle, the archivist; Owen Pike; Hester; Brother Orrin (not Witness); Noor Haddad, aide to the Governor. Prefect Idris Calloway is Governor Idris Calloway. Her father is Lucan Calloway, Chair of the Emergency Authority (owner, 14 November 2026: one name, as in Ada's note 6; "Lior" and "Deputy Governor" are gone). Captain Isla Vance, Captain Hale Sorensen, Brennan Kade, Sister Vera Hask, Inspector Ashgrove (the title Inquisitor is gone), and The Nine (was the Chorus of Nine). Systems: Marlow, Northfold, Hollis, Vesta, Branford. Regions, factions, gates and ports keep their names. Flag and card ids (`tam_codes`, `story_vell_betray`, ...) keep the old spelling so saves still read. Procedural system names: about six in ten are plain words, about four in ten a real name plus a place-word (Hadley’s Rest, Morgan Deep), chosen from the same two draws as before so a seed lays out as it did.
 
-The Tollgate signature (Lior Calloway’s, found in the minutes) is a different clue from Ada Aster’s recording (the black box). The Wall and the dialogue keep them apart.
+The Tollgate signature (Lucan Calloway’s, found in the minutes) is a different clue from Ada Aster’s recording (the black box). The Wall and the dialogue keep them apart.
 
 ## 11. The Reach on the road
 

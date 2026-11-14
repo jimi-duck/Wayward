@@ -29,9 +29,12 @@ export const THREADS: Thread[] = [
 
 const THREAD_BY_ID = Object.fromEntries(THREADS.map((t) => [t.id, t])) as Record<ThreadId, Thread>;
 
-/** The breach debt the Account starts from, and what each step takes off it (to nothing at the third). Refusing adds nothing. */
-export const ACCOUNT_DEBT = 60;
-export const DEBT_STEP = 20;
+/**
+ * The breach debt the Account starts from: the opening's bill, 800 CR (sim/contract.ts `owed`; a test keeps them equal). Each of
+ * its jobs won takes its share off, to nothing at the third. Refusing adds nothing.
+ */
+export const ACCOUNT_DEBT = 800;
+export const DEBT_TAKES: Record<string, number> = { wanted: 250, heavy_tanker: 250, recovery_order: 300 };
 
 /** A flag test; a set is used as it is, since this runs every step on the road (sim/evidence.ts `derive`). */
 const has = (flags: Iterable<string>) => { const f = flags instanceof Set ? flags : new Set(flags); return (x: string) => f.has(x); };
@@ -63,5 +66,8 @@ export function count(flags: Iterable<string>, id: ThreadId): number {
 export const accountCalled = (flags: Iterable<string>): boolean => { const list = [...flags]; return THREAD_BY_ID.account.jobs.some((j) => list.some((f) => f.startsWith(`job_${j}_`))); };
 
 /** What is left of the breach debt, after the Account's steps. */
-export const debtLeft = (flags: Iterable<string>): number => Math.max(0, ACCOUNT_DEBT - DEBT_STEP * won(flags, 'account'));
+export const debtLeft = (flags: Iterable<string>): number => {
+  const list = flags instanceof Set ? flags : new Set(flags);
+  return Math.max(0, ACCOUNT_DEBT - THREAD_BY_ID.account.jobs.reduce((n, j) => n + (stepWon(list, j) ? DEBT_TAKES[j] ?? 0 : 0), 0));
+};
 

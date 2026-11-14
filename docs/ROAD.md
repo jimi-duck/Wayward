@@ -60,6 +60,57 @@ code carries it.
   (`relay_<gate>`), Ada's note, the answer, the way on. The gate's own card
   comes from `gateCheck` in `sim/journey.ts`.
 
+## Continuance Public Service
+
+The regime's broadcasts (`content/script/broadcasts.ts`, [STORY_DIRECTION.md](STORY_DIRECTION.md) §6) are ordinary radio rows from *Continuance Public Service* on the `office` channel: at most one a stop on its first free moment after 25 s, a few more on flags (Brook taken or freed, the ledger, the strike). They are flavour: `stale` drops one that waits 150 s for a quiet sky, so they never hold a stop or a gate, and no breather has one. From the Marches on, Commissioner Aurel Thane (Office of Public Record) speaks for them. `tests/broadcasts.test.ts` holds the rules.
+
+## The Charter
+
+The class line in play ([STORY_DIRECTION.md](STORY_DIRECTION.md) §2). Juno is Bonded. On the road, a Kellern port past the audit dock sells jump fluid at the Bonded rate (`sim/charter.ts`: the posted price × 1.4, rounded up), and the port's fuel line says so ("Bonded rate · posted 2"). `content/script/charter.ts` adds the work lane notice at Northfold's gate, the service berth notices at Halden, Marlow and Yard Nine, the Northfold mother, and Val's forged Charter at Kiln (`charter_offer`: 30 Cyrite, flag `charter_forged`, a day off the hunt). A Custody patrol's check strips a forged Charter (`sim/traffic.ts`: flag `charter_stripped`, heat +0.25). It is never a number; the Civic Score stays removed. `tests/charter.test.ts`.
+
+## The Threshold scene
+
+Wane Rest, the last stop, plays the end as a scene (`content/script/threshold.ts`):
+
+1. Thane's last broadcast.
+2. "They gather": the Thren close round the gate.
+3. Who came: one line each from the allies the player built (Pike with `thread_line_2`, Hester with `thread_crews_3`, the Long Walk with `job_long_walk_won`, the analyst with `thread_survey_2`), the Hollow Saints with `saints_helped`, Val as a rival with `broker`, or "Nobody came".
+4. A main notice, "Calloway holds the gate", that holds the gate until the scene has played. Her last card follows at the gate, as before.
+5. On the ending screen, Ada's note 8 admits the keys would have worked in any hand, and its button is Juno's answer ("You could have asked me", or "My name is Juno. I chose." if the implant was burned).
+6. The choice. Every road epilogue has a `charter` slot: what that future does to the Charter.
+
+## The divided resistance
+
+Nobody in the Scatter agrees what freedom is for (`content/script/resistance.ts`, `content/resistance.ts`, [STORY_DIRECTION.md](STORY_DIRECTION.md) §8). Three scenes carry the argument:
+
+- **The moot at Kessel Hold.** Hester (crews together), Oduya (each Holdfast governs itself), Pike (the Line keeps out of councils) and Val (call me when one of you wins) speak in turn before Oduya's card, which waits for them.
+- **The Saints at Tamsin Field.** Sister Vera Hask's Hollow Saints blow Custody's relay, which Bonded conscripts man. `saints_relay` (a main card): help (`saints_helped`, hunt +1, the conscripts die), warn the crew (`saints_stopped`, two raptors come for Juno) or walk away (`saints_ignored`). Thane's broadcast calls it terror either way, unless she stopped it.
+- **The strike vote at Torchwall.** Marit opens; Hester (seize), the Saints (wreck) and Oduya (bargain) speak if Juno has worked with them. Marit's card then offers "Seize the yard" (`strike_seized`) or "Bargain for passes" (`strike_passes`); both count as `crews_stood`.
+
+The Unite ending is a confederation with no governor, and it remembers the Saints' dead. `tests/resistance.test.ts`.
+
+## The rising Thren
+
+Mining draws them ([STORY_DIRECTION.md](STORY_DIRECTION.md) §3), and each leg meets them a little closer: the Slow Door (motes on the gate), Low Harrow (folklore, a scored hull), Saltmarsh (a river of motes), Stillwater, Cradle Gap (a breaker holding a knot), Lucky Haven (people who live with them), Hollowforge and Ghostcinder, then the Threshold.
+
+- **Gunfire draws more.** A shot with a Thren hull within `THREN_JAM` brings the next knot within `SWARM_DRAWN` (12 s; `sim/world.ts gunfireDraws`) and sets `thren_drawn` and `thren_drawn_<stop>`. The first time, a notice says "They answer".
+- **Stillwater** (`thren_still`, a main card from Hester): vent ten of Juno's Cyrite (`still_vented`), vent the rig's hold so Kellern docks forty contracts (`still_rig_vented`), or fight six motes and a web layer (`still_fought`). Venting holds the swarm off for 120 s.
+- **Ghostcinder** asks for a crossing with no fighting: the sub-line says "Hold your fire", and if she manages it Sable notices.
+
+`tests/thren.test.ts`. No boss fight, and they are never translated.
+
+## Thane's hearing
+
+At Gilt Market, Commissioner Aurel Thane hears Juno's file (`content/hearing.ts`, a main card). Her own evidence is "not admissible": Bonded testimony never is. The answers are the Chartered voices she has. Brook (shown with `brook_free`) testifies and loses his Charter (`brook_struck`, and the Broadcast ending remembers). Lucan's signature (shown with `clue_order_sig`) is entered and sealed (`hearing_sealed`). Or she walks out, and Thane rules the file a forgery (`hearing_forgery`). The Office's broadcasts answer each one. `tests/hearing.test.ts`.
+
+Continuity: Hester's opener at Vesta now remembers the Hollis prospector (helped, robbed or never met), and the archive's last line points at Halden's Warden families, not at relays.
+
+## The Belt chase
+
+Val's route trade sells Juno's heading to the Offices (`sim/journey.ts beltChased`). At Kiln and Tarik's Lamps, the first pursuit comes 20 s after arrival and again 6 s after each calm. Heat starts at 0.3, and most of the pursuit is Offices pickets from ahead. A red notice says so on arrival. The chase ends at the Scrapgate's pickets (`scrapgate_pickets`). Paying Val to forget (`vell_paid`) or jamming her channel (`vell_exposed`) at Tarik's Lamps shakes it, and the Scrapgate is then clear.
+
+Cut for room (story direction plan): the Survey's black-hole job at Ashdeep (an analyst's reading plays there instead), Val's reckoning at Gilt Market (her story ends at the Scrapgate), and Calloway's question at Cutton (her best scene is the Tollgate). The cards stay in the code, unplayed.
+
 ## Add a stop
 
 1. Add a row to its leg (`ROAD`, `MARCHES` … `LAST`) with a `script` key.

@@ -343,7 +343,7 @@ export const STORY_CARDS: CardDef[] = [
     herald: { headline: 'Hidden archive unlocked', reason: 'Found in the ship database' },
     from: 'Ship database · stored message', title: 'For whoever flies her next',
     letter: { head: [['To', 'Whoever flies her next'], ['From', 'No name given'], ['Kept in', 'Crew notes, hidden']], sign: '— No name. In case they read this before you do.' },
-    text: 'If you’re reading this, the lock’s off and she’s yours now. I hid this where the company’s auditors never bother looking.\nSeventy years ago the gates to the outer worlds went dark. They said the Krail had run out, and everyone left outside became the Scatter.\nBut the reserve log for that day says Krail reserves: 94%. The same day someone signed the order to shut the gates.\nI don’t know the whole story. I know it’s not the one they told us.\nStart at Halden’s Reach. The relays there still answer to the right key.',
+    text: 'If you’re reading this, the lock’s off and she’s yours now. I hid this where the company’s auditors never bother looking.\nSeventy years ago the gates to the outer worlds went dark. They said the Krail had run out, and everyone left outside became the Scatter.\nBut the reserve log for that day says Krail reserves: 94%. The same day someone signed the order to shut the gates.\nI don’t know the whole story. I know it’s not the one they told us.\nStart at Halden’s Reach. The old Warden families retire there. Someone will remember.',
     cargo: 'The Wayward · a stored message in the hull’s archive',
     choices: [
       { id: 'lead', label: 'Set course: Halden’s Reach', tone: 'help', hint: '',
@@ -491,7 +491,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'defend', label: 'Defend the rigs', tone: 'fight', hint: 'Fight the raiders. Kessel Hold will not forget it.', win: { text: 'The raiders break off · the claims hold', flag: 'oduya_rigs', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], standing: { miners: 1, kellern: -1 } } },
       { id: 'stores', label: 'Send supplies', tone: 'help', hint: 'Three supplies for the crews. They hold on their own.', cost: { supplies: 3 }, win: { text: 'The crews hold the rigs on your stores', flag: 'oduya_rigs', standing: { miners: 1 } } },
-      { id: 'no', label: 'Not now', tone: 'refuse', hint: 'You cannot afford the fight.', win: { text: 'Oduya closes the channel' } },
+      { id: 'no', label: 'Tell Oduya no', tone: 'refuse', hint: 'You cannot afford the fight.', win: { text: 'Oduya closes the channel' } },
     ],
   }),
   story({
@@ -599,7 +599,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'food', label: 'Trade supplies', tone: 'trade', hint: 'Three supplies for the old charts.', cost: { supplies: 3 }, win: { text: 'The old charts go in the file', flag: 'frag_charts' } },
       { id: 'share', label: 'Share what you know', tone: 'help', hint: 'Free. He hears the file too, and talks.', win: { text: 'Tarik copies your route · the charts go in the file', flag: 'frag_charts', heat: 0.08, standing: { miners: 1 } } },
-      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The lamps drift astern' } },
+      { id: 'no', label: 'Keep your stores', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The lamps drift astern' } },
     ],
   }),
   story({
@@ -625,13 +625,14 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_crew', kind: 'plea', caller: 'frontier',
     from: 'Marit Voss · crew steward', title: 'The yard crews',
-    text: '“The crews stop work if you stand with us. Hester’s people are coming in to hold the line. It buys you a quiet gate.”',
+    text: '“The committee votes tonight, and they’ll follow your lead. Hester’s people are coming in to hold the line. Either way, it buys you a quiet gate.”',
     lines: [{ if: { noFlag: 'thread_crews_3' }, text: '“Hester’s people won’t make it in time. We’ll try anyway.”' }],
     cargo: 'A crew barge · two hundred hands',
     choices: [
-      { id: 'stand', label: 'Stand with the crews', tone: 'help', hint: 'Calloway loses a day. Kellern will not forget it.', win: { text: 'The crews stop work · the lane goes quiet', flag: 'crews_stood', hunt: 1, standing: { frontier: 1, miners: 1, kellern: -1 } } },
-      { id: 'parts', label: 'Ask for supplies', tone: 'trade', hint: 'Four supplies, and no promises.', win: { text: 'Supplies across · no promises', supplies: 4 } },
-      { id: 'no', label: 'Not yet', tone: 'refuse', hint: 'Stay out of it.', win: { text: 'The barge falls away' } },
+      // the committee's vote (owner, 14 November 2026: the uprising decides who holds the yard)
+      { id: 'stand', label: 'Seize the yard', tone: 'help', hint: 'The crews run it themselves. Calloway loses a day. Kellern will not forget it.', win: { text: 'The crews take the yard · the lane goes quiet', flag: ['crews_stood', 'strike_seized'], hunt: 1, standing: { frontier: 1, miners: 1, kellern: -1 } } },
+      { id: 'bargain', label: 'Bargain for passes', tone: 'trade', hint: 'Work stops until Kellern signs passes for crew families. Slower, safer.', win: { text: 'Work stops · Kellern comes to the table', flag: ['crews_stood', 'strike_passes'], hunt: 0.5, standing: { frontier: 1, miners: 1 } } },
+      { id: 'no', label: 'Stay out of it', tone: 'refuse', hint: 'The committee votes without you.', win: { text: 'The barge falls away' } },
     ],
   }),
   story({
@@ -642,7 +643,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'warn', label: 'Warn the crew', tone: 'help', hint: 'The scarred hulls go in the file.', win: { text: 'Eben has the warning · the scarred hulls go in the file', flag: ['tam_brother', 'eben_warned', 'clue_scarred'], standing: { frontier: 1 } } },
       { id: 'look', label: 'Look at the hulls', tone: 'trade', hint: 'Two supplies for a quiet look. Nobody is told.', cost: { supplies: 2 }, win: { text: 'Not claws · thousands of tiny strokes, all one direction', flag: ['clue_scarred', 'hulls_seen'] } },
-      { id: 'no', label: 'Not now', tone: 'refuse', hint: 'Sam will remember.', win: { text: 'Sam closes the channel' } },
+      { id: 'no', label: 'Tell Sam later', tone: 'refuse', hint: 'Sam will remember.', win: { text: 'Sam closes the channel' } },
     ],
   }),
   story({
@@ -690,7 +691,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'berth', label: 'Take the berth', tone: 'trade', hint: 'Supplies for the stay. The Guild takes note.', win: { text: 'A berth, stores and a friend in the Guild', flag: 'ines_berth', supplies: 6, heat: 0.05, standing: { guild: 1 } } },
       { id: 'pay', label: 'Pay your way', tone: 'pay', hint: 'Four Cyrite. No favours owed.', cost: { chits: 20 }, win: { text: 'Docked and square', supplies: 6 } },
-      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'You fly on your own.', win: { text: 'The launch turns back' } },
+      { id: 'no', label: 'Owe nobody', tone: 'refuse', hint: 'You fly on your own.', win: { text: 'The launch turns back' } },
     ],
   }),
   story({
@@ -717,7 +718,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_implant', kind: 'plea', caller: 'unknown',
     from: 'The Wayward · Ada’s routine', title: 'What the helm still holds',
-    text: '“Warden-bloodline helm accepted. Ada Aster’s routine is still in the console. It has been learning who flies her. Keep it, burn it, or make it yours.”',
+    text: '“Helm accepted. Ada Aster’s routine is still in the console. It steered this hull into your path, and learned who flies her. Keep it, burn it, or make it yours.”',
     cargo: 'The Wayward’s helm · one sealed implant',
     choices: [
       { id: 'keep', label: 'Keep the implant', tone: 'help', hint: 'Ada’s routine stays. It can wake the lanes, and be found.', win: { text: 'The implant stays in the helm', flag: 'implant_kept' } },
