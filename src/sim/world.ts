@@ -20,7 +20,7 @@ import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
 import { ledgerFor, type LedgerRow } from './contract';
-import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, SAFE_R, SAFE_HOLD, HOLD_MAX, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
+import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, SWARM_DRAWN, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, SAFE_R, SAFE_HOLD, HOLD_MAX, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, RADIO_GAP, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
   type Outcome, type Standing,
@@ -808,6 +808,7 @@ export class World implements EncounterHost {
       fireWeapons(this.arms, s, cold ? { ...c, fire: false, torpedo: false } : c, targets, fireStats, fm, this.bolts, this.torps, this.events, dt);
       // each press that launched under high-yield warheads uses one up
       if (this.powers.yield > 0) for (let i = seen; i < this.events.length; i++) if (this.events[i]!.type === 'torpedo') this.powers.yield = Math.max(0, this.powers.yield - 1);
+      if (this.bk && this.events.slice(seen).some((e) => e.type === 'bolt' || e.type === 'torpedo')) this.gunfireDraws(t);
       const laid = cold ? null : laySystems(this.sys, s, st, dt, fm.rapid, this.alert() === 'red');
       if (laid) this.events.push({ type: 'mineLaid', x: laid.x, z: laid.z });
     }
@@ -1295,6 +1296,20 @@ export class World implements EncounterHost {
     }
     this.events.push({ type: 'squad', label: 'Thren swarm' });
     b.nextSwarm = t + swarmGap(thren, (this.fuel / this.tankCap) * TANK_MAX) * this.rng.range(0.8, 1.2);
+  }
+
+  /**
+   * Gunfire inside a swarm draws more (docs/STORY_DIRECTION.md, plan priority 3):
+   * a shot with Thren hulls close by brings the next knot within SWARM_DRAWN.
+   * The flags let the script notice, here and at a stop (`thren_drawn_<stop>`).
+   */
+  private gunfireDraws(t: number): void {
+    const b = this.bk!, s = this.ship;
+    if (b.def.quiet || (b.def.thren ?? 0) <= 0.05) return;
+    if (!this.aliens.some((a) => a.faction === 'thren' && Math.hypot(a.x - s.x, a.z - s.z) < THREN_JAM)) return;
+    b.nextSwarm = Math.min(b.nextSwarm, t + SWARM_DRAWN);
+    this.flags.add('thren_drawn');
+    if (b.def.script) this.flags.add(`thren_drawn_${b.def.script}`);
   }
 
   /** Navigation scrambles near Thren hulls, and settles once they are gone. */

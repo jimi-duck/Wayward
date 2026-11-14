@@ -339,6 +339,8 @@ export const swarmGap = (thren: number, fuel: number) => lerp(110, 40, clamp(thr
 /** Motes in a swarm, and the Thren at which a web layer leads it. */
 export const swarmSize = (thren: number) => 3 + Math.round(clamp(thren, 0, 1) * 3);
 export const SWARM_WEAVER = 0.6;
+/** Gunfire with Thren close by brings the next knot within this many seconds. */
+export const SWARM_DRAWN = 12;
 /** Within this of a Thren hull, sensors and navigation scramble; the drive spools this much slower at full noise. */
 export const THREN_JAM = 80;
 export const JAM_SPOOL = 0.5;

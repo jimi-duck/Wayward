@@ -89,6 +89,16 @@ Nobody in the Scatter agrees what freedom is for (`content/script/resistance.ts`
 
 The Unite ending is a confederation with no governor, and it remembers the Saints' dead. `tests/resistance.test.ts`.
 
+## The rising Thren
+
+Mining draws them ([STORY_DIRECTION.md](STORY_DIRECTION.md) §3), and each leg meets them a little closer: the Slow Door (motes on the gate), Low Harrow (folklore, a scored hull), Saltmarsh (a river of motes), Stillwater, Cradle Gap (a breaker holding a knot), Lucky Haven (people who live with them), Hollowforge and Ghostcinder, then the Threshold.
+
+- **Gunfire draws more.** A shot with a Thren hull within `THREN_JAM` brings the next knot within `SWARM_DRAWN` (12 s; `sim/world.ts gunfireDraws`) and sets `thren_drawn` and `thren_drawn_<stop>`. The first time, a notice says "They answer".
+- **Stillwater** (`thren_still`, a main card from Hester): vent ten of Juno's Cyrite (`still_vented`), vent the rig's hold so Kellern docks forty contracts (`still_rig_vented`), or fight six motes and a web layer (`still_fought`). Venting holds the swarm off for 120 s.
+- **Ghostcinder** asks for a crossing with no fighting: the sub-line says "Hold your fire", and if she manages it Sable notices.
+
+`tests/thren.test.ts`. No boss fight, and they are never translated.
+
 ## Add a stop
 
 1. Add a row to its leg (`ROAD`, `MARCHES` … `LAST`) with a `script` key.
