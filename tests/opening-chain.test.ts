@@ -128,7 +128,8 @@ describe('the opening chain beyond the gate', () => {
     const wake = CARD_BY_ID.story_wake!;
     expect(wake.hero).toBeUndefined();
     expect(wake.doc).toBeUndefined();
-    expect(wake.letter?.head.map(([k]) => k)).toEqual(['To', 'From', 'Kept in']);
+    expect(wake.letter?.head).toEqual([]);
+    expect(wake.letter?.sign).toBe('');
     expect(wake.text).toContain('Krail reserves: 94%');
     expect(wake.text).toContain('Halden’s Reach');
   });
