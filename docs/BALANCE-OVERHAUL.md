@@ -11,25 +11,25 @@ as it can, and does not read. Pilot numbers, not playtests.
 
 | Strategy | Policy | Threshold | Minutes | Wrecks | Endings open | Dropped | Twice |
 |---|---|---|---|---|---|---|---|
-| torpedo+defence | run | yes | 178 | 0 | unite, vanish | none | none |
-| torpedo+defence | run | yes | 176 | 1 | unite, vanish | none | none |
-| torpedo+defence | bluff | yes | 173 | 1 | unite, sell, trade, seal, vanish | none | none |
-| torpedo+defence | bluff | yes | 183 | 0 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 176 | 1 | broadcast, unite, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 200 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | run | yes | 179 | 0 | unite, vanish | none | none |
+| torpedo+defence | run | stuck | 20 | 0 | — | nr_answer, nr_note | none |
+| torpedo+defence | bluff | yes | 164 | 1 | sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 177 | 1 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 220 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 186 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
 
 ## Leg by leg
 
 | Leg | Minutes (mean) | Wrecks (mean) |
 |---|---|---|
-| The Reach | 26 | 0.3 |
-| The Marches | 23 | 0.0 |
-| The Salvage Belt | 22 | 0.0 |
-| The Drift Deep | 20 | 0.0 |
-| The Breaker Yards | 25 | 0.2 |
-| The Free Ports | 21 | 0.0 |
-| The Hollows | 25 | 0.0 |
-| The Last Lanes | 18 | 0.0 |
+| The Reach | 24 | 0.2 |
+| The Marches | 18 | 0.0 |
+| The Salvage Belt | 18 | 0.0 |
+| The Drift Deep | 17 | 0.0 |
+| The Breaker Yards | 23 | 0.0 |
+| The Free Ports | 18 | 0.0 |
+| The Hollows | 23 | 0.2 |
+| The Last Lanes | 17 | 0.0 |
 
 ## Jobs on the road
 
@@ -40,31 +40,35 @@ never chases a goal, so this shows what is reachable, not how often a player win
 |---|---|---|---|---|
 | nothing_to_declare | 1 | 2 | 2 | 0 |
 | follow_cyrite | 2 | 1 | 2 | 0 |
-| pirate_toll | 1 | 1 | 4 | 0 |
-| lifeboat_wake | 4 | 0 | 2 | 0 |
-| keep_distance | 2 | 2 | 2 | 0 |
-| wanted | 2 | 2 | 2 | 0 |
-| missing_shift | 2 | 2 | 2 | 0 |
-| heavy_tanker | 2 | 2 | 2 | 0 |
-| one_filter | 2 | 2 | 2 | 0 |
-| ransom_crew | 2 | 2 | 2 | 0 |
-| wreck_remembered | 2 | 2 | 2 | 0 |
-| the_witness | 4 | 0 | 2 | 0 |
-| long_walk | 0 | 4 | 2 | 0 |
-| finders_keepers | 0 | 4 | 2 | 0 |
-| something_dark | 4 | 0 | 2 | 0 |
-| missing_payroll | 2 | 2 | 2 | 0 |
-| last_shift | 4 | 0 | 2 | 0 |
-| tarik_bend | 2 | 2 | 2 | 0 |
-| cradle_crew | 2 | 2 | 2 | 0 |
-| needle | 0 | 4 | 2 | 0 |
-| drift_cache | 0 | 4 | 2 | 0 |
-| voice_wire | 0 | 4 | 2 | 0 |
-| kill_zone | 1 | 1 | 4 | 0 |
-| dead_drop | 0 | 4 | 2 | 0 |
-| be_bait | 4 | 0 | 2 | 0 |
-| lose_prefect | 0 | 4 | 2 | 0 |
-| no_return | 4 | 0 | 2 | 0 |
-| recovery_order | 2 | 2 | 2 | 0 |
+| pirate_toll | 0 | 2 | 4 | 0 |
+| lifeboat_wake | 4 | 0 | 1 | 0 |
+| keep_distance | 2 | 2 | 1 | 0 |
+| wanted | 2 | 2 | 1 | 0 |
+| missing_shift | 2 | 2 | 1 | 0 |
+| heavy_tanker | 2 | 2 | 1 | 0 |
+| one_filter | 2 | 2 | 1 | 0 |
+| ransom_crew | 2 | 2 | 1 | 0 |
+| wreck_remembered | 2 | 2 | 1 | 0 |
+| the_witness | 4 | 0 | 1 | 0 |
+| long_walk | 0 | 4 | 1 | 0 |
+| finders_keepers | 0 | 4 | 1 | 0 |
+| something_dark | 4 | 0 | 1 | 0 |
+| missing_payroll | 2 | 2 | 1 | 0 |
+| last_shift | 4 | 0 | 1 | 0 |
+| tarik_bend | 2 | 2 | 1 | 0 |
+| cradle_crew | 2 | 2 | 1 | 0 |
+| needle | 0 | 4 | 1 | 0 |
+| drift_cache | 0 | 4 | 1 | 0 |
+| voice_wire | 0 | 4 | 1 | 0 |
+| kill_zone | 0 | 2 | 3 | 0 |
+| dead_drop | 0 | 4 | 1 | 0 |
+| be_bait | 4 | 0 | 1 | 0 |
+| lose_prefect | 0 | 4 | 1 | 0 |
+| no_return | 4 | 0 | 1 | 0 |
+| recovery_order | 1 | 2 | 2 | 0 |
 | sables_crossing | 0 | 0 | 0 | 0 |
-| ring_centre | 4 | 0 | 2 | 0 |
+| ring_centre | 4 | 0 | 1 | 0 |
+
+## Notes, 14 November 2026 (story direction, Phase 1)
+
+Run after the broadcasts, the Charter, the evidence, Ada's notes and the Threshold scene (#500 to #504). Five of six reached the Threshold; legs are a few minutes shorter on average than the last run, and no main beat was dropped or played twice on a finished run. The one "stuck" run (run policy, seed 5017) stalls at the Narrows with the gate open, the tank full and the ship 6 units from the ring: it reproduces on `main` before Phase 1 (7866781), and with the pilot's hands off the ship jumps within a second, so it is the scripted pilot's steering at that gate, not the story. Its "dropped" rows did play; the sortie never ended, so they were not saved. No balance changes.
