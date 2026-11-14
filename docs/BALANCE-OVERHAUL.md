@@ -11,12 +11,12 @@ as it can, and does not read. Pilot numbers, not playtests.
 
 | Strategy | Policy | Threshold | Minutes | Wrecks | Endings open | Dropped | Twice |
 |---|---|---|---|---|---|---|---|
-| torpedo+defence | run | yes | 174 | 0 | vanish | none | none |
+| torpedo+defence | run | yes | 169 | 0 | vanish | none | none |
 | torpedo+defence | run | stuck | 20 | 0 | — | nr_answer, nr_note | none |
-| torpedo+defence | bluff | yes | 165 | 1 | sell, trade, seal, vanish | none | none |
-| torpedo+defence | bluff | yes | 192 | 0 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 205 | 1 | broadcast, unite, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 200 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 163 | 1 | sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 188 | 1 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 207 | 1 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 191 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
 
 ## Leg by leg
 
@@ -25,10 +25,10 @@ as it can, and does not read. Pilot numbers, not playtests.
 | The Reach | 24 | 0.2 |
 | The Marches | 18 | 0.0 |
 | The Salvage Belt | 18 | 0.0 |
-| The Drift Deep | 16 | 0.0 |
-| The Breaker Yards | 21 | 0.0 |
+| The Drift Deep | 17 | 0.0 |
+| The Breaker Yards | 22 | 0.0 |
 | The Free Ports | 19 | 0.0 |
-| The Hollows | 25 | 0.2 |
+| The Hollows | 23 | 0.3 |
 | The Last Lanes | 17 | 0.0 |
 
 ## Jobs on the road
@@ -64,11 +64,18 @@ never chases a goal, so this shows what is reachable, not how often a player win
 | dead_drop | 0 | 4 | 1 | 0 |
 | be_bait | 4 | 0 | 1 | 0 |
 | lose_prefect | 0 | 4 | 1 | 0 |
-| no_return | 4 | 0 | 1 | 0 |
-| recovery_order | 1 | 2 | 2 | 0 |
+| recovery_order | 0 | 0 | 0 | 0 |
 | sables_crossing | 0 | 0 | 0 | 0 |
-| ring_centre | 4 | 0 | 1 | 0 |
+| ring_centre | 2 | 2 | 1 | 0 |
 
-## Notes, 14 November 2026 (story direction, Phases 2 to 4)
+## Notes, 14 November 2026 (story direction, Phases 2 to 4 and the Belt chase)
 
-Run after the divided resistance, the rising Thren and Thane's hearing (#506 to #508). The results match Phase 1. Five of six runs reached the Threshold, and the legs took about the same time (Drift 16 min, Yards 21, Free Ports 19). No main beat was dropped or played twice on a finished run. The new main cards (the Saints at Tamsin Field, the knot at Stillwater, the hearing at Gilt Market) all played. The same seed (run policy, 5017) still stalls at the Narrows on the pilot's steering, as it did before Phase 1. No balance changes.
+This run came after the divided resistance, the rising Thren, Thane's hearing, the Belt chase and the cuts (#506 to #510). Five of six runs reached the Threshold.
+
+No main beat was dropped or played twice on a finished run. The new main cards all played: the Saints at Tamsin Field, the knot at Stillwater and the hearing at Gilt Market.
+
+The Belt chase brings Offices pickets fast at Kiln and Tarik's Lamps. In the pilot it cost no wrecks, and the Belt still took 18 minutes. That says the chase is pressure, not a wall. A real player who lingers to mine will feel it more than the pilot, which jumps as soon as it can.
+
+One run (run policy, seed 5017) still stalls at the Narrows. It stalled there before Phase 1 as well, and the cause is the pilot's steering, not the story.
+
+No balance changes.
