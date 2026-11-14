@@ -178,7 +178,7 @@ believes or can do.
 | `ada_named` | Ada Aster, the archive's writer | fact | Reach, `story_handwriting`; at Vesta from her recording | The leg goal reads "the relay Ada watched". Road only. |
 | `clue_sig_reach` | "L. C." on the authorisation line | inference | Reach, the ledger | One of three for the signature. On the road it is the second L. C., after the order. |
 | `clue_sig_yards` | The Governor's cipher on the work order | inference | Breaker Yards | Two of three. |
-| `clue_sig_ports` | Lior Calloway's full signature in the minutes | fact (with the others) | Free Ports | Three of three: leverage, once (`sig_used`). |
+| `clue_sig_ports` | Lucan Calloway's full signature in the minutes | fact (with the others) | Free Ports | Three of three: leverage, once (`sig_used`). |
 | `clue_scarred` | Thren-scarred hulls under restriction | fact | Breaker Yards | Points at the Thren early. |
 | `clue_agent` | An Office agent aboard the Quiet Ferry | fact | Drift Deep | Expose, protect or use. |
 | `clue_cyrite` | Cyrite draws the Thren | fact | Hollows | Act III reveal. |
@@ -194,7 +194,7 @@ Naming convention: `<who>_met`, `<who>_<outcome>`.
 
 ### Governor Idris Calloway (Offices of Peace)
 Believes the Continuance is necessary because she has seen what happens when
-central control fails. Her secret: her father, Governor **Lior Calloway**, signed
+central control fails. Her secret: her father, **Lucan Calloway**, Chair of the Emergency Authority, signed
 the Severance order. Three set pieces:
 1. **The Narrows** (`story_calloway_narrows`, planned): a personal hail. She
    has read Ada's file too. Flag `calloway_ada`.
@@ -382,9 +382,9 @@ Recorded 2026-10-18, branch `story-rewrite` from `main` at `1e318c4`:
 
 ## Naming (third pass)
 
-The people and titles follow the owner's third naming pass: Tam is Sam Okoro; Ansel is Adam Brook; Speaker Oduya is Councillor Oduya; Mother Saffi is Ma Saffi; Vell is Val; Dov Kessler; Ossie Raine; Tarik Silva; Ben Anand; Keeper Oren is Oren Lisle, the archivist; Owen Pike; Hester; Brother Orrin (not Witness); Noor Haddad, aide to the Governor. Prefect Idris Calloway is Governor Idris Calloway and Prefect Lior Calloway is Deputy Governor Lior Calloway. Captain Isla Vance, Captain Hale Sorensen, Brennan Kade, Sister Vera Hask, Inspector Ashgrove (the title Inquisitor is gone), and The Nine (was the Chorus of Nine). Systems: Marlow, Northfold, Hollis, Vesta, Branford. Regions, factions, gates and ports keep their names. Flag and card ids (`tam_codes`, `story_vell_betray`, ...) keep the old spelling so saves still read. Procedural system names: about six in ten are plain words, about four in ten a real name plus a place-word (Hadley’s Rest, Morgan Deep), chosen from the same two draws as before so a seed lays out as it did.
+The people and titles follow the owner's third naming pass: Tam is Sam Okoro; Ansel is Adam Brook; Speaker Oduya is Councillor Oduya; Mother Saffi is Ma Saffi; Vell is Val; Dov Kessler; Ossie Raine; Tarik Silva; Ben Anand; Keeper Oren is Oren Lisle, the archivist; Owen Pike; Hester; Brother Orrin (not Witness); Noor Haddad, aide to the Governor. Prefect Idris Calloway is Governor Idris Calloway. Her father is Lucan Calloway, Chair of the Emergency Authority (owner, 14 November 2026: one name, as in Ada's note 6; "Lior" and "Deputy Governor" are gone). Captain Isla Vance, Captain Hale Sorensen, Brennan Kade, Sister Vera Hask, Inspector Ashgrove (the title Inquisitor is gone), and The Nine (was the Chorus of Nine). Systems: Marlow, Northfold, Hollis, Vesta, Branford. Regions, factions, gates and ports keep their names. Flag and card ids (`tam_codes`, `story_vell_betray`, ...) keep the old spelling so saves still read. Procedural system names: about six in ten are plain words, about four in ten a real name plus a place-word (Hadley’s Rest, Morgan Deep), chosen from the same two draws as before so a seed lays out as it did.
 
-The Tollgate signature (Lior Calloway’s, found in the minutes) is a different clue from Ada Aster’s recording (the black box). The Wall and the dialogue keep them apart.
+The Tollgate signature (Lucan Calloway’s, found in the minutes) is a different clue from Ada Aster’s recording (the black box). The Wall and the dialogue keep them apart.
 
 ## 11. The Reach on the road
 

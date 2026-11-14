@@ -418,7 +418,6 @@ export const OVERHAUL: Record<string, string> = {
   'Ask why she wants to know': 'Fragen, warum sie das wissen will',
   '‘Because I have seen it before.’ · she closes the channel': '‚Weil ich es schon einmal gesehen habe.‘ · sie schließt den Kanal',
   '“One system from the end. Power down and I’ll meet you alone. No Draper. I’m offering because I’m afraid of him too.”': '„Ein System vor dem Ende. Fahr herunter, und ich treffe dich allein. Kein Draper. Ich biete das an, weil ich auch Angst vor ihm habe.“',
-  '“Ms Aster. Your breach balance stands at eighty. We have a way to settle it. One bounty. Alive, please.”': '„Frau Aster. Dein Vertragsbruchsaldo steht bei achtzig. Wir hätten eine Lösung. Ein Kopfgeld. Lebend, bitte.“',
   '“Survey Office. Your scope logs are worth money to us. The wreck at the Graveyard first. Careful questions, good pay.”': '„Vermessungsamt. Deine Scannerprotokolle sind uns Geld wert. Zuerst das Wrack am Graveyard. Sorgfältige Fragen, gute Bezahlung.“',
   '“These codes are how we walk people past checkpoints. Copy them clean and nobody gets stopped.”': '„Mit diesen Codes bringen wir Leute an Kontrollen vorbei. Sauber kopieren, dann hält keiner an.“',
   '“No more desks, Juno. Custody pickets, two of them, my word against theirs. You know who pays now. Still interested?”': '„Keine Schreibtische mehr, Juno. Zwei Custody-Posten, mein Wort gegen ihres. Du weißt jetzt, wer zahlt. Noch Interesse?“',

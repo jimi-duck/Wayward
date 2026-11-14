@@ -176,7 +176,7 @@ describe('the forced recovery', () => {
     expect(w.docked).toBe(false);
   });
 
-  it('gives the helm back on the code, and keeps the flag, the unregistered hull and the 80 CR', () => {
+  it('gives the helm back on the code, and keeps the flag, the unregistered hull and the 800 CR', () => {
     const j = beyond();
     const w = breach(j);
     run(w, RECOVERY_T + 0.2);
@@ -184,7 +184,7 @@ describe('the forced recovery', () => {
     expect(lockLifted(w.flags)).toBe(true);
     expect(w.flags.has(RECOVERY_FLAG)).toBe(true);
     expect(recovering(w.flags)).toBe(false);
-    expect(owed()).toBe(80);
+    expect(owed()).toBe(800);
     expect(ledgerFor('rename').find((r) => r.k === 'Registry status')?.v).toBe('Unregistered');
     // the controls are the player's again: a hard right turn turns her
     const h = w.ship.heading;
@@ -412,6 +412,6 @@ describe('the forced recovery across a reload', () => {
     const w3 = arrive(j);
     run(w3, 20);
     expect(w3.comms?.def.id).not.toBe(SAM_BEAT);
-    expect(owed()).toBe(80);
+    expect(owed()).toBe(800);
   });
 });

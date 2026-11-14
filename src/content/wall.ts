@@ -206,8 +206,8 @@ export const WALL: WallItem[] = [
     lead: 'Find the full signature in the minutes, then see what the keys guard.',
   }),
   clue({
-    flag: 'clue_sig_ports', name: 'Lior Calloway’s signature', certainty: 'fact', at: 5,
-    proves: 'The minutes carry the full signature: Deputy Governor Lior Calloway.',
+    flag: 'clue_sig_ports', name: 'Lucan Calloway’s signature', certainty: 'fact', at: 5,
+    proves: 'The minutes carry the full signature: Lucan Calloway, Chair of the Emergency Authority.',
     not: 'What his daughter knows. It is not Ada’s recording.',
     detail: 'The same hand as the ledger’s L. C. and the yard’s cipher. Idris Calloway’s father signed the Severance order.',
     ask: 'Whose hand signed the order?',

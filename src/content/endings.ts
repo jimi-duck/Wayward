@@ -108,7 +108,7 @@ export const ENDINGS: EndingDef[] = [
       { if: { flags: ['calloway_told'] }, text: 'Idris Calloway quits on an open channel. She reads the file aloud first.' },
       { if: { calm: ['office'] }, text: 'The Offices of Peace call it a forgery, then stop calling it anything.' },
       { if: { flags: ['ada_heard'] }, text: 'Ada Aster’s own voice opens the broadcast. Seventy years late, she is heard.' },
-      { if: { flags: ['sig_used'] }, text: 'Deputy Governor Lior Calloway’s signature is on the first page. His daughter does not deny it.' },
+      { if: { flags: ['sig_used'] }, text: 'Lucan Calloway’s signature is on the first page. His daughter does not deny it.' },
       { if: { flags: ['brook_free'] }, text: 'Adam Brook walks free and reads Kellern’s real books on air.' },
       { if: { flags: ['oren_truth'] }, text: 'You said you wanted the truth heard. It is, on every band at once.' },
       { text: 'The lanes stay dark. But now everyone knows who turned them off.' },

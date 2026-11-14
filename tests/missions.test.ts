@@ -649,7 +649,7 @@ describe('the road’s own jobs (job rework v2)', () => {
   });
 
   it('the recovery order asks the balance that is left of the debt', () => {
-    for (const [flags, cost] of [[[], 60], [['thread_account_1'], 40], [['thread_account_1', 'thread_account_2'], 20]] as const) {
+    for (const [flags, cost] of [[[], 800], [['thread_account_1'], 550], [['thread_account_1', 'thread_account_2'], 300]] as const) {
       const w = world('recovery_order', { flags: [...flags], cyrite: 100 });
       const st = w.stage!;
       put(w, st.x, st.z + 160);

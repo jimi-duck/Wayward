@@ -95,7 +95,7 @@ export const REWORK: Record<string, string> = {
   '“Kellern wants a loaded tanker. Two escorts. Kill her engines, not her hull. Then take the cargo.”': '„Kellern will einen beladenen Tanker. Zwei Eskorten. Schieß die Triebwerke kaputt, nicht den Rumpf. Dann nimm die Ladung.“',
   'The captain pays 25 Cyrite. The Gutter will hear about it.': 'Die Kapitänin zahlt 25 Cyrit. Der Gutter wird davon hören.',
   'The captain thanks you · 25 Cyrite received': 'Die Kapitänin dankt dir · 25 Cyrit erhalten',
-  '“Ms Aster. Your breach balance stands at sixty. One bounty settles a third of it. Alive, please.”': '„Frau Aster. Dein Vertragsbruchsaldo steht bei sechzig. Ein Kopfgeld begleicht ein Drittel davon. Lebend, bitte.“',
+  '“Ms Aster. Your breach balance stands at 800 CR. This bounty takes 250 off it. Alive, please.”': '„Frau Aster. Dein Vertragsbruchsaldo steht bei 800 CR. Dieses Kopfgeld zieht 250 davon ab. Lebend, bitte.“',
   'Kellern Recovery · through a Custody broker': 'Kellern Recovery · über einen Custody-Makler',
   '“Brannock ran from a Kellern debt camp. Kellern pays the bounty, double if she lives. Disable her engines without destroying the ship.”': '„Brannock ist aus einem Kellern-Schuldlager geflohen. Kellern zahlt das Kopfgeld, doppelt, wenn sie lebt. Leg die Triebwerke lahm, ohne das Schiff zu zerstören.“',
   'Her friends pay 20 Cyrite. The Gutter respects it; Custody will not.': 'Ihre Freunde zahlen 20 Cyrit. Der Gutter rechnet es dir an, die Custody nicht.',

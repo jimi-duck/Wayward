@@ -130,7 +130,7 @@ describe('the story beats', () => {
     expect(w.comms?.def.id).toBe(BREACH_BEAT);
     // Lane Control's notice offers no way out: one action, on towards the audit dock
     expect(w.comms?.choices.map((c) => c.id)).toEqual(['proceed']);
-    expect(w.comms?.ledger?.find((r) => r.k === 'Outstanding')?.cr).toBe(80);
+    expect(w.comms?.ledger?.find((r) => r.k === 'Outstanding')?.cr).toBe(800);
     w.answer('proceed');
     // Lane Control flies her in; Sam calls 2 km out from the dock
     run(95);
