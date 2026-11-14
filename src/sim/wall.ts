@@ -22,6 +22,8 @@ export interface WallView {
   lead: string;
   /** The latest row found, for the recap. */
   latest: WallItem | null;
+  /** For each found row, the names of the found rows it ties to (either way round): the case building. */
+  ties: Record<string, string[]>;
 }
 
 /** The region a journey is in, on the eight-region scale: -1 in Cerro. */
@@ -47,7 +49,17 @@ export function wallView(flags: Iterable<string>, at: number, set: RegionSet = '
     file: { found: fragments.filter((w) => have.has(w.flag)).length, of: fragments.length },
     lead,
     latest,
+    ties: tiesOf(found),
   };
 }
 
 
+
+/** Found rows that tie together (`links`, either way round), by flag: the names of the others. */
+function tiesOf(found: WallItem[]): Record<string, string[]> {
+  const by = new Map(found.map((w) => [w.flag, w]));
+  const out: Record<string, string[]> = {};
+  const tie = (a: WallItem, b: WallItem) => { const l = (out[a.flag] ??= []); if (!l.includes(b.name)) l.push(b.name); };
+  for (const w of found) for (const f of w.links ?? []) { const o = by.get(f); if (o) { tie(w, o); tie(o, w); } }
+  return out;
+}
