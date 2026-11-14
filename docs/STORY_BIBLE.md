@@ -1,5 +1,7 @@
 # Story bible
 
+> **Direction, 14 November 2026.** [STORY_DIRECTION.md](STORY_DIRECTION.md) sets the three themes (genocide, authoritarianism, the pursuit of freedom), the two classes (Chartered and Bonded), the central revelation and the decisions on the keys and Unite. Where it differs from this bible, it wins.
+
 The one source of truth for the Story's canon. The owner's brief is
 [CLAUDE_STORY_REWRITE_BRIEF.md](CLAUDE_STORY_REWRITE_BRIEF.md); where this file
 and the brief differ, the brief wins and this file is wrong. Where this file and
@@ -68,17 +70,20 @@ cheaper Krail.
 
 ## 3. The society (what play must show)
 
-Three material positions, shown through prices, contracts, port access, scans
-and dialogue, never a class simulator.
+Two classes, set by the Charter, the right of passage (full rules in
+[STORY_DIRECTION.md](STORY_DIRECTION.md) §2). Shown through gates, prices,
+berths, pay and people, never a score.
 
-- **Core citizens.** Clean stations, reliable lanes, high Scores. Many believe.
+- **The Chartered.** Cross any gate on their own word, posted fuel price, any
+  berth, own their gear, heard in court. A minority; hereditary. Many believe.
   Seen in the Reach's controlled ports and the Net's billboards.
-- **Licensed workers.** Miners, haulers, mechanics, yard crews. Legally free,
-  economically bound: leased gear, rationed fuel, deductions, score-linked
-  access. Juno starts here. Seen in the Cerro work order and the Breaker Yards.
-- **The unregistered.** Refugees, failed workers, stateless families,
-  dissidents. "Allocation risks." Not inherently virtuous or criminal. Seen in
-  the Drift, the Gutter and the Quiet Ferry.
+- **The Bonded** ("contract residents"). Tied to a contract site, gate passes
+  from the employer, rationed fluid, leased gear, no standing. Juno starts here.
+  Seen in the Cerro work order and the Breaker Yards. The whole Scatter lost
+  its Charter on Severance night, so everyone there is outside the system:
+  refugees, failed workers, stateless families, dissidents, "allocation
+  risks", not inherently virtuous or criminal. Seen in the Drift, the Gutter
+  and the Quiet Ferry.
 
 Voice of the regime: administrative and plausible. "Maintaining continuity."
 "Allocation is based on verified contribution." "The system is operating as
@@ -92,7 +97,7 @@ annotated.
 | About 100 years ago | The Accord links the worlds by jump lanes. Krail and Cyrite seams are worked. | Golden age. | Cyrite extraction goes industrial. |
 | About 75 years ago | Deep Cyrite seams opened at scale. | A productivity record. | Something answers: the Thren. |
 | 70 years ago, day 1 | The Severance: the outer lanes go dark. | A Krail shortage; the lanes failed from neglect. | The lanes were shut by signed order. Krail reserves stood at 94%. |
-| Same night | Lane Warden Ada Aster, on the Narrows relay's sister watch, is "lost in service". | Lost in service. | She hid the archive and a dead-man routine for her bloodline. |
+| Same night | Lane Warden Ada Aster, on the Narrows relay's sister watch, is "lost in service". | Lost in service. | She hid the archive and a dead-man routine. Her family's Charter is withdrawn. |
 | Years 1 to 10 | The breakers (lane closers) are built in the Breaker Yards. The Forty are in the room; many keep silent for Krail rights, contracts or safety. | None. | Cover-up. |
 | Years 10 to 70 | The Emergency becomes the Continuance. Companies own the mines, leases, housing and food. The Net spreads. | Stability. | Purge, asset seizure, permanent power. |
 | 27 years ago | Juno Aster is born in Cerro. | | |
@@ -105,8 +110,10 @@ annotated.
   profit and safety. Her arc is not "become a flawless revolutionary". It is:
   decide what freedom costs, whom she owes and what to do with the truth.
 - **Ada Aster**, her grandmother, a Lane Warden on the night of the Severance,
-  declared "lost in service". She built (or preserved) a dead-man routine that
-  wakes when a Warden-bloodline pilot takes the helm of the hauler. Whether she
+  declared "lost in service". She built (or preserved) a dead-man routine in the
+  hauler. The keys work in any hand (owner, 14 November 2026): there is no
+  bloodline lock, and Juno is not a chosen one. The routine nudged her onto the
+  hull; note 8 admits it, and Juno resents it. Whether she
   meant to expose the Continuance, protect someone, keep the lane keys, or all
   three is revealed in steps. **Cerro** gives the wake and the reserves figure;
   **the Salvage Belt** gives Ada's own voice; **the Hollows** gives her reason
@@ -172,7 +179,7 @@ believes or can do.
 | Flag | Clue | Certainty | Where | Effect |
 |---|---|---|---|---|
 | `archive_woke` | The archive woke on Juno's hand | fact | `story_wake`, the last card of the opening chain beyond the gate | Sets the Score drop; Wall entry. |
-| `clue_archive_log` | The Warden Line log: routine ADA-1, bloodline lock | fact | Cerro wake card, "open the log" (optional) | Deep layer; Ada's name early. |
+| `clue_archive_log` | The Warden Line log: routine ADA-1 | fact | Cerro wake card, "open the log" (optional) | Deep layer; Ada's name early. |
 | `clue_reserves` | Krail reserves 94% on the shutdown date | fact | `story_wake` (both answers) | The Act I reveal. |
 | `clue_order_sig` | The closing order, signed L. C. | fact | Reach, Ilse's order as a document (`story_order`); at Vesta from her recording (`ilse_recording`) if she was cut off | The first L. C. Played on the Warden's Road only (`?road`). |
 | `ada_named` | Ada Aster, the archive's writer | fact | Reach, `story_handwriting`; at Vesta from her recording | The leg goal reads "the relay Ada watched". Road only. |
