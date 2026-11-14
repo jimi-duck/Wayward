@@ -342,7 +342,7 @@ export const swarmGap = (thren: number, fuel: number) => lerp(110, 40, clamp(thr
 /** Motes in a swarm, and the Thren at which a web layer leads it. */
 export const swarmSize = (thren: number) => 3 + Math.round(clamp(thren, 0, 1) * 3);
 export const SWARM_WEAVER = 0.6;
-/** Gunfire with Thren close by brings the next knot within this many seconds. */
+/** Gunfire with Thren close by brings the next knot within this many seconds, once until the Thren are gone. */
 export const SWARM_DRAWN = 12;
 /** Within this of a Thren hull, sensors and navigation scramble; the drive spools this much slower at full noise. */
 export const THREN_JAM = 80;
@@ -439,6 +439,8 @@ export interface Breakout {
   chase: { t0: number; wave: number } | null;
   /** When the next Thren swarm comes (Infinity: no Thren here). */
   nextSwarm: number;
+  /** Gunfire has already drawn a knot that is still about: one more at a time, never a chain. */
+  drawn?: boolean;
   /** Seconds the drive has spooled inside the Jump Gate, and the seconds it needs. */
   spool: number;
   spoolNeed: number;
