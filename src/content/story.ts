@@ -625,13 +625,14 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_crew', kind: 'plea', caller: 'frontier',
     from: 'Marit Voss · crew steward', title: 'The yard crews',
-    text: '“The crews stop work if you stand with us. Hester’s people are coming in to hold the line. It buys you a quiet gate.”',
+    text: '“The committee votes tonight, and they’ll follow your lead. Hester’s people are coming in to hold the line. Either way, it buys you a quiet gate.”',
     lines: [{ if: { noFlag: 'thread_crews_3' }, text: '“Hester’s people won’t make it in time. We’ll try anyway.”' }],
     cargo: 'A crew barge · two hundred hands',
     choices: [
-      { id: 'stand', label: 'Stand with the crews', tone: 'help', hint: 'Calloway loses a day. Kellern will not forget it.', win: { text: 'The crews stop work · the lane goes quiet', flag: 'crews_stood', hunt: 1, standing: { frontier: 1, miners: 1, kellern: -1 } } },
-      { id: 'parts', label: 'Ask for supplies', tone: 'trade', hint: 'Four supplies, and no promises.', win: { text: 'Supplies across · no promises', supplies: 4 } },
-      { id: 'no', label: 'Not yet', tone: 'refuse', hint: 'Stay out of it.', win: { text: 'The barge falls away' } },
+      // the committee's vote (owner, 14 November 2026: the uprising decides who holds the yard)
+      { id: 'stand', label: 'Seize the yard', tone: 'help', hint: 'The crews run it themselves. Calloway loses a day. Kellern will not forget it.', win: { text: 'The crews take the yard · the lane goes quiet', flag: ['crews_stood', 'strike_seized'], hunt: 1, standing: { frontier: 1, miners: 1, kellern: -1 } } },
+      { id: 'bargain', label: 'Bargain for passes', tone: 'trade', hint: 'Work stops until Kellern signs passes for crew families. Slower, safer.', win: { text: 'Work stops · Kellern comes to the table', flag: ['crews_stood', 'strike_passes'], hunt: 0.5, standing: { frontier: 1, miners: 1 } } },
+      { id: 'no', label: 'Stay out of it', tone: 'refuse', hint: 'The committee votes without you.', win: { text: 'The barge falls away' } },
     ],
   }),
   story({

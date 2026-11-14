@@ -39,7 +39,8 @@ const MARCHES_ROWS: Row[] = [
   // 2 · Kessel Hold (hub): Oduya and the moot; then Quiet Line 2, the patrol codes
   notice('mk_notice', 'm_kessel', arrive(), 'teal', 'Kessel Hold', 'Holdfast port · the moot sits'),
   objective('mk_objective', 'm_kessel', arrive(), 'Kessel Hold · the moot wants your file', 'Holdfast port · refit bay open'),
-  main('mk_moot', 'm_kessel', free(6), 'story_moot'),
+  // the moot argues first (content/script/resistance.ts), then Oduya asks
+  main('mk_moot', 'm_kessel', after('rs_moot_val', 3), 'story_moot'),
   pike('mk_pike_won', 'm_kessel', 'job_keep_distance_won', '“Clean copy. Somebody walks home past a checkpoint tonight.”', { if: { not: ['job_keep_distance_sell'] } }),
   pike('mk_pike_sold', 'm_kessel', 'job_keep_distance_sell', '“You sold the timings. The Line will hear who to.”'),
   objective('mk_gate', 'm_kessel', leave(), 'Jump to Tamsin Field'),
@@ -243,7 +244,8 @@ const YARDS_ROWS: Row[] = [
   // 6 · Torchwall (pressure): Marit Voss and the strike; Hester's crossing
   notice('yt_notice', 'y_torch', arrive(), 'amber', 'Torchwall', 'yard crossing · crews restless'),
   objective('yt_objective', 'y_torch', arrive(), 'Torchwall · the crews may strike'),
-  main('yt_marit', 'y_torch', free(6), 'story_crew'),
+  // the committee argues first (content/script/resistance.ts), then Marit asks
+  main('yt_marit', 'y_torch', after('rs_vote_marit', 14), 'story_crew'),
   radio('yt_hester', 'y_torch', flag('crews_stood'), HESTER[0], HESTER[1], '“Every crew you helped is standing at the Breaker. I didn’t ask them. That’s the point.”', { if: { has: ['thread_crews_3'] } }),
   // the cradle's echo, and Hester's rig
   radio('yt_cradle', 'y_torch', after('yt_marit', 3), 'Marit Voss', 'frontier', '“Forty of your people walked out at Cutton. They’re in our crews now.”', { if: { has: ['cradle_freed'] } }),

@@ -30,8 +30,9 @@ export const THRESHOLD_ROWS: Row[] = [
   came('th_hester', 12, 'Hester Vane', 'miners', '“Hester. Every rig that stood with you is on this channel. We’re not leaving.”', ['thread_crews_3']),
   came('th_walk', 18, 'The Long Walk', 'frontier', '“The Long Walk is here. We kept the names. Now we’ll keep watch.”', ['job_long_walk_won']),
   came('th_analyst', 24, ANALYST[0], ANALYST[1], '“Unofficially: I brought the sealed reports. All of them.”', ['thread_survey_2']),
+  came('th_saints', 27, 'Sister Vera Hask · the Hollow Saints', 'gutter', '“The Saints are here. Point us at something, or don’t. We came anyway.”', ['saints_helped']),
   came('th_val', 30, 'Val · a broker of the Gutter', 'gutter', '“Still buying, love. I’ll be at the back.”', ['broker']),
-  { id: 'th_alone', stop: STOP, on: after('th_gather', 8), if: { not: ['thread_line_2', 'thread_crews_3', 'job_long_walk_won', 'thread_survey_2'] }, do: { notice: { tone: 'white', headline: 'Nobody came', reason: 'just you, and them' } } },
+  { id: 'th_alone', stop: STOP, on: after('th_gather', 8), if: { not: ['thread_line_2', 'thread_crews_3', 'job_long_walk_won', 'thread_survey_2', 'saints_helped'] }, do: { notice: { tone: 'white', headline: 'Nobody came', reason: 'just you, and them' } } },
 
   // 4 · Calloway: the gate is hers
   { ...notice('th_ready', STOP, after('th_gather', 40), 'teal', 'The Threshold', 'Calloway holds the gate'), main: true },

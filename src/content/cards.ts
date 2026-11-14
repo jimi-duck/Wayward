@@ -3,6 +3,7 @@ import { CALLOWAY_FACE, OFFERS } from './calloway';
 import { REGISTRY_CARD, STORY_CARDS } from './story';
 import { NOTE_CARDS, ROAD_OFFERS } from './legs';
 import { CHARTER_CARDS } from './charter';
+import { RESISTANCE_CARDS } from './resistance';
 import { SCENE_CARDS } from './situationCards';
 
 // ── comms cards ───────────────────────────────────────────────────────────
@@ -967,6 +968,8 @@ export const CARDS: CardDef[] = [
   ...ROAD_OFFERS,
   // the forged Charter (content/charter.ts)
   ...CHARTER_CARDS,
+  // the divided resistance (content/resistance.ts)
+  ...RESISTANCE_CARDS,
 
   // what is going on in a system: the calls situations make (content/situations.ts)
   ...SCENE_CARDS,
