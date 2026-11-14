@@ -92,6 +92,7 @@ export const ENDINGS: EndingDef[] = [
         { slot: 'thread', if: { flags: ['field_line', 'thread_line_3'] }, text: 'It doesn’t leave on one ship. Quill and a hundred hulls carry copies into the core.' },
         { slot: 'person', if: { flags: ['frag_blackbox', 'ada_heard'] }, text: 'Ada’s voice goes first. “My name is Ada. I helped.”' },
         { slot: 'person', if: { flags: ['copy_warden'] }, text: 'Ilse Marrow reads the order aloud at Halden’s Reach. She stops twice. Not from age.' },
+        { slot: 'person', if: { flags: ['brook_struck'] }, text: 'Adam Brook reads Kellern’s real books on air. He gives his name as Contract Resident Brook.' },
         { slot: 'person', if: { flags: ['brook_free'] }, text: 'Adam Brook reads Kellern’s real books on air, grandfather’s name and all.' },
         { slot: 'person', if: { flags: ['sable_home'] }, text: 'In the swarm lane, Sable hears every word. She sends one pattern back.' },
         { slot: 'cost', text: 'Within a month the Scatter demands its lanes back. Somewhere past the ring, a relay lights without a key.' },

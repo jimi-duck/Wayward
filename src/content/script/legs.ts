@@ -305,7 +305,8 @@ const PORTS_ROWS: Row[] = [
   // 6 · Gilt Market (pressure): Ines's price, Val's reckoning, Corin Ashe if he was exposed or used; Quiet Line 7
   notice('fg_notice', 'f_gilt', arrive(), 'amber', 'Gilt Market', 'Gutter market · everyone wants a copy'),
   objective('fg_objective', 'f_gilt', arrive(), 'Gilt Market · everyone wants a copy'),
-  main('fg_ines', 'f_gilt', free(6), 'story_ines_offer', { if: { has: ['ines_berth'] } }),
+  // Ines's offer is optional (not a main beat): the hearing is Gilt Market's main card
+  card('fg_ines', 'f_gilt', free(6), 'story_ines_offer', { if: { has: ['ines_berth'] } }),
   main('fg_val', 'f_gilt', free(30), 'story_vell_reckoning', { if: { has: ['broker'] } }),
   radio('fg_ashe', 'f_gilt', free(14), 'Corin Ashe', 'office', '“They pulled me off the Ferry. I read the reports I filed on you. I’m not filing any more.”', { if: { has: ['agent_exposed'] } }),
   radio('fg_ashe_used', 'f_gilt', free(14), 'Corin Ashe', 'office', '“They pulled me off the Ferry. I read the reports I filed on you. I’m not filing any more.”', { if: { has: ['agent_used'], not: ['agent_exposed'] } }),
