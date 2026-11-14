@@ -261,6 +261,13 @@ export function sortieDef(j: Journey): SortieDef {
     const check = gateCheck(def.script, j.carry.flags);
     if (check) { def.blockade = true; def.checkpoint = check; }
   }
+  // the Belt chase: the Offices bought her heading from Val's route trade, and pickets wait at Kiln, Tarik's Lamps and the Scrapgate
+  if (leg >= 0 && beltChased(def.script, j.carry.flags)) {
+    def.pace = { first: CHASE_PACE.first, calm: CHASE_PACE.calm };
+    def.heat = Math.max(def.heat, CHASE_HEAT);
+    def.gutter = Math.max(def.gutter, CHASE_AHEAD);
+    def.ahead = ['picket', 'picket', 'lancer'];
+  }
   // set adrift here a moment ago: the gate is not dead ahead any more
   const last = j.legs[j.legs.length - 1];
   if (j.chart.regionSet === 'road' && last?.ended === 'destroyed' && last.system === s.id) def.off = (j.lost % 2 ? 1 : -1) * (0.25 + 0.1 * (j.lost % 3));
@@ -270,16 +277,28 @@ export function sortieDef(j: Journey): SortieDef {
   return j.trail.length === 2 ? postJump(def) : def;
 }
 
+/** The Belt chase's stops, before its gate (docs/ROAD.md): hunted from Kiln to the Scrapgate. */
+export const CHASE_STOPS = new Set(['b_kiln', 'b_tarik']);
+/** Pursuit in the chase: the first hull this many seconds after arrival, and soon after each calm. */
+export const CHASE_PACE = { first: 20, calm: 6 } as const;
+export const CHASE_HEAT = 0.3;
+/** Of the pursuit in the chase, the share that comes from ahead: Offices pickets on her heading. */
+export const CHASE_AHEAD = 0.6;
+/** The chase is shaken if Val was paid to forget the heading, or her channel was jammed. */
+const chaseShaken = (has: (f: string) => boolean) => has('vell_paid') || has('vell_exposed');
+export const beltChased = (script: string | undefined, flags: readonly string[]): boolean =>
+  !!script && CHASE_STOPS.has(script) && !chaseShaken((f) => flags.includes(f));
+
 /**
  * The card that holds a road gate, if any (content/story.ts): Ashgrove at the Rift (the Narrows is a scene of its own, sim/narrows.ts), the pickets Val sold
- * your heading to at the Scrapgate (unless she was paid), the cranes at the Breaker when the strike did not hold, and Calloway's
+ * your heading to at the Scrapgate (the end of the Belt chase, unless she was paid or jammed), the cranes at the Breaker when the strike did not hold, and Calloway's
  * damping field at the Tollgate. The Threshold's is her last meeting (sim/calloway.ts), dealt as before.
  */
 export function gateCheck(script: string | undefined, flags: readonly string[]): string | null {
   const has = (f: string) => flags.includes(f);
   switch (script) {
     case 'rift': return 'rift_checkpoint';
-    case 'scrapgate': return has('vell_betrayed') && !has('vell_paid') ? 'scrapgate_pickets' : null;
+    case 'scrapgate': return chaseShaken(has) ? null : 'scrapgate_pickets';
     case 'breaker': return has('strike_held') ? null : 'breaker_lockdown';
     case 'tollgate': return 'story_tollgate';
     default: return null;

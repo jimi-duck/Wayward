@@ -62,9 +62,11 @@ describe('the road', () => {
   it('sends each gate its own card, and none where the journey earned a clear one', () => {
     expect(gateCheck('narrows', [])).toBeNull();
     expect(gateCheck('rift', [])).toBe('rift_checkpoint');
-    expect(gateCheck('scrapgate', [])).toBeNull();
+    // the Belt chase ends at the Scrapgate unless Val was paid to forget the heading, or her channel was jammed
+    expect(gateCheck('scrapgate', [])).toBe('scrapgate_pickets');
     expect(gateCheck('scrapgate', ['vell_betrayed'])).toBe('scrapgate_pickets');
     expect(gateCheck('scrapgate', ['vell_betrayed', 'vell_paid'])).toBeNull();
+    expect(gateCheck('scrapgate', ['vell_exposed'])).toBeNull();
     expect(gateCheck('breaker', [])).toBe('breaker_lockdown');
     expect(gateCheck('breaker', ['strike_held'])).toBeNull();
     expect(gateCheck('tollgate', [])).toBe('story_tollgate');

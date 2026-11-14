@@ -27,7 +27,7 @@ export const ARRIVAL_ROWS: Row[] = [
   // ── Arrival 3 · the Scrapgate: the gate made of ships ──
   objective('sg_obj', 'scrapgate', arrive(), 'The Scrapgate', 'Built from Severance hulls'),
   radio('sg_plates', 'scrapgate', free(4), 'Dov Kessler', 'miners', '“Read the plates as you pass. We painted the names back on. Took us twelve years.”', { if: { has: ['kessler_met'] } }),
-  notice('sg_amb', 'scrapgate', arrive(4), 'red', 'Pickets at gate', 'Val sold your heading', { if: { has: ['vell_betrayed'], not: ['vell_paid'] } }),
+  notice('sg_amb', 'scrapgate', arrive(4), 'red', 'Pickets at gate', 'Val sold your heading', { if: { not: ['vell_paid', 'vell_exposed'] } }),
   radio('sg_kesh', 'scrapgate', after('sg_amb', 3), 'Kesh', 'gutter', '“Three pickets, port side, engines cold. Told you I’d warn you. We’re square.”', { if: { has: ['kesh_warned'] } }),
   ...handshake('sg_hand', 'scrapgate', 'a recording, not a note'),
   main('sg_note', 'scrapgate', after('sg_hand_lit', 2), 'warden_note_3'),

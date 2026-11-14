@@ -205,4 +205,19 @@ export const DIRECTION: Record<string, string> = {
   '“A document in the Aster matter has been sealed for review. There is nothing further to report.”': '„Ein Dokument in der Sache Aster wurde zur Prüfung versiegelt. Es gibt nichts weiter zu berichten.“',
   '“The Office of Public Record finds the Aster file a forgery. The matter is closed.”': '„Das Amt für Öffentliche Akten befindet die Aster-Akte für gefälscht. Die Sache ist erledigt.“',
   'Adam Brook reads Kellern’s real books on air. He gives his name as Contract Resident Brook.': 'Adam Brook liest Kellerns echte Bücher auf Sendung vor. Er nennt sich Vertragsansässiger Brook.',
+  // Juno's voice in answers
+  'Tell Oduya no': 'Sag Oduya ab',
+  'Keep your stores': 'Behalt deine Vorräte',
+  'Tell Sam later': 'Erzähl’s Sam später',
+  'Owe nobody': 'Schulde niemandem was',
+  // the Belt chase and the cuts (content/script/chase.ts)
+  'Pickets inbound': 'Posten im Anflug',
+  'Still hunted': 'Weiter gejagt',
+  'Trail cold': 'Spur kalt',
+  'someone sold your heading': 'jemand hat deinen Kurs verkauft',
+  'pickets on your heading': 'Posten auf deinem Kurs',
+  'the pickets lose your heading': 'die Posten verlieren deinen Kurs',
+  'Heading dark': 'Kurs dunkel',
+  'the Offices hear nothing more': 'die Offices hören nichts mehr',
+  '“Survey reading from Ashdeep: Thren pressure tracks the extraction rate, year on year. It’s in the file they buried.”': '„Messung der Vermessung aus Ashdeep: Der Thren-Druck folgt der Abbaurate, Jahr für Jahr. Steht in der Akte, die sie begraben haben.“',
 };

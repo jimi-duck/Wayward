@@ -105,6 +105,12 @@ At Gilt Market, Commissioner Aurel Thane hears Juno's file (`content/hearing.ts`
 
 Continuity: Hester's opener at Vesta now remembers the Hollis prospector (helped, robbed or never met), and the archive's last line points at Halden's Warden families, not at relays.
 
+## The Belt chase
+
+Val's route trade sells Juno's heading to the Offices (`sim/journey.ts beltChased`). At Kiln and Tarik's Lamps, the first pursuit comes 20 s after arrival and again 6 s after each calm. Heat starts at 0.3, and most of the pursuit is Offices pickets from ahead. A red notice says so on arrival. The chase ends at the Scrapgate's pickets (`scrapgate_pickets`). Paying Val to forget (`vell_paid`) or jamming her channel (`vell_exposed`) at Tarik's Lamps shakes it, and the Scrapgate is then clear.
+
+Cut for room (story direction plan): the Survey's black-hole job at Ashdeep (an analyst's reading plays there instead), Val's reckoning at Gilt Market (her story ends at the Scrapgate), and Calloway's question at Cutton (her best scene is the Tollgate). The cards stay in the code, unplayed.
+
 ## Add a stop
 
 1. Add a row to its leg (`ROAD`, `MARCHES` … `LAST`) with a `script` key.
