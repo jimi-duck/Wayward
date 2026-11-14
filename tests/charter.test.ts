@@ -41,3 +41,13 @@ describe('the Charter', () => {
     for (const r of CHARTER_ROWS) if ('card' in r.do) expect(CARDS.some((c) => c.id === (r.do as { card: string }).card)).toBe(true);
   });
 });
+
+describe('the Threshold scene', () => {
+  it('ends on a main beat, and every ending says what happens to the Charter', async () => {
+    const { THRESHOLD_ROWS } = await import('../src/content/script/threshold');
+    const { ENDINGS } = await import('../src/content/endings');
+    expect(THRESHOLD_ROWS.filter((r) => r.main).map((r) => r.id)).toEqual(['th_ready']);
+    for (const r of THRESHOLD_ROWS) expect(SCRIPT).toContain(r);
+    for (const e of ENDINGS) expect(e.road.lines.filter((l) => l.slot === 'charter' && !l.if).length, e.id).toBe(1);
+  });
+});

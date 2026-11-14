@@ -267,7 +267,7 @@ describe('the endings on the road', () => {
     expect(open(toThreshold({ flags: ['lane_keys'] }))).toContain('seal');
   });
 
-  it('reads each ending as the road’s: an opener, one line a slot at most, Oren’s answer, and the close', () => {
+  it('reads each ending as the road’s: an opener, one line a slot at most (the Charter’s among them), Oren’s answer, and the close', () => {
     const j = toThreshold({ flags: ['voice_read', 'field_line', 'copy_warden', 'oren_truth'] });
     const lines = epilogue(j, 'broadcast');
     const r = ENDING_BY_ID.broadcast.road;
@@ -275,7 +275,8 @@ describe('the endings on the road', () => {
     expect(lines.at(-1)).toBe(r.close);
     expect(lines).toContain('It doesn’t leave on one ship. Quill and a hundred hulls carry copies into the core.');
     expect(lines).toContain('You said it was for the truth. Oren writes that down.');
-    expect(lines.length).toBeLessThanOrEqual(6);
+    expect(lines).toContain(r.lines.find((l) => l.slot === 'charter')!.text);
+    expect(lines.length).toBeLessThanOrEqual(7);
     for (const e of ENDINGS) {
       expect(epilogue(toThreshold(), e.id)[0]).toBe(e.road.open);
       expect(epilogue(toThreshold(), e.id).at(-1)).toBe(e.road.close);

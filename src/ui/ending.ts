@@ -47,6 +47,8 @@ export class EndingPanel {
     $('ending').hidden = false;
     const go = $('en-go');
     go.hidden = false;
+    // Juno answers her (owner, 14 November 2026: the routine steered her, and she can say so)
+    go.textContent = t(n.answer);
     go.onclick = guarded(this.opened, () => this.ask(j));
     go.onpointerdown = (e) => e.stopPropagation();
     this.noting = true;
@@ -132,6 +134,7 @@ export class EndingPanel {
     $('en-epi').replaceChildren(...[artImg('ending', c.def.id, 'en-pic')].filter((x): x is HTMLImageElement => !!x), ...lines.map((l) => h('p', '', t(l))));
     const go = $('en-go');
     go.hidden = false;
+    go.textContent = t('Go on');
     go.onclick = guarded(this.opened, () => this.done());
     go.onpointerdown = (e) => e.stopPropagation();
     this.off = keys((e) => {
