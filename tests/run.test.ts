@@ -149,25 +149,30 @@ describe('krail and the refit bay', () => {
     expect(w.run.krailSpent).toBe(ARCADE_PRICE * 2);
   });
 
-  it('offers itself once in a quiet spell: leaving with Cyrite unspent waits for the next quiet', () => {
+  it('opens by itself whenever a refit is paid for; left with Cyrite unspent, it waits for another price', () => {
     const w = quiet();
     const P = ARCADE_PRICE;
-    w.krail = P * 2 + 10;
+    w.krail = P + 10;
     run(w, BAY_QUIET + 0.5);
     expect(w.phase).toBe('bay');
     expect(w.run.bayOffers).toBe(1);
     w.closeBay(); // back to flight without fitting
-    w.krail += P;
     run(w, BAY_QUIET + 4);
-    expect(w.phase).toBe('play'); // the same quiet spell: not again
+    expect(w.phase).toBe('play'); // not straight back in
     // B or the badge still opens it while the alert is clear
     expect(w.openBay()).toBe(true);
     w.closeBay();
-    // the next quiet spell offers it again
-    w.pace.n++;
+    // another price aboard: it opens by itself again, in the same quiet spell
+    w.krail += P;
     run(w, BAY_QUIET + 0.5);
     expect(w.phase).toBe('bay');
     expect(w.run.bayOffers).toBe(2);
+    // spent down: the next price opens it again
+    w.krail = 0;
+    w.closeBay();
+    w.krail = P;
+    run(w, BAY_QUIET + 0.5);
+    expect(w.phase).toBe('bay');
   });
 
   it('never offers itself during an encounter or with a capital ship about', () => {
