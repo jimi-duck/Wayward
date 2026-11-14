@@ -406,8 +406,8 @@ const LAST_ROWS: Row[] = [
   notice('lw_notice', 'l_wane', arrive(), 'teal', 'Wane Rest', 'the last stop · the Threshold beyond'),
   objective('lw_objective', 'l_wane', arrive(), 'Wane Rest · the Threshold is ahead'),
   radio('lw_draper', 'l_wane', free(8), 'Director Draper', 'office', '“Last chance to sell, Juno. Past that gate it’s a recovery, and I recover everything.”'),
-  notice('lw_motes', 'l_wane', leave(), 'white', 'Beyond the ring', 'they are gathering'),
-  radio('lw_sam', 'l_wane', after('lw_motes', 3), SAM[0], SAM[1], '“{relays} relays. I can hear you, Juno. Whatever you pick, I’m on the line.”', { if: { has: ['relays_4'] } }),
+  // the gathering is the Threshold scene's now (content/script/threshold.ts)
+  radio('lw_sam', 'l_wane', after('th_gather', 36), SAM[0], SAM[1], '“{relays} relays. I can hear you, Juno. Whatever you pick, I’m on the line.”', { if: { has: ['relays_4'] } }),
 ];
 
 export const LEG_ROWS: Row[] = [...MARCHES_ROWS, ...BELT_ROWS, ...DEEP_ROWS, ...YARDS_ROWS, ...PORTS_ROWS, ...HOLLOWS_ROWS, ...LAST_ROWS];

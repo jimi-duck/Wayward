@@ -68,6 +68,17 @@ The regime's broadcasts (`content/script/broadcasts.ts`, [STORY_DIRECTION.md](ST
 
 The class line in play ([STORY_DIRECTION.md](STORY_DIRECTION.md) §2). Juno is Bonded. On the road, a Kellern port past the audit dock sells jump fluid at the Bonded rate (`sim/charter.ts`: the posted price × 1.4, rounded up), and the port's fuel line says so ("Bonded rate · posted 2"). `content/script/charter.ts` adds the work lane notice at Northfold's gate, the service berth notices at Halden, Marlow and Yard Nine, the Northfold mother, and Val's forged Charter at Kiln (`charter_offer`: 30 Cyrite, flag `charter_forged`, a day off the hunt). A Custody patrol's check strips a forged Charter (`sim/traffic.ts`: flag `charter_stripped`, heat +0.25). It is never a number; the Civic Score stays removed. `tests/charter.test.ts`.
 
+## The Threshold scene
+
+Wane Rest, the last stop, plays the end as a scene (`content/script/threshold.ts`):
+
+1. Thane's last broadcast.
+2. "They gather": the Thren close round the gate.
+3. Who came: one line each from the allies the player built (Pike with `thread_line_2`, Hester with `thread_crews_3`, the Long Walk with `job_long_walk_won`, the analyst with `thread_survey_2`), Val as a rival with `broker`, or "Nobody came".
+4. A main notice, "Calloway holds the gate", that holds the gate until the scene has played. Her last card follows at the gate, as before.
+5. On the ending screen, Ada's note 8 admits the keys would have worked in any hand, and its button is Juno's answer ("You could have asked me", or "My name is Juno. I chose." if the implant was burned).
+6. The choice. Every road epilogue has a `charter` slot: what that future does to the Charter.
+
 ## Add a stop
 
 1. Add a row to its leg (`ROAD`, `MARCHES` … `LAST`) with a `script` key.
