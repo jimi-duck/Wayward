@@ -146,7 +146,9 @@ export function fillWall(j: Journey, to: { s: HTMLElement; lead: HTMLElement; li
   to.lead.textContent = v.lead;
   to.list.replaceChildren(...v.rows.map(({ item: w, found }) => found
     ? h('li', 'found', '', h('b', '', t(w.name)), h('span', 'tag', t(w.certainty === 'fact' ? 'Fact' : 'Inference')),
-        h('p', '', `${t('Proves')} · ${t(w.proves)}`), h('p', '', `${t('Not yet proved')} · ${t(w.not)}`))
+        h('p', '', `${t('Proves')} · ${t(w.proves)}`), h('p', '', `${t('Not yet proved')} · ${t(w.not)}`),
+        ...(w.says ? [h('p', 'says', `${t('They say')} · ${t(w.says)}`)] : []),
+        ...(v.ties[w.flag]?.length ? [h('p', 'ties', `${t('Ties to')} · ${v.ties[w.flag]!.map((n) => t(n)).join(', ')}`)] : []))
     : h('li', 'open', '', h('b', '', t(w.name)), h('p', '', `${t('Still open')} · ${t(w.ask)}`))));
 }
 

@@ -32,6 +32,10 @@ export interface WallItem {
   lead: string;
   /** On the three-region chart too. */
   short?: boolean;
+  /** The Continuance's own line it answers (content/script/broadcasts.ts), shown as "They say". */
+  says?: string;
+  /** Other rows it ties to: once both are found, the Wall says so. */
+  links?: string[];
 }
 
 type Row = Omit<WallItem, 'kind' | 'name'> & { name?: string };
@@ -133,6 +137,16 @@ export const WALL: WallItem[] = [
     ask: 'Who is L. C.?',
     lead: 'A work order in the Breaker Yards may carry the same hand.',
   }),
+  clue({
+    flag: 'clue_allocation', name: 'The allocation tables', certainty: 'fact', at: 0,
+    proves: 'Fuel to each settlement is set to keep it dependent, not to meet need. No Merit Grant to a Bonded worker in forty years.',
+    not: 'Who set the tables, or why the Scatter gets nothing.',
+    detail: 'Brook’s second set of books. The Merit Grants column is forty years of zeros. Every Charter since went to board families, or was bought.',
+    ask: 'Is there really a way up?',
+    lead: 'Follow who the tables leave out.',
+    says: 'Merit Grants remain open to every contract resident.',
+    links: ['frag_ledger'],
+  }),
   fragment({
     flag: 'frag_manifests', certainty: 'fact', at: 1, short: true,
     proves: 'Ships “lost” in the blackout were redirected or scuttled on purpose.',
@@ -141,6 +155,16 @@ export const WALL: WallItem[] = [
     ask: 'What happened to the ships lost that night?',
     lead: 'A Warden’s wreck may hold the last call from the night. Try the Salvage Belt.',
   }),
+  clue({
+    flag: 'clue_debt_clause', name: 'The debt transfer clause', certainty: 'fact', at: 1,
+    proves: 'Kellern contracts pass to the heirs. The Asters lost their Charter when Ada was “lost in service”, and have been Bonded since.',
+    not: 'Who wrote the clause, or how many families it holds.',
+    detail: 'Clause nine. Your grandmother’s debt became your mother’s, then yours. The 800 CR is only the latest page.',
+    ask: 'Why was Juno ever Bonded?',
+    lead: 'Ask who profits from a debt that never ends.',
+    says: 'Her debt is owed to us all.',
+    links: ['ada_named', 'clue_allocation'],
+  }),
   fragment({
     flag: 'frag_blackbox', certainty: 'fact', at: 2,
     proves: 'Ada Aster’s Warden ship recorded the night, and she meant the archive for her family.',
@@ -148,6 +172,16 @@ export const WALL: WallItem[] = [
     detail: 'Her last call names the relay and the order, and something she would not describe on an open line.',
     ask: 'What did Ada Aster see that night?',
     lead: 'Old charts should show how the lanes were closed. Look in the Drift Deep.',
+  }),
+  clue({
+    flag: 'clue_attrition', name: 'The attrition schedule', certainty: 'fact', at: 2,
+    proves: 'Kellern priced which outer settlements would fail, and in which year, so the contracts could be set. The deaths were planned for.',
+    not: 'Who ordered it, or whether anyone tried to stop it.',
+    detail: 'A table of settlements, a year beside each, and a price. Brother Orrin typed it. It is still being updated.',
+    ask: 'Did they know the Scatter would die?',
+    lead: 'Find who still keeps the schedule.',
+    says: 'The outer worlds failed through their own neglect.',
+    links: ['frag_manifests', 'clue_allocation'],
   }),
   fragment({
     flag: 'frag_charts', certainty: 'inference', at: 3,
@@ -164,6 +198,16 @@ export const WALL: WallItem[] = [
     detail: 'The Quiet Ferry carries people no one asks about. One of them was writing it all down.',
     ask: 'Who else rides the quiet routes?',
     lead: 'The Breaker Yards are where the Custody takes its own ships apart.',
+  }),
+  clue({
+    flag: 'clue_survey', name: 'The sealed Survey reports', certainty: 'fact', at: 3,
+    proves: 'The Survey’s own readings rise with extraction, every year. Every report is sealed.',
+    not: 'What the Thren are, or what would make them settle.',
+    detail: 'An analyst at Lantern Mile, off the record. The Survey knows mining drives the Thren, and buries it.',
+    ask: 'What does the Survey know about the Thren?',
+    lead: 'Follow the readings to the ring.',
+    says: 'The Survey Office finds no link to extraction.',
+    links: ['frag_charts', 'clue_cyrite'],
   }),
   fragment({
     flag: 'frag_workorder', certainty: 'fact', at: 4,

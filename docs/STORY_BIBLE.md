@@ -189,6 +189,12 @@ believes or can do.
 | `clue_scarred` | Thren-scarred hulls under restriction | fact | Breaker Yards | Points at the Thren early. |
 | `clue_agent` | An Office agent aboard the Quiet Ferry | fact | Drift Deep | Expose, protect or use. |
 | `clue_cyrite` | Cyrite draws the Thren | fact | Hollows | Act III reveal. |
+| `clue_allocation` | The allocation tables: fuel set for dependency, no Merit Grant in forty years | fact | Marlow, Brook (`ev_allocation`, with the ledger) | Present day (STORY_DIRECTION §3). Answers "Merit Grants remain open". |
+| `clue_debt_clause` | The debt transfer clause: the Asters Bonded since Ada | fact | Tamsin Field, Kellern Accounts (`ev_debt`) | Present day. Ties to `ada_named`, `clue_allocation`. |
+| `clue_attrition` | The attrition schedule: deaths priced into contracts | fact | Kiln, Brother Orrin (`ev_attrition`); else Tarik's Lamps | Present day; the genocide's intent. |
+| `clue_survey` | The sealed Survey reports: readings rise with extraction | fact | Lantern Mile, the analyst (`ev_survey`) | Present day. Ties to `frag_charts`, `clue_cyrite`. |
+
+Wall rows may carry `says` (the broadcast they answer, shown as "They say") and `links` (shown as "Ties to" once both rows are found).
 
 A **lead** is one line on the Wall: where to look next, and what it would
 change. The Wall always shows one, derived from the first missing fragment of the
