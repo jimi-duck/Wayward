@@ -359,7 +359,7 @@ export const OVERHAUL: Record<string, string> = {
   'a call is coming in': 'ein Funkspruch kommt rein',
   'Jump Gate shut': 'Sprungtor zu',
   'Jump Gate opens': 'Sprungtor öffnet',
-  '“You were honest at the Narrows, or tried to be. Meet me at the next port. Two chairs. No guns. One hour.”': '„Du warst an den Narrows ehrlich, oder hast es versucht. Triff mich am nächsten Hafen. Zwei Stühle. Keine Waffen. Eine Stunde.“',
+  '“You’ve told me more than you meant to. Meet me at the next port. Two chairs. No guns. One hour.”': '„Du hast mir mehr erzählt, als du wolltest. Triff mich am nächsten Hafen. Zwei Stühle. Keine Waffen. Eine Stunde.“',
   '“A clean registry. A name nobody hunts. Yours for one question answered, later, when I ask it.”': '„Ein sauberes Register. Ein Name, den niemand jagt. Deiner, gegen eine Antwort, später, wenn ich frage.“',
   'You said it was for the truth. Oren writes that down.': 'Du sagtest, es sei für die Wahrheit. Oren schreibt es auf.',
   'You said mercy. Oren says that is the hardest one to keep.': 'Du sagtest Gnade. Oren sagt, das sei am schwersten zu halten.',

@@ -38,7 +38,7 @@ import { Barge, bargeBerth } from './barge';
 import { Gantry, gantryBerth } from './gantry';
 import { ThrenSeed, seedBerth, seedLine, SEED_CYRITE, SEED_PARTS } from './thrseed';
 import { livingOf } from './living';
-import { GATE_OPEN, HOLD_FIRE, NOTE, PATIENCE, PATIENCE_AT, PATIENCE_CARD, REBOOT, REBOOTING, type NarrowsState } from './narrows';
+import { GATE_OPEN, NOTE, PATIENCE, PATIENCE_AT, PATIENCE_CARD, REBOOT, REBOOTING, type NarrowsState } from './narrows';
 import { BUMP_QUIET, BUMP_SPEED, solidsOf } from './solids';
 import { Den, denBerth, DEN_BOUNTY, DEN_CYRITE, DEN_HP, DEN_PARTS, DEN_R } from './den';
 import { Market, marketBerth } from './market';
@@ -1926,8 +1926,8 @@ export class World implements EncounterHost {
   get fieldDown(): boolean { return this.narrows === 'reboot'; }
 
   /**
-   * The Narrows, once Ada's note has closed: the gate reboots under her key with its field down, the blockade comes, the Patience
-   * calls in the middle of it, and her answer changes the fight. A journey that reaches the Narrows with the note read finds it open.
+   * The Narrows, once Ada's note has closed: the gate reboots under her key with its field down, the blockade comes, and the Patience
+   * calls in the middle of it. Their first encounter: she asks, she watches, and the fight plays out whatever Juno answers. A journey that reaches the Narrows with the note read finds it open.
    */
   private stepNarrows(t: number): void {
     const f = this.flags;
@@ -1955,14 +1955,9 @@ export class World implements EncounterHost {
     const card = CARD_BY_ID[PATIENCE];
     if (card && this.patienceSaid && since >= PATIENCE_AT + PATIENCE_CARD && !this.cardsSeen.has(PATIENCE) && this.phase === 'play') { this.openComms(card); return; }
     if (this.cardsSeen.has(PATIENCE) && !this.patienceAnswered) {
+      // she studies, she does not bargain (owner, 14 November 2026): the blockade fights on whatever Juno said
       this.patienceAnswered = true;
-      if (f.has(HOLD_FIRE)) {
-        // she calls the blockade off: the Kind Regard and her pickets break away
-        for (const al of this.aliens) if (this.narrowsHulls.includes(al.id) || al.faction === 'custody') leave(al);
-        this.events.push({ type: 'ping', id: 'narrows_hold', from: tr('Governor Idris Calloway'), caller: 'calloway', text: tr('“Kind Regard, hold your fire. She’s mine to talk to.”'), moment: 'calm', system: this.bk?.def.name ?? '' });
-      } else if (f.has('calloway_lie_caught')) {
-        this.narrowsHulls.push(...this.applyOutcome({ text: '', spawn: [{ variant: 'picket', n: 2, from: 'ahead' }] }, 0, []));
-      }
+      this.events.push({ type: 'ping', id: 'narrows_watch', from: tr('Governor Idris Calloway'), caller: 'calloway', text: tr('“Kind Regard, carry on. I want to see what she does with ninety seconds.”'), moment: 'calm', system: this.bk?.def.name ?? '' });
     }
     if (since >= REBOOT && this.cardsSeen.has(PATIENCE)) {
       this.narrows = 'done';

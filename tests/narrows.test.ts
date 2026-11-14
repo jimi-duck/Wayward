@@ -4,6 +4,7 @@ import { relayOf } from '../src/sim/breakout';
 import { newJourney, sortieDef } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { SCRIPT } from '../src/content/script';
+import { CARDS } from '../src/content/cards';
 import { pursuerOf } from '../src/sim/course';
 
 // The Narrows on the road: approach, handshake, the note, the answer and the way on, in that order.
@@ -34,7 +35,7 @@ describe('the Narrows', () => {
   });
 
   /** Flies the stop: the ship is put 1.5 km from the mast after 20 s (the mast stands about 1 km off the ring), and answers the Patience with `answer`. */
-  function play(seed: number, answer = 'tell', secs = 300) {
+  function play(seed: number, answer = 'name', secs = 300) {
     const j = narrows();
     const def = { ...sortieDef(j), pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, situation: null, place: null, thren: 0, calloway: Infinity };
     const w = new World(seed, { mode: 'breakout', sortie: def, carry: j.carry });
@@ -68,7 +69,7 @@ describe('the Narrows', () => {
     return { w, log, seen };
   }
 
-  const ORDER = ['notice:The Narrows', 'say:The Narrows g', 'say:That’s the re', 'notice:Warden key accepted', 'card:warden_note_1', 'notice:Jump Gate rebooting', 'say:I’ll remember', 'notice:CCV Patience inbound', 'card:story_calloway_narrows', 'notice:Jump Gate open', 'say:This is wher', 'notice:Signal lost'];
+  const ORDER = ['notice:The Narrows', 'say:The Narrows g', 'say:That’s the re', 'notice:Warden key accepted', 'card:warden_note_1', 'notice:Jump Gate rebooting', 'say:I’ll remember', 'notice:CCV Patience inbound', 'card:story_calloway_narrows', 'say:Kind Regard', 'notice:Jump Gate open', 'say:This is wher', 'notice:Signal lost'];
   const inOrder = (log: string[]) => {
     const at = (s: string) => log.findIndex((l) => l.startsWith(s));
     for (const o of ORDER) expect(at(o), `${o} in ${log.join(' | ')}`).toBeGreaterThanOrEqual(0);
@@ -100,13 +101,20 @@ describe('the Narrows', () => {
     expect(w.flags.has('ashgrove_met')).toBe(true);
   }, 60000);
 
-  it('changes the fight by her answer: the truth calls the pickets off, cutting her off leaves them on you', () => {
-    const told = play(4, 'tell', 150).seen;
-    expect(told.fleeing).toBeGreaterThanOrEqual(3);
-    const cut = play(4, 'cut', 150).seen;
-    expect(cut.fleeing).toBe(0);
-    expect(cut.after).toBeGreaterThan(0);
-  }, 60000);
+  it('never bargains at the Narrows: whatever Juno answers, the pickets stay on her', () => {
+    for (const answer of ['name', 'ask', 'cut']) {
+      const { w, seen } = play(4, answer, 150);
+      expect(seen.fleeing, answer).toBe(0);
+      expect(seen.after, answer).toBeGreaterThan(0);
+      expect(w.flags.has('calloway_asked')).toBe(true);
+    }
+    const card = CARDS.find((c) => c.id === 'story_calloway_narrows')!;
+    for (const c of card.choices) {
+      expect(c.win.hunt ?? 0, c.id).toBe(0);
+      expect(c.win.calm, c.id).toBeUndefined();
+      expect(c.win.blockade, c.id).toBeUndefined();
+    }
+  }, 90000);
 
   it('opens at once for a journey that reaches the Narrows with the note already read', () => {
     const j = narrows();

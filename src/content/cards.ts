@@ -6,6 +6,7 @@ import { CHARTER_CARDS } from './charter';
 import { RESISTANCE_CARDS } from './resistance';
 import { THREN_CARDS } from './thren';
 import { HEARING_CARDS } from './hearing';
+import { ARC_CARDS } from './arc';
 import { SCENE_CARDS } from './situationCards';
 
 // ── comms cards ───────────────────────────────────────────────────────────
@@ -974,6 +975,8 @@ export const CARDS: CardDef[] = [
   ...RESISTANCE_CARDS,
   ...THREN_CARDS,
   ...HEARING_CARDS,
+  // Calloway, leg by leg (content/arc.ts)
+  ...ARC_CARDS,
 
   // what is going on in a system: the calls situations make (content/situations.ts)
   ...SCENE_CARDS,

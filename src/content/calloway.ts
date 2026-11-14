@@ -39,7 +39,7 @@ export const TRICKS: Record<string, Trick> = {
 };
 
 /** Answers that told her the truth, or met her halfway: what trust is made of. */
-export const TOLD = new Set(['calloway:answer', 'calloway_word:ask', 'offer_home:answer', 'offer_meet:accept', 'offer_info:tell', 'offer_see:tell']);
+export const TOLD = new Set(['calloway:answer', 'calloway_word:ask', 'offer_home:answer', 'offer_meet:accept', 'offer_info:tell', 'offer_see:tell', 'story_calloway_narrows:name', 'calloway_file:truth']);
 
 /** Each time she has seen a trick, its odds fall by this much. A spoof works less well the second time. */
 export const LEARN = 0.15;
@@ -93,7 +93,7 @@ export const offer = (o: Omit<CardDef, 'kind' | 'caller' | 'trigger' | 'repeat' 
 export const OFFERS: CardDef[] = [
   offer({
     id: 'offer_meet', from: 'Governor Idris Calloway · Offices of Peace', title: 'Meet me',
-    text: '“You were honest at the Narrows, or tried to be. Meet me at the next port. Two chairs. No guns. One hour.”',
+    text: '“You’ve told me more than you meant to. Meet me at the next port. Two chairs. No guns. One hour.”',
     truths: [{ id: 'listening', weight: 3, read: 'She is alone on the channel · no escort appears on your sensors' }, { id: 'stalling', weight: 1, read: 'Her escort is moving while she keeps you talking' }],
     choices: [
       { id: 'accept', label: 'Agree to meet', tone: 'help', hint: 'She learns your location; you get a chance to see whether she will listen.', loseIf: ['stalling'],
