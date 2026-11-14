@@ -59,9 +59,9 @@ export const WALL: WallItem[] = [
   }),
   clue({
     flag: 'clue_archive_log', name: 'The Warden Line log', certainty: 'fact', at: -1, short: true,
-    proves: 'A routine called ADA-1 wakes when a Warden bloodline hand takes the helm.',
+    proves: 'A routine called ADA-1 woke when you took the helm. Any hand would have done.',
     not: 'What Ada Aster meant it to do.',
-    detail: 'The routine is signed A. Aster, Lane Warden. It was written for someone it expected to come, not for whoever stole the hull.',
+    detail: 'The routine is signed A. Aster, Lane Warden. The keys work in any hand. The routine only made sure this hull came to yours.',
     ask: 'Who built the routine?',
     lead: 'Ada Aster wanted this found. Learn who remembers her.',
   }),

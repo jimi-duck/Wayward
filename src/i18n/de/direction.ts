@@ -82,4 +82,15 @@ export const DIRECTION: Record<string, string> = {
   'A Gutter runner': 'Ein Läufer des Gutter',
   '“Orrin got word out anyway. Kellern keeps an attrition schedule: which settlements fail, and when.”': '„Orrin hat es trotzdem rausgeschafft. Kellern führt einen Verlustplan: welche Siedlungen scheitern, und wann.“',
   '“Off the record: our readings rise with extraction. Every year. Every report gets sealed.”': '„Inoffiziell: Unsere Messwerte steigen mit dem Abbau. Jedes Jahr. Jeder Bericht wird versiegelt.“',
+
+  // ── the central revelation, and no bloodline (content/legs.ts notes 4 to 7, content/story.ts, content/wall.ts) ──
+  'My readings said the Thren press harder the more we dig. So they kept the Scatter digging, outside the fence, between them and the core.': 'Meine Messwerte sagten: Je mehr wir graben, desto stärker drängen die Thren. Also ließen sie den Scatter weitergraben, draußen vor dem Zaun, zwischen ihnen und dem Kern.',
+  'The rescue ships were built too. Then broken up, right here, for breaker plate.': 'Die Rettungsschiffe wurden auch gebaut. Dann zerlegt, genau hier, für Brecherplatten.',
+  'Lucan Calloway asked for ten years: dig less, warn everyone, bring the outer worlds in while it settled. The board said a warning would crash Krail.': 'Lucan Calloway bat um zehn Jahre: weniger graben, alle warnen, die äußeren Welten reinholen, bis es sich legt. Der Vorstand sagte, eine Warnung würde Krail abstürzen lassen.',
+  'He signed, on a promise of ships. Three in that room made sure the ships never sailed: Kellern’s chair, the Offices’ director, the Survey’s chief.': 'Er unterschrieb, gegen das Versprechen von Schiffen. Drei in dem Raum sorgten dafür, dass sie nie ablegten: Kellerns Vorsitz, der Direktor der Offices, die Leiterin des Vermessungsamts.',
+  'The same order struck every Charter in the Scatter. No passage, no rescue. All legal.': 'Derselbe Befehl strich jede Charta im Scatter. Kein Durchlass, keine Rettung. Alles legal.',
+  'Dig less and they settle. My readings showed that too. Nobody in the room asked about that page.': 'Grab weniger, und sie beruhigen sich. Das zeigten meine Messwerte auch. Niemand im Raum hat nach dieser Seite gefragt.',
+  '“Helm accepted. Ada Aster’s routine is still in the console. It steered this hull into your path, and learned who flies her. Keep it, burn it, or make it yours.”': '„Steuer akzeptiert. Ada Asters Routine steckt noch in der Konsole. Sie hat dir diesen Rumpf in den Weg gelegt und gelernt, wer ihn fliegt. Behalt sie, verbrenn sie oder mach sie dir zu eigen.“',
+  'A routine called ADA-1 woke when you took the helm. Any hand would have done.': 'Eine Routine namens ADA-1 erwachte, als du das Steuer nahmst. Jede Hand hätte gereicht.',
+  'The routine is signed A. Aster, Lane Warden. The keys work in any hand. The routine only made sure this hull came to yours.': 'Die Routine ist signiert A. Aster, Bahnwärterin. Die Schlüssel funktionieren in jeder Hand. Die Routine hat nur dafür gesorgt, dass dieser Rumpf in deine kam.',
 };
