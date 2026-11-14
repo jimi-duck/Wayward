@@ -198,6 +198,34 @@ describe('the chase', () => {
   });
 });
 
+describe('the Arcade lesson', () => {
+  it('rolls through a shot, shoots two raiders, then pays the first refit from their wreckage', () => {
+    const w = new World(7);
+    w.field.rocks = [];
+    w.field.step = () => {};
+    w.train();
+    expect(stepOf(w)).toBe('roll');
+    expect(lessonOf(w)!.line).toBe('Roll through the incoming shot');
+    // no wave while it runs
+    for (let i = 0; i < 60 * 8; i++) { w.step(STEP, input()); if (w.aliens.length) break; }
+    expect(w.aliens.length).toBe(0);
+    // the shot lands harmlessly while she does nothing
+    expect(w.plates).toBe(w.stats.maxPlates);
+    // now roll as it comes close
+    let rolled = false;
+    for (let i = 0; i < 60 * 10 && stepOf(w) === 'roll'; i++) {
+      const sh = w.shots.find((x) => x.from === 'tutor-roll');
+      const near = !!sh && Math.hypot(sh.x - w.ship.x, sh.z - w.ship.z) < 6;
+      w.step(STEP, input({ roll: near && !rolled }));
+      if (near) rolled = true;
+      if (!sh) rolled = false;
+    }
+    for (let i = 0; i < 120 && stepOf(w) === 'roll'; i++) w.step(STEP, input());
+    expect(stepOf(w)).toBe('shoot');
+    expect(w.plates).toBe(w.stats.maxPlates);
+  });
+});
+
 describe('pop-up gist', () => {
   it('is short on every story card that sets one', async () => {
     const { STORY_CARDS } = await import('../src/content/story');

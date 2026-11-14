@@ -31,7 +31,7 @@ import type { Role } from '../sim/enemies';
 export type SurvivalId = 'drifter' | 'prospector' | 'raider';
 export const SURVIVAL_IDS: readonly SurvivalId[] = ['drifter', 'prospector', 'raider'];
 export const DEFAULT_SURVIVAL: SurvivalId = 'prospector';
-/** The Arcade has no difficulty to pick: it always plays on this row, whatever the profile chose for the Story. */
+/** The Arcade's difficulty before a player picks one (the profile keeps its own, `arcadeSurvival`), and the review world's. */
 export const ARCADE_SURVIVAL: SurvivalId = 'prospector';
 
 /** What a wreck of one kind of hull leaves in the Story, per point of the hull's worth: parts, Cyrite, ore. Krail is the same for all (`salvage.krail`). */

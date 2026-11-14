@@ -54,6 +54,8 @@ const LESSON_HINT: Record<string, Array<[string, string]>> = {
   bay: [['h-keys', 'Press B to open the Bay'], ['h-touch', 'Tap Open Bay'], ['h-pad', 'Press Back to open the Bay']],
   dock: [['h-keys', 'Fly in slowly to dock'], ['h-touch', 'Fly in slowly to dock'], ['h-pad', 'Fly in slowly to dock']],
   fit: [['h-keys', 'Open the bay and pick the torpedo bay'], ['h-touch', 'Open the bay and pick the torpedo bay'], ['h-pad', 'Open the bay and pick the torpedo bay']],
+  roll: [['h-keys', 'Press Shift to roll · a roll can’t be hit'], ['h-touch', 'Tap a second finger to roll · a roll can’t be hit'], ['h-pad', 'Press B to roll · a roll can’t be hit']],
+  none: [],
 };
 
 const SHIP_WARN = {
@@ -150,6 +152,8 @@ export class Hud {
   private seed = -1;
   private modeLvl = '';
   private modeKey = '';
+  /** The Arcade's first runs: the sighted capital ship's card shows its two outcomes as chips (main.ts sets it). */
+  capitalHelp = false;
   private condKey = '';
   /** The arcade's refit bay: the cheapest module in reach, and when it was last worked out. */
   private next = 0;
@@ -872,7 +876,9 @@ export class Hud {
     const word = !world.alive ? 'Hull breach' : held ? 'Docking denied' : safe ? 'Safe here' : calm ? 'Capital ship spotted' : a === 'red' ? 'Red alert' : 'Yellow alert';
     const engaged = held ? world.engaged() : 0;
     const note = held ? (engaged > 0 ? plural(engaged, '{n} hostile engaged', '{n} hostiles engaged') : t('Until the fight is over')) : safe ? t(safe === 'lane' ? 'The gate’s field holds every gun cold' : 'The depot’s field holds every gun cold') : sub;
-    const key = `${a}${word}${note}${safe ?? ''}${held}`;
+    // a capital ship's choice, in the player's first runs: the two ways it goes, and what each costs
+    const teach = !!sighted && !safe && !held && this.capitalHelp && a !== 'red';
+    const key = `${a}${word}${note}${safe ?? ''}${held}${teach}`;
     if (key === this.modeKey) return;
     this.modeKey = key;
     const mode = $('mode');
@@ -880,6 +886,14 @@ export class Hud {
     mode.hidden = a === 'clear' && !calm && !safe && !held;
     text($('mode-t'), t(word));
     text($('mode-s'), note);
+    const chips = $('mode-c');
+    chips.hidden = !teach;
+    if (teach) {
+      chips.replaceChildren(
+        Object.assign(document.createElement('span'), { className: 'chip', textContent: t('Stay clear · +score · next one sooner') }),
+        Object.assign(document.createElement('span'), { className: 'chip', textContent: t('Fight · bounty and tech') }),
+      );
+    }
     // a step up or down lights the card once, so a change is seen and not only read
     const lvl = `${mode.hidden}${mode.className}${word}`;
     if (!mode.hidden && lvl !== this.modeLvl) this.retrigger(mode, 'enter');

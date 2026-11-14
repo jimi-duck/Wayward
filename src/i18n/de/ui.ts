@@ -49,6 +49,7 @@ export const UI: Record<string, string> = {
   'Engine colour': 'Triebwerksfarbe',
   'Day {n}': 'Tag {n}',
   'Best': 'Bestwert',
+  'Best · {mode}': 'Bestwert · {mode}',
   'Survival mode': 'Überlebensmodus',
   'Skies': 'Himmel',
   'Wrecks': 'Wracks',
@@ -627,4 +628,17 @@ export const UI: Record<string, string> = {
   'Photo mode · any key or tap returns': 'Fotomodus · Taste oder Tippen bringt dich zurück',  // ── the roll secret ──
   'Secret found': 'Geheimnis gefunden',
   '+999,999 Cyrite': '+999.999 Cyrite',
+  // the Arcade's run and its bay (release 1)
+  'Run started': 'Runde gestartet',
+  'Torpedo button': 'Torpedo-Knopf',
+  'Fit another': 'Noch einen einbauen',
+  '{n} more': 'noch {n}',
+  'Return to flight': 'Zurück in den Flug',
+  'Stay clear · +score · next one sooner': 'Abstand halten · +Punkte · nächstes kommt früher',
+  'Fight · bounty and tech': 'Kämpfen · Kopfgeld und Technik',
+  'Roll through the incoming shot': 'Roll durch den Schuss',
+  'Fly through the wreckage for Cyrite': 'Flieg durch die Trümmer und sammel Cyrit',
+  'Press Shift to roll · a roll can’t be hit': 'Shift drücken: rollen · im Rollen trifft dich nichts',
+  'Tap a second finger to roll · a roll can’t be hit': 'Mit zweitem Finger tippen: rollen · im Rollen trifft dich nichts',
+  'Press B to roll · a roll can’t be hit': 'B drücken: rollen · im Rollen trifft dich nichts',
 };

@@ -54,9 +54,13 @@ export interface Archive {
 
 export interface Profile {
   version: 1;
+  /** The Arcade's bests on Prospector (the one difficulty it had before 14 November 2026, so older bests are these), and that run's score curve. */
   best: Best;
-  /** The score curve of the best-scoring run, for the report's chart. */
   bestCurve: Array<{ t: number; score: number }>;
+  /** The Arcade's bests on the other two difficulties, kept apart: a score is only compared with its own difficulty. */
+  bestBy: Partial<Record<SurvivalId, { best: Best; curve: Array<{ t: number; score: number }> }>>;
+  /** The Arcade's difficulty, last chosen (the Story's is `survival`). */
+  arcadeSurvival: SurvivalId;
   life: Lifetime;
   history: RunRecord[];
   /** Unlock ids earned. */
@@ -77,10 +81,14 @@ export interface Profile {
   archive: Archive;
 }
 
+const noBest = (): Best => ({ score: 0, time: 0, chain: 0, krail: 0, capitals: 0, kills: 0, refit: 0 });
+
 const fresh = (): Profile => ({
   version: 1,
-  best: { score: 0, time: 0, chain: 0, krail: 0, capitals: 0, kills: 0, refit: 0 },
+  best: noBest(),
   bestCurve: [],
+  bestBy: {},
+  arcadeSurvival: DEFAULT_SURVIVAL,
   life: { runs: 0, kills: 0, capitals: 0, krail: 0, capitalsBy: {}, bestTime: 0, bestScore: 0 },
   history: [],
   earned: [],
@@ -123,6 +131,7 @@ export function migrate(p: Record<string, any>): Record<string, any> {
     delete p.modifiers;
   }
   if (p.survival !== undefined) p.survival = survivalOf(p.survival).id;
+  if (p.arcadeSurvival !== undefined) p.arcadeSurvival = survivalOf(p.arcadeSurvival).id;
   for (const k of ['best', 'life']) {
     const o = p[k];
     if (o && 'dilithium' in o) {
@@ -163,11 +172,19 @@ export interface Recorded {
   unlocked: UnlockDef[];
 }
 
+/** The Arcade's bests on a difficulty: Prospector's are the profile's own (so a profile from before the choice keeps them), the others kept beside. */
+export function bestsOf(p: Profile, id: string): { best: Best; curve: Array<{ t: number; score: number }> } {
+  const sid = survivalOf(id).id;
+  if (sid === DEFAULT_SURVIVAL) return { best: p.best, curve: p.bestCurve };
+  return (p.bestBy[sid] ??= { best: noBest(), curve: [] });
+}
+
 /** Fold a finished run into the profile. Returns what the report needs. */
 export function recordRun(p: Profile, r: RunStats): Recorded {
-  const previous = { ...p.best }, previousCurve = p.bestCurve;
-  const newBest = r.score > p.best.score;
-  const b = p.best;
+  const mine = bestsOf(p, r.survival);
+  const previous = { ...mine.best }, previousCurve = mine.curve;
+  const newBest = r.score > mine.best.score;
+  const b = mine.best;
   b.score = Math.max(b.score, r.score);
   b.time = Math.max(b.time, r.time);
   b.chain = Math.max(b.chain, r.bestChain);
@@ -175,15 +192,20 @@ export function recordRun(p: Profile, r: RunStats): Recorded {
   b.capitals = Math.max(b.capitals, r.capitals);
   b.kills = Math.max(b.kills, r.kills);
   b.refit = Math.max(b.refit, r.refit);
-  if (newBest) p.bestCurve = r.timeline.map(({ t, score }) => ({ t, score }));
+  if (newBest) {
+    const curve = r.timeline.map(({ t, score }) => ({ t, score }));
+    const sid = survivalOf(r.survival).id;
+    if (sid === DEFAULT_SURVIVAL) p.bestCurve = curve;
+    else p.bestBy[sid]!.curve = curve;
+  }
   const l = p.life;
   l.runs++;
   l.kills += r.kills;
   l.capitals += r.capitals;
   l.krail += r.krail;
   for (const f of r.capitalFactions) l.capitalsBy[f] = (l.capitalsBy[f] ?? 0) + 1;
-  l.bestTime = b.time;
-  l.bestScore = b.score;
+  l.bestTime = Math.max(l.bestTime, b.time);
+  l.bestScore = Math.max(l.bestScore, b.score);
   p.history.unshift({ at: Date.now(), score: r.score, time: r.time, refit: r.refit, identity: r.identity, cause: r.cause });
   p.history.length = Math.min(p.history.length, HISTORY);
   const unlocked = UNLOCKS.filter((u) => !p.earned.includes(u.id) && u.earned(r, l));

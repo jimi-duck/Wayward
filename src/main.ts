@@ -84,7 +84,7 @@ function boot(review: typeof import('./review') | null): void {
   // ?dev is the review world (docs/REVIEW.md): a gallery of everything in the game, flown without risk, and nothing it does is saved
   const dev = review !== null;
   const persist = (p: typeof profile) => { if (!dev) saveProfile(p); };
-  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: dev || profile.mode === 'arcade' ? ARCADE_SURVIVAL : profile.survival, mode: dev ? 'arcade' : profile.mode, space: !params.has('nospace'), review: dev });
+  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: dev ? ARCADE_SURVIVAL : profile.mode === 'arcade' ? profile.arcadeSurvival : profile.survival, mode: dev ? 'arcade' : profile.mode, space: !params.has('nospace'), review: dev });
   const showMode = () => document.documentElement.classList.toggle('breakout', world.mode === 'breakout');
   showMode();
   const renderer = createRenderer(canvas, quality.tier);
@@ -133,7 +133,7 @@ function boot(review: typeof import('./review') | null): void {
   setTimeout(() => void sector.warm().then(() => {
     if (started) return;
     // Arcade is the title's first row and starts at a tap, so its run is made now: the world, then its sky
-    if (world.mode !== 'arcade' || world.survival.id !== ARCADE_SURVIVAL) world.restart({ survival: ARCADE_SURVIVAL, mode: 'arcade', carry: null });
+    if (world.mode !== 'arcade' || world.survival.id !== profile.arcadeSurvival) world.restart({ survival: profile.arcadeSurvival, mode: 'arcade', carry: null });
     // a saved journey is the title's first row: its system's sky is the one to have ready, the Arcade's is made on a tap
     const saved = liveJourney();
     if (saved && saved.status === 'sortie') sector.stageSortieSky(sortieDef(saved));
@@ -408,7 +408,7 @@ function boot(review: typeof import('./review') | null): void {
     persist(profile);
     sector.setCosmetic(profile.cosmetic);
     // before the first launch nothing has happened yet, so the run can be re-made in the new survival mode
-    if (!started) { world.restart({ survival: ARCADE_SURVIVAL, mode: 'arcade', carry: null }); stageSky(); }
+    if (!started && pick === 'arcade') { world.restart({ survival: profile.arcadeSurvival, mode: 'arcade', carry: null }); stageSky(); }
     showBrief();
     showResume();
   }, () => launch(pick));
@@ -451,12 +451,13 @@ function boot(review: typeof import('./review') | null): void {
       input.reset();
       const rec = recordRun(profile, world.run);
       summary.show(world.run, rec, () => {
-        world.restart({ unlocked: grants(profile), survival: profile.mode === 'arcade' ? ARCADE_SURVIVAL : profile.survival, mode: profile.mode });
+        world.restart({ unlocked: grants(profile), survival: profile.mode === 'arcade' ? profile.arcadeSurvival : profile.survival, mode: profile.mode });
         showMode();
         reported = false;
         startOpts.render();
         if (!profile.trained || TRAIN) world.train();
-        hud.note(world, `${t('Journey started')} · ${t(world.hull.name)}`);
+        hud.capitalHelp = profile.life.runs < 3;
+        hud.note(world, `${t('Run started')} · ${t(world.hull.name)}`);
         input.reset();
       });
     }
@@ -540,7 +541,7 @@ function boot(review: typeof import('./review') | null): void {
     const first = !profile.briefed;
     el('pause').classList.toggle('first', first);
     // the arcade's card names the run; the Story's is the ship's "All stop"
-    el('pause-t').textContent = t(settingsOpen() ? 'Settings' : document.documentElement.classList.contains('breakout') ? 'All stop' : 'Survive the waves');
+    el('pause-t').textContent = t(settingsOpen() ? 'Settings' : document.documentElement.classList.contains('breakout') ? 'All stop' : 'Survive');
     el('p-paint-r').hidden = !el('paint').childElementCount;
   };
   // Phones and tablets take the whole screen where the browser allows it
@@ -579,9 +580,13 @@ function boot(review: typeof import('./review') | null): void {
     fit();
     setPaused(false);
     if (mode === 'arcade') {
-      if (world.mode !== 'arcade' || world.survival.id !== ARCADE_SURVIVAL) world.restart({ survival: ARCADE_SURVIVAL, mode, carry: null });
+      if (world.mode !== 'arcade' || world.survival.id !== profile.arcadeSurvival) world.restart({ survival: profile.arcadeSurvival, mode, carry: null });
+      // a new player's first run opens with the lesson (roll, shoot, refit), not only the run after it
+      if ((!profile.trained || TRAIN) && !world.tutor) world.train();
       showMode();
-      hud.note(world, `${t('Journey started')} · ${t(world.hull.name)}`);
+      // the first three runs show a sighted capital ship's two outcomes
+      hud.capitalHelp = profile.life.runs < 3;
+      hud.note(world, `${t('Run started')} · ${t(world.hull.name)}`);
       // how to play first: the pause card, until any key or tap
       setPaused(true);
       return;
@@ -813,11 +818,20 @@ function boot(review: typeof import('./review') | null): void {
   press('m-continue', () => launch('breakout', true));
   press('m-journey', () => {
     pick = 'breakout';
+    startOpts.arcade = false;
+    startOpts.render();
     showStep('diff');
     // while the difficulty is chosen, paint the new journey's first sky (the same whatever the seed)
     setTimeout(() => { if (!started && step === 'diff') sector.stageSortieSky(sortieDef(newJourney(1, false, NEW_SET, profile.survival))); }, 120);
   });
-  press('m-arcade', () => launch('arcade'));
+  // Arcade's difficulty step opens on the last one chosen, so a returning player begins with one more tap
+  press('m-arcade', () => {
+    pick = 'arcade';
+    startOpts.arcade = true;
+    startOpts.render();
+    showStep('diff');
+    if (world.mode !== 'arcade' || world.survival.id !== profile.arcadeSurvival) { world.restart({ survival: profile.arcadeSurvival, mode: 'arcade', carry: null }); stageSky(); }
+  });
   press('m-settings', () => showStep('set'));
   press('d-back', () => showStep('menu'));
   press('s-back', () => showStep('menu'));

@@ -140,8 +140,10 @@ export class BayPanel {
   private onClose: (() => void) | null = null;
   private off: (() => void) | null = null;
   private opened = 0;
-  /** An Arcade pick is made and the bay is about to shut. */
+  /** An Arcade pick is made and the bay is about to shut, or is waiting on Fit another. */
   private closing = false;
+  /** The Arcade's pick is made and there is Cyrite for another: Fit another or Return to flight. */
+  private offerMore = false;
   private view: View = 'picks';
   private sel: string | null = null;
   /** The suggestion selected, in the Suggested view. */
@@ -190,6 +192,7 @@ export class BayPanel {
     this.onClose = onClose;
     this.opened = performance.now();
     this.closing = false;
+    this.offerMore = false;
     $('bay').classList.remove('chosen', 'leaving', 'warm');
     this.shown = {};
     this.linked = '';
@@ -198,7 +201,7 @@ export class BayPanel {
     this.pick = 0;
     // at a port the bay closes back onto the dock; in flight it launches
     const x = $('bay-x');
-    x.replaceChildren(h('kbd', 'only-desktop', 'B'), ` ${t(world.docked ? 'Back to the dock' : 'Launch')}`);
+    x.replaceChildren(h('kbd', 'only-desktop', 'B'), ` ${t(world.docked ? 'Back to the dock' : world.bk ? 'Launch' : 'Return to flight')}`);
     $('bay').hidden = false;
     this.render();
     // the type changes the room once the fonts arrive: the line finds its ring again
@@ -207,6 +210,10 @@ export class BayPanel {
     this.off = keys((e) => {
       const c = e.code;
       if (c === 'Escape' || c === 'KeyB') return this.launch(), true;
+      if (this.offerMore) {
+        if (c === 'Enter' || c === 'NumpadEnter' || c === 'Space' || c === 'Digit1' || c === 'KeyF') return this.another(), true;
+        return true;
+      }
       if (c === 'KeyQ' || (c === 'Tab' && e.shiftKey)) return this.step(-1), true;
       if (c === 'KeyE' || c === 'Tab') return this.step(1), true;
       const d = c === 'ArrowLeft' ? [-1, 0] : c === 'ArrowRight' ? [1, 0] : c === 'ArrowUp' || c === 'KeyW' ? [0, -1] : c === 'ArrowDown' || c === 'KeyS' ? [0, 1] : null;
@@ -236,7 +243,7 @@ export class BayPanel {
     if (p.lb) this.step(-1);
     else if (p.rb) this.step(1);
     else if (p.left || p.right || p.up || p.down) this.move(p.left ? -1 : p.right ? 1 : 0, p.up ? -1 : p.down ? 1 : 0);
-    else if (p.a) this.fit();
+    else if (p.a) { if (this.offerMore) this.another(); else this.fit(); }
     else if (p.b || p.back) this.launch();
   }
 
@@ -343,8 +350,33 @@ export class BayPanel {
       if (on) { const go = c.querySelector('.pc-go') as HTMLButtonElement; go.disabled = true; go.textContent = `✓ ${t('Fitted')}`; }
     });
     bay.classList.add('chosen');
+    // Cyrite for another refit: the player chooses to fit another or fly on; nothing more opens by itself
+    if (w.canFitAnother()) return this.askMore(w);
     window.setTimeout(() => { if (this.open && this.world === w) bay.classList.add('leaving'); }, reduce ? 150 : 650);
     window.setTimeout(() => { if (this.open && this.world === w) this.launch(); }, reduce ? 300 : 950);
+  }
+
+  /** After an Arcade pick with Cyrite left: Fit another (how many more it pays for) or Return to flight. */
+  private askMore(w: World): void {
+    this.offerMore = true;
+    const more = h('button', 'pn-more', '', h('kbd', 'only-desktop', '1'), document.createTextNode(` ${t('Fit another')} · ${t('{n} more', { n: w.refitsAffordable })}`)) as HTMLButtonElement;
+    const fly = h('button', 'pn-fly', '', h('kbd', 'only-desktop', 'B'), document.createTextNode(` ${t('Return to flight')}`)) as HTMLButtonElement;
+    more.type = fly.type = 'button';
+    more.addEventListener('click', (e) => { e.stopPropagation(); this.another(); });
+    fly.addEventListener('click', (e) => { e.stopPropagation(); this.launch(); });
+    $('bay-web').append(h('div', 'pick-next', '', more, fly));
+    setTimeout(() => this.open && this.offerMore && more.focus({ preventScroll: true }), 200);
+  }
+
+  /** Fit another: three fresh cards in the same visit. */
+  private another(): void {
+    const w = this.world;
+    if (!w || !this.offerMore || !w.redeal()) return;
+    this.offerMore = false;
+    this.closing = false;
+    this.pick = 0;
+    $('bay').classList.remove('chosen', 'leaving', 'warm');
+    this.render();
   }
 
   /** The ship answers a fit in the voice line for a few seconds: accepted, or not factory spec if the part has a stamp. */
@@ -537,7 +569,8 @@ export class BayPanel {
 
   private tabs(w: World): void {
     const arcade = isArcade(w);
-    $('bay-tabs').replaceChildren(...viewsOf(w).map((v) => {
+    // the Arcade shows its own picks and nothing of the Story's web: no locked tabs to explain
+    $('bay-tabs').replaceChildren(...viewsOf(w).filter((v) => !arcade || v === 'picks').map((v) => {
       const locked = arcade && v !== 'picks';
       const name = v === 'picks' ? t(arcade ? 'Pick one' : 'Suggested') : t(TABS[v].name);
       // a locked tab (the Arcade's) shows a padlock where the others show their state mark
@@ -551,7 +584,7 @@ export class BayPanel {
       if (locked) { b.setAttribute('aria-disabled', 'true'); b.tabIndex = -1; b.title = t('Story mode: plan your own build'); }
       b.addEventListener('click', (e) => { e.stopPropagation(); this.go(v); });
       return b;
-    }), ...(arcade ? [h('p', 'bay-lock-note', '', paint('lock'), document.createTextNode(` ${t('Story: full refit control')}`))] : []), this.profile(w));
+    }), this.profile(w));
   }
 
   /** The ship's papers along the foot of the web: her designation, and what the registry says of her. Quiet; desktop only. */
@@ -614,7 +647,7 @@ export class BayPanel {
     const arcade = isArcade(w);
     $('bay-tab-h').replaceChildren(paint('tab_picks'), h('span', 'bw-n', t(arcade ? 'Pick one' : 'Suggested')), h('span', 'bw-s', t(w.bk && arcade ? 'Your first refit' : arcade ? 'Three refits for your ship' : 'Picked for your ship')));
     $('bay-web').replaceChildren(h('div', 'pick-row', '', ...(cards.length ? cards : [empty])),
-      h('p', 'pick-more', t('Want to plan your own build? Pick a part of the ship on the left.')));
+      ...(arcade ? [] : [h('p', 'pick-more', t('Want to plan your own build? Pick a part of the ship on the left.'))]));
     $('bay-insp').replaceChildren();
   }
 

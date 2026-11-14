@@ -2,6 +2,8 @@ import { CARD_BY_ID, RADIO_GAP } from './comms';
 import { CREDIT_START, HOLD, HOLD_AT_START, QUOTA, ROCK_LOAD, type Cargo } from './contract';
 import { t } from '../i18n';
 import { newId } from './ids';
+import { dropCrystals } from './pickups';
+import { ARCADE_PRICE } from '../content/web';
 import type { World } from './world';
 
 // ── the first minutes ─────────────────────────────────────────────────────
@@ -17,9 +19,11 @@ import type { World } from './world';
 // jump is in reach and the run goes on. Each step is a thing the game already
 // does; the tutor only sets one up (a rock, a purse, a ship) and watches for it.
 // Nothing locks, and Skip ends it. Plain data, so a test flies it. The Arcade
-// keeps the short version: rock, upgrade, shot.
+// has its own short version, in the order a run pays: roll through a shot (the
+// move a run survives on), shoot two raiders, fly through their wreckage for
+// the Cyrite, and spend it on the first upgrade.
 
-export type LessonId = 'mine' | 'bay' | 'haul' | 'shoot';
+export type LessonId = 'mine' | 'bay' | 'haul' | 'shoot' | 'roll';
 
 /** Where a lesson points: a place in the world and how close counts. */
 export interface Mark { x: number; z: number; r: number; name: string }
@@ -57,6 +61,9 @@ export interface Tutor {
   parley: 0 | 1 | 2;
   /** Seconds until the scripted missile hits (0: none in flight, or already hit). */
   missile: number;
+  /** The roll lesson: the shot was rolled through, and when (step time) the next shot goes. */
+  rolled: boolean;
+  next: number;
 }
 
 /** What the HUD reads for the step in hand. */
@@ -68,7 +75,7 @@ export interface Lesson {
   /** English, one verb phrase; the HUD runs it through t(). */
   line: string;
   /** Which hint to show (the HUD has the words for each device). */
-  hint: 'fire' | 'bay' | 'dock' | 'fit' | 'torpedo';
+  hint: 'fire' | 'bay' | 'dock' | 'fit' | 'torpedo' | 'roll' | 'none';
   mark: Mark | null;
   /** 0 to 1 */
   progress: number;
@@ -88,9 +95,44 @@ const DEPOT_AT = 170;
 const TRAIN_LANE = 1000;
 const DEPOT_SIDE = 90;
 
-/** Mine, upgrade, shoot with it. The Story flies to a work bay for the settlement and the upgrade, then hauls the last of the contract; the Arcade fits it in flight. */
+/** The Story: mine, upgrade, haul, shoot with it (the work bay for the settlement and the upgrade). The Arcade: roll, shoot, collect and fit, in flight. */
 export function newTutor(story = true): Tutor {
-  return { steps: story ? ['mine', 'bay', 'haul', 'shoot'] : ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0, pirates: [], said: [], onboard: 0, delivered: 0, lost: false, settled: false, credit: 0, parley: 0, missile: 0 };
+  return { steps: story ? ['mine', 'bay', 'haul', 'shoot'] : ['roll', 'shoot', 'bay'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0, pirates: [], said: [], onboard: 0, delivered: 0, lost: false, settled: false, credit: 0, parley: 0, missile: 0, rolled: false, next: 0 };
+}
+
+// ── the roll lesson (the Arcade) ──────────────────────────────────────────
+// One slow, plainly drawn shot comes in; a roll through it is the lesson. It
+// is harmless: if it lands, the hull rings and another comes a moment later.
+const ROLL_SHOT = 'tutor-roll';
+/** Where it starts (units ahead of the nose, and off to one side), and how long it takes to arrive. */
+const ROLL_FROM = 55, ROLL_SIDE = 22, ROLL_TIME_IN = 2.6;
+/** It counts as rolled through if a roll is on while it is this close. */
+const ROLL_NEAR = 7;
+
+function rollShot(w: World, tu: Tutor): void {
+  const p = ahead(w, ROLL_FROM, tu.next > 2 ? -ROLL_SIDE : ROLL_SIDE), s = w.ship;
+  const d = Math.hypot(s.x - p.x, s.z - p.z) || 1, sp = d / ROLL_TIME_IN;
+  w.shots.push({ id: newId(), x: p.x, y: 0, z: p.z, vx: ((s.x - p.x) / d) * sp, vy: 0, vz: ((s.z - p.z) / d) * sp, life: ROLL_TIME_IN + 2, r: 0.9, faction: 'gutter', hp: 0, seek: 0, split: 0, from: ROLL_SHOT });
+}
+
+/** The roll lesson's shot: it steers onto the ship and draws its line on the plane; rolled through, or a harmless ring on the hull. */
+function stepRoll(w: World, tu: Tutor, dt: number): void {
+  const sh = w.shots.find((x) => x.from === ROLL_SHOT), s = w.ship;
+  if (!sh) {
+    if (!tu.rolled && tu.t >= tu.next) rollShot(w, tu);
+    return;
+  }
+  const dx = s.x - sh.x, dz = s.z - sh.z, d = Math.hypot(dx, dz) || 1, sp = Math.max(Math.hypot(sh.vx, sh.vz), 14);
+  sh.vx = (dx / d) * sp; sh.vz = (dz / d) * sp; sh.life = Math.max(sh.life, 1);
+  // the line it will fly, drawn on the plane like any telegraph
+  w.tele.push({ id: newId(), kind: 'line', x: sh.x, z: sh.z, ang: Math.atan2(-dz, dx), len: d, r: 0, t: dt * 1.5, total: dt * 1.5, faction: 'gutter' });
+  if (s.rollT >= 0 && d < ROLL_NEAR) tu.rolled = true;
+  if (d > 1.6 + dt * sp) return;
+  w.shots.splice(w.shots.indexOf(sh), 1);
+  if (tu.rolled) return;
+  // it landed: the hull rings (no damage) and the next comes from the other side
+  w.events.push({ type: 'shieldHit', x: s.x, z: s.z, left: Math.floor(w.shields), source: 'lesson' });
+  tu.next = tu.t + 1.2;
 }
 
 /** The cargo the HUD reads, or null where there is no contract (the Arcade, or the training over). */
@@ -141,7 +183,6 @@ function layShip(w: World, tu: Tutor): void {
     tu.pirates.push(al.id);
   }
   tu.alienId = tu.pirates[0] ?? -1;
-  if (!story(w, tu)) say(w, tu, 'demand', t('Unregistered raider'), 'unknown', t('“Cut thrust. Pay the toll and grant boarding rights, or we’ll open the hold for you.”'));
 }
 
 /** Until the offer is answered the raiders close on the ship without a shot; in range, the world stops for them. */
@@ -229,10 +270,16 @@ function begin(w: World, tu: Tutor): void {
     if (w.bk) { const p = ahead(w, TRAIN_LANE); w.bk.def = { ...w.bk.def, lane: TRAIN_LANE }; w.bk.lane.x = p.x; w.bk.lane.z = p.z; }
     if (story(w, tu)) sam(w, tu, 'dispatch', ['“Two hundred more and you’re full, Juno. Then home, and maybe a night’s sleep for once.”']);
     else say(w, tu, 'dispatch', t('Contract desk · 08-441'), 'office', t('“08-441, the Work Bay is open for supplies. Take the upgrade you need and get back to the field. A late return comes out of your allocation.”'));
+  } else if (id === 'roll') {
+    tu.rolled = false;
+    tu.next = 1.2;
   } else if (id === 'bay') {
     tu.base = fitted(w);
-    // the Arcade's upgrade is a press away; the Story's is bought from the settlement, at the bay
-    if (!w.bk) w.cyrite = Math.max(w.cyrite, 6);
+    // the Arcade's upgrade is paid from the raiders' wreckage: what they left, topped up to a refit, lies where they died
+    if (!w.bk) {
+      const short = ARCADE_PRICE - w.krail - w.pickups.reduce((a, p) => a + (p.kind === 'crystal' ? p.value : 0), 0);
+      if (short > 0) { const p = ahead(w, 14); dropCrystals(w.pickups, p.x, p.z, short, w.rng, 5, 0, 0, 'crystal', 3); }
+    }
     // the money, as she heads for the bay that shows it (one line at a time: owner 2026-10-31)
     if (story(w, tu)) sam(w, tu, 'bay', ['“A thousand Cyrite out of Cerro, and after their charges you clear two credits. Two. That’s the company for you.”']);
   } else if (id === 'haul') {
@@ -279,7 +326,16 @@ export function lessonOf(w: World): Lesson | null {
   if (id === 'bay') {
     const port = w.bk?.port;
     if (port) return { ...base, line: w.docked ? 'Fit the torpedo launcher' : 'Dock at the Work Bay', hint: w.docked ? 'fit' : 'dock', mark: { x: port.x, z: port.z, r: port.r, name: port.name }, progress: 0 };
+    // the Arcade: wrecks pay for refits; fly through what they left, then fit
+    if (!w.bk && w.krail < ARCADE_PRICE) {
+      const c = w.pickups.find((p) => p.kind === 'crystal');
+      return { ...base, line: 'Fly through the wreckage for Cyrite', hint: 'none', mark: c ? { x: c.x, z: c.z, r: 4, name: 'Cyrite' } : null, progress: Math.min(1, w.krail / ARCADE_PRICE) };
+    }
     return { ...base, line: 'Choose an upgrade', hint: 'bay', mark: null, progress: 0 };
+  }
+  if (id === 'roll') {
+    const sh = w.shots.find((x) => x.from === ROLL_SHOT);
+    return { ...base, line: 'Roll through the incoming shot', hint: 'roll', mark: sh ? { x: sh.x, z: sh.z, r: 0, name: 'Incoming' } : null, progress: tu.rolled ? 1 : 0 };
   }
   const a = w.aliens.find((x) => x.id === tu.alienId) ?? w.aliens.find((x) => tu.pirates.includes(x.id));
   return { ...base, line: story(w, tu) ? (tu.parley === 2 ? 'Destroy the raiders' : 'Raiders closing') : 'Shoot the raiders with torpedoes', hint: 'torpedo', mark: a ? { x: a.x, z: a.z, r: 0, name: story(w, tu) && tu.parley < 2 ? 'Unknown' : 'Raider' } : null, progress: a ? 1 - a.hp / Math.max(1, a.maxHp) : 1 };
@@ -290,6 +346,7 @@ function met(w: World, tu: Tutor): boolean {
   const id = tu.steps[tu.i]!;
   if (id === 'mine' || id === 'haul') return !w.field.rocks.some((r) => r.id === tu.rockId) && stock(w) > tu.base;
   if (id === 'bay') return fitted(w) > tu.base && w.phase !== 'bay';
+  if (id === 'roll') return tu.rolled && !w.shots.some((x) => x.from === ROLL_SHOT);
   return w.kills >= tu.base + PIRATES;
 }
 
@@ -346,8 +403,7 @@ export function stepTutor(w: World, dt: number): void {
   }
   if (id === 'shoot' && story(w, tu) && tu.parley === 0 && tu.pirates.length) parley(w, tu);
   if (id === 'shoot' && !w.safe && (tu.alienId < 0 || (tu.t > 2 && tu.pirates.some((p) => !w.aliens.some((a) => a.id === p)))) && w.kills < tu.base + PIRATES) layShip(w, tu);
-  // the raiders know a company hauler when they see one
-  if (id === 'shoot' && tu.t > 7 && tu.pirates.length && !story(w, tu)) say(w, tu, 'lock', t('Unregistered raider'), 'unknown', t('“Company hauler. Owner lock and all. Nobody’s coming to claim you out here.”'));
+  if (id === 'roll') stepRoll(w, tu, dt);
   if (met(w, tu)) tu.linger = LINGER;
 }
 
@@ -367,7 +423,7 @@ function finish(w: World, tu: Tutor): void {
     // if the hold went only now, Sam's word on it comes first
     sam(w, tu, 'reinforce', ['“More ships coming in. Forget the ore, it’s gone. Get to the jump gate, Juno. Just get out of there.”'], fresh ? RADIO_GAP : 0);
   }
-  if (!story(w, tu) || tu.skipped) say(w, tu, 'escort', t('Contract desk · 08-441'), 'office', t('“Escort cover isn’t included in Contract 08-441. Continue at operator discretion.”'));
+  if (tu.skipped) say(w, tu, 'escort', t('Contract desk · 08-441'), 'office', t('“Escort cover isn’t included in Contract 08-441. Continue at operator discretion.”'));
 }
 
 /** The player's skip: the torpedo bay is fitted all the same, so the ship is as the run expects it. */

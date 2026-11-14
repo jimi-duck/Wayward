@@ -89,7 +89,7 @@ export const UNLOCKS: UnlockDef[] = [
     earned: (_r, life) => life.runs >= 5,
   },
   {
-    id: 'u_gold', kind: 'cosmetic', name: 'Krail-gold engines', grants: ['engine-gold'],
+    id: 'u_gold', kind: 'cosmetic', name: 'Cyrite-gold engines', grants: ['engine-gold'],
     text: 'A cosmetic: your engines burn gold.',
     hint: 'Collect 1,500 Cyrite, across all your runs.',
     earned: (_r, life) => life.krail >= 1500,
@@ -103,5 +103,5 @@ export const COSMETICS: Record<string, { name: string; core: [number, number, nu
   'engine-stock': { name: 'Drive cyan', core: [2.6, 3.9, 4.4], bell: [0.3, 2.1, 3.4] },
   // the id is kept from when stock burned red, so profiles that earned it keep it
   'engine-ion': { name: 'Drive red', core: [4.2, 2.2, 2.6], bell: [3.4, 0.45, 0.9] },
-  'engine-gold': { name: 'Krail gold', core: [4.4, 3.6, 2.2], bell: [3.6, 1.8, 0.3] },
+  'engine-gold': { name: 'Cyrite gold', core: [4.4, 3.6, 2.2], bell: [3.6, 1.8, 0.3] },
 };

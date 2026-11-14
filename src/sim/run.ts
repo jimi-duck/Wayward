@@ -39,6 +39,9 @@ export interface RunStats {
   shieldsAbsorbed: number;
   /** Encounters sent (the arcade). */
   waves: number;
+  /** The arcade's bay: times it opened (by itself or by hand), and times it offered itself in a quiet spell. */
+  bayOpens: number;
+  bayOffers: number;
   /** Plates and shield charges lost, by what did it. */
   damageBy: Record<string, number>;
   events: number;
@@ -86,7 +89,7 @@ export function newRun(seed: number, survival = 'prospector'): RunStats {
     kills: 0, killsBy: { laser: 0, torpedo: 0, mine: 0, plasma: 0, arc: 0, ram: 0, hazard: 0 },
     killsByKind: {}, elites: 0, rocks: 0, krail: 0, dropped: 0, krailEarned: 0, krailSpent: 0, refit: 0, bestChain: 0,
     capitals: 0, capitalsEvaded: 0, capitalsEscaped: 0, capitalFactions: [],
-    platesLost: 0, platesGained: 0, platesMended: 0, shieldsAbsorbed: 0, waves: 0, damageBy: {}, events: 0, eventsWon: 0, powerups: 0,
+    platesLost: 0, platesGained: 0, platesMended: 0, shieldsAbsorbed: 0, waves: 0, bayOpens: 0, bayOffers: 0, damageBy: {}, events: 0, eventsWon: 0, powerups: 0,
     timeline: [], build: {}, identity: '', survival, loot: { rock: NO_LOOT(), wreck: NO_LOOT() }, cause: '',
     mode: 'arcade', escaped: false, cyrite: 0, cyriteLeft: 0, ore: 0, oreSold: 0, parts: 0, mined: 0, blasted: 0, docked: 0,
     cards: [], jobsDone: 0, ports: [],

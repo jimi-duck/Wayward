@@ -149,43 +149,58 @@ describe('krail and the refit bay', () => {
     expect(w.run.krailSpent).toBe(ARCADE_PRICE * 2);
   });
 
-  it('asks again a price later when the player leaves with a price unspent, and at the price once it is spent down', () => {
+  it('offers itself once in a quiet spell: leaving with Cyrite unspent waits for the next quiet', () => {
     const w = quiet();
-    const P = ARCADE_PRICE, start = P * 2 + 10;
-    w.krail = start;
+    const P = ARCADE_PRICE;
+    w.krail = P * 2 + 10;
     run(w, BAY_QUIET + 0.5);
     expect(w.phase).toBe('bay');
-    w.closeBay(); // launched without fitting
-    run(w, BAY_QUIET + 2);
-    expect(w.phase).toBe('play');
-    w.krail = start + P - 1;
-    run(w, BAY_QUIET + 2);
-    expect(w.phase).toBe('play');
-    w.krail += 1;
-    run(w, BAY_QUIET + 0.5);
-    expect(w.phase).toBe('bay');
-    // spent down below a price, it opens again at the price
-    expect(w.install('ph_emitters')).toBeNull();
-    expect(w.install('ph_emitters')).toBeNull();
-    expect(w.install('ph_capacitors')).toBeNull();
-    expect(w.krail).toBe(start + P - 3 * P);
-    expect(w.krail).toBeLessThan(P);
+    expect(w.run.bayOffers).toBe(1);
+    w.closeBay(); // back to flight without fitting
+    w.krail += P;
+    run(w, BAY_QUIET + 4);
+    expect(w.phase).toBe('play'); // the same quiet spell: not again
+    // B or the badge still opens it while the alert is clear
+    expect(w.openBay()).toBe(true);
     w.closeBay();
-    w.krail = P;
+    // the next quiet spell offers it again
+    w.pace.n++;
     run(w, BAY_QUIET + 0.5);
     expect(w.phase).toBe('bay');
+    expect(w.run.bayOffers).toBe(2);
   });
 
-  it('asks again at once for what is left after a pick, since that is a new pick and not a skipped one', () => {
+  it('never offers itself during an encounter or with a capital ship about', () => {
+    const w = quiet();
+    w.krail = ARCADE_PRICE;
+    w.pace.state = 'wave';
+    w.pace.left = 3;
+    w.pace.next = 1e9;
+    run(w, BAY_QUIET + 2);
+    expect(w.phase).toBe('play');
+    w.pace.state = 'quiet';
+    w.pace.left = 0;
+    w.command.state = 'sighted';
+    run(w, BAY_QUIET + 2);
+    expect(w.phase).toBe('play');
+  });
+
+  it('Fit another deals three fresh cards in the same visit, only while the Cyrite pays for one', () => {
     const w = quiet();
     w.krail = ARCADE_PRICE * 2;
     run(w, BAY_QUIET + 0.5);
     expect(w.phase).toBe('bay');
+    expect(w.refitsAffordable).toBe(2);
     expect(w.install('ph_emitters')).toBeNull();
-    w.closeBay(); // the bay shuts itself after a pick
-    expect(w.krail).toBe(ARCADE_PRICE);
-    run(w, BAY_QUIET + 0.5);
+    expect(w.canFitAnother()).toBe(true);
+    expect(w.redeal()).toBe(true);
     expect(w.phase).toBe('bay');
+    expect(w.install('ph_emitters')).toBeNull();
+    expect(w.krail).toBe(0);
+    expect(w.canFitAnother()).toBe(false);
+    expect(w.redeal()).toBe(false);
+    w.closeBay();
+    expect(w.phase).toBe('play');
   });
 
   it('leaves the Story mode’s bay to the player', () => {

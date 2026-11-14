@@ -78,6 +78,22 @@ black box recording.
 Nothing else locks. Every answer in the chain leads on (the raiders' offer is the one
 failure state).
 
+## The Arcade lesson
+
+A player's first Arcade run (and any run while the lesson is unfinished) opens with three
+steps in `sim/tutor.ts`, and no hull arrives until it ends:
+
+1. **Roll.** One slow, harmless shot (`tutor-roll`) curls in from ahead with its warning line;
+   the hint names the roll for the device (Shift, a second finger, B on a pad). Rolled through,
+   it passes; a hit only flashes the shield, and another comes 1.2 s later.
+2. **Shoot.** A target hull; its wreck's Cyrite is the lesson that fights pay (64 to 80% of a
+   run's Cyrite comes from wrecks). Mining is the quiet-time top-up, not a step.
+3. **Refit.** Cyrite enough for one refit is dropped if the wreck left the purse short, then
+   "Choose an upgrade".
+
+The pause card shows every control on every device (the touch list names the second-finger
+roll and the flick down or button for reverse as two lines).
+
 ## The chase
 
 When the second raider falls the training stops and the run begins. The gate is set 8 km ahead, the objective reads "Reach the Jump Gate" with "Reinforcements inbound · break contact", and growing waves arrive from behind (`chaseCap`, `chaseGap`, `chaseHull`, `chaseLabel` in `sim/breakout.ts`). Arcade has no chase and no cargo.
