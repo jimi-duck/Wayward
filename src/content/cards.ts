@@ -26,7 +26,7 @@ export const FLAGS: Record<string, string> = {
   gutter_friend: 'a friend in the Gutter',
   clue_sig_reach: 'the initials on the authorisation',
   clue_sig_yards: 'the Governor’s cipher',
-  clue_sig_ports: 'Lior Calloway’s signature',
+  clue_sig_ports: 'Lucan Calloway’s signature',
   vell_betrayed: 'proof Val sold your heading',
   sig_paid: 'the ledger, or the order',
   sig_built: 'the work order, or the hull serial',

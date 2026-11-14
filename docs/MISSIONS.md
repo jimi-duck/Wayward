@@ -67,7 +67,7 @@ stops can answer them.
 | The Quiet Line | Nothing to declare, The witness, Lose the Governor | 1, 2, 3 steps: Line radio; 3 opens Broadcast and the Line answer at Tollgate |
 | Hester's crews | Pirate toll, Missing shift, Last shift, Kill zone | 2, 3, 4 steps: 3+ for Unite and the strike |
 | The survey | The wreck, The voice on the wire, The ring's centre | 3 steps (or `ring_mapped`) for Seal |
-| The account | Wanted, The heavy tanker, The recovery order | the debt: 60, minus 20 a step won; stalled = Draper revealed and two steps |
+| The account | Wanted, The heavy tanker, The recovery order | the debt: the breach bill, 800 CR, less 250 for Wanted, 250 for the tanker and 300 for the recovery order, each when won; stalled = Draper revealed and two steps |
 
 The recovery order's pay answer costs what is left of the debt, flat (300 chits, two
 thirds after one step, half after two). Refusing any job stays free. A dark answer
