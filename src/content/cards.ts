@@ -2,6 +2,7 @@ import type { CardDef } from '../sim/comms';
 import { CALLOWAY_FACE, OFFERS } from './calloway';
 import { REGISTRY_CARD, STORY_CARDS } from './story';
 import { NOTE_CARDS, ROAD_OFFERS } from './legs';
+import { CHARTER_CARDS } from './charter';
 import { SCENE_CARDS } from './situationCards';
 
 // ── comms cards ───────────────────────────────────────────────────────────
@@ -964,6 +965,8 @@ export const CARDS: CardDef[] = [
   // the road past the Reach: Ada's notes and the cards that hold its gates (content/legs.ts)
   ...NOTE_CARDS,
   ...ROAD_OFFERS,
+  // the forged Charter (content/charter.ts)
+  ...CHARTER_CARDS,
 
   // what is going on in a system: the calls situations make (content/situations.ts)
   ...SCENE_CARDS,
