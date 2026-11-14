@@ -37,6 +37,12 @@ type Kind = 'hull' | 'boss';
 
 interface Pick { kind: Kind; id: number; x: number; y: number; z: number; r: number; ref: Alien | Boss; }
 
+/** A rebooting or opening Jump Gate's countdown on its marker and pointer: " · opens in 1:23" ('' for any other place). */
+const gateClock = (world: World, kind: string): string => {
+  const g = kind === 'lane' ? world.gateTimer : null;
+  return g ? ` · ${tr('opens in {t}', { t: `${Math.floor(g.left / 60)}:${String(g.left % 60).padStart(2, '0')}` })}` : '';
+};
+
 const MAX_MARKS = 18;
 /** Chevrons for hulls out of view, and how far out they reach. */
 const MAX_THREATS = 10;
@@ -334,7 +340,7 @@ export class Targeting {
           const d = Math.hypot(wp.x - s.x, wp.z - s.z);
           // near, a depot or the audit dock names itself on its own model (sim/sitetags.ts), so the berth mark only shows the way in
           if (d < TAG_R && ((wp.kind === 'port' && !world.bk.def.first) || (wp.kind === 'audit' && !lockLifted(world.flags)))) { put(wp.x, 0.5, wp.z, 'm dia obj far', ''); continue; }
-          put(wp.x, 0.5, wp.z, primary(wp.x, wp.z) ? 'm dia obj far pri' : 'm dia obj far', `${tr(wp.name)}\n${range(d)}`);
+          put(wp.x, 0.5, wp.z, primary(wp.x, wp.z) ? 'm dia obj far pri' : 'm dia obj far', `${tr(wp.name)}\n${range(d)}${gateClock(world, wp.kind)}`);
         }
       }
       if (ev && !primary(ev.x, ev.z)) putEvent();
@@ -385,13 +391,14 @@ export class Targeting {
     if (bk && !bk.port) $('ptr-port').classList.remove('on');
     for (const wp of world.seenPlaces()) {
       if (wp.kind === 'audit' && lockLifted(world.flags)) continue;
-      const id = wp.kind === 'lane' ? 'ptr-lane' : wp.kind === 'audit' ? 'ptr-audit' : wp.kind === 'yard' ? 'ptr-yard' : 'ptr-port';
+      const id = wp.kind === 'lane' ? 'ptr-lane' : wp.kind === 'audit' ? 'ptr-audit' : wp.kind === 'yard' ? 'ptr-yard' : wp.kind === 'relay' ? 'ptr-relay' : 'ptr-port';
       this.pointer($(id), $(`${id}-t`), sector, s.x, s.z, s.heading, live && !lesson ? { x: wp.x, y: 0.5, z: wp.z } : null,
-        `${tr(wp.name)} · ${range(Math.hypot(wp.x - s.x, wp.z - s.z))}`);
+        `${tr(wp.name)} · ${range(Math.hypot(wp.x - s.x, wp.z - s.z))}${gateClock(world, wp.kind)}`);
       $(id).classList.toggle('pri', isLead(wp.x, wp.z));
     }
     if (bk && lockLifted(world.flags)) $('ptr-audit').classList.remove('on');
     if (!bk || !world.seenPlaces().some((p) => p.kind === 'yard')) $('ptr-yard').classList.remove('on');
+    if (!bk || !world.seenPlaces().some((p) => p.kind === 'relay')) $('ptr-relay').classList.remove('on');
     if (!bk) { $('ptr-lane').classList.remove('on'); $('ptr-port').classList.remove('on'); $('ptr-audit').classList.remove('on'); }
     const boss = world.command.boss;
     const showBoss = live && !!boss && !boss.leaving && boss.cloak < 0.5;

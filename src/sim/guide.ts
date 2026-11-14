@@ -24,7 +24,7 @@ export const BEHIND = (135 * Math.PI) / 180;
 export const FIGHT_RANGE = FIRE_RANGE * 1.25;
 
 export interface Guide {
-  kind: 'lane' | 'port' | 'audit' | 'event' | 'yard';
+  kind: 'lane' | 'port' | 'audit' | 'event' | 'yard' | 'relay';
   /** English; the strip runs it through t(). */
   name: string;
   x: number;
@@ -34,7 +34,7 @@ export interface Guide {
 }
 
 export interface Place {
-  kind: 'lane' | 'port' | 'audit' | 'yard';
+  kind: 'lane' | 'port' | 'audit' | 'yard' | 'relay';
   name: string;
   x: number;
   z: number;
@@ -69,12 +69,16 @@ export function guideTarget(world: World): Guide | null {
   const places = world.seenPlaces();
   const lane = places.find((p) => p.kind === 'lane'), port = places.find((p) => p.kind === 'port'), audit = places.find((p) => p.kind === 'audit'), yard = places.find((p) => p.kind === 'yard');
   const busy = !!bk && (bk.spool > 0 || bk.dockT > 0 || bk.jumpT >= 0);
-  if (e && !e.done && !e.dormant && e.r > 0 && !busy) return { kind: 'event', name: e.label ?? e.place ?? ENCOUNTERS[e.id].name, x: e.x, z: e.z, r: e.r };
+  // in the Story only a job's situation leads; an event is off the course
+  if (e && !e.done && !e.dormant && e.r > 0 && !busy && (!bk || e.id === 'scene')) return { kind: 'event', name: e.label ?? e.place ?? ENCOUNTERS[e.id].name, x: e.x, z: e.z, r: e.r };
   if (bk) {
     if (bk.dockT > 0 && port) return { kind: 'port', name: port.name, x: port.x, z: port.z, r: port.r };
     if (audit && !lockLifted(world.flags)) return { kind: 'audit', name: audit.name, x: audit.x, z: audit.z, r: audit.r };
     // Ned's yard: the autopilot is overridden, the hull is still the company's, the yard is the course
     if (yard && paintAt(world)) return { kind: 'yard', name: yard.name, x: yard.x, z: yard.z, r: yard.r };
+    // a gate that waits on its relay mast: the mast is the course until it answers
+    const relay = places.find((p) => p.kind === 'relay');
+    if (relay && world.gateRelay) return { kind: 'relay', name: relay.name, x: relay.x, z: relay.z, r: relay.r };
     if (lane) return { kind: 'lane', name: lane.name, x: lane.x, z: lane.z, r: lane.r };
   }
   return null;
