@@ -78,12 +78,28 @@ describe('the guide: where to go', () => {
     expect(sayBearing(after).word).toBe('behind');
   });
 
-  it('puts an event ahead of the lane, and the lane back once the clamps or the drive are working', () => {
+  it('keeps a Story event off the course, puts a job’s situation ahead of the lane, and the lane back once the drive is working', () => {
     const w = story();
+    // an event is a notice, never the course (playtest 2026-11-14)
     w.encounter = { id: 'distress', x: 100, z: 50, r: 12, done: false, t: 0, dur: 40, progress: 0 } as World['encounter'];
+    expect(guideTarget(w)!.kind).toBe('lane');
+    w.encounter = { id: 'scene', x: 100, z: 50, r: 12, done: false, t: 0, dur: 40, progress: 0 } as World['encounter'];
     expect(guideTarget(w)!.kind).toBe('event');
     w.bk!.spool = 1;
     expect(guideTarget(w)!.kind).toBe('lane');
+  });
+
+  it('leads to the relay mast while the gate waits on it, and marks an unanswered Warden relay', () => {
+    const w = story();
+    w.bk!.def.script = 'narrows';
+    w.gateWhy = 'locked by Custody';
+    expect(guideTarget(w)!.kind).toBe('relay');
+    expect(w.seenPlaces().some((p) => p.kind === 'relay')).toBe(true);
+    w.flags.add('relay_narrows');
+    w.gateWhy = 'the gate is rebooting';
+    expect(w.seenPlaces().some((p) => p.kind === 'relay')).toBe(false);
+    expect(guideTarget(w)!.kind).toBe('lane');
+    expect(w.gateTimer).not.toBeNull();
   });
 
   it('has nothing to lead with in the arcade between events, and nothing once the run is over', () => {

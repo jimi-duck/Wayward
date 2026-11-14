@@ -220,4 +220,9 @@ export const DIRECTION: Record<string, string> = {
   'Heading dark': 'Kurs dunkel',
   'the Offices hear nothing more': 'die Offices hören nichts mehr',
   '“Survey reading from Ashdeep: Thren pressure tracks the extraction rate, year on year. It’s in the file they buried.”': '„Messung der Vermessung aus Ashdeep: Der Thren-Druck folgt der Abbaurate, Jahr für Jahr. Steht in der Akte, die sie begraben haben.“',
+  // HUD goals (playtest 2026-11-14)
+  'opens in {t}': 'öffnet in {t}',
+  'Relay mast': 'Relaismast',
+  'Warden relay': 'Warden-Relais',
+  'Relay': 'Relais',
 };

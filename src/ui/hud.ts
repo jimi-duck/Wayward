@@ -3,7 +3,7 @@ import { CONTRACT_ID, ratio, type Cargo } from '../sim/contract';
 import { clamp } from '../core/math';
 import type { SystemKind } from '../content/systems';
 import type { Sector } from '../render/sector';
-import { ENCOUNTERS, type EncounterId } from '../sim/encounters';
+import { ENCOUNTERS, type Encounter, type EncounterId } from '../sim/encounters';
 import { alienLabel, cloaked } from '../sim/enemies';
 import { IDENT_RANGE } from '../sim/guide';
 import type { GameEvent } from '../sim/events';
@@ -116,6 +116,9 @@ const SECTOR_NAME: Record<EncounterId, string> = {
   derelict: 'Derelict hulk', anomaly: 'Spatial anomaly', skirmish: 'Skirmish', scene: 'Situation',
 };
 
+/** Seconds as m:ss. */
+const clock = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.max(0, Math.round(sec)) % 60).padStart(2, '0')}`;
+
 /** Seconds a jump arrival's title card stays up, fade in and out included. */
 const TITLE_SECS = 4.5;
 
@@ -205,6 +208,16 @@ export class Hud {
     if (!h) return false;
     if (h.world !== world || world.runTime < h.from || world.runTime >= h.until || recovering(world.flags)) { this.hintLine = null; return false; }
     return true;
+  }
+
+  /** The Story's events (a rich field, a storm, a beacon) as a notice when they start, never the objective (sim/encounters.ts). */
+  private eventSeen: Encounter | null = null;
+  private eventNotice(world: World): void {
+    const e = world.encounter;
+    if (!world.bk || !e || e.done || e.dormant || e.id === 'scene' || e === this.eventSeen) return;
+    this.eventSeen = e;
+    const def = ENCOUNTERS[e.id];
+    this.notify(world, { type: e.id === 'ion_storm' || e.id === 'anomaly' || e.id === 'skirmish' ? 'warning' : 'arrival', headline: e.place ?? def.name, reason: `${t(def.text)} · ${Math.round(e.dur)}s`, key: `event:${e.id}:${world.runTime.toFixed(0)}` });
   }
 
   note(world: World, line: string, cls = '', kind = '', points = 0): void {
@@ -700,7 +713,11 @@ export class Hud {
     const e = world.encounter, obj = $('objective');
     const bk = world.bk;
     obj.classList.toggle('on', world.alive);
-    const course = !!bk && world.alive && (!e || e.done || e.dormant || bk.spool > 0 || bk.dockT > 0);
+    // in the Story the panel always says what to do next: an event (a rich field, a storm) is a notice, never the objective;
+    // only a job's situation, which the player took on, takes the panel
+    const course = !!bk && world.alive && (!e || e.done || e.dormant || e.id !== 'scene' || bk.spool > 0 || bk.dockT > 0);
+    this.eventNotice(world);
+    obj.classList.toggle('timer', course && !!world.gateTimer && bk!.spool === 0 && bk!.jumpT < 0);
     const event = !!e && !e.done && !e.dormant;
     obj.classList.toggle('course', (course && bk.spool === 0 && bk.dockT === 0 && bk.jumpT < 0) || (!bk && !event));
     obj.classList.toggle('event', event && !course);
@@ -764,14 +781,16 @@ export class Hud {
           const named = !bk.chase && ready ? goal.main : undefined;
           // the gate waits on a relay not yet answered: the mast is the course, with its range
           const mast = world.gateRelay;
+          // a gate rebooting or opening: its countdown is the number on the right, and the bar fills as it runs
+          const gt = world.gateTimer;
           text($('obj-t'), mast ? named ?? t('Reach the relay mast') : named ?? t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
-          text($('obj-left'), mast ? range(Math.hypot(mast.x - s.x, mast.z - s.z)) : ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
-          ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
+          text($('obj-left'), gt ? clock(gt.left) : mast ? range(Math.hypot(mast.x - s.x, mast.z - s.z)) : ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
+          ticks($('obj-p'), gt ? 1 - gt.left / gt.total : 1 - dl / bk.def.lane, 30);
         }
         text($('obj-s'), recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact')
           : world.gateWhy === 'resetting after the key' ? t('Jump Gate resetting')
-          : world.gateWhy === 'the gate is rebooting' ? `${t('Jump Gate rebooting')} · ${Math.floor(world.gateEta / 60)}:${String(world.gateEta % 60).padStart(2, '0')}`
-          : world.gateWhy === 'the gate is opening' ? `${t('Jump Gate opens')} · ${Math.floor(world.gateEta / 60)}:${String(world.gateEta % 60).padStart(2, '0')}`
+          : world.gateWhy === 'the gate is rebooting' ? `${t('Jump Gate rebooting')} · ${t('opens in {t}', { t: clock(world.gateEta) })} · ${range(dl)}`
+          : world.gateWhy === 'the gate is opening' ? `${t('Jump Gate opens')} · ${t('opens in {t}', { t: clock(world.gateEta) })} · ${range(dl)}`
           : world.gateWhy ? `${t('Jump Gate shut')} · ${t(world.gateWhy)}` : '');
         const lines: string[] = [];
         if (paintAt(world)) {

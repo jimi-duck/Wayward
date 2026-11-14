@@ -46,7 +46,7 @@ import type { Rng } from './rng';
 export type Mode = 'breakout' | 'arcade';
 
 export interface Waypoint {
-  kind: 'port' | 'lane' | 'audit' | 'yard';
+  kind: 'port' | 'lane' | 'audit' | 'yard' | 'relay';
   name: string;
   x: number;
   z: number;
@@ -412,6 +412,8 @@ function auditAt(p: { x: number; z: number }, x0: number, z0: number, name: stri
 
 /** Where the Narrows' relay mast stands against its gate (units): off the ring, never in the lane. */
 const RELAY_OFF = { x: 80, z: -70 };
+/** The relay's ring on the scope (the script hears it within 200, content/script/kit.ts relay()). */
+export const RELAY_MARK_R = 30;
 /** The relay mast of a road gate (the Narrows and every arrival after it), if this sortie has one. */
 export const relayOf = (b: Breakout): { x: number; z: number } | null => (b.def.script === 'narrows' || b.def.relay ? { x: b.lane.x + RELAY_OFF.x, z: b.lane.z + RELAY_OFF.z } : null);
 

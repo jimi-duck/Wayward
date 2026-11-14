@@ -20,7 +20,7 @@ import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
 import { ledgerFor, type LedgerRow } from './contract';
-import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, SWARM_DRAWN, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, SAFE_R, SAFE_HOLD, HOLD_MAX, holdMax, ROLL_SECRET, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
+import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, SWARM_DRAWN, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, RELAY_MARK_R, SAFE_R, SAFE_HOLD, HOLD_MAX, holdMax, ROLL_SECRET, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, RADIO_GAP, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
   type Outcome, type Standing,
@@ -730,6 +730,9 @@ export class World implements EncounterHost {
     if (!b) return [];
     // Ned's yard shows only while the hull is waiting for it
     const all = places(b).filter((w) => w.kind !== 'yard' || paintDue(this.flags));
+    // a Warden relay not yet answered (and the Narrows' mast): a place on the scope and the HUD, so it is clear where to go
+    const rl = relayOf(b);
+    if (rl && !this.flags.has(relayFlag(b.def.script ?? ''))) all.push({ kind: 'relay', name: b.def.script === 'narrows' ? 'Relay mast' : 'Warden relay', x: rl.x, z: rl.z, r: RELAY_MARK_R });
     if (this.navNoise <= 0) return all;
     const t = this.runTime, n = this.navNoise * 60;
     return all.map((w) => (w.kind === 'lane' ? { ...w, x: w.x + Math.sin(t * 1.3) * n, z: w.z + Math.cos(t * 0.9) * n } : w));
@@ -1861,6 +1864,12 @@ export class World implements EncounterHost {
   get gateEta(): number {
     if (this.bk?.def.script === 'narrows' && this.narrows !== 'done') return this.narrows === 'reboot' ? Math.max(0, Math.ceil(REBOOT - (this.runTime - this.narrowsAt))) : REBOOT;
     return this.bk?.def.script === 'slowdoor' && !this.gateLet ? Math.max(0, Math.ceil(SLOW_DOOR - (this.runTime - this.desk.arrived))) : 0;
+  }
+
+  /** The gate's countdown while it reboots or opens, for the HUD (null otherwise): seconds left, of how many. */
+  get gateTimer(): { left: number; total: number } | null {
+    if (this.gateWhy !== 'the gate is rebooting' && this.gateWhy !== 'the gate is opening') return null;
+    return { left: this.gateEta, total: this.bk?.def.script === 'narrows' ? REBOOT : SLOW_DOOR };
   }
 
   /** Where the relay mast stands that the gate waits on, while it waits on it (the HUD names its range). */
