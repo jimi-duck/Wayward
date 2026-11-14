@@ -791,7 +791,7 @@ export class Hud {
           : world.gateWhy === 'resetting after the key' ? t('Jump Gate resetting')
           : world.gateWhy === 'the gate is rebooting' ? `${t('Jump Gate rebooting')} · ${t('opens in {t}', { t: clock(world.gateEta) })} · ${range(dl)}`
           : world.gateWhy === 'the gate is opening' ? `${t('Jump Gate opens')} · ${t('opens in {t}', { t: clock(world.gateEta) })} · ${range(dl)}`
-          : world.gateWhy ? `${t('Jump Gate shut')} · ${t(world.gateWhy, { who: world.gateWho })}` : '');
+          : world.gateWhy ? `${t('Jump Gate shut')} · ${t(world.gateWhy, { who: world.gateWho })}${world.gateEta > 0 ? ` · ${t('opens in {t}', { t: clock(world.gateEta) })}` : ''}` : '');
         const lines: string[] = [];
         if (paintAt(world)) {
           lines.push(`${t('Make her yours')} · ${t('free')}`);

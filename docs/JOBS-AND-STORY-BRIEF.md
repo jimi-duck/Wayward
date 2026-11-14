@@ -106,7 +106,7 @@ The **Accord** was a free union of worlds linked by jump lanes and powered by **
 **The road.** The Story is **one fixed, strictly linear road** (no side lanes, no chart to choose across). The player flies a system, jumps through its Jump Gate to the next stop, and so on from Cerro to the Threshold. There are **eight legs**; each has 7 stops (the Reach has 8 because its first is the system Juno lands in after Cerro) and then a **gate** where Ada's note is read at a Warden relay. Roles repeat in every leg: landfall, hub, work, turn, breather, pressure, reckoning, then the gate.
 
 **Rules of the road** (`docs/ROAD.md`):
-- Each stop holds at most one **main card** (a story beat). Main cards hold the Jump Gate shut until they have played; a hold lasts at most 240 s, then the beat is carried to the next stop. Played means done.
+- Each stop holds at most one **main card** (a story beat). Main cards hold the Jump Gate shut until they have played; a hold lasts at most 90 s from the moment the player is within 900 units of the gate, counted down on the HUD, then the beat is carried to the next stop. Played means done.
 - Order inside a stop: main card, then the thread job, then chance. A job never rings before that stop's main card has been answered.
 - **Breather stops are quiet:** no pursuit, no cards by chance, no job.
 - **One job per stop** at most. Jobs are pinned to a stop and nowhere else.

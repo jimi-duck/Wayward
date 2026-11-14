@@ -44,7 +44,7 @@ code carries it.
 - A `main` row is a beat the stop owes. The Jump Gate holds until it has
   played (`World.gateHeld`), with one amber notice saying why. A beat that
   waits on the relay handshake holds the gate for good; anything else lets go
-  after `GATE_HOLD` (240 s) and is carried to play first at the next stop.
+  after `GATE_HOLD` (90 s, counted down on the HUD from the moment she is within 900 units) and is carried to play first at the next stop.
   The Slow Door also holds for `SLOW_DOOR` (180 s) from arrival.
 - A shut gate shows it from any distance (`World.holdOf`, `gateWhy`): the
   ring's strips go a low caution gold and the throat stays dark; the HUD
