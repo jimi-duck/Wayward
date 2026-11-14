@@ -416,15 +416,15 @@ button, and the world waits on it.
 - **Story.** Upgrades are fitted only docked at a port's work bay (every
   install needs one, `yardWork`; `World.bayClosed()` says 'away' in flight).
   Most systems have a bay; see [ECONOMY.md](ECONOMY.md).
-- **Arcade.** The player need not open it: it opens by itself **once per
-  quiet spell** (`World.bayDue`): when a wave has cleared (`Pace` quiet), the
-  alert has been clear for two seconds (`BAY_QUIET`), no capital ship is
-  about (any `Command` state but idle), the price is aboard (`ARCADE_PRICE` 30)
-  and something can be fitted. Never between the arrivals of one encounter.
-  It deals three cards for one refit; after a pick it asks **Fit another (N
-  more)** or **Return to flight** (`World.canFitAnother`, `World.redeal`), and
-  does not open by itself again until the next quiet spell. Unspent Cyrite
-  stays. Only the Arcade's suggestions show: the Story's tabs are hidden.
+- **Arcade.** The player need not open it: it opens by itself whenever a
+  refit is paid for and it is safe (`World.bayDue`): between encounters
+  (`Pace` quiet), the alert clear for two seconds (`BAY_QUIET`), no capital
+  ship about (any `Command` state but idle), the price aboard (`ARCADE_PRICE`
+  30) and something to fit. Never between the arrivals of one encounter. It
+  deals three cards for one refit; after a pick it asks **Fit another (N
+  more)** or **Return to flight** (`World.canFitAnother`, `World.redeal`).
+  Left with Cyrite unspent, it opens by itself again one price further on
+  (`bayFloor`). Only the Arcade's suggestions show: the Story's tabs are hidden.
 
 On yellow or red alert it stays shut and the log says why in one line ("Bay
 locked · yellow alert"). The badge is dim with nothing to fit, amber with a

@@ -243,7 +243,8 @@ export class World implements EncounterHost {
   mend: Mend = newMend();
   /** The arcade's bay: how long the alert has been clear in a quiet spell with a price aboard, and the quiet spell (`pace.n`) it last offered itself in. */
   private bayQuiet = 0;
-  private bayOffered = -1;
+  /** The Cyrite the arcade's bay waits for before it opens by itself again: a price past what was left unspent. */
+  private bayFloor = 0;
   /** Times the bay has shut this run: each opening deals the Arcade picks a little differently (sim/bay.ts). */
   private bayDeal = 0;
   private bayShown: { ids: string[]; at: Record<string, number> } | null = null;
@@ -480,7 +481,7 @@ export class World implements EncounterHost {
     this.traffic = null;
     if (this.mode !== 'breakout') {
       this.bk = null; this.cyrite = 0; this.fuel = 0; this.supplies = 0; this.callowayAt = Infinity;
-      this.bayQuiet = 0; this.bayOffered = -1;
+      this.bayQuiet = 0; this.bayFloor = 0;
       this.stock();
       return;
     }
@@ -1746,21 +1747,21 @@ export class World implements EncounterHost {
   }
 
   /**
-   * The arcade's bay offers itself on the rhythm of the fight: once in each quiet spell between
-   * encounters (sim/pacing.ts), with a price of Cyrite aboard, the alert clear a moment, no capital
-   * ship about, and something to fit. Never between the arrivals of one encounter. It offers one
-   * refit; Fit another is the player's choice (`redeal`). Unspent Cyrite waits for the next quiet
-   * spell, or for B and the badge, which open it whenever the alert is clear.
+   * The arcade's bay opens by itself whenever a refit is paid for and it is safe: between encounters
+   * (sim/pacing.ts quiet), the alert clear a moment, no capital ship about, and something to fit.
+   * Never between the arrivals of one encounter. After a pick, Fit another is the player's choice
+   * (`redeal`). Left with Cyrite unspent, it waits until another price is aboard; B and the badge
+   * open it whenever the alert is clear.
    */
   private bayDue(dt: number): void {
     const capital = this.command.state !== 'idle';
-    if (this.bk || !this.alive || this.phase !== 'play' || this.krail < ARCADE_PRICE || this.pace.state !== 'quiet' || capital || this.bayOffered === this.pace.n) { this.bayQuiet = 0; return; }
+    if (this.bk || !this.alive || this.phase !== 'play' || this.krail < Math.max(ARCADE_PRICE, this.bayFloor) || this.pace.state !== 'quiet' || capital) { this.bayQuiet = 0; return; }
     this.bayQuiet = this.alert() !== 'clear' ? 0 : this.bayQuiet + dt;
     if (this.bayQuiet < BAY_QUIET) return;
     this.bayQuiet = 0;
-    this.bayOffered = this.pace.n;
     const ctx = this.bayCtx();
     if (quickPicks(ctx).some((w) => blockOf(w.id, ctx) === null)) { this.openBay(); this.run.bayOffers++; }
+    else this.bayFloor = this.krail + ARCADE_PRICE;
   }
 
   /** The Arcade's Fit another: there is Cyrite for another refit, and something to fit with it. */
@@ -1809,6 +1810,8 @@ export class World implements EncounterHost {
     if (this.phase !== 'bay') return;
     this.phase = this.docked ? 'dock' : 'play';
     this.bayQuiet = 0;
+    // Cyrite left unspent: the bay opens by itself again one price further on
+    this.bayFloor = this.krail >= ARCADE_PRICE ? this.krail + ARCADE_PRICE : 0;
     this.passOn();
   }
 
