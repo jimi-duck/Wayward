@@ -162,7 +162,7 @@ const GIST: Record<string, string> = {
   "ilse_recording": "Ilse sends the order anyway",
   "story_brook_road": "Brook is in a Custody transport",
   "story_brook_declined": "Brook is in a Custody transport anyway",
-  "story_calloway_narrows": "The Governor asks where you are going",
+  "story_calloway_narrows": "The Governor wants to know who you are",
   "narrows_checkpoint": "Ashgrove holds the gate at the Narrows",
   "warden_note_1": "Ada’s first note · the Narrows watch",
   "story_oduya_rigs": "Kessel Hold’s rigs are under attack",
@@ -457,19 +457,19 @@ export const STORY_CARDS: CardDef[] = [
 
   // ── Act II, the Marches ─────────────────────────────────────────────────
   story({
+    // their first encounter (owner, 14 November 2026): she studies Juno; nothing is bargained, and nothing she says changes the fight
     id: 'story_calloway_narrows', kind: 'warning', caller: 'calloway',
     from: 'Governor Idris Calloway · CCV Patience', title: 'The Narrows',
-    text: '“I’ve read Ada Aster’s file too, Juno. Not all of it. Enough to want the rest. Tell me where you’re going, and I won’t stop you.”',
-    cargo: 'The Patience · her pickets on you',
+    text: '“This is Governor Idris Calloway. You’re carrying Ada Aster’s key in a hull that isn’t yours. I’d like to know why. I’m not asking you to stop. Not yet.”',
+    cargo: 'The Patience · watching',
     lines: [
-      { if: { flag: 'relay_broadcast' }, text: '“Your grandmother’s relay just told the whole Reach who you are.”' },
-      { if: { flag: 'relay_broadcast' }, text: '“You can tell me the rest.”' },
+      { if: { flag: 'relay_broadcast' }, text: '“Her relay just told the whole Reach a name. Say it to me.”' },
       { if: { flag: 'brook_free' }, text: '“Your clerk is making copies. That was unkind to him.”' },
     ],
     choices: [
-      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She calls off the pickets. She will remember you were honest.', win: { text: '“Thank you.” · she calls off the pickets, and knows', flag: ['calloway_ada', 'calloway_told', 'calloway_asked', 'patience_hold'], hunt: 1 } },
-      { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A gamble. If she buys it, the pickets go. If not, more come.', odds: { base: 0.45 }, win: { text: 'She believes you · the pickets go, a day gained', flag: ['calloway_ada', 'calloway_asked', 'patience_hold'], hunt: 1 }, lose: { text: '“Not a good one.” · two more pickets', flag: ['calloway_ada', 'calloway_asked', 'calloway_lie_caught'], heat: 0.1 } },
-      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust nobody from the Offices. The pickets stay on you.', win: { text: 'The Patience turns away · the pickets stay', flag: 'calloway_asked' } },
+      { id: 'name', label: 'Tell her who you are', tone: 'help', hint: 'Your name, nothing more. She will remember it.', win: { text: '“Juno Aster. Good. Now I know who I’m looking for.”', flag: ['calloway_asked', 'calloway_named'] } },
+      { id: 'ask', label: 'Ask what she wants with Ada', tone: 'bluff', hint: 'A question for a question. She may not answer.', win: { text: '“What everyone wants from the dead. The rest of the story.”', flag: ['calloway_asked', 'calloway_ada'] } },
+      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'She learns nothing. That tells her something too.', win: { text: 'The channel goes dead · the Patience keeps station', flag: ['calloway_asked', 'calloway_silent'] } },
     ],
   }),
   story({
@@ -676,7 +676,8 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'sign', label: 'Show the signature', tone: 'bluff', hint: 'The order, the work order, the room. All three.', needs: { flag: ['sig_paid', 'sig_built', 'sig_room'] }, win: { text: 'She reads it twice. ‘He asked for ten years.’ · the field drops', flag: ['calloway_turned', 'sig_used', 'field_dropped', 'field_talked'], hunt: 2, blockade: 'pass' } },
       { id: 'line', label: 'Run it with the Line', tone: 'help', hint: 'Quill’s decoys light up inside the field.', show: { flag: 'thread_line_3' }, win: { text: 'A hundred hulls at once · the field can’t hold them', flag: ['field_dropped', 'field_line'], hunt: 1, blockade: 'pass' } },
-      { id: 'bargain', label: 'Bargain', tone: 'pay', hint: 'Eight Cyrite and your word. She lets you through.', cost: { chits: 40 }, win: { text: 'The field drops · she keeps your word', flag: ['calloway_bargain', 'field_dropped', 'field_talked'], hunt: 1, blockade: 'pass' } },
+      // the first real bargain (owner, 14 November 2026): what she has wanted since the Narrows, the rest of Ada's file
+      { id: 'bargain', label: 'Give her Ada’s file', tone: 'trade', hint: 'What she has wanted since the Narrows. She reads it, and lets you through.', win: { text: 'She reads Ada’s file · the field drops', flag: ['calloway_bargain', 'calloway_told', 'field_dropped', 'field_talked'], hunt: 1, blockade: 'pass' } },
       { id: 'shoot', label: 'Shoot the cutter', tone: 'fight', hint: 'Break the field the hard way.', win: { text: 'The cutter breaks off · the Offices mark you', flag: ['calloway_hostile', 'field_dropped'], spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], heat: 0.12, blockade: 'fight' } },
       { id: 'run', label: 'Run the field', tone: 'run', hint: 'Cost: Wanted and a day lost.', show: { noFlag: 'relay_blind' }, win: { text: 'You limp out of the field', flag: ['calloway_hostile', 'field_dropped'], hunt: -1, heat: 0.1, blockade: 'run' } },
       // her relay was blinded at Gilt Market (lose_prefect): she cannot see where you went

@@ -149,10 +149,13 @@ scene (owner, 13 November 2026; `sim/narrows.ts`, run by `World.stepNarrows`):
    `REBOOT` (90 s): the ring is dark, its damping field is off
    (`World.fieldDown`: no safe ring, hostile hulls come in), and the Kind
    Regard and two pickets come for her. The HUD counts it down.
-4. **The Patience.** 25 s in, Calloway's card. The truth, or a lie she
-   believes, calls the pickets off (`patience_hold`); a lie caught brings
-   two more; cutting the channel leaves them on her. Killing one of
-   Ashgrove's hulls here sets `ashgrove_crossed`.
+4. **The Patience.** 25 s in, Calloway's card: their first meeting
+   (owner, 14 November 2026). She asks who Juno is; Juno can give her
+   name, ask what she wants with Ada, or cut the channel. Nothing is
+   bargained and the fight plays out whatever she answers: Calloway tells
+   Ashgrove to carry on and watches. Killing one of Ashgrove's hulls here
+   sets `ashgrove_crossed`. Her arc after this is in
+   [STORY_DIRECTION.md](STORY_DIRECTION.md) §9.
 5. **The way out.** The gate opens (`narrows_gate_open`), Sam signs off.
 
 Script rows marked `urgent` play during the fight. `npm run pilot:narrows`

@@ -23,11 +23,10 @@ const rest = (id: string, stop: string, name: string, jumps: string): Row[] => [
 
 // ── Leg 2 · the Marches: who stands with you ──────────────────────────────
 const MARCHES_ROWS: Row[] = [
-  // 1 · Wake (landfall): note 1's lead becomes the goal; the edge relay; her pursuit line, set by the Narrows answer
+  // 1 · Wake (landfall): note 1's lead becomes the goal; the edge relay (Calloway's file on her: content/script/arc.ts)
   notice('mw_notice', 'm_wake', arrive(), 'teal', 'Wake', 'the Marches · past the charts'),
   objective('mw_objective', 'm_wake', arrive(), 'Next: Kessel Hold', 'The Rift · 7 jumps'),
   radio('mw_edge', 'm_wake', free(6), 'Edge relay', 'unknown', '“Past here the charts are wishes. Fly carefully.”'),
-  notice('mw_truth', 'm_wake', after('mw_edge'), 'teal', 'Governor Calloway', 'holding back · for now', { if: { has: ['calloway_told'] } }),
   // the ledger's second route: Brook freed without it, his own copy finds her here
   radio('mw_brook', 'm_wake', after('mw_edge', 2), 'Adam Brook', 'kellern', '“Free, and still counting. My copy of Kellern’s books is in your file now.”', { if: { has: ['brook_free'], not: ['frag_ledger'] }, wall: 'frag_ledger' }),
   wall('mw_brook_sig', 'm_wake', after('mw_brook'), 'clue_sig_reach'),
@@ -45,12 +44,10 @@ const MARCHES_ROWS: Row[] = [
   pike('mk_pike_sold', 'm_kessel', 'job_keep_distance_sell', '“You sold the timings. The Line will hear who to.”'),
   objective('mk_gate', 'm_kessel', leave(), 'Jump to Tamsin Field'),
 
-  // 3 · Tamsin Field (work): the Account's first call (Wanted: Alive), and Calloway's first offer if she was told the truth
+  // 3 · Tamsin Field (work): the Account's first call (Wanted: Alive); Calloway only watches here (content/script/arc.ts)
   notice('mt_notice', 'm_tamsin', arrive(), 'teal', 'Tamsin Field', 'contested claim'),
   objective('mt_objective', 'm_tamsin', arrive(), 'Tamsin Field · someone offers to settle your debt'),
   accounts('mt_acc', 'm_tamsin', 'wanted'),
-  card('mt_meet', 'm_tamsin', free(50), 'offer_meet', { if: { has: ['calloway_told'] } }),
-  card('mt_meet_lie', 'm_tamsin', free(50), 'offer_meet', { if: { has: ['calloway_lie_caught'], not: ['calloway_told'] } }),
   objective('mt_gate', 'm_tamsin', leave(), 'Jump to the Long Walk'),
 
   // 4 · the Long Walk (turn): Ma Saffi and the manifests; Wren after any answer
@@ -102,7 +99,6 @@ const BELT_ROWS: Row[] = [
   notice('bx_notice', 'b_exchange', arrive(), 'teal', 'Scrap Exchange', 'Dust Trader port · everything for sale'),
   objective('bx_objective', 'b_exchange', arrive(), 'Scrap Exchange · everyone knows what you carry', 'Dust Trader port · refit bay open'),
   main('bx_val', 'b_exchange', free(6), 'story_broker'),
-  card('bx_name', 'b_exchange', after('bx_val', 40), 'offer_identity'),
   // the ransom crew (standalone): dispatch answers
   radio('bx_boy', 'b_exchange', flag('job_ransom_crew_won'), 'Dust Traders dispatch', 'guild', '“The boy’s home. Berth’s yours anytime.”', { if: { not: ['lifeboat_ransomed'] } }),
   radio('bx_boy_wake', 'b_exchange', flag('job_ransom_crew_won'), 'Dust Traders dispatch', 'guild', '“The boy’s home. That crew learned ransom pays at Wake. Someone paid them.”', { if: { has: ['lifeboat_ransomed'] } }),

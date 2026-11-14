@@ -203,3 +203,25 @@ official, flat and plausible.
 - **Juno is the catalyst, not the saviour.** The epilogues credit the people.
 - **No wall of new cards.** One voice at a time and the caps in
   `tests/caps.test.ts` still hold.
+
+## 9. Calloway, a slow burn
+
+Owner, 14 November 2026: their relationship is earned, leg by leg. She
+does not bargain early; every offer later has a reason she found on the
+way. Rows in `content/script/arc.ts`, cards in `content/arc.ts`.
+
+| Leg | Stage | What happens |
+|---|---|---|
+| The Reach · the Narrows | Suspicion | First contact mid-fight. She asks who Juno is. Name, question or silence; the fight is the same. |
+| The Marches | Observation | An intercepted order to pull Juno's whole file; one remark after the Saints (helped or warned). |
+| The Belt | Interest | She has read the file and calls (`calloway_file`): tell her what the Severance was, ask why she cares, or cut her off. |
+| The Yards | Disagreement | One line on what Juno's side of the strike chose: the yard seized, or passes for families. |
+| The Free Ports | Manipulation | Her first offer, a hook: a clean name now for a question owed later (`offer_identity`, `owes_calloway`). |
+| The Tollgate | First bargain | Give her Ada's file, and she drops the field. |
+| The Dusk Mark | Real negotiation | "Stop, and I stop": she meets Juno alone, afraid of Draper too (`offer_stop`). |
+| The Threshold | The end | Her last card, read from everything above (`sim/calloway.ts`). |
+
+Telling her the truth at the Narrows (her name) or the Belt (the
+Severance) counts towards trust (`TOLD`), and so towards showing her the
+archive at the end.
+
