@@ -48,3 +48,10 @@
 .co-tag { font: 500 10px var(--font-mono); letter-spacing: .26em; text-transform: uppercase; fill: var(--cy); }
 .co-s.gate .co-tag { fill: var(--caution); }
 @media (max-height: 420px) { .co-lab .ch-name { font-size: 10px; letter-spacing: .16em; } .co-s.gate .ch-name { font-size: 11px; } }
+
+/* calmer (2026-11-14): no stores block, no pursuit line. The header is the place and the goal; the strip is a hairline, not a gold-edged box. */
+#course .ch-head { grid-template-columns: minmax(0, 1fr); grid-template-areas: "k" "l2"; }
+#course .ch-foot { border: 0; border-top: 1px solid var(--line); background: none; padding: 12px 4px 0; }
+#course .ch-gate .k { color: var(--ink-2); font-weight: 500; }
+@media (max-height: 520px) { #course .ch-head { grid-template-areas: "l2"; } #course .ch-gate { display: flex; } #course .ch-gate .k { font-size: 12px; } #course .ch-gate .n { font-size: 12px; } }
+.co-blurb .k { font: 500 12px/1.35 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }

@@ -1,8 +1,7 @@
 import { courseView, type Course } from '../sim/course';
 import type { Journey } from '../sim/journey';
-import { halfDays } from '../sim/hunt';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
-import { fillWall, hash01, storeCells, svg } from './chart';
+import { fillWall, hash01, svg } from './chart';
 import { plural, t } from '../i18n';
 
 // ── the Course ────────────────────────────────────────────────────────────
@@ -13,24 +12,8 @@ import { plural, t } from '../i18n';
 // days and one button. The view is sim/course.ts; the Wall lives here as it
 // does on the chart.
 
-/** How far behind, in words: half a day, a day, a day and a half. */
-function whenWords(days: number): string {
-  const d = halfDays(days);
-  if (d <= 0) return t('here');
-  if (d < 1) return t('half a day');
-  return Number.isInteger(d) ? plural(d, '{n} day', '{n} days') : t('{n} days', { n: `${Math.floor(d)}½` });
-}
-
-/** The pursuit line: who, how far, and what they know. */
-function pursuitLine(p: Course['pursuit']): string {
-  if (p.hidden) return t('Not shown while you rest');
-  const when = whenWords(p.days);
-  if (p.days <= 0) return p.who === 'calloway' ? t('Governor Calloway · here') : t('Custody pursuit · here');
-  return p.who === 'calloway' ? t('Governor Calloway · {when} behind · knows your route', { when }) : t('Custody pursuit · {when} behind', { when });
-}
-
 /** One node of the map: a stop, the state it is in, and what it is. */
-interface Node { name: string; kind: Course['here']['kind']; state: 'done' | 'here' | 'next' | 'ahead'; gate: boolean }
+interface Node { name: string; kind: Course['here']['kind']; state: 'done' | 'here' | 'next' | 'ahead'; gate: boolean; aim?: boolean }
 
 export class CoursePanel {
   private off: (() => void) | null = null;
@@ -53,42 +36,26 @@ export class CoursePanel {
     this.opened = performance.now();
     this.onGo = () => go(c.to.id);
     $('course').hidden = false;
-    $('co-k').textContent = `${t(c.region)} · ${t('day {n}', { n: c.day })}`;
+    $('co-k').textContent = `${t('Arrived')} · ${t(c.region)} · ${t('day {n}', { n: c.day })}`;
     $('co-t').textContent = t(c.here.name);
     const short = Math.max(0, c.fuel.need - c.fuel.have);
-    const cells = storeCells(j, short > 0);
-    // the jump's fluid beside what the tank holds
-    const tank = cells[0]!.querySelector('b')!;
-    tank.textContent = `${tank.textContent} / ${c.fuel.need}`;
-    cells[0]!.title = t('Jump fluid aboard, and what this jump needs');
-    $('co-res').replaceChildren(...cells);
-    // the leg goal: the bar and the jumps left, with its one line
-    const total = c.road.length, done = Math.max(0, Math.min(1, 1 - c.goal.jumps / Math.max(1, total)));
-    const bar = h('div', 'ch-bar', '', h('i'));
-    (bar.firstElementChild as HTMLElement).style.width = `${(done * 100).toFixed(1)}%`;
-    bar.style.setProperty('--step', `${100 / Math.max(1, total)}%`);
-    bar.setAttribute('role', 'progressbar');
-    bar.setAttribute('aria-valuemin', '0');
-    bar.setAttribute('aria-valuemax', String(total));
-    bar.setAttribute('aria-valuenow', String(total - c.goal.jumps));
-    $('co-gate').replaceChildren(h('span', 'k', `${t('Leg goal')} · ${t(c.goal.name)}`), bar, h('b', 'n', plural(c.goal.jumps, '{n} jump', '{n} jumps')), h('p', 'ch-quest', t(c.goal.purpose)));
+    // the goal, as the HUD reads it: the story's next place, then the leg's gate
+    $('co-gate').replaceChildren(h('span', 'k', `${t('Goal')} · ${t(c.aim.name)}`), h('b', 'n', plural(c.aim.jumps, '{n} jump', '{n} jumps')));
     // one short line about the stop she jumps to
-    $('co-blurb').replaceChildren(h('b', '', t(c.next.name)), ` · ${t(c.next.purpose)}`); // one fixed line: no "she may expect this" chip
-    const purs = $('co-purs');
-    purs.textContent = pursuitLine(c.pursuit);
-    purs.className = `co-purs ${c.pursuit.hidden ? 'rest' : c.pursuit.tone}`;
+    // the stop after this one: the jump out of here goes there
+    $('co-blurb').replaceChildren(h('span', 'k', `${t('Next stop')} · `), h('b', '', t(c.next.name)), ` · ${t(c.next.purpose)}`);
     // the breach debt, once the Account has called: what is left, or Draper's hold on it once he has shown himself
     const debt = $('co-debt');
     debt.hidden = !c.debt;
     debt.textContent = !c.debt ? '' : c.debt.settled ? t('Debt · Settled') : t('Debt · {n} CR · Kellern Recovery', { n: c.debt.left });
     const why = $('co-why');
     why.hidden = short <= 0;
-    why.textContent = short > 0 ? t('Needs {n} more fluid', { n: short }) : '';
+    why.textContent = short > 0 ? t('Next jump needs {n} more fluid', { n: short }) : '';
     fillWall(j, { s: $('co-wall-s'), lead: $('co-wall-lead'), list: $('co-wall-l') });
     ($('co-wall') as HTMLDetailsElement).open = false;
     const go$ = $('co-go') as HTMLButtonElement;
-    go$.classList.toggle('short', short > 0);
-    go$.textContent = short > 0 ? t('Plot course to {name}', { name: t(c.next.name) }) : t('Jump to {name}', { name: t(c.next.name) });
+    // the screen comes up as she lands: the button flies on into the system she has just jumped to, never names the one after
+    go$.textContent = t('Enter {name}', { name: t(c.here.name) });
     go$.onclick = guarded(this.opened, () => this.go());
     go$.onpointerdown = (e) => e.stopPropagation();
     this.draw();
@@ -116,7 +83,7 @@ export class CoursePanel {
     const here = c.road.findIndex((r) => r.state === 'here');
     const nodes: Node[] = [
       ...(here < 0 ? [{ name: c.here.name, kind: c.here.kind, state: 'here' as const, gate: false }] : []),
-      ...c.road.map((r, i) => ({ name: r.name, kind: r.kind, state: (r.state === 'ahead' && (here < 0 ? i === 0 : i === here + 1) ? 'next' : r.state) as Node['state'], gate: r.kind === 'gate' || r.kind === 'edge' })),
+      ...c.road.map((r, i) => ({ name: r.name, kind: r.kind, state: (r.state === 'ahead' && (here < 0 ? i === 0 : i === here + 1) ? 'next' : r.state) as Node['state'], gate: r.kind === 'gate' || r.kind === 'edge', aim: r.name === c.aim.name })),
     ];
     const kids: SVGElement[] = [];
     // the sky behind: soft blooms, a faint dot lattice that fades to the edges, dust. All gradients, no edges.
@@ -173,13 +140,13 @@ export class CoursePanel {
       if (big) g.append(svg('path', { d: `M${x} ${y - ring * 0.62}L${x + ring * 0.62} ${y}L${x} ${y + ring * 0.62}L${x - ring * 0.62} ${y}Z`, class: 'co-gem' }));
       g.append(svg('circle', { cx: x, cy: y, r: core, class: `co-core ${tone}` }));
       // a short leader, then the name in small wide-tracked capitals; the tag under it for where she is and the goal
-      const tag = here ? t('Here') : big ? t('Goal') : '';
+      const tag = here ? t('Here') : n.aim ? t('Goal') : '';
       const hw = Math.min(W / 2, (t(n.name).length + (tight && tag ? tag.length + 3 : 0)) * (big ? 5.6 : 4.8) + 14), off = ring + (tight ? 3 : 10), ly = up ? y - off : y + off, lab = svg('g', { class: `ch-lab co-lab ${n.state}${big ? ' gate' : ''}`, transform: `translate(${Math.max(hw, Math.min(W - hw, x)).toFixed(1)} ${ly.toFixed(1)})` });
       if (!tight) lab.append(svg('line', { x1: 0, y1: up ? 4 : -4, x2: 0, y2: up ? 14 : -14, class: 'co-leader' }));
       lab.append(svg('text', { x: 0, y: tight ? (up ? -2 : 12) : up ? -(tag ? 20 : 8) : 24, 'text-anchor': 'middle', class: 'ch-name' }, tight && tag ? `${t(n.name)} · ${tag}` : t(n.name)));
       if (tag && !tight) lab.append(svg('text', { x: 0, y: tight ? (up ? 0 : 23) : up ? -6 : 38, 'text-anchor': 'middle', class: 'co-tag' }, tag));
       // on a small map only the stops that matter are named: where she is, the next, the goal
-      if ((small || (tight && W < 640)) && !here && !next && !big) lab.setAttribute('display', 'none');
+      if ((small || (tight && W < 640)) && !here && !next && !big && !n.aim) lab.setAttribute('display', 'none');
       g.append(lab);
       kids.push(g);
     });
