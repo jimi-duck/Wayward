@@ -18,6 +18,8 @@ export const COURSE: Record<string, string> = {
   'the Net closes behind': 'hinter dir schließt sich das Netz',
   'a clerk in trouble': 'ein Angestellter in Not',
   'Jump to {name}': 'Spring nach {name}',
+  'Enter {name}': '{name} anfliegen',
+  'Next jump needs {n} more fluid': 'Nächster Sprung braucht noch {n} Fluid',
   'Not shown while you rest': 'Nicht angezeigt, solange du rastest',
   'Custody pursuit · {when} behind': 'Custody-Verfolgung · {when} hinter dir',
   'Custody pursuit · here': 'Custody-Verfolgung · hier',

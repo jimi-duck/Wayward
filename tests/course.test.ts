@@ -26,6 +26,9 @@ describe('the Course', () => {
     expect(c.next.name).toBe('Halden’s Reach');
     expect(c.after?.name).toBe('Hollis');
     expect(c.to.name).toBe('Halden’s Reach');
+    // the screen's goal is the story's: Halden's Reach while it is ahead, then the gate
+    expect(c.aim).toMatchObject({ name: 'Halden’s Reach', jumps: 1 });
+    expect(courseView(at(2))!.aim).toMatchObject({ name: 'The Narrows', jumps: 6 });
   });
 
   it('ends the layers at the last stop: next is the Narrows, nothing after', () => {

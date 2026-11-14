@@ -24,6 +24,8 @@ export interface Course {
   here: { name: string; kind: SystemKind };
   /** The leg goal, with the jumps left to it. */
   goal: Layer & { jumps: number };
+  /** What the screen names as the goal: the story's hub while it is ahead (Halden's Reach), else the leg's gate. */
+  aim: Layer & { jumps: number };
   next: Layer;
   /** The stop after: none at the last stop. */
   after: Layer | null;
@@ -82,11 +84,14 @@ export function courseView(j: Journey): Course | null {
   const days = halfDays(daysUntil(j.hunt, c, j.trail));
   const to = o.to;
   const debt = accountCalled(j.carry.flags) ? { left: debtLeft(j.carry.flags), settled: debtLeft(j.carry.flags) === 0 || j.carry.flags.includes('key_taken') || j.carry.flags.includes('account_paid') } : null;
+  const hub = rows.findIndex((r, i) => i > pos && r.role === 'hub');
+  const aim = hub >= 0 ? { ...layer(rows[hub])!, jumps: hub - pos } : { ...gateLayer, jumps: R - pos };
   return {
     region: regionDef(c, leg)?.name ?? 'The Reach',
     day: Math.floor(j.day) + 1,
     here: { name: s.name, kind: s.kind },
     goal: { ...gateLayer, jumps: R - pos },
+    aim,
     next: stop(pos + 1),
     after: pos + 2 <= R ? stop(pos + 2) : null,
     road: [...rows.map((r, i) => ({ name: r.name ?? '', kind: r.kind, state: (i < pos ? 'done' : i === pos ? 'here' : 'ahead') as Pip, job: !!r.job })), { name: gate.name, kind: gate.kind, state: 'ahead' as Pip, job: false }],
