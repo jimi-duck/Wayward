@@ -378,7 +378,7 @@ export const STORY_CARDS: CardDef[] = [
     // the order as a document (the archive's written-message style): Ilse hands it over after her account
     id: 'story_order', kind: 'rumour', caller: 'miners', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
     from: 'Ilse Marrow · The order', title: 'The order',
-    letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1'], ['Kept by', 'Ilse Marrow']], sign: '— Authorised: L. C.' },
+    letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1']], sign: '— Authorised: L. C.' },
     text: 'Effective at once.\nThe outer relays at the Narrows and beyond are to be powered down.\nWardens on watch will surrender their keys to the attending officer.\nThe closure is to be recorded as a failure from neglect.',
     side: { from: 'Ilse Marrow', lines: ['“The lanes didn’t fail. We were told to switch them off. This is the order. I kept it all these years. Take it.”'] },
     cargo: 'An old Warden’s skiff · no guns',
@@ -401,7 +401,7 @@ export const STORY_CARDS: CardDef[] = [
     // Juno cut Ilse off at Halden's Reach: her recording carries the same document, and names Ada, to Vesta
     id: 'ilse_recording', kind: 'rumour', caller: 'miners', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
     from: 'Ilse Marrow · recorded', title: 'The order',
-    letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1'], ['Kept by', 'Ilse Marrow']], sign: '— Authorised: L. C.' },
+    letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1']], sign: '— Authorised: L. C.' },
     text: 'Effective at once.\nThe outer relays at the Narrows and beyond are to be powered down.\nWardens on watch will surrender their keys to the attending officer.\nThe closure is to be recorded as a failure from neglect.',
     side: { from: 'Ilse Marrow · recorded', lines: ['“You cut me off. Fair enough. I’m sending it anyway, the paper they made us sign. The archive in your hull is Ada Aster’s. Go to the Narrows.”'] },
     cargo: 'A recorded message · no reply',
