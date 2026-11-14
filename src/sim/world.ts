@@ -150,8 +150,10 @@ export const BAY_QUIET = 2;
 /** Seconds into a sortie before the system's place shows itself. */
 export const PLACE_AT = 30;
 
-/** Seconds a road gate holds a stop's main beats once the player is at it (the Narrows rule, #384, for every stop). */
-const GATE_HOLD = 240;
+/** Seconds a road gate holds a stop's main beats once the player is near it (the Narrows rule, #384, for every stop): the HUD counts it down, so the wait always has an end (owner, 14 November 2026). */
+const GATE_HOLD = 90;
+/** Units from the gate at which a hold is told and its clock starts: she is waiting at the gate, not only in the ring. */
+const HOLD_NEAR = 900;
 /** Seconds after arriving on the road that the scan is said. */
 const SCAN_AT = 0.8;
 /** The Slow Door takes this long to open after arrival (content/script/arrivals.ts). */
@@ -1055,11 +1057,13 @@ export class World implements EncounterHost {
     // the Jump Gate: the drive charges on the way in (with the fluid in the tank) and the ship goes through the ring as soon as it is ready
     // the Narrows gate holds her while its scene plays: no spooling, so the script's lines are not held back as a jump's
     const inReach = dl < Math.max(APPROACH, b.spoolNeed * 46);
-    const gateHeld = inReach && this.gateHeld();
-    // from afar the gate is just as shut: the HUD and the ring show it (quietly; the notice waits until she is at the gate)
-    if (!gateHeld) this.gateWhy = inReach ? '' : (this.holdOf()?.why ?? '');
+    // near the gate, the hold is told and its clock runs (she may wait short of the ring); in reach, it stops the drive
+    const atGate = dl < Math.max(HOLD_NEAR, APPROACH, b.spoolNeed * 46);
+    const gateHeld = atGate && this.gateHeld();
+    // from afar the gate is just as shut: the HUD and the ring show it (quietly; the notice waits until she is near the gate)
+    if (!gateHeld) this.gateWhy = atGate ? '' : (this.holdOf()?.why ?? '');
     // a gate that held her and now lets her go says so
-    if (inReach && !gateHeld && this.holdNoted && this.holdNoted !== 'open') {
+    if (atGate && !gateHeld && this.holdNoted && this.holdNoted !== 'open') {
       this.holdNoted = 'open';
       this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Jump Gate open', reason: 'fly through' });
     }
@@ -1885,6 +1889,8 @@ export class World implements EncounterHost {
 
   /** Seconds the Slow Door still needs (0 elsewhere, and once it is open). */
   get gateEta(): number {
+    // a call or a beat owed: the gate lets her go when the hold runs out, whatever the call is waiting on
+    if (this.holdAt < Infinity && !this.gateLet && /^(wait for the call|clear the hostiles|hold still)/.test(this.gateWhy)) return Math.max(0, Math.ceil(GATE_HOLD - (this.runTime - this.holdAt)));
     if (this.bk?.def.script === 'narrows' && this.narrows !== 'done') return this.narrows === 'reboot' ? Math.max(0, Math.ceil(REBOOT - (this.runTime - this.narrowsAt))) : REBOOT;
     return this.bk?.def.script === 'slowdoor' && !this.gateLet ? Math.max(0, Math.ceil(SLOW_DOOR - (this.runTime - this.desk.arrived))) : 0;
   }
@@ -1995,7 +2001,10 @@ export class World implements EncounterHost {
 
   /** A free moment for the story: nothing hostile near or firing, no card or call open or a job's call waiting to ring (it goes first), no job fight, not in a ring or a jump (a road gate's ring is fine). */
   private scriptFree(busy: Busy, t: number): boolean {
-    return busy === 'free' && !this.call && !this.comms && !this.desk.eagerWaiting() && !this.floor.busy(t) && (!this.safe || this.bk?.def.script === 'narrows' || !!this.bk?.def.relay || this.holdAt < Infinity) && !this.stage?.taken && t - this.desk.lastThreat >= DESK.settle.major && t - this.desk.lastMine >= DESK.mineSettle;
+    // waiting at a shut gate, she is waiting for this: a job she has taken, mining or flying among rocks no longer hold the story back (owner,
+    // 14 November 2026: a taken job kept the stop's call from ever coming while the HUD said to wait for it); only a fight does
+    const waiting = this.holdAt < Infinity;
+    return (busy === 'free' || (waiting && (busy === 'mining' || busy === 'tight'))) && !this.call && !this.comms && !this.desk.eagerWaiting() && !this.floor.busy(t) && (!this.safe || this.bk?.def.script === 'narrows' || !!this.bk?.def.relay || waiting) && (!this.stage?.taken || waiting) && t - this.desk.lastThreat >= DESK.settle.major && (waiting || t - this.desk.lastMine >= DESK.mineSettle);
   }
 
   /** Days until Custody's pursuit is here, in half days (Infinity off the road, in the first system past Cerro, at a breather, or with no pursuit): the HUD's readout. */
