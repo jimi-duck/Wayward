@@ -8,7 +8,7 @@ import { DEFAULT_SURVIVAL, survivalOf, type SurvivalId } from '../content/surviv
 import type { RegionSet } from '../content/regions';
 import { weightFuel } from './budgets';
 import { cy, refine } from './purse';
-import { SUPPLIES_MAX, HOME, JUMP_COST, HOLD_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
+import { SUPPLIES_MAX, HOME, JUMP_COST, holdMax, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
   arrive, colsOf, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, regionDef, regionOf, regionsOf, routeBetween, SIGHT, sightPlaces, spreadNet, sysById,
   tierOf, viewOf, type Chart, type StarSystem,
@@ -382,7 +382,7 @@ function sight(j: Journey, sure: boolean): void {
 function bank(c: Carry, n: number): void {
   const r = refine(c.fuel, c.cyrite, JUMP_COST, n);
   c.fuel = r.fuel;
-  c.cyrite = Math.min(HOLD_MAX, r.purse);
+  c.cyrite = Math.min(holdMax(c.flags), r.purse);
 }
 
 /**

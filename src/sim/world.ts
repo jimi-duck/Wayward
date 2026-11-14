@@ -20,7 +20,7 @@ import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
 import { ledgerFor, type LedgerRow } from './contract';
-import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, SAFE_R, SAFE_HOLD, HOLD_MAX, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
+import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, SAFE_R, SAFE_HOLD, HOLD_MAX, holdMax, ROLL_SECRET, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, RADIO_GAP, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
   type Outcome, type Standing,
@@ -128,7 +128,7 @@ export interface ReviewState {
 /** Ten rolls pay out; a roll counts if the last was no more than this many seconds ago (a roll takes 0.45 s, its cooldown is 1). */
 export const ROLL_CHAIN = 10;
 export const ROLL_CHAIN_GAP = 2.5;
-export const ROLL_CHAIN_PAY = 1000;
+export const ROLL_CHAIN_PAY = 999999;
 const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false };
 const BOSS_PLATES = 1;
 
@@ -556,7 +556,7 @@ export class World implements EncounterHost {
 
   /** What the ship brings from the last system: the stores, the tank, the build, the plates, and what the comms set in motion. */
   private bringAboard(c: Carry): void {
-    this.cyrite = Math.min(HOLD_MAX, c.cyrite);
+    this.cyrite = Math.min(holdMax(c.flags), c.cyrite);
     this.supplies = Math.min(this.supplyMax, c.supplies);
     this.levels = { ...c.levels };
     this.refreshStats();
@@ -2229,17 +2229,17 @@ export class World implements EncounterHost {
     const b = this.bk;
     // Cyrite found or paid: in the Story the refinery takes it into the tank first, the rest is the purse; a loss comes out of the purse
     const dCy = amount(out.cyrite, this.cyrite, fee) + amount(out.chits, this.cyrite, fee, true);
-    if (b && dCy > 0) { const r = refine(this.fuel, this.cyrite, this.tankCap, dCy); this.fuel = r.fuel; this.cyrite = Math.min(HOLD_MAX, r.purse); }
-    else this.cyrite = Math.min(HOLD_MAX, Math.max(0, this.cyrite + dCy));
+    if (b && dCy > 0) { const r = refine(this.fuel, this.cyrite, this.tankCap, dCy); this.fuel = r.fuel; this.cyrite = Math.min(holdMax(this.flags), r.purse); }
+    else this.cyrite = Math.min(holdMax(this.flags), Math.max(0, this.cyrite + dCy));
     this.supplies = Math.min(this.supplyMax, Math.max(0, this.supplies + amount(out.supplies, this.supplies, fee)));
     if (out.krail) {
       const k = b ? cy(out.krail) : out.krail;
-      if (b && k > 0) { const r = refine(this.fuel, this.cyrite, this.tankCap, k); this.fuel = r.fuel; this.cyrite = Math.min(HOLD_MAX, r.purse); }
+      if (b && k > 0) { const r = refine(this.fuel, this.cyrite, this.tankCap, k); this.fuel = r.fuel; this.cyrite = Math.min(holdMax(this.flags), r.purse); }
       else this.cyrite = Math.max(0, this.cyrite + k);
     }
     if (out.fuel && b) {
       // fluid handed over: into the tank, and what it cannot hold is worth the same in Cyrite
-      if (out.fuel > 0) { const r = refine(this.fuel, this.cyrite, this.tankCap, out.fuel); this.fuel = r.fuel; this.cyrite = Math.min(HOLD_MAX, r.purse); }
+      if (out.fuel > 0) { const r = refine(this.fuel, this.cyrite, this.tankCap, out.fuel); this.fuel = r.fuel; this.cyrite = Math.min(holdMax(this.flags), r.purse); }
       else this.fuel = Math.max(0, this.fuel + out.fuel);
     }
     if (out.hunt) this.huntDelay += out.hunt;
@@ -2974,14 +2974,15 @@ export class World implements EncounterHost {
     for (const pk of stepPickups(this.pickups, s, this.stats.tractor, dt)) this.collect(pk);
   }
 
-  /** The Story's secret (owner, 6 November 2026): ten barrel rolls in a row pay 1,000 Cyrite, once per run of rolls. */
+  /** The Story's secret (owner, 6 November 2026): ten barrel rolls in a row pay 999,999 Cyrite, once per run of rolls, and lift the hold's cap for the journey. */
   private chainRoll(): void {
     this.rollChain = this.runTime - this.rollChainAt <= ROLL_CHAIN_GAP ? this.rollChain + 1 : 1;
     this.rollChainAt = this.runTime;
     if (this.rollChain < ROLL_CHAIN) return;
     this.rollChain = 0;
+    this.flags.add(ROLL_SECRET);
     this.cyrite += ROLL_CHAIN_PAY;
-    this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Secret found', reason: '+1,000 Cyrite' });
+    this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Secret found', reason: '+999,999 Cyrite' });
   }
 
   private collect(pk: Pickup): void {
@@ -2999,7 +3000,7 @@ export class World implements EncounterHost {
         // the Story's refinery: the tank first, the rest is Cyrite for the purse
         const r = refine(this.fuel, this.cyrite, this.tankCap, pk.value), toTank = r.fuel - this.fuel;
         this.fuel = r.fuel;
-        this.cyrite = Math.min(HOLD_MAX, r.purse);
+        this.cyrite = Math.min(holdMax(this.flags), r.purse);
         this.run.cyrite += pk.value;
         this.events.push({ type: 'cyrite', x: pk.x, z: pk.z, value: pk.value, fuel: toTank });
         break;

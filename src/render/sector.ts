@@ -690,7 +690,7 @@ export class Sector {
     this.ship.status.cloaked = world.cloakT > 0;
     this.ship.status.rapid = world.powers.rapid > 0;
     this.ship.speedFrac = subject.speedFrac;
-    this.ship.setCargo(world.cyrite / HOLD_MAX);
+    this.ship.setCargo(Math.min(1, world.cyrite / HOLD_MAX));
     this.ship.setDamage(world.plates, world.stats.maxPlates);
     this.ship.setFit(world.levels, world.use);
     // the paint follows the flag; the rename's one sweep and camera arc only decide how it is shown (render/reveal.ts)
