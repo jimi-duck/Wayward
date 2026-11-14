@@ -1505,7 +1505,7 @@ html:not(.breakout).touch-ui:not(.pad-ui) #pause .term-s.full { display: none; }
 @media (max-height: 520px) { .rd-line .rdl-face { width: 30px; height: 30px; } }
 /* the chart's chip on a stop her read expects */
 .chip.her { color: var(--faction-office); border-color: var(--faction-office); }
-.ch-o1 .chip.her, .co-blurb .chip.her { margin-left: 6px; }
+.ch-o1 .chip.her { margin-left: 6px; }
 
 /* ── photo mode (main.ts): the world alone, the camera drifting slowly round the ship ── */
 #photo-hint { position: fixed; left: 50%; bottom: calc(24px + var(--safe-b)); translate: -50% 0; z-index: 40; display: none; padding: 6px 14px; pointer-events: none;

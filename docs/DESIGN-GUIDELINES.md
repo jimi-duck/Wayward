@@ -95,6 +95,10 @@ taller than the screen, the sheet behind it scrolls instead. Nothing inside a
 panel may set its own rectangular background; put it on `::before` or use
 nested glass.
 
+**Exception: the Course** (`#course`, the road's jump chart; owner's mockup 14 November 2026). It is a full screen the
+player plans on, not a pop-up, so it has no Neon Glass frame or glass: a dark field with thin teal corner brackets, and
+a plain dark panel for the next stop. Its colours still come from the tokens. See `docs/CHART.md`.
+
 Classes: `.ng` is a panel (every `.sheet > .panel`, the pause card and the
 job call get it automatically); add `.card` for a small one. `.ng-n` is
 nested glass for buttons, choice rows and thumbnails: the same chamfer and

@@ -18,27 +18,46 @@
        ?stop=3 (column to stand at)  ?seed=3 -->
   <div id="app">
     <div id="course" class="sheet" role="dialog" aria-labelledby="co-t" hidden>
-      <div class="panel wide chartp coursep">
-        <header class="ch-head">
-          <span class="kick" id="co-k"></span>
-          <div class="ch-l2"><h2 id="co-t">Course</h2><div id="co-gate" class="ch-gate"></div></div>
-        </header>
-        <div class="ch-body">
-          <div class="ch-mapw">
-            <svg id="co-map" class="ch-map" viewBox="0 0 640 340" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The road: one line of stops to the Narrows."></svg>
+      <div class="panel coursep">
+        <header class="co-head">
+          <div class="co-id">
+            <p class="co-k" id="co-k"></p>
+            <h2 id="co-t">Course</h2>
+            <div id="co-chips" class="co-chips"></div>
           </div>
-          <p id="co-blurb" class="co-blurb"></p>
+          <div id="co-res" class="co-res"></div>
+        </header>
+        <div class="co-body">
+          <div class="co-mapw">
+            <svg id="co-map" class="co-map" viewBox="0 0 640 340" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The road: one line of stops to the goal."></svg>
+            <ul class="co-legend">
+              <li><i class="lg route"></i><span>Route</span></li>
+              <li><i class="lg flown"></i><span>Flown</span></li>
+              <li><i class="lg known"></i><span>Known lane</span></li>
+              <li><i class="lg net"></i><span>Continuance Net</span></li>
+              <li><i class="lg gate"></i><span>Jump Gate</span></li>
+            </ul>
+          </div>
+          <aside class="co-side">
+            <p class="co-nk" id="co-nk"></p>
+            <h3 class="co-nn" id="co-nn"></h3>
+            <p class="co-ns" id="co-ns"></p>
+            <div class="co-rows" id="co-rows"></div>
+            <p class="co-rk">Route to goal</p>
+            <ol class="co-route" id="co-route"></ol>
+            <div class="co-act">
+              <button type="button" id="co-go"><b id="co-go-t"></b><small id="co-go-s"></small></button>
+              <p class="co-hint"><span class="keys" data-i18n="html"><kbd>Enter</kbd> · <kbd>W</kbd> Wall</span></p>
+            </div>
+          </aside>
         </div>
-        <div class="ch-aux">
-        <details id="co-wall" class="ch-intel ch-wall"><summary><span id="co-wall-s">Wall</span></summary>
+        <details id="co-wall" class="ch-intel ch-wall co-wall"><summary><span id="co-wall-s">Wall</span></summary>
           <p id="co-wall-lead" class="ch-goal"></p>
           <ul id="co-wall-l" class="ch-wall-l"></ul>
         </details>
-        </div>
-        <footer class="ch-foot">
-          <div class="ch-warn"><p id="co-debt" class="co-purs rest" hidden></p><p id="co-why" class="ch-why" hidden></p></div>
-          <div class="ch-acts"><button type="button" id="co-go">Jump</button></div>
-          <p class="ch-hint"><span class="keys" data-i18n="html"><kbd>Enter</kbd> · <kbd>W</kbd> Wall</span></p>
+        <footer class="co-foot">
+          <p class="co-road-k" id="co-road-k"></p>
+          <div class="co-road" id="co-road"></div>
         </footer>
       </div>
     </div>

@@ -1,6 +1,9 @@
 import { GATES, LEGS, NARROWS, ROAD, type RoadStop } from '../content/road';
 import type { SystemKind } from '../content/systems';
-import { gateOf, regionDef, viewOf, type StarSystem } from './chart';
+import { gateOf, netted, regionDef, regionsOf, viewOf, type StarSystem } from './chart';
+import { computeStats } from './build';
+import { bonded, BONDED_RATE } from './charter';
+import { fileCount } from './story';
 import { RELAY_BROADCAST } from './calloway';
 import { daysUntil, halfDays, PURSUIT } from './hunt';
 import { here, options, type Journey } from './journey';
@@ -29,8 +32,20 @@ export interface Course {
   next: Layer;
   /** The stop after: none at the last stop. */
   after: Layer | null;
-  /** The road: a pip for each stop, the Narrows last. */
-  road: Array<{ name: string; kind: SystemKind; state: Pip; job: boolean }>;
+  /** The road: a pip for each stop, the Narrows last. `day`: the day she arrived, once flown; `net`: the Continuance Net holds it. */
+  road: Array<{ name: string; kind: SystemKind; state: Pip; job: boolean; day?: number; net: boolean }>;
+  /** How many stops behind her the Net's edge is (0: it holds where she is), or null when it holds nothing on this leg behind her. */
+  net: number | null;
+  /** What the next stop offers: a depot, the Bonded rate there (as a markup), and whether the Net holds it. */
+  nextAt: { depot: boolean; bonded: number; net: boolean };
+  /** What there is to do where she is: a depot to refuel at, a job pinned here. */
+  hereAt: { depot: boolean; job: boolean };
+  /** The Wall's file. */
+  file: { found: number; of: number };
+  /** The ship's stores as the header reads them. */
+  stores: { plates: number; maxPlates: number; cyrite: number };
+  /** The whole road, leg by leg (the prologue first): where she is in the game, and how far through this leg. */
+  legs: { names: string[]; at: number; done: number; of: number; home: string };
   /** Dark lanes off the road: they lead nowhere. */
   lanes: number;
   pursuit: { who: 'custody' | 'calloway'; days: number; tone: Tone; hidden: boolean };
@@ -86,6 +101,15 @@ export function courseView(j: Journey): Course | null {
   const debt = accountCalled(j.carry.flags) ? { left: debtLeft(j.carry.flags), settled: debtLeft(j.carry.flags) === 0 || j.carry.flags.includes('key_taken') || j.carry.flags.includes('account_paid') } : null;
   const hub = rows.findIndex((r, i) => i > pos && r.role === 'hub');
   const aim = hub >= 0 ? { ...layer(rows[hub])!, jumps: hub - pos } : { ...gateLayer, jumps: R - pos };
+  const flags = new Set(j.carry.flags);
+  const sysOf = (name: string) => c.systems.find((x) => x.name === name);
+  const dayAt = (name: string) => { const id = sysOf(name)?.id; const l = j.legs.find((x) => x.system === id); return l ? Math.floor(l.day) + 1 : undefined; };
+  const road: Course['road'] = [...rows.map((r, i) => ({ name: r.name ?? '', kind: r.kind, state: (i < pos ? 'done' : i === pos ? 'here' : 'ahead') as Pip, job: !!r.job })), { name: gate.name, kind: gate.kind, state: 'ahead' as Pip, job: false }]
+    .map((r) => { const id = sysOf(r.name)?.id; return { ...r, ...(r.state === 'done' ? { day: dayAt(r.name) } : {}), net: !!id && netted(c, id) }; });
+  let edge = -1;
+  for (let i = 0; i <= pos; i++) if (road[i]!.net) edge = i;
+  const max = computeStats(j.carry.levels).maxPlates;
+  const legCount = Math.min(LEGS.length, regionsOf(c).length);
   return {
     region: regionDef(c, leg)?.name ?? 'The Reach',
     day: Math.floor(j.day) + 1,
@@ -94,7 +118,13 @@ export function courseView(j: Journey): Course | null {
     aim,
     next: stop(pos + 1),
     after: pos + 2 <= R ? stop(pos + 2) : null,
-    road: [...rows.map((r, i) => ({ name: r.name ?? '', kind: r.kind, state: (i < pos ? 'done' : i === pos ? 'here' : 'ahead') as Pip, job: !!r.job })), { name: gate.name, kind: gate.kind, state: 'ahead' as Pip, job: false }],
+    road,
+    net: edge < 0 ? null : pos - edge,
+    nextAt: { depot: !!to.port, bonded: to.port && bonded(flags, to.holder) ? Math.round((BONDED_RATE - 1) * 100) : 0, net: netted(c, to.id) },
+    hereAt: { depot: !!s.port && s.kind !== 'gate', job: pos >= 0 && !!rows[pos]?.job },
+    file: fileCount(flags, c.regionSet ?? 'three'),
+    stores: { plates: Math.min(j.carry.plates, max), maxPlates: max, cyrite: Math.floor(j.carry.cyrite) },
+    legs: { names: Array.from({ length: legCount }, (_, i) => regionDef(c, i)?.name ?? ''), at: leg, done: pos + 1, of: R + 1, home: c.systems.find((x) => x.kind === 'home')?.name ?? '' },
     lanes: 2 + ((pos + 1) % 2),
     pursuit: { who: pursuerOf(j.carry.flags), days, tone: toneOf(days), hidden: !!s.quiet },
     debt: debt && { ...debt, left: debt.settled ? 0 : debt.left },
