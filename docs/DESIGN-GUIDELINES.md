@@ -295,3 +295,7 @@ clipping, every answer reachable on the phone. For motion, sample the animations
 - The chosen answer on a template card or a one-answer message (`.ns-hand`) is the job offer's amber rim on a solid dark plate, never a pale fill.
 - An open card hides the pause card behind it, so nothing shows through the glass.
 - A message someone hands over (the order) is one card: the speaker's line leads inside it, no second card below.
+
+### A shut Jump Gate says why
+
+The HUD's gate line (`world.gateWhy`) always names what the player does next: fly to the relay mast, wait for a named caller, clear the hostiles or hold still so that call can come (a card never opens over a fight, mining or tight flying), or wait for a countdown. It never says only that "a call is coming". `tests/gatecall.test.ts` plays every road stop in the chart to a shut gate that opens once its call is answered.

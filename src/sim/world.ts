@@ -1823,12 +1823,14 @@ export class World implements EncounterHost {
     const h = this.holdOf();
     if (!h) return false;
     // (the Narrows' reboot has its own notice, as the gate goes down)
-    if (this.holdNoted !== h.why && h.why !== 'the gate is rebooting') {
-      this.holdNoted = h.why;
+    // (a call's changing blocker, a hostile then calm, is the HUD line's to follow, not a new notice each time)
+    const kind = /^(wait for the call|clear the hostiles|hold still)/.test(h.why) ? 'a call is due' : h.why;
+    if (this.holdNoted !== kind && h.why !== 'the gate is rebooting') {
+      this.holdNoted = kind;
       // with the Warden key in, the gate is resetting: say so, so a gate that will not take her yet is never a mystery (the owner, 31 October 2026)
       this.events.push(h.resetting
         ? { type: 'storyNotice', tone: 'amber', headline: 'Jump Gate resetting', reason: 'Warden key accepted · opens in a moment' }
-        : { type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: h.why });
+        : { type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: tr(h.why, { who: this.gateWho }) });
     }
     this.gateWhy = h.why;
     if (h.paint || h.handshake) return true;
@@ -1857,8 +1859,29 @@ export class World implements EncounterHost {
     if (!o.any && !slow) return null;
     const lit = this.flags.has(relayFlag(b.def.script ?? ''));
     const resetting = lit && !o.handshake && !slow;
-    return { why: o.handshake ? 'reach the relay mast' : slow ? 'the gate is opening' : lit ? 'resetting after the key' : 'a call is coming in', paint: false, handshake: o.handshake, slow, resetting };
+    const call = !o.handshake && !slow && !lit ? this.callHold() : null;
+    this.gateWho = call?.who ?? '';
+    return { why: o.handshake ? 'reach the relay mast' : slow ? 'the gate is opening' : lit ? 'resetting after the key' : call!.why, paint: false, handshake: o.handshake, slow, resetting };
   }
+
+  /**
+   * What the gate waits on when a card is owed, and what the player must do about it: the caller's name, and whether the call is
+   * held back by a hostile near her, by mining or tight flying (she must clear it or hold still), or only by the queue ahead of it.
+   */
+  private callHold(): { why: string; who: string } {
+    const row = this.script?.owedRow(this.flags, this.tankCap ? this.fuel / this.tankCap : 0);
+    const def = row && 'card' in row.do ? CARD_BY_ID[row.do.card] : undefined;
+    const who = (def?.from ?? '').split(' · ')[0]!;
+    const busy = this.busy();
+    const kind = busy === 'fight' || this.aliens.some((a) => !a.fleeing && !a.ward && Math.hypot(a.x - this.ship.x, a.z - this.ship.z) < DESK.threat * 2) ? 'clear' : busy === 'mining' || busy === 'tight' ? 'still' : 'wait';
+    const why = who
+      ? kind === 'clear' ? 'clear the hostiles · {who} will call' : kind === 'still' ? 'hold still · {who} will call' : 'wait for the call from {who}'
+      : kind === 'clear' ? 'clear the hostiles · a call will come' : kind === 'still' ? 'hold still · a call will come' : 'wait for the call';
+    return { why, who };
+  }
+
+  /** Who the call is from, while the gate waits on one (the HUD names it). */
+  gateWho = '';
 
   /** Seconds the Slow Door still needs (0 elsewhere, and once it is open). */
   get gateEta(): number {
