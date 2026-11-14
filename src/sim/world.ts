@@ -1307,13 +1307,18 @@ export class World implements EncounterHost {
 
   /**
    * Gunfire inside a swarm draws more (docs/STORY_DIRECTION.md, plan priority 3):
-   * a shot with Thren hulls close by brings the next knot within SWARM_DRAWN.
+   * a shot with Thren hulls close by brings the next knot within SWARM_DRAWN,
+   * once, until every Thren hull is gone (no endless chain for a pilot who fights them).
    * The flags let the script notice, here and at a stop (`thren_drawn_<stop>`).
    */
   private gunfireDraws(t: number): void {
     const b = this.bk!, s = this.ship;
     if (b.def.quiet || (b.def.thren ?? 0) <= 0.05) return;
-    if (!this.aliens.some((a) => a.faction === 'thren' && Math.hypot(a.x - s.x, a.z - s.z) < THREN_JAM)) return;
+    const thren = this.aliens.filter((a) => a.faction === 'thren');
+    // one drawn knot at a time: a fight with them must be one a pilot can finish
+    if (!thren.length) { b.drawn = false; return; }
+    if (b.drawn || !thren.some((a) => Math.hypot(a.x - s.x, a.z - s.z) < THREN_JAM)) return;
+    b.drawn = true;
     b.nextSwarm = Math.min(b.nextSwarm, t + SWARM_DRAWN);
     this.flags.add('thren_drawn');
     if (b.def.script) this.flags.add(`thren_drawn_${b.def.script}`);
