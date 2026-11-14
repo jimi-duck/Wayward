@@ -491,7 +491,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'defend', label: 'Defend the rigs', tone: 'fight', hint: 'Fight the raiders. Kessel Hold will not forget it.', win: { text: 'The raiders break off · the claims hold', flag: 'oduya_rigs', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], standing: { miners: 1, kellern: -1 } } },
       { id: 'stores', label: 'Send supplies', tone: 'help', hint: 'Three supplies for the crews. They hold on their own.', cost: { supplies: 3 }, win: { text: 'The crews hold the rigs on your stores', flag: 'oduya_rigs', standing: { miners: 1 } } },
-      { id: 'no', label: 'Not now', tone: 'refuse', hint: 'You cannot afford the fight.', win: { text: 'Oduya closes the channel' } },
+      { id: 'no', label: 'Tell Oduya no', tone: 'refuse', hint: 'You cannot afford the fight.', win: { text: 'Oduya closes the channel' } },
     ],
   }),
   story({
@@ -599,7 +599,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'food', label: 'Trade supplies', tone: 'trade', hint: 'Three supplies for the old charts.', cost: { supplies: 3 }, win: { text: 'The old charts go in the file', flag: 'frag_charts' } },
       { id: 'share', label: 'Share what you know', tone: 'help', hint: 'Free. He hears the file too, and talks.', win: { text: 'Tarik copies your route · the charts go in the file', flag: 'frag_charts', heat: 0.08, standing: { miners: 1 } } },
-      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The lamps drift astern' } },
+      { id: 'no', label: 'Keep your stores', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The lamps drift astern' } },
     ],
   }),
   story({
@@ -643,7 +643,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'warn', label: 'Warn the crew', tone: 'help', hint: 'The scarred hulls go in the file.', win: { text: 'Eben has the warning · the scarred hulls go in the file', flag: ['tam_brother', 'eben_warned', 'clue_scarred'], standing: { frontier: 1 } } },
       { id: 'look', label: 'Look at the hulls', tone: 'trade', hint: 'Two supplies for a quiet look. Nobody is told.', cost: { supplies: 2 }, win: { text: 'Not claws · thousands of tiny strokes, all one direction', flag: ['clue_scarred', 'hulls_seen'] } },
-      { id: 'no', label: 'Not now', tone: 'refuse', hint: 'Sam will remember.', win: { text: 'Sam closes the channel' } },
+      { id: 'no', label: 'Tell Sam later', tone: 'refuse', hint: 'Sam will remember.', win: { text: 'Sam closes the channel' } },
     ],
   }),
   story({
@@ -691,7 +691,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'berth', label: 'Take the berth', tone: 'trade', hint: 'Supplies for the stay. The Guild takes note.', win: { text: 'A berth, stores and a friend in the Guild', flag: 'ines_berth', supplies: 6, heat: 0.05, standing: { guild: 1 } } },
       { id: 'pay', label: 'Pay your way', tone: 'pay', hint: 'Four Cyrite. No favours owed.', cost: { chits: 20 }, win: { text: 'Docked and square', supplies: 6 } },
-      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'You fly on your own.', win: { text: 'The launch turns back' } },
+      { id: 'no', label: 'Owe nobody', tone: 'refuse', hint: 'You fly on your own.', win: { text: 'The launch turns back' } },
     ],
   }),
   story({
