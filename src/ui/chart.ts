@@ -632,27 +632,27 @@ export class ChartPanel {
     if (goal.id !== at) mark(goal, 'gate', live.get(goal.id));
     mark(me, 'here');
     map.replaceChildren(...kids);
-    this.place(labels, solids, W, H);
+    placeLabels(labels, solids, W, H);
   }
+}
 
-  /** Put each name on the side of its node that is free: inside the box (12px margin) and clear of every node and of the other names. */
-  private place(labels: Array<{ g: SVGElement; x: number; y: number; r: number; up: boolean }>, solids: Array<{ x: number; y: number; r: number }>, W: number, H: number): void {
-    const M = 12, taken: Array<{ x0: number; y0: number; x1: number; y1: number }> = [];
-    const hits = (b: { x0: number; y0: number; x1: number; y1: number }) =>
-      solids.some((s) => s.x > b.x0 - s.r && s.x < b.x1 + s.r && s.y > b.y0 - s.r && s.y < b.y1 + s.r) || taken.some((o) => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0);
-    for (const l of labels) {
-      const bb = (l.g as unknown as SVGGraphicsElement).getBBox();
-      const w = bb.width, top = bb.y, bot = bb.y + bb.height;
-      const x = Math.max(M + w / 2, Math.min(W - M - w / 2, l.x));
-      // the own node is a solid too: the name starts just clear of it
-      const down = l.y + l.r + 6 - top, up = l.y - l.r - 10 - bot;
-      const tries = l.up ? [up, down] : [down, up];
-      let ty = tries[0]!;
-      const box = (v: number) => ({ x0: x - w / 2, x1: x + w / 2, y0: v + top, y1: v + bot });
-      for (const v of tries) if (v + top >= 4 && v + bot <= H - 4 && !hits(box(v))) { ty = v; break; }
-      ty = Math.max(4 - top, Math.min(H - 4 - bot, ty));
-      taken.push(box(ty));
-      l.g.setAttribute('transform', `translate(${x.toFixed(1)} ${ty.toFixed(1)})`);
-    }
+/** Put each name on the side of its node that is free: inside the box (12px margin) and clear of every node and of the other names. */
+export function placeLabels(labels: Array<{ g: SVGElement; x: number; y: number; r: number; up: boolean }>, solids: Array<{ x: number; y: number; r: number }>, W: number, H: number): void {
+  const M = 12, taken: Array<{ x0: number; y0: number; x1: number; y1: number }> = [];
+  const hits = (b: { x0: number; y0: number; x1: number; y1: number }) =>
+    solids.some((s) => s.x > b.x0 - s.r && s.x < b.x1 + s.r && s.y > b.y0 - s.r && s.y < b.y1 + s.r) || taken.some((o) => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0);
+  for (const l of labels) {
+    const bb = (l.g as unknown as SVGGraphicsElement).getBBox();
+    const w = bb.width, top = bb.y, bot = bb.y + bb.height;
+    const x = Math.max(M + w / 2, Math.min(W - M - w / 2, l.x));
+    // the own node is a solid too: the name starts just clear of it
+    const down = l.y + l.r + 6 - top, up = l.y - l.r - 10 - bot;
+    const tries = l.up ? [up, down] : [down, up];
+    let ty = tries[0]!;
+    const box = (v: number) => ({ x0: x - w / 2, x1: x + w / 2, y0: v + top, y1: v + bot });
+    for (const v of tries) if (v + top >= 4 && v + bot <= H - 4 && !hits(box(v))) { ty = v; break; }
+    ty = Math.max(4 - top, Math.min(H - 4 - bot, ty));
+    taken.push(box(ty));
+    l.g.setAttribute('transform', `translate(${x.toFixed(1)} ${ty.toFixed(1)})`);
   }
 }

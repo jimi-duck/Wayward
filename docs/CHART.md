@@ -108,10 +108,34 @@ Colour: amber (`--pick`) is the player's pick and the action, the selected card,
 
 The goal block ends with one line of quest, per region (`WHYS` in `content/situations.ts`, in the order of the region questions): why the player is going on. First chart of a region only.
 
-## The Course map's look (2026-11-02)
+## The Course map's look (2026-11-14)
 
-On the road the map is a quiet star chart (`ui/course.ts` `draw`, `styles/course.css`): a soft nebula, a faint dot
-lattice that fades to the edges, dust, and the stops on one wave with a core, a thin ring and a wide halo each. No
-icons by kind and no frame; the map fades out before its box. Names are small wide-tracked capitals. The next stop and
-the goal are amber (the pick), where she is is white with a second ring, stops behind are grey with a dotted line.
-Look at it alone with `/tools/course.html?stop=3` on the dev server.
+The owner's mockup (14 November 2026), built in `ui/course.ts` and `styles/course.css`, with its data from
+`sim/course.ts` (no rules of its own). The screen opens as she lands, so it is about where she has arrived.
+
+- **No Neon Glass frame.** The Course is a full screen, not a pop-up: a dark field with thin teal corner brackets.
+  The exception is noted in `DESIGN-GUIDELINES.md`.
+- **Header.** "◆ Arrived · region · Day n", the system's name big, then chips: Goal (amber, the story's goal:
+  Halden's Reach while it is ahead, then the leg's gate), the jumps to it (teal), and "▲ Net n system behind"
+  (red) only when the Continuance Net holds stops behind her on this leg. Top right, hull (with a bar) and Cyrite.
+- **Map** (left, about 70%). The stops on one Catmull-Rom wave over the nebula picture (`assets/course-nebula.webp`),
+  vignetted towards the panel. Flown lanes thin grey, flown stops a grey dot ring with "Day n" (the day she arrived,
+  from `Journey.legs`). The route to the goal amber: the next jump solid with a glow, later jumps dashed, each with a
+  cut-corner J tag at its middle. Stops past the goal are a dotted known lane. Here: a teal ring with a ship arrow and
+  tick marks. Next: an amber double ring with a glow. Later route stops: a small amber ring. A Jump Gate: an amber
+  diamond. Each name is wide-tracked capitals with one sub-line ("Here · Transit", "J1 · Port", "J3 · Jump Gate"),
+  placed clear of nodes and other names by `placeLabels` (`ui/chart.ts`). The Net: a faint red hatched zone over the
+  stops it holds, a dashed red edge with chevrons and the caption, and a small red triangle on each netted stop. Red
+  is the Net only. A faint "Leg n · name ▸" past the goal.
+- **Next stop panel** (right, about 30%): "Next stop · J1 of n", the name in amber, its line, then Depot (yes or no,
+  "Bonded +40%" in amber where `bonded()` applies), Continuance (red ▲ when the Net holds it), Wall (File n/8 ▸,
+  opens the Wall under the map; W does the same), Debt once the Account has called. "Route to goal": here, then each
+  jump with its J number. The one button, amber, "Enter <here>" with what is there to do (Refuel · Job · Wall), and the
+  keys under it. No fluid gauge or fluid warning: the HUD's objective says when the tank is short.
+- **Under the map**: the legend (Route, Flown, Known lane, Continuance Net, Jump Gate), then "The road · leg n of 8"
+  and one bar for the whole game: Prologue ✓, legs done, this leg in amber with its progress (stops reached / stops).
+- **Sizes.** Fits 1280×720 with no scroll. Upright and 900px or narrower: map above, panel below (the sheet scrolls).
+  A phone on its side: map left, panel right; the legend, the road, the route list and the keys go, and the map names
+  only here and the goal, with one J tag.
+
+Look at it alone with `/tools/course.html?stop=6&net=4` on the dev server (`&de` for German).

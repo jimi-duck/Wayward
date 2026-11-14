@@ -1,57 +1,215 @@
-/* ── the Course: the Warden's Road between two stops ─────────────────────
-   Built from the chart's own parts (chart.css): the header with the goal bar
-   and the stores, a map of the road as one calm line, one card for the jump,
-   the strip with the pursuit and the button. This file only adds what the
-   road needs: the pursuit's tone. */
-.co-purs { margin: 0; font: 600 13px/1.25 var(--font-rail); letter-spacing: .04em; color: var(--cy); }
-.co-purs.amber { color: var(--caution); }
-.co-purs.red { color: var(--alert-text); }
-.co-purs.rest { color: var(--ink-2); }
-/* the map takes the whole width, with one line about the next stop under it */
-#course .ch-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 10px; }
-#course .ch-mapw { min-height: 260px; }
-.co-blurb { margin: 0; font: 400 15px/1.35 var(--font-display); color: var(--ink); }
-.co-blurb b { font: 600 15px/1.35 var(--font-rail); letter-spacing: .03em; color: var(--pick-hi); }
-@media (max-height: 420px) { #course .ch-mapw { min-height: 100px; } .co-blurb, .co-blurb b { font-size: 12px; } }
+/* ── the Course: the Warden's Road between two stops (2026-11-14) ─────────
+   The owner's mockup: a calm, industrial nav screen. No Neon Glass frame (it is
+   a full screen, not a pop-up): a dark field with thin teal corner brackets.
+   The header says where she arrived, the goal and the Net behind; the map is the
+   road as one wave over the nebula; the panel on the right is the next stop, the
+   route to the goal and the one button; under the map a legend and the whole
+   road, leg by leg. Amber is the route and the action, teal is here and
+   information, red is the Continuance Net and nothing else. Labels are
+   wide-tracked capitals, numbers are mono. */
+#course { background: rgba(var(--void-rgb), .92); }
+#course > .panel.coursep {
+  --c: 0px; --br: rgba(var(--teal-rgb), .7); --bl: 26px;
+  width: min(1480px, 100%); height: min(100%, calc(100dvh - 24px)); max-height: none; min-height: 0;
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: 12px; padding: 22px 30px 18px;
+  border: 0; border-image: none; box-shadow: none;
+  background:
+    linear-gradient(var(--br), var(--br)) top left / var(--bl) 1.5px no-repeat,
+    linear-gradient(var(--br), var(--br)) top left / 1.5px var(--bl) no-repeat,
+    linear-gradient(var(--br), var(--br)) top right / var(--bl) 1.5px no-repeat,
+    linear-gradient(var(--br), var(--br)) top right / 1.5px var(--bl) no-repeat,
+    linear-gradient(var(--br), var(--br)) bottom left / var(--bl) 1.5px no-repeat,
+    linear-gradient(var(--br), var(--br)) bottom left / 1.5px var(--bl) no-repeat,
+    linear-gradient(var(--br), var(--br)) bottom right / var(--bl) 1.5px no-repeat,
+    linear-gradient(var(--br), var(--br)) bottom right / 1.5px var(--bl) no-repeat,
+    rgba(var(--void-rgb), .6);
+}
+#course > .panel.coursep::before, #course > .panel.coursep::after { content: none; display: none; }
+#course .panel.coursep > * { transform: none; }
 
-/* ── the map as a star chart (2026-11-02): soft light, no frame, hairlines ──
-   Nodes are a small bright core, a thin ring and a wide halo (gradients in
-   ui/course.ts); names are small wide-tracked capitals; the route is one wave.
-   Amber is the pick (where the jump goes), teal is here and what is ahead. */
-#course .ch-mapw { border: 0; background: none; }
-/* the glow fades out before the edge of the box, so no rectangle shows */
-#course .ch-map { -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent), linear-gradient(0deg, transparent, #000 8%, #000 92%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent), linear-gradient(0deg, transparent, #000 8%, #000 92%, transparent); mask-composite: intersect; }
-.co-lat { fill: var(--blue); opacity: .26; }
-.co-lane { fill: none; stroke-linecap: round; stroke-width: 1.3; }
-.co-lane.done { stroke: rgba(var(--ink-2-rgb), .4); stroke-dasharray: 1.5 7; }
-.co-lane.ahead { stroke: rgba(var(--pick-rgb), .5); stroke-dasharray: 7 6; }
-.co-lane.next { stroke: var(--pick-hi); stroke-dasharray: 8 6; opacity: .95; }
-.co-lane-under { fill: none; stroke: var(--pick); stroke-width: 5; opacity: .18; stroke-linecap: round; }
-.co-ring { fill: none; stroke-width: 1; opacity: .5; }
-.co-ring.teal { stroke: var(--cy); }
-.co-ring.amber { stroke: var(--pick-hi); }
-.co-ring.white { stroke: var(--cy); opacity: .7; }
-.co-ring.dim { stroke: var(--ink-2); opacity: .35; }
-.co-ring.outer { stroke: var(--cy); stroke-width: .8; opacity: .3; }
-.co-gem { fill: none; stroke: var(--pick-hi); stroke-width: 1; opacity: .8; }
-.co-core { stroke: none; }
-.co-core.teal { fill: var(--cy); }
+/* the header: where she arrived, big, then the chips; the stores right */
+.co-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px 32px; min-width: 0; }
+.co-id { display: grid; gap: 6px; min-width: 0; }
+.co-k { margin: 0; display: flex; align-items: center; gap: 0 .5em; font: 500 12px/1.2 var(--font-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--ink-2); }
+.co-k b { font-weight: 500; color: var(--cy); }
+.co-dia { width: 7px; height: 7px; background: var(--cy); transform: rotate(45deg); margin-right: .35em; }
+.co-id h2 { margin: 0; font: 700 clamp(30px, 4vw, 58px)/1 var(--font-head); letter-spacing: .02em; text-transform: uppercase; color: var(--ink); text-shadow: 0 2px 18px rgba(var(--void-rgb), .8); }
+.co-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.co-chip { padding: 6px 12px; border: 1px solid; font: 500 12px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; background: rgba(var(--void-rgb), .55);
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%); }
+.co-chip.goal { border-color: rgba(var(--pick-rgb), .7); color: var(--pick-hi); }
+.co-chip.info { border-color: rgba(var(--teal-rgb), .6); color: var(--cy); }
+.co-chip.net { border-color: rgba(var(--alert-red-rgb), .75); color: var(--alert-text); }
+.co-res { display: grid; gap: 8px; min-width: 240px; padding: 8px 0 0; }
+.co-sr { display: grid; grid-template-columns: 74px minmax(90px, 160px) 56px; align-items: center; gap: 12px; }
+.co-sr .k { font: 500 11px/1 var(--font-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--ink-2); }
+.co-sr .bar { height: 2px; background: rgba(var(--white-rgb), .1); }
+.co-sr .bar i { display: block; height: 100%; background: var(--cy); }
+.co-sr.low .bar i { background: var(--caution); }
+.co-sr .v { font: 400 15px/1 var(--font-mono); color: var(--ink); text-align: right; }
+
+/* the body: the map left, the panel right */
+.co-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 29%); gap: 18px; min-height: 0; }
+.co-mapw { position: relative; min-height: 260px; display: grid; grid-template-rows: minmax(0, 1fr) auto;
+  background: radial-gradient(ellipse 70% 60% at 45% 50%, transparent, rgba(var(--void-rgb), .55) 100%), linear-gradient(90deg, transparent 70%, rgba(var(--void-rgb), .6)), url("../assets/course-nebula.webp") center / cover; }
+.co-map { width: 100%; height: 100%; min-height: 0; overflow: visible; }
+.co-legend { margin: 0; padding: 6px 14px 10px; list-style: none; display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.co-legend li { display: flex; align-items: center; gap: 8px; font: 500 10.5px/1 var(--font-mono); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
+.lg { display: inline-block; width: 22px; height: 0; }
+.lg.route { border-top: 2px solid var(--pick); }
+.lg.flown { border-top: 1.5px solid var(--ink-3); }
+.lg.known { border-top: 1.5px dotted var(--ink-2); }
+.lg.net { width: 12px; height: 12px; border: 1px solid var(--alert-red); background: repeating-linear-gradient(45deg, rgba(var(--alert-red-rgb), .6) 0 1px, transparent 1px 4px); }
+.lg.gate { width: 9px; height: 9px; border: 1.5px solid var(--pick); transform: rotate(45deg); margin: 0 3px; }
+
+/* the map's parts (drawn in ui/course.ts) */
+.co-lane { fill: none; stroke-linecap: round; }
+.co-lane.done { stroke: var(--ink-3); stroke-width: 1.3; opacity: .75; }
+.co-lane.next { stroke: var(--pick); stroke-width: 2; }
+.co-lane-glow { fill: none; stroke: var(--pick); stroke-width: 7; opacity: .16; stroke-linecap: round; }
+.co-lane.route { stroke: var(--pick); stroke-width: 1.6; stroke-dasharray: 7 6; opacity: .9; }
+.co-lane.ahead { stroke: var(--ink-2); stroke-width: 1.2; stroke-dasharray: 1.5 6; opacity: .6; }
+.co-ring { fill: rgba(var(--void-rgb), .5); stroke-width: 1.3; }
+.co-ring.amber { stroke: var(--pick-hi); fill: none; }
+.co-ring.thick { stroke-width: 2; fill: rgba(var(--void-rgb), .6); }
+.co-ring.done { stroke: var(--ink-3); }
+.co-ring.ahead { stroke: var(--cy); opacity: .7; }
 .co-core.amber { fill: var(--pick-hi); }
-.co-core.white { fill: var(--ink); }
-.co-core.dim { fill: var(--ink-2); }
-.co-leader { stroke: var(--ink-2); stroke-width: 1; opacity: .4; }
-.co-lab .ch-name { font: 500 12px var(--font-rail); letter-spacing: .22em; text-transform: uppercase; stroke: none; fill: var(--ink-2); }
-.co-s.here .ch-name { fill: var(--ink); }
-.co-s.next .ch-name { fill: var(--pick-hi); }
-.co-s.gate .ch-name { fill: var(--pick-hi); font-size: 14px; letter-spacing: .26em; }
-.co-s.ahead .ch-name { fill: var(--ink); opacity: .85; }
-.co-tag { font: 500 10px var(--font-mono); letter-spacing: .26em; text-transform: uppercase; fill: var(--cy); }
-.co-s.gate .co-tag { fill: var(--caution); }
-@media (max-height: 420px) { .co-lab .ch-name { font-size: 10px; letter-spacing: .16em; } .co-s.gate .ch-name { font-size: 11px; } }
+.co-core.done { fill: var(--ink-3); }
+.co-core.ahead { fill: var(--cy); }
+.co-here { fill: rgba(var(--void-rgb), .7); stroke: var(--teal-bright); stroke-width: 1.6; }
+.co-tick { stroke: var(--cy); stroke-width: 1.3; }
+.co-ship { fill: var(--teal-bright); }
+.co-dia-o { fill: rgba(var(--void-rgb), .6); stroke: var(--pick-hi); stroke-width: 2; }
+.co-dia-i { fill: var(--pick); }
+.co-s.done .co-dia-o { stroke: var(--ink-3); }
+.co-s.done .co-dia-i { fill: var(--ink-3); }
+.co-tri { fill: var(--alert-red); }
+.co-name { font: 600 13px var(--font-rail); letter-spacing: .26em; fill: var(--ink); paint-order: stroke; stroke: rgba(var(--void-rgb), .7); stroke-width: 4px; stroke-linejoin: round; }
+.co-sub { font: 400 10px var(--font-mono); letter-spacing: .24em; fill: var(--ink-2); paint-order: stroke; stroke: rgba(var(--void-rgb), .7); stroke-width: 3px; }
+.co-lab.done .co-name { fill: var(--ink-2); }
+.co-lab.done .co-sub { fill: var(--ink-3); }
+.co-lab.here .co-sub { fill: var(--cy); }
+.co-lab.next .co-name, .co-lab.next .co-sub, .co-lab.route .co-sub, .co-lab.gate:not(.done) .co-name, .co-lab.gate:not(.done) .co-sub { fill: var(--pick-hi); }
+.co-lab.next .co-name { font-size: 15px; }
+.co-jtag path { fill: rgba(var(--void-rgb), .82); stroke: rgba(var(--pick-rgb), .7); stroke-width: 1; }
+.co-jtag text { font: 600 10.5px var(--font-mono); letter-spacing: .06em; fill: var(--pick-hi); }
+.co-jtag circle { fill: var(--pick); }
+.co-jtag.next path { stroke: var(--pick-hi); }
+.co-hatch { stroke: rgba(var(--alert-red-rgb), .55); stroke-width: 1; }
+.co-netz { opacity: .8; }
+.co-nete { fill: none; stroke: var(--alert-red); stroke-width: 1.4; stroke-dasharray: 7 6; }
+.co-chev { font: 600 22px var(--font-mono); fill: var(--alert-red); }
+.co-netc { font: 500 10.5px var(--font-mono); letter-spacing: .26em; fill: var(--alert-text); }
+.co-legnext { font: 500 10.5px var(--font-mono); letter-spacing: .26em; fill: var(--ink-2); opacity: .55; }
 
-/* calmer (2026-11-14): no stores block, no pursuit line. The header is the place and the goal; the strip is a hairline, not a gold-edged box. */
-#course .ch-head { grid-template-columns: minmax(0, 1fr); grid-template-areas: "k" "l2"; }
-#course .ch-foot { border: 0; border-top: 1px solid var(--line); background: none; padding: 12px 4px 0; }
-#course .ch-gate .k { color: var(--ink-2); font-weight: 500; }
-@media (max-height: 520px) { #course .ch-head { grid-template-areas: "l2"; } #course .ch-gate { display: flex; } #course .ch-gate .k { font-size: 12px; } #course .ch-gate .n { font-size: 12px; } }
-.co-blurb .k { font: 500 12px/1.35 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+/* the panel: dark glass with a short amber bar on its top edge */
+.co-side { position: relative; display: flex; flex-direction: column; min-height: 0; padding: 20px 22px 16px; border: 1px solid rgba(var(--white-rgb), .1);
+  background: linear-gradient(180deg, rgba(var(--shade-rgb), .88), rgba(var(--void-rgb), .92)); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); overflow: auto; scrollbar-width: none; }
+.co-side::before { content: ""; position: absolute; top: -1px; left: -1px; width: 72px; height: 2px; background: var(--pick); }
+.co-nk { margin: 0; font: 500 11px/1.2 var(--font-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--ink-2); }
+.co-nn { margin: 8px 0 4px; font: 700 clamp(24px, 2.6vw, 38px)/1.05 var(--font-head); letter-spacing: .03em; text-transform: uppercase; color: var(--pick-hi); }
+.co-ns { margin: 0 0 12px; font: 400 15px/1.35 var(--font-display); color: var(--ink); }
+.co-ns:empty { display: none; }
+.co-rows { display: grid; border-top: 1px solid rgba(var(--white-rgb), .1); }
+.co-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid rgba(var(--white-rgb), .1); }
+.co-row .k { font: 500 11px/1 var(--font-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--ink-2); }
+.co-row .v { font: 500 13px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); text-align: right; }
+.co-row .amb { color: var(--pick-hi); }
+.co-row .red { color: var(--alert-text); }
+.co-row .dim { color: var(--ink-2); }
+.co-wallb { border: 0; background: none; padding: 0; min-height: 0; font: inherit; color: var(--ink); cursor: pointer; letter-spacing: inherit; text-transform: inherit; }
+.co-wallb:hover, .co-wallb:focus-visible { color: var(--cy); }
+.co-wallb .tri { color: var(--ink-2); }
+.co-rk { margin: 16px 0 8px; font: 500 11px/1 var(--font-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--ink-2); }
+.co-route { margin: 0; padding: 0; list-style: none; display: grid; }
+.co-route li { position: relative; display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 5px 0; font: 500 12.5px/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
+.co-route li + li::before { content: ""; position: absolute; left: 7.5px; top: -6px; height: 12px; border-left: 1px dotted rgba(var(--pick-rgb), .6); }
+.co-route .pip { width: 8px; height: 8px; margin-left: 4px; border-radius: 50%; border: 1.5px solid var(--pick); box-sizing: border-box; }
+.co-route .here .pip { background: var(--cy); border-color: var(--cy); }
+.co-route .here .nm, .co-route .here .j { color: var(--cy); }
+.co-route .next .pip { background: var(--pick-hi); border-color: var(--pick-hi); }
+.co-route .next .nm { color: var(--pick-hi); }
+.co-route .goal.gate .pip { border-radius: 0; transform: rotate(45deg); width: 8px; height: 8px; }
+.co-route .j { font: 400 12px/1 var(--font-mono); letter-spacing: .1em; color: var(--ink-2); }
+.co-act { margin-top: auto; padding-top: 16px; display: grid; gap: 8px; }
+/* the one button: amber filled, cut corners */
+#co-go { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px; width: 100%; min-height: 52px; padding: 14px 22px; border: 0; cursor: pointer; text-align: left;
+  background: var(--pick); color: var(--pick-deep); clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px); touch-action: manipulation; }
+#co-go b { font: 700 18px/1.1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; }
+#co-go small { font: 500 11px/1.1 var(--font-mono); letter-spacing: .22em; text-transform: uppercase; opacity: .78; }
+#co-go::before, #co-go::after { content: none; display: none; }
+#co-go:hover, #co-go:focus-visible { background: var(--pick-hi); }
+#co-go:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+.co-hint { margin: 0; font: 500 11px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+.co-hint kbd { font: inherit; color: var(--ink); border: 1px solid rgba(var(--white-rgb), .2); padding: 1px 5px; }
+.touch-ui .co-hint { display: none; }
+
+/* the Wall opens under the map; closed, the panel's Wall row is its door */
+.co-wall:not([open]) { display: none; }
+.co-wall[open] { max-height: 40dvh; overflow: auto; }
+
+/* the road: one bar for the whole game */
+.co-foot { display: grid; gap: 8px; }
+.co-road-k { margin: 0; font: 500 11px/1 var(--font-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--ink-2); }
+.co-road { display: flex; gap: 6px; }
+.co-seg { flex: 1 1 0; display: grid; gap: 8px; min-width: 0; }
+.co-seg.cur { flex-grow: 1.7; }
+.co-seg::before { content: ""; height: 2px; background: rgba(var(--white-rgb), .14); grid-area: 1 / 1; }
+.co-seg .fill { grid-area: 1 / 1; height: 2px; width: 0; }
+.co-seg.done .fill { width: 100%; background: var(--ink-2); }
+.co-seg.cur .fill { background: var(--pick); }
+.co-seg span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 10.5px/1.2 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.co-seg.done span { color: var(--ink-2); }
+.co-seg.cur span { color: var(--ink); }
+.co-seg .n { color: var(--pick-hi); }
+
+/* short desktop windows: tighter */
+@media (max-height: 800px) and (min-width: 901px) {
+  #course > .panel.coursep { padding: 16px 24px 14px; gap: 10px; }
+  .co-id h2 { font-size: clamp(28px, 3.4vw, 46px); }
+  .co-ns { font-size: 14px; margin-bottom: 8px; }
+  .co-row { padding: 7px 0; }
+  .co-rk { margin: 12px 0 6px; }
+  .co-route li { padding: 3px 0; }
+}
+/* upright and narrow: the map over the panel */
+@media (max-width: 900px) and (min-height: 521px) {
+  #course > .panel.coursep { height: auto; padding: 16px; }
+  .co-head { flex-wrap: wrap; }
+  .co-body { grid-template-columns: minmax(0, 1fr); }
+  .co-mapw { min-height: 300px; }
+  .co-road { flex-wrap: wrap; }
+  .co-seg { flex-basis: 30%; }
+}
+/* a phone on its side: the map left, the panel right; the legend, the road and the route list go */
+@media (max-height: 520px) {
+  #course > .panel.coursep { padding: 10px 16px 10px; gap: 6px; height: calc(100dvh - 12px); }
+  .co-head { gap: 6px 16px; }
+  .co-id { gap: 3px; }
+  .co-k { font-size: 10px; }
+  .co-id h2 { font-size: 22px; }
+  .co-chips { margin-top: 0; gap: 6px; }
+  .co-chip { font-size: 10px; padding: 4px 8px; letter-spacing: .14em; }
+  .co-res { min-width: 0; gap: 4px; padding-top: 2px; }
+  .co-sr { grid-template-columns: 52px 60px 40px; gap: 8px; }
+  .co-sr .k { font-size: 10px; letter-spacing: .16em; }
+  .co-sr .v { font-size: 12px; }
+  .co-body { grid-template-columns: minmax(0, 1fr) minmax(220px, 36%); gap: 10px; }
+  .co-mapw { min-height: 0; grid-template-rows: minmax(0, 1fr); }
+  .co-legend, .co-foot, .co-rk, .co-route, .co-hint { display: none; }
+  .co-side { padding: 10px 14px; }
+  .co-nk { font-size: 10px; }
+  .co-nn { font-size: 20px; margin: 4px 0 2px; }
+  .co-ns { font-size: 12px; margin-bottom: 6px; }
+  .co-row { padding: 5px 0; }
+  .co-row .k { font-size: 10px; letter-spacing: .16em; }
+  .co-row .v { font-size: 11px; }
+  .co-act { padding-top: 8px; }
+  #co-go { min-height: 42px; padding: 9px 14px; }
+  #co-go b { font-size: 14px; }
+  #co-go small { font-size: 10px; }
+  .co-name { font-size: 10px; letter-spacing: .16em; }
+  .co-sub { font-size: 9px; letter-spacing: .14em; }
+  .co-lab.next .co-name { font-size: 11px; }
+}

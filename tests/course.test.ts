@@ -102,4 +102,18 @@ describe('the Course', () => {
     expect(c.fuel.need).toBeGreaterThan(3);
     expect(c.supplies.need).toBeGreaterThan(0);
   });
+
+  it('gives the screen its parts from the journey: days flown, the Net behind, the next stop\'s depot, the road', () => {
+    const j = at(5);
+    j.legs.push({ system: j.trail[2]!, name: 'Northfold', day: 2.3 } as never);
+    for (const id of j.trail.slice(2, 6)) j.chart.net[id] = 1;
+    const c = courseView(j)!;
+    expect(c.road[0]).toMatchObject({ name: 'Northfold', state: 'done', day: 3, net: true });
+    expect(c.net).toBe(1);
+    expect(c.nextAt.net).toBe(false);
+    expect(c.legs).toMatchObject({ at: 0, done: 5, of: 8 });
+    expect(c.legs.names).toHaveLength(8);
+    expect(c.stores.plates).toBeLessThanOrEqual(c.stores.maxPlates);
+    expect(courseView(at(3))!.net).toBeNull();
+  });
 });
