@@ -241,11 +241,9 @@ export class World implements EncounterHost {
   pace: Pace = newPace(ARCADE_OPENING.first);
   /** The arcade's self-repair (sim/repair.ts). */
   mend: Mend = newMend();
-  /** The arcade's bay: the Krail it opens at next, and how long it has been quiet with that much aboard. */
-  private bayAt = ARCADE_PRICE;
+  /** The arcade's bay: how long the alert has been clear in a quiet spell with a price aboard, and the quiet spell (`pace.n`) it last offered itself in. */
   private bayQuiet = 0;
-  /** Something was fitted since the bay opened: what is left is a new pick, not a skipped one. */
-  private bayFit = false;
+  private bayOffered = -1;
   /** Times the bay has shut this run: each opening deals the Arcade picks a little differently (sim/bay.ts). */
   private bayDeal = 0;
   private bayShown: { ids: string[]; at: Record<string, number> } | null = null;
@@ -482,7 +480,7 @@ export class World implements EncounterHost {
     this.traffic = null;
     if (this.mode !== 'breakout') {
       this.bk = null; this.cyrite = 0; this.fuel = 0; this.supplies = 0; this.callowayAt = Infinity;
-      this.bayAt = ARCADE_PRICE; this.bayQuiet = 0;
+      this.bayQuiet = 0; this.bayOffered = -1;
       this.stock();
       return;
     }
@@ -823,7 +821,8 @@ export class World implements EncounterHost {
     // under recovery nothing comes for her at all (the arcade's waves are not the Story's)
     // ...and from the code to the paint bay nothing comes either (owner, 5 November 2026): no pursuit, no swarm, no jam
     if (this.bk) { if (!held) { this.pursue(t); if (!(this.bk.def.first && paintDue(this.flags))) { this.swarm(t); this.jam(dt); } } }
-    else this.spawn(t, p);
+    // the Arcade's first-run lesson flies alone: the first wave waits until it is over
+    else if (!this.tutor || this.tutor.done) this.spawn(t, p);
     this.stepAliens(dt, t, p);
     const before = this.command.state, sighted = this.command.boss;
     this.command.step(t, dt, s, this.aliens, this.shots, this.webs, this.tele, this.strikes, this.rng, this.events);
@@ -1735,7 +1734,7 @@ export class World implements EncounterHost {
   openBay(): boolean {
     if (this.bayClosed()) return false;
     this.phase = 'bay';
-    if (!this.bk) this.bayShown = { ids: quickPicks(this.bayCtx()).map((w) => w.id), at: this.levels };
+    if (!this.bk) { this.bayShown = { ids: quickPicks(this.bayCtx()).map((w) => w.id), at: this.levels }; this.run.bayOpens++; }
     return true;
   }
 
@@ -1747,25 +1746,53 @@ export class World implements EncounterHost {
   }
 
   /**
-   * The arcade's bay opens by itself: once the Krail aboard reaches a price,
-   * the alert has been clear a moment, and something can be fitted. Leaving
-   * with a price or more unspent puts the next opening one price further on
-   * (closeBay); the B key and the badge still open it sooner.
+   * The arcade's bay offers itself on the rhythm of the fight: once in each quiet spell between
+   * encounters (sim/pacing.ts), with a price of Cyrite aboard, the alert clear a moment, no capital
+   * ship about, and something to fit. Never between the arrivals of one encounter. It offers one
+   * refit; Fit another is the player's choice (`redeal`). Unspent Cyrite waits for the next quiet
+   * spell, or for B and the badge, which open it whenever the alert is clear.
    */
   private bayDue(dt: number): void {
-    if (this.bk || !this.alive || this.phase !== 'play' || this.krail < this.bayAt) { this.bayQuiet = 0; return; }
+    const capital = this.command.state !== 'idle';
+    if (this.bk || !this.alive || this.phase !== 'play' || this.krail < ARCADE_PRICE || this.pace.state !== 'quiet' || capital || this.bayOffered === this.pace.n) { this.bayQuiet = 0; return; }
     this.bayQuiet = this.alert() !== 'clear' ? 0 : this.bayQuiet + dt;
     if (this.bayQuiet < BAY_QUIET) return;
     this.bayQuiet = 0;
+    this.bayOffered = this.pace.n;
     const ctx = this.bayCtx();
-    if (quickPicks(ctx).some((w) => blockOf(w.id, ctx) === null)) this.openBay();
-    else this.bayAt = this.krail + ARCADE_PRICE; // nothing it could buy now: look again a price later
+    if (quickPicks(ctx).some((w) => blockOf(w.id, ctx) === null)) { this.openBay(); this.run.bayOffers++; }
+  }
+
+  /** The Arcade's Fit another: there is Cyrite for another refit, and something to fit with it. */
+  canFitAnother(): boolean {
+    if (this.bk || this.phase !== 'bay' || this.krail < ARCADE_PRICE) return false;
+    const ctx = { ...this.bayCtx(), deal: this.bayDeal + 1 };
+    return quickPicks(ctx).some((w) => blockOf(w.id, ctx) === null);
+  }
+
+  /** How many more refits the Cyrite aboard pays for (the Arcade: every refit costs the same). */
+  get refitsAffordable(): number {
+    return this.bk ? 0 : Math.floor(this.krail / ARCADE_PRICE);
+  }
+
+  /** The Arcade's Fit another: deal three fresh cards in the same visit. The ones passed over come round less readily. */
+  redeal(): boolean {
+    if (!this.canFitAnother()) return false;
+    this.passOn();
+    this.bayShown = { ids: quickPicks(this.bayCtx()).map((w) => w.id), at: this.levels };
+    return true;
+  }
+
+  /** The cards dealt and not taken, kept so the next deal is slower to offer them again; the next deal is a new one. */
+  private passOn(): void {
+    this.bayDeal++;
+    if (this.bayShown) this.bayPassed = this.bayShown.ids.filter((id) => (this.levels[id] ?? 0) === (this.bayShown!.at[id] ?? 0));
+    this.bayShown = null;
   }
 
   private fit(id: string): Block | null {
     const r = bayInstall(id, this.bayCtx());
     if (typeof r === 'string') return r;
-    this.bayFit = true;
     if (this.bk) this.chits -= r.cost;
     else this.krail -= r.cost;
     this.levels = r.levels;
@@ -1781,14 +1808,8 @@ export class World implements EncounterHost {
   closeBay(): void {
     if (this.phase !== 'bay') return;
     this.phase = this.docked ? 'dock' : 'play';
-    // the arcade asks again at a price: at once for what is left after a pick, a price past it if the player left without one
-    this.bayAt = this.bayFit || this.krail < ARCADE_PRICE ? ARCADE_PRICE : this.krail + ARCADE_PRICE;
-    this.bayFit = false;
     this.bayQuiet = 0;
-    this.bayDeal++;
-    // the cards that were dealt and not taken: the next opening is slower to deal them again
-    if (this.bayShown) this.bayPassed = this.bayShown.ids.filter((id) => (this.levels[id] ?? 0) === (this.bayShown!.at[id] ?? 0));
-    this.bayShown = null;
+    this.passOn();
   }
 
   // ── comms ─────────────────────────────────────────────────────────────
@@ -2966,7 +2987,7 @@ export class World implements EncounterHost {
     let best = -1, bd = st.flakRange;
     for (let i = 0; i < this.shots.length; i++) {
       const sh = this.shots[i]!;
-      if (sh.from === 'tutor-missile') continue;
+      if (sh.from === 'tutor-missile' || sh.from === 'tutor-roll') continue;
       const d = Math.hypot(sh.x - s.x, sh.y, sh.z - s.z);
       if (d < bd) { bd = d; best = i; }
     }
@@ -3258,7 +3279,7 @@ export class World implements EncounterHost {
       // enemy fire
       for (let i = this.shots.length - 1; i >= 0; i--) {
         const sh = this.shots[i]!;
-        if (sh.from === 'tutor-missile') continue; // the opening's torpedo lands on the tutor's timer, not here
+        if (sh.from === 'tutor-missile' || sh.from === 'tutor-roll') continue; // the lessons' shots land on the tutor's terms, not here
         if ((sh.x - s.x) ** 2 + sh.y ** 2 + (sh.z - s.z) ** 2 < (sh.r + SHIP_R) ** 2) {
           this.shots.splice(i, 1);
           this.impactAt = [sh.x, sh.z];

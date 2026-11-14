@@ -59,6 +59,9 @@ Yellow alert (observed) is a quiet line under the tape. Red alert (targeted)
 is the loudest thing on the screen: bigger, red-tinted, its edge breathing.
 The detection warnings other threads add (a capital ship noticing you in the
 Arcade) belong to this card: set `#mode-t` and `#mode-s`, no new element.
+In a player's first three Arcade runs a sighted capital ship also shows its two
+outcomes as chips in `#mode-c` ("Stay clear · +score · next one sooner",
+"Fight · bounty and tech"; `Hud.capitalHelp`). Later runs show the plain card.
 Boosters belong to `#powers`: one `span` per booster, label and seconds (×count for plating and warheads, which stay until used)
 (`updateSystems` in `hud.ts` builds them from `world.powers`).
 

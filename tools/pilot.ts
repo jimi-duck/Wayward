@@ -14,9 +14,13 @@ import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
 import type { GameEvent } from '../src/sim/events';
 import { blockOf, budgets, cost, reachable } from '../src/sim/bay';
-import { FITTING } from '../src/content/web';
+import { live } from '../src/sim/encounters';
+import { ARCADE_PRICE, FITTING } from '../src/content/web';
 import { MODULE_BY_ID } from '../src/content/modules';
 import type { SurvivalId } from '../src/content/survival';
+
+/** The arcade pilot presses B in a quiet moment (as a player who knows the key would); PILOT_NO_B=1 leaves it to the bay's own openings. */
+const B_KEY = process.env.PILOT_NO_B !== '1';
 
 // ── the scripted pilot ────────────────────────────────────────────────────
 // A competent, unspectacular player, for balancing. It picks a goal (nose
@@ -106,6 +110,17 @@ export interface PilotResult {
   /** The arcade's refit bay at the end: the budgets drawn against the ratings. */
   budget: { use: { power: number; mass: number; heat: number }; cap: { power: number; mass: number; heat: number } };
   answers: Answer[];
+  /** The arcade's bay: when a refit's price was first aboard, when the bay first opened, how often it opened, the picks it took per opening, and the mean wait from a price aboard to the bay open. */
+  bay: { earned: number; offered: number; opens: number; picks: number; wait: number };
+  /** The first capital ship: when it was sighted or arrived, and how it ended (killed, avoided: it jumped out unprovoked, escaped: it left the fight, none). */
+  firstCapital: { at: number; outcome: string };
+  /** When the first specialisation was fitted (or -1). */
+  firstSpec: number;
+  /** Plates the self-repair mended, and the mean seconds from a plate lost to the hull back at that count (plates never restored are left out). */
+  mended: number;
+  hitToPlate: number;
+  /** Seconds with a wave in, a sector event live and a capital ship about, all at once. */
+  overlap: number;
 }
 
 /**
@@ -169,7 +184,8 @@ function want(w: World, s: Strategy, id: string, modules: readonly string[] = []
 function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly string[] = []): void {
   if (w.phase !== 'bay' && !w.openBay()) return;
   // the arcade's bay shuts itself after one pick, and opens again when the Krail is there
-  for (let i = 0; i < (w.bk ? 6 : 1); i++) {
+  // the arcade: one pick, then Fit another while the Cyrite pays for one (a player who always says yes: the most menu time)
+  for (let i = 0; i < (w.bk ? 6 : Math.max(1, w.refitsAffordable)); i++) {
     const ctx = w.bayCtx();
     const open = reachable(ctx);
     if (!open.length) break;
@@ -540,10 +556,30 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
   const seen = memo.seen;
   let docks = 0;
   let nextShop = 0, fitted = 0;
+  const bay = { earned: -1, offered: -1, opens: 0, picks: 0, wait: 0 };
+  let owed = -1, waits = 0, waitSum = 0;
+  const firstCapital = { at: -1, outcome: 'none' };
+  let firstSpec = -1, overlap = 0;
+  const lostAt: Array<{ plates: number; t: number }> = [];
+  let hitSum = 0, hitN = 0;
   while (w.phase !== 'over' && w.runTime < maxTime) {
     // the arcade's bay opens by itself; the Story mode's pilot looks into it every couple of seconds, when it will open
-    if (w.phase === 'bay') { if (o.noShop) w.closeBay(); else shop(w, strategy, rngPick, o.modules); continue; }
+    if (w.phase === 'bay') {
+      if (!w.bk) {
+        bay.opens++;
+        if (bay.offered < 0) bay.offered = w.runTime;
+        if (owed >= 0) { waitSum += w.runTime - owed; waits++; owed = -1; }
+      }
+      const before = w.refit;
+      if (o.noShop) w.closeBay(); else shop(w, strategy, rngPick, o.modules);
+      if (!w.bk) bay.picks += w.refit - before;
+      continue;
+    }
+    if (!w.bk && w.krail >= ARCADE_PRICE) { if (bay.earned < 0) bay.earned = w.runTime; if (owed < 0) owed = w.runTime; }
+    else if (owed >= 0 && !w.bk) owed = -1;
     if (w.phase === 'play' && w.bk && !o.noShop && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick, o.modules); }
+    // the arcade: a player who knows B opens the bay in a quiet moment when a refit is paid for (PILOT_NO_B=1: only when it opens itself)
+    if (!w.bk && B_KEY && !o.noShop && w.phase === 'play' && w.runTime >= nextShop && w.krail >= ARCADE_PRICE && w.pace.state === 'quiet' && w.command.state === 'idle' && w.alert() === 'clear') { nextShop = w.runTime + 4; w.openBay(); continue; }
     if (w.command.state === 'sighted' && !o.evade) w.provoke();
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     if (w.phase === 'comms' || (w.phase === 'play' && w.call)) {
@@ -579,9 +615,20 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     if (hot) { calmRun = 0; if (!wasNear) contacts++; } else { calmRun += STEP; longestCalm = Math.max(longestCalm, calmRun); }
     wasNear = hot;
     peak = Math.max(peak, near);
+    if (!w.bk && w.pace.state === 'wave' && live(w.encounter) && w.command.state !== 'idle') overlap += STEP;
+    // a plate lost: when is the hull back at the count it had?
+    while (lostAt.length && w.plates >= lostAt[lostAt.length - 1]!.plates) { hitSum += w.runTime - lostAt.pop()!.t; hitN++; }
     const evs = w.drain();
     o.watch?.(w, evs);
     for (const ev of evs) {
+      if (ev.type === 'shipHit') lostAt.push({ plates: ev.plates + 1, t: w.runTime });
+      if ((ev.type === 'bossSighted' || ev.type === 'bossArrive') && firstCapital.at < 0) firstCapital.at = Math.round(w.runTime);
+      if (firstCapital.at >= 0 && firstCapital.outcome === 'none') {
+        if (ev.type === 'bossDestroyed') firstCapital.outcome = 'killed';
+        else if (ev.type === 'bossLeft') firstCapital.outcome = 'escaped';
+        else if (ev.type === 'bossJumped') firstCapital.outcome = 'avoided';
+      }
+      if (ev.type === 'fitted' && firstSpec < 0 && UPGRADE[ev.id]?.kind === 'spec') firstSpec = Math.round(w.runTime);
       if (ev.type === 'fitted' && [1, 5, 10, 15, 20].includes(++fitted)) refitAt[fitted] = Math.round(w.runTime);
       if (ev.type === 'bossArrive') { fightStart = w.runTime; fightFaction = ev.faction; }
       if (ev.type === 'bossDestroyed') { bossFights.push({ faction: ev.faction, outcome: 'killed', seconds: Math.round(w.runTime - fightStart), hpLeft: 0, refit: w.refit }); fightStart = -1; }
@@ -598,6 +645,8 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     lastLost = w.run.platesLost;
     lastGained = w.run.platesGained;
   }
+  if (firstCapital.at >= 0 && firstCapital.outcome === 'none') firstCapital.outcome = w.phase === 'over' ? 'died' : 'open';
+  bay.wait = waits ? waitSum / waits : 0;
   if (fightStart >= 0) {
     const b = w.command.boss;
     bossFights.push({ faction: fightFaction, outcome: 'died', seconds: Math.round(w.runTime - fightStart), hpLeft: b ? b.hp / b.maxHp : 1, refit: w.refit });
@@ -609,5 +658,5 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     w.run.build = { ...w.levels };
     w.run.cause = 'survived';
   }
-  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat, crowd, peak, longestCalm, contacts, budget: budgets(w.levels), answers };
+  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat, crowd, peak, longestCalm, contacts, budget: budgets(w.levels), answers, bay, firstCapital, firstSpec, mended: w.run.platesMended, hitToPlate: hitN ? hitSum / hitN : -1, overlap };
 }

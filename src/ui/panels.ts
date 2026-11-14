@@ -1,11 +1,11 @@
 import { BRANCHES, UPGRADES, type Branch } from '../content/upgrades';
 import { COSMETICS, UNLOCKS } from '../content/unlocks';
-import { SURVIVAL, SURVIVALS, type SurvivalId } from '../content/survival';
+import { SURVIVAL, SURVIVALS, survivalOf, type SurvivalId } from '../content/survival';
 import { ENDING_BY_ID, ENDINGS } from '../content/endings';
 import { FRAGMENTS_ALL } from '../content/story';
 import { OBSERVATIONS } from '../content/situations';
 import { FEATURES, FEATURE_ORDER, metFlag } from '../content/features';
-import { grants, type Profile, type Recorded } from '../meta/profile';
+import { bestsOf, grants, type Profile, type Recorded } from '../meta/profile';
 import { identity, type Levels } from '../sim/build';
 import { artImg } from './art';
 import { UNLOCK_SPEC, type SlotId } from '../content/art';
@@ -98,7 +98,9 @@ export class SummaryPanel {
     $('sum-s').textContent = r.escaped ? t('Escaped with {n} Cyrite remaining', { n: r.cyriteLeft }) : damageWord(r.cause || 'rock');
     $('sum-score').textContent = fmt(r.score);
     const line = $('sum-line');
-    line.replaceChildren(h('span', '', `${mmss(r.time)} ${t(r.escaped ? 'to the lane' : 'survived')} · ${t('refit')} ${r.refit} · ${t('{n} kills', { n: r.kills })}`), rec.newBest ? h('span', 'best', ` · ${t('new best')}`) : h('span', '', ` · ${t('best')} ${fmt(p.score)}`));
+    // the Arcade's score is only ever compared with its own difficulty: say which
+    const diff = breakout ? '' : ` · ${t(survivalOf(r.survival).name)}`;
+    line.replaceChildren(h('span', '', `${mmss(r.time)} ${t(r.escaped ? 'to the lane' : 'survived')} · ${t('refit')} ${r.refit} · ${t('{n} kills', { n: r.kills })}${diff}`), rec.newBest ? h('span', 'best', ` · ${t('new best')}`) : h('span', '', ` · ${t('best')} ${fmt(p.score)}`));
     $('sum-ship').textContent = t(r.identity);
 
     // tiles: this run against the best before it
@@ -224,6 +226,9 @@ export class SummaryPanel {
 const LEVEL: Record<SurvivalId, string> = { drifter: 'Easy', prospector: 'Normal', raider: 'Hard' };
 
 export class StartOptions {
+  /** The difficulty step is choosing for the Arcade (its own, remembered apart from the Story's). */
+  arcade = false;
+
   constructor(private readonly profile: Profile, private readonly onChange: () => void, private readonly onPick: () => void) {
     $('logbook-x').addEventListener('click', () => this.logbook(false));
     $('logbook').addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -239,20 +244,24 @@ export class StartOptions {
     const rec = $('records');
     rec.replaceChildren();
     if (p.life.runs) {
-      rec.append(h('span', '', t('Best'), h('b', '', fmt(p.best.score))), h('span', '', t('Longest'), h('b', '', mmss(p.best.time))), h('span', '', t('Runs'), h('b', '', String(p.life.runs))));
+      // the Arcade's records at its last difficulty, named, so a best is never read against another difficulty
+      const { best } = bestsOf(p, p.arcadeSurvival);
+      rec.append(h('span', '', t('Best · {mode}', { mode: t(survivalOf(p.arcadeSurvival).name) }), h('b', '', fmt(best.score))), h('span', '', t('Longest'), h('b', '', mmss(best.time))), h('span', '', t('Runs'), h('b', '', String(p.life.runs))));
     }
     // the survival mode: Drifter, Prospector or Raider, with what the one picked means and how it differs, written under it
     const mods = $('mods');
+    const cur = (): SurvivalId => (this.arcade ? p.arcadeSurvival : p.survival);
     mods.replaceChildren(...SURVIVALS.map((m) => {
       const b = h('button', 'st-row dif', '', h('span', 'st-t', t(m.name)), h('span', 'st-s', t(LEVEL[m.id]))) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('role', 'radio');
-      b.setAttribute('aria-checked', String(p.survival === m.id));
+      b.setAttribute('aria-checked', String(cur() === m.id));
       b.addEventListener('pointerdown', (e) => e.stopPropagation());
       b.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (p.survival !== m.id) {
-          p.survival = m.id;
+        if (cur() !== m.id) {
+          if (this.arcade) p.arcadeSurvival = m.id;
+          else p.survival = m.id;
           this.render();
           this.onChange();
         }
@@ -264,8 +273,8 @@ export class StartOptions {
       b.addEventListener('focus', () => this.preview(m.id));
       return b;
     }));
-    mods.onpointerleave = () => this.preview(p.survival);
-    this.preview(p.survival);
+    mods.onpointerleave = () => this.preview(cur());
+    this.preview(cur());
     // the language: English or German, remembered
     $('lang').replaceChildren(...LANGS.map((l) => {
       const b = h('button', '', LANG_NAME[l]) as HTMLButtonElement;
