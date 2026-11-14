@@ -49,8 +49,9 @@ set, so the story takes the branch where their choices were not made.
 ## The roll secret
 
 In the Story, ten barrel rolls in a row (each within 2.5 s of the last) pay
-1,000 Cyrite and show a "Secret found" notice (`World.chainRoll`). The hold
-holds 999 at the next jump, so spend it in the same system.
+999,999 Cyrite and show a "Secret found" notice (`World.chainRoll`). It sets the
+`roll_secret` flag, which lifts the hold's 999 cap for the rest of the journey
+(`holdMax`).
 
 ## Where it lives
 

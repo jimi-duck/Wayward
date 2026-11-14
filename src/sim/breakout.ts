@@ -76,6 +76,9 @@ export const JUMP_COST = 20;
 export const START_CYRITE = 6;
 /** Cyrite the ship can hold, as a ceiling for sums; money does not run to the top of a tank. */
 export const HOLD_MAX = 999;
+/** The roll secret's flag (World.chainRoll): the hold has no top once it has paid out. */
+export const ROLL_SECRET = 'roll_secret';
+export const holdMax = (flags: Iterable<string>): number => (new Set(flags).has(ROLL_SECRET) ? 1e9 : HOLD_MAX);
 /** The drive tank (sim/purse.ts): a lane and a half. The Thren swarms read the tank against it. */
 export { TANK_MAX };
 /** Seconds inside the Jump Gate for the drive to spool; and how much longer once you have run the blockade (her interdiction field drags on the drive). */
