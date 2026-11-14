@@ -74,10 +74,20 @@ Wane Rest, the last stop, plays the end as a scene (`content/script/threshold.ts
 
 1. Thane's last broadcast.
 2. "They gather": the Thren close round the gate.
-3. Who came: one line each from the allies the player built (Pike with `thread_line_2`, Hester with `thread_crews_3`, the Long Walk with `job_long_walk_won`, the analyst with `thread_survey_2`), Val as a rival with `broker`, or "Nobody came".
+3. Who came: one line each from the allies the player built (Pike with `thread_line_2`, Hester with `thread_crews_3`, the Long Walk with `job_long_walk_won`, the analyst with `thread_survey_2`), the Hollow Saints with `saints_helped`, Val as a rival with `broker`, or "Nobody came".
 4. A main notice, "Calloway holds the gate", that holds the gate until the scene has played. Her last card follows at the gate, as before.
 5. On the ending screen, Ada's note 8 admits the keys would have worked in any hand, and its button is Juno's answer ("You could have asked me", or "My name is Juno. I chose." if the implant was burned).
 6. The choice. Every road epilogue has a `charter` slot: what that future does to the Charter.
+
+## The divided resistance
+
+Nobody in the Scatter agrees what freedom is for (`content/script/resistance.ts`, `content/resistance.ts`, [STORY_DIRECTION.md](STORY_DIRECTION.md) §8). Three scenes carry the argument:
+
+- **The moot at Kessel Hold.** Hester (crews together), Oduya (each Holdfast governs itself), Pike (the Line keeps out of councils) and Val (call me when one of you wins) speak in turn before Oduya's card, which waits for them.
+- **The Saints at Tamsin Field.** Sister Vera Hask's Hollow Saints blow Custody's relay, which Bonded conscripts man. `saints_relay` (a main card): help (`saints_helped`, hunt +1, the conscripts die), warn the crew (`saints_stopped`, two raptors come for Juno) or walk away (`saints_ignored`). Thane's broadcast calls it terror either way, unless she stopped it.
+- **The strike vote at Torchwall.** Marit opens; Hester (seize), the Saints (wreck) and Oduya (bargain) speak if Juno has worked with them. Marit's card then offers "Seize the yard" (`strike_seized`) or "Bargain for passes" (`strike_passes`); both count as `crews_stood`.
+
+The Unite ending is a confederation with no governor, and it remembers the Saints' dead. `tests/resistance.test.ts`.
 
 ## Add a stop
 

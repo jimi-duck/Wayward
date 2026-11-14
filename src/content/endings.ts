@@ -116,16 +116,17 @@ export const ENDINGS: EndingDef[] = [
     ],
   },
   {
-    id: 'unite', name: 'Unite', pitch: 'Bring the Scatter together for the first time in seventy years.',
+    id: 'unite', name: 'Unite', pitch: 'A confederation: councils, crews and fleets as equals, with no governor.',
     needs: 'Needs: friends (standing 2) with two of miners, Frontier, Guild, Gutter. Or one, plus Contacts 2 or an ally. Or Kessel Hold and the Long Walk.',
     ways: [{ friends: 2 }, { friends: 1, marks: { contacts: 2 } }, { allFlags: ['pact_holdfast', 'pact_drift'] }, { friends: 1, flags: ['pact_holdfast', 'pact_drift'] }],
     file: 'SEVERANCE · the copy read at the Threshold moot',
     road: {
-      open: 'Kessel Hold calls the first moot with more than one Holdfast in it.',
+      open: 'Kessel Hold calls a moot of every Holdfast, crew and fleet that will come. Nobody chairs it.',
       lines: [
         { slot: 'thread', if: { flags: ['thread_crews_3'] }, text: 'Hester’s crews come with their strike fund and their own list. Your name is on it.' },
         { slot: 'person', if: { flags: ['pact_drift', 'wren_trust'] }, text: 'The Long Walk turns its fleet toward the meeting. Wren flies point. Ma Saffi reads the list first.' },
         { slot: 'cost', if: { flags: ['job_missing_payroll_won', 'job_drift_cache_won', 'job_heavy_tanker_won'] }, text: 'Not everyone comes. Some remember the wages, the cache, the wreck. A union built on a debt is still in debt.' },
+        { slot: 'cost', if: { flags: ['saints_helped'] }, text: 'The Saints come too. Half the moot won’t sit at a table with them. The other half won’t sit without them.' },
         { slot: 'charter', text: 'The confederation recognises no Charter. Any hull may pass its gates. The core does not agree, so the line now runs between two worlds.' },
       ],
       close: 'Divided on purpose. Together by choice. For now.',
