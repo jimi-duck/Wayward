@@ -4,6 +4,7 @@ import { REGISTRY_CARD, STORY_CARDS } from './story';
 import { NOTE_CARDS, ROAD_OFFERS } from './legs';
 import { CHARTER_CARDS } from './charter';
 import { RESISTANCE_CARDS } from './resistance';
+import { THREN_CARDS } from './thren';
 import { SCENE_CARDS } from './situationCards';
 
 // ── comms cards ───────────────────────────────────────────────────────────
@@ -970,6 +971,7 @@ export const CARDS: CardDef[] = [
   ...CHARTER_CARDS,
   // the divided resistance (content/resistance.ts)
   ...RESISTANCE_CARDS,
+  ...THREN_CARDS,
 
   // what is going on in a system: the calls situations make (content/situations.ts)
   ...SCENE_CARDS,
