@@ -174,7 +174,7 @@ function sheetView(d: Open['def'], o: Open): SheetView {
       who: null, role, from: t(d.from), status: d.status ? t(d.status) : '', dot: d.status === 'Unknown' ? 'white' : role,
       title: d.notitle || d.hero ? '' : t(d.title), sub: d.quote ? '' : lines.join(' '), label: '', lines: d.quote ? lines : [],
       facts: !!d.facts, hero: d.hero ? [t(d.hero[0]), t(d.hero[1])] : null, rows: rowsOf(o.ledger), note: d.note ? t(d.note) : '', rx: d.rx ?? null,
-      letter: d.letter ? { head: d.letter.head.map(([k, v]) => [t(k), t(v)] as [string, string]), sign: t(d.letter.sign) } : null,
+      letter: d.letter ? { head: d.letter.head.map(([k, v]) => [t(k), t(v)] as [string, string]), sign: d.letter.sign ? t(d.letter.sign) : '' } : null,
     },
     side: side ? {
       role: side.glass ?? 'cyan', from: t(side.from), status: side.status ? t(side.status) : '', dot: side.glass ?? 'cyan',
@@ -564,7 +564,7 @@ export class CommsPanel {
     const who = m.who ? h('div', `ns-who${face ? '' : ' bare'}`, '', face, h('div', '', '', h('b', '', m.who.name), m.who.role ? h('span', '', m.who.role) : null)) : null;
     const timer = sv.timer ? h('div', 'ns-timer', '', h('i')) : null;
     // a plain one-answer message (a person handing something over): the compact card with the amber selection
-    const hand = !tpl && m.role === 'cyan' && view.choices.length === 1 && !m.hero && !m.facts && !m.rows.length && m.rx == null && !d && (!!(m.letter && sd) || !m.letter);
+    const hand = !tpl && m.role === 'cyan' && view.choices.length === 1 && !m.hero && !m.facts && !m.rows.length && m.rx == null && !d;
     const panel = h('section', `ng ${m.role} ns-p ns-main${tpl ? ` ns-${sv.tpl}` : ''}${hand ? ' ns-hand' : ''}`, '',
       head(m),
       timer,
@@ -576,8 +576,8 @@ export class CommsPanel {
       ...(m.letter ? [
         // who handed it over, in one line at the top of the same card (never a second card beneath)
         sd ? h('p', 'ns-lead', '', h('b', '', sd.from), document.createTextNode(sd.lines.join(' '))) : null,
-        h('dl', 'ns-mail', '', ...m.letter.head.map(([k, v]) => h('div', '', '', h('dt', '', k), h('dd', '', v)))),
-        h('div', 'ns-letter', '', ...m.lines.map((l) => h('p', '', l)), h('p', 'ns-sign', m.letter.sign)),
+        m.letter.head.length ? h('dl', 'ns-mail', '', ...m.letter.head.map(([k, v]) => h('div', '', '', h('dt', '', k), h('dd', '', v)))) : null,
+        h('div', 'ns-letter', '', ...m.lines.map((l) => h('p', '', l)), m.letter.sign ? h('p', 'ns-sign', m.letter.sign) : null),
       ] : [quotes(m.lines)]),
       main.length ? h('div', `ns-rows${m.facts ? ' ns-facts' : ''}`, '', ...main) : null,
       m.note && !folded ? h('p', 'ns-note', m.note) : null,

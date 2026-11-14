@@ -951,3 +951,15 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-h { padding-bottom: 4px; }
   .ns-acts { gap: 5px; }
 }
+
+/* a written message: who it is from sits on one quiet line under the header, no labels (the owner, 14 November 2026) */
+.ns-mail { display: flex; flex-wrap: wrap; gap: 0; margin: -4px 0 0; padding-bottom: 10px; }
+.ns-mail div { display: block; }
+.ns-mail dt { display: none; }
+.ns-mail dd { font: 500 14px/1.3 var(--font-display); color: var(--ink-2); }
+.ns-mail div + div dd::before { content: "·"; margin: 0 .6em; }
+@media (max-height: 520px) {
+  .ns-mail { margin: -2px 0 0; padding-bottom: 3px; }
+  .ns-mail dd { font-size: 11.5px; }
+  .ns-main:has(.ns-lead) .ns-mail div:nth-child(n+3) { display: block; }
+}

@@ -56,7 +56,6 @@ export const REACH_DE: Record<string, string> = {
   'Continuance Emergency Authority': 'Notfallbehörde der Continuance',
   'Order': 'Befehl',
   'Order of Continuity 1': 'Kontinuitätsbefehl 1',
-  'Kept by': 'Aufbewahrt von',
   '— Authorised: L. C.': '— Genehmigt: L. C.',
   'Effective at once.\nThe outer relays at the Narrows and beyond are to be powered down.\nWardens on watch will surrender their keys to the attending officer.\nThe closure is to be recorded as a failure from neglect.': 'Sofort wirksam.\nDie äußeren Relais an den Narrows und darüber hinaus sind abzuschalten.\nDiensthabende Wardens übergeben ihre Schlüssel dem anwesenden Offizier.\nDie Schließung ist als Versagen durch Vernachlässigung zu verbuchen.',
   'Take the paper': 'Das Papier nehmen',
