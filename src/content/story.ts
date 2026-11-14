@@ -717,7 +717,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_implant', kind: 'plea', caller: 'unknown',
     from: 'The Wayward · Ada’s routine', title: 'What the helm still holds',
-    text: '“Warden-bloodline helm accepted. Ada Aster’s routine is still in the console. It has been learning who flies her. Keep it, burn it, or make it yours.”',
+    text: '“Helm accepted. Ada Aster’s routine is still in the console. It steered this hull into your path, and learned who flies her. Keep it, burn it, or make it yours.”',
     cargo: 'The Wayward’s helm · one sealed implant',
     choices: [
       { id: 'keep', label: 'Keep the implant', tone: 'help', hint: 'Ada’s routine stays. It can wake the lanes, and be found.', win: { text: 'The implant stays in the helm', flag: 'implant_kept' } },
