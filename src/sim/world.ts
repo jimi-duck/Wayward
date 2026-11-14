@@ -51,6 +51,7 @@ import {
 } from './enemies';
 import type { BlastKind, GameEvent, PowerKind } from './events';
 import { CHITS_PER_CYRITE, cy, fluidPrice, refine, tankFor } from './purse';
+import { bonded, bondedPrice } from './charter';
 import { newTutor, settleAtBay, skipTutor, stepOf, stepTutor, LESSON_NODE, type Tutor } from './tutor';
 import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Bulwark, type Rock } from './field';
 import { Ids, newId, useIds } from './ids';
@@ -316,7 +317,11 @@ export class World implements EncounterHost {
   /** What the tank holds: the plotted jump. Over it, what is picked up is Cyrite. */
   get tankCap(): number { return tankFor(this.jumpCost); }
   /** A port's price for one unit of jump fluid, in Cyrite. */
-  get fluidPrice(): number { return fluidPrice(this.prices.cyrite); }
+  get fluidPrice(): number { return bondedPrice(this.postedFluid, this.bondedRate); }
+  /** The price on the port's board, before any Bonded rate. */
+  get postedFluid(): number { return fluidPrice(this.prices.cyrite); }
+  /** The Bonded rate applies at this port: on the road, a Kellern port past the audit dock, no Charter (sim/charter.ts). */
+  get bondedRate(): boolean { return !!this.bk?.port && !this.bk.def.first && bonded(this.flags, this.bk.def.holder); }
   /** Supplies aboard: the galley and the spares in one. A lane's days, the drive's wear and a plate patch draw on it. */
   supplies = 0;
   /** Seconds into patching a plate from supplies. */
