@@ -172,6 +172,16 @@ export class Script {
     return { any, handshake };
   }
 
+  /** The main beat the gate waits on first (the open card, else the first owed row), for the HUD to name: who calls and what it is. */
+  owedRow(flags: ReadonlySet<string>, tank = 0): Row | null {
+    if (this.holding) { const h = this.all.get(this.holding.row); if (h?.main) return h; }
+    for (const r of this.mine) {
+      if (!r.main || this.seen.has(r.id) || this.playedAt.has(r.id) || this.released.includes(r.id)) continue;
+      if (this.fired.has(r.id) || (this.cond(r, flags, tank) && this.due(r, flags, tank))) return r;
+    }
+    return null;
+  }
+
   /** The gate lets go: main beats owed here that have not triggered are carried on, to play first at the next stop. */
   release(flags: ReadonlySet<string>, tank = 0): string[] {
     const out: string[] = [];
