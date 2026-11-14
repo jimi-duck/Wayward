@@ -60,6 +60,10 @@ code carries it.
   (`relay_<gate>`), Ada's note, the answer, the way on. The gate's own card
   comes from `gateCheck` in `sim/journey.ts`.
 
+## Continuance Public Service
+
+The regime's broadcasts (`content/script/broadcasts.ts`, [STORY_DIRECTION.md](STORY_DIRECTION.md) §6) are ordinary radio rows from *Continuance Public Service* on the `office` channel: at most one a stop on its first free moment after 25 s, a few more on flags (Brook taken or freed, the ledger, the strike). They are flavour: `stale` drops one that waits 150 s for a quiet sky, so they never hold a stop or a gate, and no breather has one. From the Marches on, Commissioner Aurel Thane (Office of Public Record) speaks for them. `tests/broadcasts.test.ts` holds the rules.
+
 ## Add a stop
 
 1. Add a row to its leg (`ROAD`, `MARCHES` … `LAST`) with a `script` key.
