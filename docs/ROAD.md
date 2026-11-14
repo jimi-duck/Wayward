@@ -99,6 +99,12 @@ Mining draws them ([STORY_DIRECTION.md](STORY_DIRECTION.md) §3), and each leg m
 
 `tests/thren.test.ts`. No boss fight, and they are never translated.
 
+## Thane's hearing
+
+At Gilt Market, Commissioner Aurel Thane hears Juno's file (`content/hearing.ts`, a main card). Her own evidence is "not admissible": Bonded testimony never is. The answers are the Chartered voices she has. Brook (shown with `brook_free`) testifies and loses his Charter (`brook_struck`, and the Broadcast ending remembers). Lucan's signature (shown with `clue_order_sig`) is entered and sealed (`hearing_sealed`). Or she walks out, and Thane rules the file a forgery (`hearing_forgery`). The Office's broadcasts answer each one. `tests/hearing.test.ts`.
+
+Continuity: Hester's opener at Vesta now remembers the Hollis prospector (helped, robbed or never met), and the archive's last line points at Halden's Warden families, not at relays.
+
 ## Add a stop
 
 1. Add a row to its leg (`ROAD`, `MARCHES` … `LAST`) with a `script` key.

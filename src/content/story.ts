@@ -343,7 +343,7 @@ export const STORY_CARDS: CardDef[] = [
     herald: { headline: 'Hidden archive unlocked', reason: 'Found in the ship database' },
     from: 'Ship database · stored message', title: 'For whoever flies her next',
     letter: { head: [['To', 'Whoever flies her next'], ['From', 'No name given'], ['Kept in', 'Crew notes, hidden']], sign: '— No name. In case they read this before you do.' },
-    text: 'If you’re reading this, the lock’s off and she’s yours now. I hid this where the company’s auditors never bother looking.\nSeventy years ago the gates to the outer worlds went dark. They said the Krail had run out, and everyone left outside became the Scatter.\nBut the reserve log for that day says Krail reserves: 94%. The same day someone signed the order to shut the gates.\nI don’t know the whole story. I know it’s not the one they told us.\nStart at Halden’s Reach. The relays there still answer to the right key.',
+    text: 'If you’re reading this, the lock’s off and she’s yours now. I hid this where the company’s auditors never bother looking.\nSeventy years ago the gates to the outer worlds went dark. They said the Krail had run out, and everyone left outside became the Scatter.\nBut the reserve log for that day says Krail reserves: 94%. The same day someone signed the order to shut the gates.\nI don’t know the whole story. I know it’s not the one they told us.\nStart at Halden’s Reach. The old Warden families retire there. Someone will remember.',
     cargo: 'The Wayward · a stored message in the hull’s archive',
     choices: [
       { id: 'lead', label: 'Set course: Halden’s Reach', tone: 'help', hint: '',
