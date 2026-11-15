@@ -388,3 +388,18 @@ Reported: still "a little bad" after the first jump. Measured by flying the Stor
 | The first frames of a new system (sky bake, station and hull builds, texture uploads) ran in view | `settle()` in `main.ts`: after a jump the world takes 12 idle steps unseen, the sector builds, every program is compiled and drawn once (rounds, until none is new), all behind the jump's veil with the world held; the veil then fades over 0.7 s | the first-frame cost happens under the veil, not in play |
 
 **Not measured:** a real phone or GPU. In software GL the first frame still takes about 7 s, now under the veil; the real cost is far smaller but not known. The hold adds that time to the jump on a slow device.
+
+## Pass 12: the phone readout (`?perf`)
+
+The cloud has no GPU, so the cost on a phone has to be measured on the phone. Add `?perf` to the address (a branch preview or the live game) and a small panel opens top left:
+
+- **fps, frame, worst, slow:** the wall-clock interval between frames over two seconds; "slow" is the share of frames over 20 ms (below 50 fps).
+- **cpu:** our own work per frame, render submission included, simulation excluded.
+- **gpu:** the frame's GPU time from `EXT_disjoint_timer_query_webgl2`. Most Android Chrome has it; iOS Safari does not ("n/a"), so on an iPhone read fps and use the switches.
+- **draws, tris:** every pass of the frame counted (shadow, scene and post), not only the last.
+- **Low, Medium, High:** pin a tier (the governor stops judging).
+- **Switches:** each takes one layer out of the frame until pressed again. Post (no bloom, grade or edge smoothing), Shadow (the sun's shadow map is not redrawn), Sky (the nebula dome), Stars (stars, far worlds, sun, the deep, dust), Rocks (drawn only: they still collide), Debris, HUD (hidden), ½ res (half the drawing size).
+
+How to read it: fly a minute in a busy field, note fps, then press one switch at a time. The switch that moves fps most is where the phone's time goes. If ½ res moves it most, the phone is fill-bound (the post chain and the sky); if Rocks or Shadow does, it is geometry. The first second after Post or a tier switch hitches (shaders link again); the readout restarts its window on every press.
+
+Counts at 844 x 390 (3x), Medium, Arcade at cruise, software GL: 122 draws and 206k triangles; Post off 105 draws, Shadow off 108 draws and 156k triangles, Stars off 89 draws, Rocks off 106 draws and 169k triangles.

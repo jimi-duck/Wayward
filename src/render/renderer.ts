@@ -33,10 +33,11 @@ export function matchTier(renderer: WebGLRenderer, tier: QualityTier): void {
  * Size the drawing buffer to the canvas's CSS box at the tier's pixel-ratio
  * cap. Returns the ratio used. Fill cost goes with the square of the ratio,
  * so on a 3x phone the cap is the single cheapest protection there is.
+ * `scale` below 1 is the phone readout's half-size test (ui/perf.ts).
  */
-export function fitRenderer(renderer: WebGLRenderer, tier: QualityTier): number {
+export function fitRenderer(renderer: WebGLRenderer, tier: QualityTier, scale = 1): number {
   const canvas = renderer.domElement;
-  const dpr = Math.min(window.devicePixelRatio || 1, tier.dprCap);
+  const dpr = Math.min(window.devicePixelRatio || 1, tier.dprCap) * scale;
   renderer.setPixelRatio(dpr);
   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
   return dpr;

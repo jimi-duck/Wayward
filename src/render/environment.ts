@@ -1,7 +1,7 @@
 import {
   AdditiveBlending, BackSide, BufferAttribute, BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, FogExp2,
   Group, HemisphereLight, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, PlaneGeometry, PMREMGenerator,
-  Scene, ShaderMaterial, SphereGeometry, Vector2, Vector3, type Camera, type Texture, type WebGLRenderer, type WebGLRenderTarget,
+  Scene, ShaderMaterial, SphereGeometry, Vector2, Vector3, type Camera, type Object3D, type Texture, type WebGLRenderer, type WebGLRenderTarget,
 } from 'three';
 import { bakeSky, detailTile, dirOf, FarBodies, Parallax, skyFor, SUN_AZ, SUN_EL, type Sky } from './sky';
 import { Starfield } from './starfield';
@@ -80,6 +80,8 @@ export class Environment {
   private far: FarBodies | null = null;
   private baked: WebGLRenderTarget | null = null;
   private readonly dome: ShaderMaterial;
+  /** The phone readout's switches (ui/perf.ts): the nebula dome; the stars, far worlds, sun, deep and dust. */
+  readonly probe: { sky: Object3D[]; far: Object3D[] };
 
   constructor(scene: Scene, private readonly renderer: WebGLRenderer) {
     this.scene = scene;
@@ -161,6 +163,7 @@ export class Environment {
     const dust = new LineSegments(g, this.dustMat);
     dust.frustumCulled = false;
     this.group.add(dust);
+    this.probe = { sky: [dome], far: [this.stars, this.depth.group, this.parallax.group, dust] };
 
     this.key = new DirectionalLight(0xf0ebe4, 5.4);
     // the sun's shadow covers only the ship's neighbourhood: rocks darken the hull and each other close in

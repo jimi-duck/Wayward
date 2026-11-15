@@ -34,7 +34,7 @@ type Node = { type: string; [k: string]: unknown };
 
 function files(): string[] {
   const walk = (p: string): string[] => (p.endsWith('.ts') ? [p] : readdirSync(p, { withFileTypes: true }).flatMap((e) => walk(join(p, e.name))));
-  return PATHS.flatMap(walk).filter((f) => !f.endsWith('debug.ts') && !f.endsWith('face.ts') && !f.endsWith('palette.ts'));
+  return PATHS.flatMap(walk).filter((f) => !f.endsWith('debug.ts') && !f.endsWith('ui/perf.ts') && !f.endsWith('face.ts') && !f.endsWith('palette.ts'));
 }
 
 function calleeName(n: Node): string {

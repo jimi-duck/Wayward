@@ -28,6 +28,7 @@ import { CoursePanel } from './ui/course';
 import { barsOut } from './ui/bars';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
+import { PerfReadout } from './ui/perf';
 import { Radio, type JobTerms } from './ui/radio';
 import type { Open } from './sim/comms';
 import { PadNav } from './ui/dom';
@@ -118,12 +119,17 @@ function boot(review: typeof import('./review') | null): void {
   const iphoneBrowser = /iPhone|iPod/.test(navigator.userAgent) && !homeScreen;
   el('ios-tip').hidden = !iphoneBrowser;
   const fit = () => {
-    const dpr = fitRenderer(renderer, quality.tier);
+    const dpr = fitRenderer(renderer, quality.tier, sector.off.has('half') ? 0.5 : 1);
     const lift = hud.layout();
     sector.resize(canvas.clientWidth, canvas.clientHeight, dpr, lift);
   };
   new ResizeObserver(fit).observe(canvas);
   fit();
+  // ?perf: the phone readout (frame, CPU and GPU time) with switches to take one layer out at a time; docs/PERF.md
+  const perf = params.has('perf') ? new PerfReadout(el('debug'), {
+    renderer, quality, off: sector.off, fit,
+    pin: (i) => { quality.pin(i); matchTier(renderer, quality.tier); sector.setTier(quality.tier); fit(); void sector.warm(); },
+  }) : null;
   // the console's text sizes change once the web fonts arrive
   document.fonts?.ready.then(fit);
   // The sky of the run about to begin (Arcade makes a new one every run) is painted behind the title, after the next
@@ -665,6 +671,7 @@ function boot(review: typeof import('./review') | null): void {
       sector.blind = port.open;
       // a card that stops the world (hail, comms, dock, bay) stops stepping: drawn between two old steps the ship and the hulls would shimmer back and forth, so hold on the latest
       const live = world.phase === 'play' || (world.phase === 'comms' && !!world.comms && world.comms.slow > 0);
+      perf?.begin();
       sector.frame(world, live ? alpha : 1, dt, frameDt);
       // the jump: the HUD steps back, and the view goes pale teal at the end of it; once the sortie is over the veil lifts again, off the chart
       el('app').classList.toggle('warping', sector.jumping);
@@ -673,8 +680,9 @@ function boot(review: typeof import('./review') | null): void {
       el('warp').style.opacity = veil.toFixed(3);
       tour?.frame();
       hud.update(world, sector, frameDt);
+      perf?.end();
       if (started) stops();
-      debug.frame(frameDt, renderer, quality, input, loop.paused);
+      if (!perf) debug.frame(frameDt, renderer, quality, input, loop.paused);
     },
     measure(dt) {
       // a new system, or a panel just closed: the first frames are slow for their own reasons, so the governor waits

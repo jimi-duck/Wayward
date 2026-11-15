@@ -1,4 +1,4 @@
-import { Scene, Vector3, type Group, type InstancedMesh, type Object3D, type WebGLRenderer } from 'three';
+import { ACESFilmicToneMapping, Scene, Vector3, type Group, type InstancedMesh, type Object3D, type WebGLRenderer } from 'three';
 import { COSMETICS } from '../content/unlocks';
 import { clamp, lerp } from '../core/math';
 import { HOLD_MAX, JUMP_T, type SortieDef } from '../sim/breakout';
@@ -70,6 +70,9 @@ const SWAY_RATE = 0.16;
 
 const DEATH_HOLD = 1.45;
 
+/** What the phone readout (`?perf`, ui/perf.ts) can take out of the frame, one at a time, to see what it costs. */
+export type PerfLayer = 'post' | 'shadow' | 'sky' | 'far' | 'rocks' | 'debris' | 'hud' | 'half';
+
 export class Sector {
   readonly scene = new Scene();
   readonly rig = new CameraRig();
@@ -135,6 +138,8 @@ export class Sector {
   covered = false;
   /** An opaque panel (the port) fills the view: nothing behind it needs drawing. */
   blind = false;
+  /** Layers the phone readout has switched off. Empty unless `?perf` is open. */
+  readonly off = new Set<PerfLayer>();
 
   constructor(private readonly renderer: WebGLRenderer, private tier: QualityTier) {
     const glow = glowTexture();
@@ -762,7 +767,33 @@ export class Sector {
 
     // the refit bay is opaque and covers the whole view once the ship has settled under it: nothing to draw, and phones animate its cards more smoothly without a full frame behind them
     if (this.blind || (this.covered && this.bayK > COVERED)) return;
+    if (this.off.size) { this.drawProbed(dt); return; }
     if (!this.post?.render(dt)) this.renderer.render(this.scene, this.rig.camera);
+  }
+
+  /** The frame with the readout's layers taken out: hidden for this draw only, the shadow map left as it was, or no post chain. */
+  private drawProbed(dt: number): void {
+    const hidden: Object3D[] = [];
+    for (const l of this.off) for (const o of this.layerOf(l)) if (o.visible) { o.visible = false; hidden.push(o); }
+    const r = this.renderer, auto = r.shadowMap.autoUpdate, tone = r.toneMapping;
+    if (this.off.has('shadow')) r.shadowMap.autoUpdate = false;
+    if (this.off.has('post') || !this.post?.render(dt)) {
+      r.toneMapping = ACESFilmicToneMapping;
+      r.render(this.scene, this.rig.camera);
+    }
+    r.shadowMap.autoUpdate = auto;
+    r.toneMapping = tone;
+    for (const o of hidden) o.visible = true;
+  }
+
+  private layerOf(l: PerfLayer): readonly Object3D[] {
+    switch (l) {
+      case 'sky': return this.env.probe.sky;
+      case 'far': return this.env.probe.far;
+      case 'rocks': return this.rocks.probe();
+      case 'debris': return [this.debris.mesh];
+      default: return [];
+    }
   }
 
   /** Make the sky of a run before it begins, behind the title; the first frame of the run then finds it done. */

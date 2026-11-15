@@ -490,6 +490,13 @@ html.swipe #app * { overscroll-behavior: contain; }
 #debug { position: absolute; z-index: 5; top: calc(.5rem + var(--safe-t)); left: calc(.5rem + var(--safe-l)); padding: .5rem .65rem;
   background: rgba(var(--void-rgb), .75); border: 1px solid var(--line); color: var(--ink); font: 11px/1.5 var(--font-mono); white-space: pre; pointer-events: none; }
 #debug[hidden] { display: none; }
+/* ?perf, the phone readout (ui/perf.ts): a dev tool, so plain; taps on it never reach the flight controls */
+#debug.pf { z-index: 8; pointer-events: auto; display: grid; gap: 6px; max-width: calc(100vw - 1rem - var(--safe-l) - var(--safe-r)); }
+#debug.pf[hidden] { display: none; }
+.pf-row { display: flex; flex-wrap: wrap; gap: 4px; white-space: normal; }
+.pf-row button { min-width: 40px; min-height: 36px; padding: 0 8px; border: 1px solid rgba(var(--ink-rgb), .3); background: rgba(var(--void-rgb), .5); color: var(--ink); font: inherit; }
+.pf-row button.on { border-color: rgba(var(--ink-rgb), .85); background: rgba(var(--ink-rgb), .2); }
+html.perf-nohud #hud { visibility: hidden; }
 
 /* ── panels on small screens ──────────────────────────────────────────── */
 @media (max-width: 980px) {

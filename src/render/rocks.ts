@@ -1,7 +1,7 @@
 import { rockPose } from './rockmotion';
 import {
   Color, IcosahedronGeometry, LatheGeometry, Vector2, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, Quaternion,
-  Float32BufferAttribute, Vector3, type BufferGeometry, type Scene,
+  Float32BufferAttribute, Vector3, type BufferGeometry, type Object3D, type Scene,
 } from 'three';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { STEP } from '../core/loop';
@@ -439,6 +439,11 @@ export class RockView {
   private readonly seats: Matrix4[][];
   private readonly sm = new Matrix4();
   private time = 0;
+
+  /** Every rock mesh, for the phone readout's switch (ui/perf.ts). */
+  probe(): Object3D[] {
+    return [...this.meshes, ...this.backdrop, this.shards, ...this.bulwarks.values()];
+  }
 
   constructor(private readonly scene: Scene) {
     // four characters: blocky with many broken faces, long and shard-like, rounded and pitted by weathering, a flat ridged slab

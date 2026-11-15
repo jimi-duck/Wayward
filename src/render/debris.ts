@@ -20,7 +20,8 @@ function wrap(v: number, m: number): number {
 }
 
 export class DebrisField {
-  private readonly mesh: InstancedMesh;
+  /** Public for the phone readout's switch (ui/perf.ts). */
+  readonly mesh: InstancedMesh;
   private readonly base = new Float32Array(MAX * 3);
   private readonly drift = new Float32Array(MAX * 3);
   private readonly spin = new Float32Array(MAX * 4);
