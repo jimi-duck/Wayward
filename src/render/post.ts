@@ -1,5 +1,5 @@
 import {
-  Effect, BlendFunction, BloomEffect, BrightnessContrastEffect, EffectComposer, EffectPass, HueSaturationEffect, NoiseEffect, RenderPass, SMAAEffect, SMAAPreset,
+  Effect, BlendFunction, BloomEffect, BrightnessContrastEffect, EffectComposer, EffectPass, FXAAEffect, HueSaturationEffect, NoiseEffect, RenderPass, SMAAEffect, SMAAPreset,
   ToneMappingEffect, ToneMappingMode, VignetteEffect,
 } from 'postprocessing';
 import { Color, HalfFloatType, Uniform, Vector3, type Camera, type Scene, type WebGLRenderer } from 'three';
@@ -11,7 +11,8 @@ import type { QualityTier } from './quality';
 // a soft vignette and a little film grain, for the grit. Tone mapping runs last, so everything before it can
 // stay in HDR. All in one pass.
 //
-// Anti-aliasing is SMAA on Medium (light) and High (full), not multisampling: a multisampled
+// Anti-aliasing is SMAA on Medium (light) and High (full), not multisampling; a phone on Medium takes FXAA instead,
+// one pass after the tone map where SMAA takes three over the whole picture (docs/PERF.md pass 13): a multisampled
 // half-float chain drew nothing but black on some GPUs and canvas sizes.
 // (A chromatic split on hits was tried and dropped for the same reason:
 // postprocessing's effect blacks out the frame while its offset is zero.)
@@ -51,7 +52,8 @@ export class Post {
     }
     this.composer = new EffectComposer(renderer, { frameBufferType: HalfFloatType, multisampling: 0 });
     this.composer.addPass(new RenderPass(scene, camera));
-    const bloom = new BloomEffect({ mipmapBlur: true, luminanceThreshold: 0.7, luminanceSmoothing: 0.25, intensity: 1.25, radius: 0.7 });
+    // five blur levels, not the default eight: the last three are a few pixels across at half size and add little but passes
+    const bloom = new BloomEffect({ mipmapBlur: true, levels: 5, luminanceThreshold: 0.7, luminanceSmoothing: 0.25, intensity: 1.25, radius: 0.7 });
     // half resolution on every tier: mipmap blur hides it, and it is cheaper
     bloom.resolution.scale = 0.5;
     const vignette = new VignetteEffect({ offset: 0.3, darkness: 0.62 });
@@ -61,8 +63,10 @@ export class Post {
     const grade = new HueSaturationEffect({ saturation: 0.04 });
     const contrast = new BrightnessContrastEffect({ contrast: 0.06 });
     const tone = new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC });
-    if (tier.smaa) this.composer.addPass(new EffectPass(camera, new SMAAEffect({ preset: tier.smaa === 'high' ? SMAAPreset.HIGH : SMAAPreset.LOW })));
+    const fxaa = tier.smaa === 'low' && matchMedia('(pointer: coarse)').matches;
+    if (tier.smaa && !fxaa) this.composer.addPass(new EffectPass(camera, new SMAAEffect({ preset: tier.smaa === 'high' ? SMAAPreset.HIGH : SMAAPreset.LOW })));
     this.composer.addPass(new EffectPass(camera, bloom, this.mood, vignette, grain, grade, contrast, tone));
+    if (fxaa) this.composer.addPass(new EffectPass(camera, new FXAAEffect()));
   }
 
   setMood(m: Mood): void {

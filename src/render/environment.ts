@@ -132,7 +132,9 @@ export class Environment {
       side: BackSide, depthWrite: false, fog: false,
     });
     const dome = new Mesh(new SphereGeometry(50, 32, 16), this.dome);
-    dome.renderOrder = -1000;
+    // last of the solid things, so a pixel already covered by a rock or a hull fails the depth test and the sky's
+    // shader never runs there (it sits at the far plane); the see-through things still draw over it after
+    dome.renderOrder = 1000;
     dome.frustumCulled = false;
     this.group.add(dome);
     this.fog = new FogExp2(HAZE.getHex(), FOG_BASE);
