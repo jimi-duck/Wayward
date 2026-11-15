@@ -494,8 +494,8 @@ html.swipe #app * { overscroll-behavior: contain; }
 #debug.pf { z-index: 8; pointer-events: auto; display: grid; gap: 6px; max-width: calc(100vw - 1rem - var(--safe-l) - var(--safe-r)); }
 #debug.pf[hidden] { display: none; }
 .pf-row { display: flex; flex-wrap: wrap; gap: 4px; white-space: normal; }
-.pf-row button { min-width: 40px; min-height: 36px; padding: 0 8px; border: 1px solid rgba(255, 255, 255, .3); background: rgba(0, 0, 0, .35); color: var(--ink); font: inherit; }
-.pf-row button.on { border-color: rgba(255, 255, 255, .85); background: rgba(255, 255, 255, .2); }
+.pf-row button { min-width: 40px; min-height: 36px; padding: 0 8px; border: 1px solid rgba(var(--ink-rgb), .3); background: rgba(var(--void-rgb), .5); color: var(--ink); font: inherit; }
+.pf-row button.on { border-color: rgba(var(--ink-rgb), .85); background: rgba(var(--ink-rgb), .2); }
 html.perf-nohud #hud { visibility: hidden; }
 
 /* ── panels on small screens ──────────────────────────────────────────── */
