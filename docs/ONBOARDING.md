@@ -83,10 +83,11 @@ failure state).
 A player's first Arcade run (and any run while the lesson is unfinished) opens with three
 steps in `sim/tutor.ts`, and no hull arrives until it ends:
 
-1. **Roll.** One slow, harmless shot (`tutor-roll`) curls in from ahead with its warning line;
-   the hint names the roll for the device (Shift, a second finger, B on a pad). Rolled through,
+1. **Barrel roll.** One slow, harmless shot (`tutor-roll`) curls in from ahead with its warning line:
+   "Dodge the shot with a barrel roll"; the hint names the key for the device (Shift, a second finger, B on a pad). Rolled through,
    it passes; a hit only flashes the shield, and another comes 1.2 s later.
-2. **Shoot.** A target hull; its wreck's Cyrite is the lesson that fights pay (64 to 80% of a
+2. **Shoot.** "Shoot the raiders: lasers or torpedoes", with both controls in the hint (Space and 2,
+   the fire control and Torpedo, A and X). A target hull; its wreck's Cyrite is the lesson that fights pay (64 to 80% of a
    run's Cyrite comes from wrecks). Mining is the quiet-time top-up, not a step.
 3. **Refit.** Cyrite enough for one refit is dropped if the wreck left the purse short, then
    "Choose an upgrade".

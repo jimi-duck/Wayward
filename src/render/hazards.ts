@@ -127,10 +127,11 @@ export class HazardView {
       m.track.visible = m.fill.visible = isLine;
       m.ring.visible = m.disc.visible = m.edge.visible = !isLine;
       if (isLine) {
-        const w = t.len > 40 ? 1.2 : 0.8;
+        const w = t.thin ? 0.12 : t.len > 40 ? 1.2 : 0.8;
         m.track.scale.set(t.len, 1, w);
         m.fill.scale.set(t.len * prog, 1, w * 0.5);
-        tint(m.track, col, 0.35 * pulse);
+        m.fill.visible = !t.thin;
+        tint(m.track, col, (t.thin ? 0.3 : 0.35) * pulse);
         tint(m.fill, col, 0.6);
       } else {
         m.ring.scale.setScalar(t.r);

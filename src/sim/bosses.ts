@@ -115,6 +115,8 @@ export interface Telegraph {
   /** Seconds left, and the total it started with. */
   t: number; total: number;
   faction: Faction;
+  /** A hairline (the lesson's shot): no fill, a third of the width. */
+  thin?: boolean;
 }
 
 /** A delayed area hazard: shells, lightning or a web, landing where its circle was drawn. */

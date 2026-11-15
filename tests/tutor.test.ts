@@ -205,7 +205,7 @@ describe('the Arcade lesson', () => {
     w.field.step = () => {};
     w.train();
     expect(stepOf(w)).toBe('roll');
-    expect(lessonOf(w)!.line).toBe('Roll through the incoming shot');
+    expect(lessonOf(w)!.line).toBe('Dodge the shot with a barrel roll');
     // no wave while it runs
     for (let i = 0; i < 60 * 8; i++) { w.step(STEP, input()); if (w.aliens.length) break; }
     expect(w.aliens.length).toBe(0);
