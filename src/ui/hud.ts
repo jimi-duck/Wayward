@@ -54,7 +54,8 @@ const LESSON_HINT: Record<string, Array<[string, string]>> = {
   bay: [['h-keys', 'Press B to open the Bay'], ['h-touch', 'Tap Open Bay'], ['h-pad', 'Press Back to open the Bay']],
   dock: [['h-keys', 'Fly in slowly to dock'], ['h-touch', 'Fly in slowly to dock'], ['h-pad', 'Fly in slowly to dock']],
   fit: [['h-keys', 'Open the bay and pick the torpedo bay'], ['h-touch', 'Open the bay and pick the torpedo bay'], ['h-pad', 'Open the bay and pick the torpedo bay']],
-  roll: [['h-keys', 'Press Shift to roll · a roll can’t be hit'], ['h-touch', 'Tap a second finger to roll · a roll can’t be hit'], ['h-pad', 'Press B to roll · a roll can’t be hit']],
+  guns: [['h-keys', 'Hold Space for lasers · press 2 for a torpedo'], ['h-touch', 'Hold the fire control for lasers · tap Torpedo'], ['h-pad', 'Hold A for lasers · press X for a torpedo']],
+  roll: [['h-keys', 'Press Shift to barrel roll'], ['h-touch', 'Tap a second finger to barrel roll'], ['h-pad', 'Press B to barrel roll']],
   none: [],
 };
 

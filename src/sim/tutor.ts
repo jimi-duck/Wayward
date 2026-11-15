@@ -75,7 +75,7 @@ export interface Lesson {
   /** English, one verb phrase; the HUD runs it through t(). */
   line: string;
   /** Which hint to show (the HUD has the words for each device). */
-  hint: 'fire' | 'bay' | 'dock' | 'fit' | 'torpedo' | 'roll' | 'none';
+  hint: 'fire' | 'bay' | 'dock' | 'fit' | 'torpedo' | 'guns' | 'roll' | 'none';
   mark: Mark | null;
   /** 0 to 1 */
   progress: number;
@@ -112,7 +112,7 @@ const ROLL_NEAR = 7;
 function rollShot(w: World, tu: Tutor): void {
   const p = ahead(w, ROLL_FROM, tu.next > 2 ? -ROLL_SIDE : ROLL_SIDE), s = w.ship;
   const d = Math.hypot(s.x - p.x, s.z - p.z) || 1, sp = d / ROLL_TIME_IN;
-  w.shots.push({ id: newId(), x: p.x, y: 0, z: p.z, vx: ((s.x - p.x) / d) * sp, vy: 0, vz: ((s.z - p.z) / d) * sp, life: ROLL_TIME_IN + 2, r: 0.9, faction: 'gutter', hp: 0, seek: 0, split: 0, from: ROLL_SHOT });
+  w.shots.push({ id: newId(), x: p.x, y: 0, z: p.z, vx: ((s.x - p.x) / d) * sp, vy: 0, vz: ((s.z - p.z) / d) * sp, life: ROLL_TIME_IN + 2, r: 0.45, faction: 'gutter', hp: 0, seek: 0, split: 0, from: ROLL_SHOT });
 }
 
 /** The roll lesson's shot: it steers onto the ship and draws its line on the plane; rolled through, or a harmless ring on the hull. */
@@ -125,7 +125,7 @@ function stepRoll(w: World, tu: Tutor, dt: number): void {
   const dx = s.x - sh.x, dz = s.z - sh.z, d = Math.hypot(dx, dz) || 1, sp = Math.max(Math.hypot(sh.vx, sh.vz), 14);
   sh.vx = (dx / d) * sp; sh.vz = (dz / d) * sp; sh.life = Math.max(sh.life, 1);
   // the line it will fly, drawn on the plane like any telegraph
-  w.tele.push({ id: newId(), kind: 'line', x: sh.x, z: sh.z, ang: Math.atan2(-dz, dx), len: d, r: 0, t: dt * 1.5, total: dt * 1.5, faction: 'gutter' });
+  w.tele.push({ id: newId(), kind: 'line', x: sh.x, z: sh.z, ang: Math.atan2(-dz, dx), len: d, r: 0, t: dt * 1.5, total: dt * 1.5, faction: 'gutter', thin: true });
   if (s.rollT >= 0 && d < ROLL_NEAR) tu.rolled = true;
   if (d > 1.6 + dt * sp) return;
   w.shots.splice(w.shots.indexOf(sh), 1);
@@ -335,10 +335,10 @@ export function lessonOf(w: World): Lesson | null {
   }
   if (id === 'roll') {
     const sh = w.shots.find((x) => x.from === ROLL_SHOT);
-    return { ...base, line: 'Roll through the incoming shot', hint: 'roll', mark: sh ? { x: sh.x, z: sh.z, r: 0, name: 'Incoming' } : null, progress: tu.rolled ? 1 : 0 };
+    return { ...base, line: 'Dodge the shot with a barrel roll', hint: 'roll', mark: sh ? { x: sh.x, z: sh.z, r: 0, name: 'Incoming' } : null, progress: tu.rolled ? 1 : 0 };
   }
   const a = w.aliens.find((x) => x.id === tu.alienId) ?? w.aliens.find((x) => tu.pirates.includes(x.id));
-  return { ...base, line: story(w, tu) ? (tu.parley === 2 ? 'Destroy the raiders' : 'Raiders closing') : 'Shoot the raiders with torpedoes', hint: 'torpedo', mark: a ? { x: a.x, z: a.z, r: 0, name: story(w, tu) && tu.parley < 2 ? 'Unknown' : 'Raider' } : null, progress: a ? 1 - a.hp / Math.max(1, a.maxHp) : 1 };
+  return { ...base, line: story(w, tu) ? (tu.parley === 2 ? 'Destroy the raiders' : 'Raiders closing') : 'Shoot the raiders: lasers or torpedoes', hint: story(w, tu) ? 'torpedo' : 'guns', mark: a ? { x: a.x, z: a.z, r: 0, name: story(w, tu) && tu.parley < 2 ? 'Unknown' : 'Raider' } : null, progress: a ? 1 - a.hp / Math.max(1, a.maxHp) : 1 };
 }
 
 /** Is the step in hand done? */
