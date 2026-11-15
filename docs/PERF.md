@@ -403,3 +403,17 @@ The cloud has no GPU, so the cost on a phone has to be measured on the phone. Ad
 How to read it: fly a minute in a busy field, note fps, then press one switch at a time. The switch that moves fps most is where the phone's time goes. If ½ res moves it most, the phone is fill-bound (the post chain and the sky); if Rocks or Shadow does, it is geometry. The first second after Post or a tier switch hitches (shaders link again); the readout restarts its window on every press.
 
 Counts at 844 x 390 (3x), Medium, Arcade at cruise, software GL: 122 draws and 206k triangles; Post off 105 draws, Shadow off 108 draws and 156k triangles, Stars off 89 draws, Rocks off 106 draws and 169k triangles.
+
+## Pass 13: fewer full-screen passes, sky behind the solids
+
+From the plan of 2026-11-14 (phone fill rate is the limit; a Medium frame was about 20 full-screen or part-screen passes).
+
+| Change | Passes or pixels saved | What you see |
+|---|---|---|
+| Bloom blurs over 5 levels, not 8 (`post.ts`) | 6 small passes a frame, every tier with a post chain | Same glow: in an A/B of one frame on High, 10% of pixels moved, by at most 25 of 255 (the faint outer halo) |
+| A phone (coarse pointer) on Medium smooths edges with FXAA after the tone map, not SMAA | 2 full passes (SMAA takes 3, FXAA 1) | Edges a little softer on phones; desktop keeps SMAA |
+| The nebula dome draws last of the solid things (`renderOrder` 1000, was -1000) | The sky's shader no longer runs under rocks, hulls and planets | None: the same frame drawn both ways is identical to the pixel (with a black hole and with a rift) |
+
+Not done, after a look: culling the far group (sun, planet, far works are 30k triangles; a phone's cost there is fill, and fill off screen is already free) and trimming the sun's glare and lens ghosts (the ghosts only show when facing the sun, and are small). A/B frames in `/mnt/project-files/perf-pass/`.
+
+**Not measured:** the phone. With `?perf` (pass 12), Post on and off before and after this pass is the check.
