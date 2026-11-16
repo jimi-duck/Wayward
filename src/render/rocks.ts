@@ -105,6 +105,9 @@ const KINDS = Object.keys(LOOKS) as RockKind[];
  * frequency for the same grain); `lava` scales the glow; `bump` is the
  * surface relief, in world units. `look` recolours it by kind.
  */
+/** Of the sky's fill light, how much reaches stone (1 as lit before the hard-light pass); the sun's rim on a rock's limb. */
+const ROCK_FILL = 0.5, ROCK_RIM = 0.9;
+
 export function lavaRock(detail: number, lava: number, bump: number, look: RockLook = LOOKS.basalt, ember = true): MeshStandardMaterial {
   const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: look.metal, envMapIntensity: 0.35, vertexColors: true });
   m.onBeforeCompile = (shader) => {
@@ -200,9 +203,24 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         float farK = smoothstep(18.0, 70.0, length(vViewPosition));
         totalEmissiveRadiance += uGlow / max(uGlow.r, max(uGlow.g, uGlow.b)) * farK * 0.08 * (uEmber * 0.5 + uViolet * 1.3 + uCool * 0.7) * uLava;
         float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
-        totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.03 * uViolet + 0.025 * uCool + 0.012 * uEmber) * uLava;`);
+        totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.03 * uViolet + 0.025 * uCool + 0.012 * uEmber) * uLava;`)
+      .replace('#include <aomap_fragment>', `
+        // hard light: in vacuum the side away from the sun is close to black, so the sky's fill is cut back on stone and the
+        // terminator between lit face and shadow reads crisp. The sun then catches the silhouette: a thin rim on the limb
+        // facing it, stronger where the rock stands against the light, so a rock still reads as a form on a dark sky
+        reflectedLight.indirectDiffuse *= ${ROCK_FILL.toFixed(2)};
+        reflectedLight.indirectSpecular *= ${ROCK_FILL.toFixed(2)};
+        #if NUM_DIR_LIGHTS > 0
+          vec3 sunL = directionalLights[0].direction;
+          vec3 viewV = normalize(vViewPosition);
+          float limb = pow(1.0 - clamp(dot(normal, viewV), 0.0, 1.0), 4.0);
+          float facing = clamp(dot(normal, sunL) + 0.15, 0.0, 1.0);
+          float behind = clamp(dot(-viewV, sunL), 0.0, 1.0);
+          totalEmissiveRadiance += directionalLights[0].color * diffuseColor.rgb * limb * (facing * ${ROCK_RIM.toFixed(2)} + behind * facing * ${(ROCK_RIM * 1.5).toFixed(2)});
+        #endif
+        #include <aomap_fragment>`);
   };
-  m.customProgramCacheKey = () => `stone-rock13-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
+  m.customProgramCacheKey = () => `stone-rock14-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 
