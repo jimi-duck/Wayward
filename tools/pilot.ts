@@ -42,12 +42,14 @@ export type Strategy =
   | { kind: 'wide' };
 
 /** How the pilot answers comms cards: by the kind of answer it reaches for first. */
-export type Policy = 'fight' | 'run' | 'pay' | 'bluff';
+export type Policy = 'fight' | 'run' | 'pay' | 'bluff' | 'take';
 const PREFER: Record<Policy, Tone[]> = {
   fight: ['fight', 'help', 'trade', 'refuse', 'pay', 'bluff', 'run'],
   run: ['run', 'refuse', 'trade', 'pay', 'help', 'bluff', 'fight'],
   pay: ['pay', 'trade', 'help', 'refuse', 'bluff', 'run', 'fight'],
   bluff: ['bluff', 'trade', 'help', 'pay', 'refuse', 'run', 'fight'],
+  // a person who says yes: helps, then fights, and takes every job it is offered
+  take: ['help', 'fight', 'trade', 'bluff', 'pay', 'refuse', 'run'],
 };
 
 /** One answered card, and what it did to the ship there and then. */
@@ -87,6 +89,10 @@ export interface PilotOptions {
   modules?: string[];
   /** Fit nothing in the bay: the Story ship as it left Cerro (the upgrade report's baseline). */
   noShop?: boolean;
+  /** Fly a taken job's goal: to its mark, and hold there, before the Jump Gate (the person-like pilot). */
+  chase?: boolean;
+  /** Mine on until the hold has this much Cyrite before heading for the gate, or `linger` seconds pass (the person-like pilot). */
+  linger?: { cyrite: number; secs: number };
 }
 
 export interface PilotResult {
@@ -236,7 +242,7 @@ function ramNow(w: World): number {
 const REACT = 0.2;
 
 /** What the pilot remembers between steps: when each shot was first seen, and the current plan. */
-interface Memo { seen: Map<number, number>; plan: { heading: number; thrust: number; until: number } | null; portWait?: number }
+interface Memo { seen: Map<number, number>; plan: { heading: number; thrust: number; until: number } | null; portWait?: number; chase?: boolean; linger?: { cyrite: number; secs: number } }
 
 /** Seconds near a port without docking before the pilot gives it up for the sortie (a crowd at the clamps can hold it off for good). */
 const PORT_PATIENCE = 60;
@@ -344,7 +350,11 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   // the Breakout: the course. Port when the hold is nearly full or the hull wants patching and there is
   // money for it; the Jump Gate once the tank holds the jump; drifting lane-ward meanwhile
   const bk = w.bk;
-  const need = !!bk && w.fuel < bk.jumpCost;
+  // a taken job comes first: its mark, until it is settled
+  const job = memo.chase && w.stage?.taken && !w.stage.result && w.encounter?.id === 'scene' ? w.encounter : null;
+  // a person mines a while before the gate: until the hold has enough, or it has lingered long enough
+  const linger = !!memo.linger && !!bk && w.cyrite < memo.linger.cyrite && w.runTime < memo.linger.secs;
+  const need = !!bk && (w.fuel < bk.jumpCost || linger || !!job);
   const pr = w.prices;
   // the purse is what the port and the bay can have; the tank is the jump's
   const over = bk ? w.cyrite : 0;
@@ -359,6 +369,10 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   if (bk) {
     const wp = dest ?? bk.lane, dx = wp.x - s.x, dz = wp.z - s.z, d = Math.hypot(dx, dz) || 1;
     push(dx / d, dz / d, dest ? 3 : 0.5);
+  }
+  if (job) {
+    const dx = job.x - s.x, dz = job.z - s.z, d = Math.hypot(dx, dz) || 1;
+    push(dx / d, dz / d, d > job.r * 0.5 ? 5 : 0);
   }
   // objectives
   const e = w.encounter;
@@ -390,7 +404,7 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   // no hull in reach: mine the field, nearest first, the rich before the rest
   // (the Breakout: only while there is mining to do; on the way to a berth it keeps going)
   let mining: (typeof w.field.rocks)[number] | null = null;
-  if (!tgt && !(bk && dest)) {
+  if (!tgt && !(bk && dest) && !job) {
     let best = Infinity;
     for (const r of w.field.rocks) {
       const d = Math.hypot(r.x - s.x, r.z - s.z);
@@ -506,6 +520,48 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
     if (p.risk > 30 && s.rollCooldown === 0) dodge = true;
   }
   if (memo.plan) { want = memo.plan.heading; thrust = memo.plan.thrust; }
+  // a taken job flown as a person flies it: a race at full throttle; a drop past patrols through a gap in the sweep, braking at the drop
+  const kind = job ? w.stage!.def.goal.kind : null;
+  if (job && kind === 'race') thrust = 1;
+  const v = Math.hypot(s.vx, s.vz) / topSpeed(w.hull);
+  const run = w.stage?.run as unknown as { reads: number; maxReads: number; points: Array<{ x: number; z: number; on: boolean }> } | null | undefined;
+  if (job && kind === 'survey' && run) {
+    // each reading inside its ring, held slow, never into the burning core; then out
+    const g = w.stage!.def.goal, rings = g.rings ?? [250, 170, 100];
+    const ring = rings[Math.min(run.reads, rings.length - 1)]!, core = rings[rings.length - 1]! * 0.6;
+    const st0 = w.stage!, dx = st0.x - s.x, dz = st0.z - s.z, d = Math.hypot(dx, dz) || 1;
+    if (run.reads < run.maxReads) {
+      const at = Math.max(core + 12, ring * 0.75);
+      want = d > at ? Math.atan2(-dz, dx) : Math.atan2(dz, -dx);
+      thrust = Math.abs(d - at) > ring * 0.12 ? (v < 0.4 ? 1 : 0) : (d < at ? 0.6 : 0);
+      if (d < ring && v > 0.25) f.brk = d > at;
+    } else { want = Math.atan2(dz, -dx); thrust = 1; }
+  }
+  if (job && kind === 'recover' && run) {
+    // each case: come alongside slowly
+    const open = run.points.filter((p) => p.on).sort((a, b) => Math.hypot(a.x - s.x, a.z - s.z) - Math.hypot(b.x - s.x, b.z - s.z))[0];
+    if (open) {
+      const dx = open.x - s.x, dz = open.z - s.z, d = Math.hypot(dx, dz) || 1;
+      want = Math.atan2(-dz, dx);
+      thrust = d > 14 ? (v < Math.min(0.6, d / 120) ? 1 : 0) : 0;
+      if (d < 30 && v > 0.25) f.brk = true;
+    }
+  }
+  // a hold at the site (a wreck's log, a drop): come in and sit still
+  if (job && kind !== 'follow' && kind !== 'sneak' && kind !== 'survey' && kind !== 'recover' && kind !== 'race' && (w.stage!.def.goal.hold ?? 0) > 0) {
+    const dx = job.x - s.x, dz = job.z - s.z, d = Math.hypot(dx, dz) || 1;
+    if (d < job.r * 0.7) { thrust = 0; if (v > 0.25) f.brk = true; }
+  }
+  if (job && kind === 'sneak') {
+    const dx = job.x - s.x, dz = job.z - s.z, d = Math.hypot(dx, dz) || 1;
+    const me = Math.atan2(s.z - job.z, s.x - job.x);
+    const gap = Math.min(Math.PI, ...w.aliens.filter((a) => a.ward?.act === 'patrol').map((a) => Math.abs(angleDelta(me, Math.atan2(a.z - job.z, a.x - job.x)))));
+    want = Math.atan2(-dz, dx);
+    if (d < 6) { thrust = 0; f.brk = true; }
+    else if (d > 200 && gap < 1.1) { thrust = 0; f.brk = d < 240; }
+    else thrust = d < 40 ? 0 : 1;
+    if (d < 40 && Math.hypot(s.vx, s.vz) > topSpeed(w.hull) * 0.3) f.brk = true;
+  }
   const off = angleDelta(s.heading, want);
   f.turn = clamp(-off * 4, -1, 1);
   f.thrust = Math.abs(off) < 1.3 ? thrust : Math.min(thrust, 0.3);
@@ -552,7 +608,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
   let lastLost = 0, lastGained = 0;
   const lag = o.lag ?? 1;
   const queue: InputFrame[] = [];
-  const memo: Memo = { seen: new Map(), plan: null };
+  const memo: Memo = { seen: new Map(), plan: null, chase: o.chase, linger: o.linger };
   const seen = memo.seen;
   let docks = 0;
   let nextShop = 0, fitted = 0;

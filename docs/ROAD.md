@@ -27,7 +27,7 @@ code carries it.
 
 ## Playback rules
 
-- Strictly linear: one gate out of each stop, no sideways lanes.
+- Strictly linear: one gate out of each stop, no sideways lanes. A place that would bend a lane (a gravity well, a Thren lane) pays as a find on the road instead, and a lane that skips a stop (an old save's) is never offered (`sim/journey.ts` `claim`, `onward`).
 - The pursuit is counted in days. A leg starts at 2, amber at 1, red at 0.5
   (`sim/hunt.ts`). No pursuit runs at a breather.
 - Rows queue and are never dropped (only rows marked `stale` are). Radio and
@@ -171,8 +171,12 @@ explained.
 `npm run pilot:road` flies Cerro to the Narrows and writes
 [BALANCE-ROAD.md](BALANCE-ROAD.md). `npm run pilot:overhaul` flies the whole
 road to the Threshold and checks no main beat is dropped and no row plays
-twice ([BALANCE-OVERHAUL.md](BALANCE-OVERHAUL.md)). The pilot does not read or linger, so it
-shows the shape, not the pacing. The 40-minute target needs human playtests.
+twice ([BALANCE-OVERHAUL.md](BALANCE-OVERHAUL.md)). That pilot does not read or linger, so it
+shows the shape, not the pacing. `npm run pilot:person` flies the road more like a
+person ([BALANCE-PERSON.md](BALANCE-PERSON.md)): it takes every job and flies its goal, mines a
+while before each gate, and is charged for reading the cards. `PERSON_LOG=path` adds a line a
+stop (cards offered, job results). The target is a road of 4 to 5 hours (owner, 16 November 2026);
+it still needs human playtests.
 
 ## The first two systems, and a wreck
 

@@ -19,6 +19,7 @@
     "pilot:road": "vitest run --config tools/vitest.config.ts tools/road.pilot.ts",
     "pilot:narrows": "vitest run --config tools/vitest.config.ts tools/narrows.pilot.ts",
     "pilot:overhaul": "vitest run --config tools/vitest.config.ts tools/overhaul.pilot.ts",
+    "pilot:person": "vitest run --config tools/vitest.config.ts tools/person.pilot.ts",
     "pilot:ship": "vitest run --config tools/vitest.config.ts tools/ship.pilot.ts",
     "pilot:survival": "vitest run --config tools/vitest.config.ts tools/survival.pilot.ts",
     "pilot:endings": "vitest run --config tools/vitest.config.ts tools/endings.pilot.ts",

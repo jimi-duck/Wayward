@@ -944,9 +944,10 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 }
 @media (max-height: 520px) {
   :is(.ns-channel, .ns-decision) .ns-ctx { font-size: 12.5px; line-height: 1.25; }
-  :is(.ns-channel, .ns-decision) .ns-c.more { min-height: 32px; }
+  /* still a 40px target on a phone (DESIGN-GUIDELINES: touch targets) */
+  :is(.ns-channel, .ns-decision) .ns-c.more { min-height: 40px; }
   :is(.ns-channel, .ns-decision) .ns-c.more .ns-hint { display: none; }
-  :is(.ns-channel, .ns-decision) .ns-c:not(.sel) { min-height: 32px; padding-top: 2px; padding-bottom: 2px; }
+  :is(.ns-channel, .ns-decision) .ns-c:not(.sel) { min-height: 40px; padding-top: 2px; padding-bottom: 2px; }
   .ns-stack > .ns-p { padding-top: 6px; padding-bottom: 6px; gap: 5px; }
   .ns-h { padding-bottom: 4px; }
   .ns-acts { gap: 5px; }
