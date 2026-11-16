@@ -5,6 +5,7 @@ import { Environment } from '../src/render/environment';
 import { skyFor } from '../src/render/sky';
 import { BUILD } from '../src/render/site';
 import { hulkModel } from '../src/render/space';
+import { animateStation } from '../src/render/stations';
 import { buildMast, buildPort, buildBarge, buildGantry, buildMarket, buildRelayPost, buildDen, buildSeed } from '../src/render/breakout';
 import { MeshBasicMaterial, Color as C3 } from 'three';
 import type { PortStyle } from '../src/sim/site';
@@ -55,8 +56,11 @@ new ResizeObserver(fit).observe(canvas);
 fit();
 
 let last = performance.now();
+let benchT = 0;
 const frame = (now: number) => {
   const dt = Math.min(0.05, (now - last) / 1000);
+  benchT += dt;
+  animateStation(body, benchT + Number(params.get('t') ?? '0'), dt);
   last = now;
   env.update(camera, 0, 0, 0, 0, dt);
   if (!post.render(dt)) renderer.render(scene, camera);
