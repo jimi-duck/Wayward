@@ -7,7 +7,7 @@ import { STREAK, type Streaks } from './streaks';
 // Laser lances: a white-hot core in a red sheath with a soft glow round it, long and heavy, pointed
 // along their flight (they climb and dive onto targets off the plane).
 // Torpedoes: a hot core in an amber halo, its motor flaring as it builds
-// speed, shedding embers. Our lances burn red, our torpedoes amber; enemy fire
+// speed, shedding embers, its smoke laid in segments with an ember in each. Our lances burn red, our torpedoes amber; enemy fire
 // burns its faction's colour. All of it is drawn as streaks (streaks.ts), in one draw call
 // shared with the enemy's fire.
 
@@ -18,9 +18,17 @@ const LANCE = new Color(4, 0.32, 0.28);
 const LANCE_GLOW = new Color(1.5, 0.12, 0.1);
 const TORP = new Color(2.5, 1.3, 0.5);
 const TORP_FLAME = new Color(3.2, 1.7, 0.4);
+/** The lance's hot centre: a slim white line inside the red, so a shot reads sharp against any sky. */
+const LANCE_CORE = new Color(3.6, 2.6, 2.3);
+/** A torpedo lays its smoke in segments, one puff each this far along its path, with a glowing ember at each. */
+const SEGMENT = 0.9;
 
 export class WeaponView {
   private readonly d = new Vector3();
+  /** Per torpedo slot: which torpedo it was last frame, and where it laid its last smoke segment. */
+  private readonly segId = new Float64Array(MAX_TORPS).fill(-1);
+  private readonly segX = new Float32Array(MAX_TORPS);
+  private readonly segZ = new Float32Array(MAX_TORPS);
 
   constructor(private readonly streaks: Streaks) {}
 
@@ -33,6 +41,8 @@ export class WeaponView {
       // a wider, dimmer sheath over it: the glow, in the same draw
       this.streaks.push(b.x - b.vx * back, b.y - b.vy * back + 0.1, b.z - b.vz * back, b.vx, b.vy, b.vz,
         b.heavy ? 6.5 : 5.4, b.heavy ? 3.4 : 2, STREAK.lance, LANCE_GLOW, 0);
+      this.streaks.push(b.x - b.vx * back, b.y - b.vy * back + 0.1, b.z - b.vz * back, b.vx, b.vy, b.vz,
+        b.heavy ? 4.8 : 4, b.heavy ? 0.42 : 0.24, STREAK.lance, LANCE_CORE, 1);
     }
 
     for (let i = 0; i < MAX_TORPS; i++) {
@@ -51,8 +61,15 @@ export class WeaponView {
           fx.mote(x, y, z, -t.vx * 0.12 + (Math.random() - 0.5) * 3, -t.vy * 0.12 + (Math.random() - 0.5) * 2, -t.vz * 0.12 + (Math.random() - 0.5) * 3,
             [3.2, 0.9 + Math.random() * 0.8, 0.3], 0.4 + burn * 0.3, 0.45);
         }
-        // a thin grey trail hangs where it has been
-        if (!fx.calm && Math.random() < 0.5) fx.dust(x, y, z, 0.5 * k, [0.1, 0.095, 0.09], 1, 0.3, 1.1, 0.22);
+        // the trail hangs where it has been in segments, a puff of smoke every SEGMENT with an ember glowing in it, so a
+        // torpedo's path reads as a heavy round's and never as a lance's line
+        if (this.segId[i] !== t.id) { this.segId[i] = t.id; this.segX[i] = x; this.segZ[i] = z; }
+        const sx = x - this.segX[i]!, sz = z - this.segZ[i]!, gap = Math.hypot(sx, sz);
+        if (gap >= SEGMENT * k) {
+          this.segX[i] = x; this.segZ[i] = z;
+          if (!fx.calm) fx.dust(x, y, z, 0.62 * k, [0.12, 0.11, 0.1], 1, 0.25, 1.4, 0.3);
+          fx.mote(x, y, z, (Math.random() - 0.5) * 0.8, 0.3, (Math.random() - 0.5) * 0.8, [3.4, 1.3, 0.35], 0.32 * k + 0.1, 0.7);
+        }
       }
     }
   }

@@ -31,7 +31,8 @@ import { siteTags, TAG_R } from '../sim/sitetags';
 //   pointers     · the capital ship and the objective, pinned to the edge
 //                  when they are off screen; a small chevron for each hull
 //                  out of view, in its faction's colour, brighter the closer
-//                  it is, blinking when one is close behind
+//                  it is, blinking when one is close behind; a red arc
+//                  on the edge for homing fire closing from out of view
 
 type Kind = 'hull' | 'boss';
 
@@ -47,6 +48,9 @@ const MAX_MARKS = 18;
 /** Chevrons for hulls out of view, and how far out they reach. */
 const MAX_THREATS = 10;
 const THREAT_RANGE = 110;
+/** Arcs for homing fire out of view, and how far out a homing shot is shown. */
+const MAX_INCOMING = 4;
+const INCOMING_RANGE = 70;
 /** A new candidate must beat the current target by this much to take over. */
 const STICKY = 1.25;
 /** Deposits and pickups are marked inside this range. */
@@ -71,6 +75,8 @@ export class Targeting {
 
   private readonly marks: HTMLSpanElement[] = [];
   private readonly threats: HTMLElement[] = [];
+  /** Red arcs on the edge for homing fire closing from off screen. */
+  private readonly incoming: HTMLElement[] = [];
   private readonly markState: Array<{ cls: string; t: string; side: string }> = [];
   /** Pointers drawn this frame, to keep their words apart. */
   private ptrs: Array<{ el: HTMLElement; x: number; y: number; pri: boolean }> = [];
@@ -102,6 +108,14 @@ export class Targeting {
       d.append(document.createElement('i'), document.createElement('b'));
       th.append(d);
       this.threats.push(d);
+    }
+    for (let i = 0; i < MAX_INCOMING; i++) {
+      const d = document.createElement('div');
+      d.className = 'inc';
+      d.hidden = true;
+      d.append(document.createElement('i'));
+      th.append(d);
+      this.incoming.push(d);
     }
   }
 
@@ -457,6 +471,35 @@ export class Targeting {
       }
     }
     for (; n < MAX_THREATS; n++) if (!this.threats[n]!.hidden) this.threats[n]!.hidden = true;
+    this.drawIncoming(world, sector, live);
+  }
+
+  /**
+   * Homing fire closing on the ship from out of view (plasma that steers, a missile): a short red arc on the edge along its
+   * bearing, pulsing, stronger the nearer it is. It goes as soon as the shot is on screen, turns away or is gone.
+   */
+  private drawIncoming(world: World, sector: Sector, live: boolean): void {
+    let n = 0;
+    if (live && world.alive) {
+      const s = sector.shipNow, cx = this.w / 2, cy = this.h / 2, m = 34;
+      for (const b of world.shots) {
+        if (n >= MAX_INCOMING) break;
+        if (!(b.seek > 0 || b.from === 'tutor-missile')) continue;
+        const dx = s.x - b.x, dz = s.z - b.z, d = Math.hypot(dx, dz);
+        if (d > INCOMING_RANGE || d < 1e-3 || b.vx * dx + b.vz * dz <= 0) continue;
+        const p = sector.project(b.x, b.y, b.z);
+        if (p && p.x > 0 && p.y > 0 && p.x < this.w && p.y < this.h) continue;
+        const rel = angleDelta(s.heading, Math.atan2(-(b.z - s.z), b.x - s.x));
+        const ux = -Math.sin(rel), uy = -Math.cos(rel);
+        const k = Math.min((cx - m) / Math.max(1e-3, Math.abs(ux)), (cy - m) / Math.max(1e-3, Math.abs(uy)));
+        const el = this.incoming[n++]!;
+        el.hidden = false;
+        el.style.transform = `translate(${(cx + ux * k).toFixed(1)}px, ${(cy + uy * k).toFixed(1)}px)`;
+        el.style.setProperty('--a', `${((Math.atan2(uy, ux) * 180) / Math.PI + 90).toFixed(0)}deg`);
+        el.style.setProperty('--k', clamp(1.2 - d / INCOMING_RANGE, 0.5, 1).toFixed(2));
+      }
+    }
+    for (; n < MAX_INCOMING; n++) if (!this.incoming[n]!.hidden) this.incoming[n]!.hidden = true;
   }
 
   private pointer(el: HTMLElement, label: HTMLElement, sector: Sector, sx: number, sz: number, heading: number, o: { x: number; y: number; z: number } | null, t: string): void {
