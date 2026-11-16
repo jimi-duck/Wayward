@@ -32,7 +32,7 @@ import { ACTS, CHOICE_REGION } from '../content/story';
 import { actLine, dueBeat } from './story';
 import { postJump } from './postjump';
 import { ON_ROAD } from '../content/road';
-import { legOf, scriptKey } from './road';
+import { legOf, roadRegion, scriptKey } from './road';
 
 // ── the journey ───────────────────────────────────────────────────────────
 // The layer above the world: everything that lasts longer than one system.
@@ -333,6 +333,8 @@ export function autoCourse(j: Journey): boolean {
 function onward(j: Journey, to: StarSystem): boolean {
   if (to.kind === 'home') return false;
   const s = here(j);
+  // on the road, never past a stop: a lane that skips one (an old save's shortcut) is not taken
+  if (roadRegion(j.chart, regionOf(s)) && regionOf(to) === regionOf(s) && to.col > s.col + 1) return false;
   // and never back along the chart: the way is on
   return to.col >= s.col && (s.kind === 'gate' ? regionOf(to) > regionOf(s) : regionOf(to) >= regionOf(s));
 }
@@ -421,6 +423,8 @@ function claim(j: Journey, s: StarSystem, c: Carry, from: string): string[] {
     case 'parts': c.supplies = Math.min(SUPPLIES_MAX, c.supplies + PLACE_PARTS); bank(c, cy(PLACE_KRAIL)); lines.push(t('+{n} supplies · +{k} Cyrite', { n: PLACE_PARTS, k: cy(PLACE_KRAIL) })); break;
     case 'cover': j.hunt.delay += PLACE_COVER; lines.push(t('Calloway loses your trail for a while')); break;
     case 'shortcut': {
+      // the road is one gate out of each stop: a new lane would skip a stop and its job, so it pays as a find
+      if (roadRegion(j.chart, regionOf(s))) { bank(c, PLACE_CYRITE); lines.push(`+${PLACE_CYRITE} Cyrite`); break; }
       const to = openShortcut(j.chart, from);
       lines.push(to ? t('New lane: {a} to {b}', { a: sysById(j.chart, from).name, b: to.name }) : t('The lane it showed leads nowhere new'));
       break;

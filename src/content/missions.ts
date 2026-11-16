@@ -115,7 +115,7 @@ export const MISSIONS: SituationDef[] = [
     id: 'nothing_to_declare', name: 'Nothing to Declare', blurb: 'A runner needs medicine carried through a Custody patrol to the hospice ring.', group: 'frontier',
     kinds: ['port', 'transit', 'contested'], regions: [0, 5], weight: 1.2,
     prop: 'beacon',
-    actors: [act('picket', 3, 'patrol', 'wary', 'Custody patrol', { from: 'site', ring: 66 })],
+    actors: [act('picket', 3, 'patrol', 'wary', 'Custody patrol', { from: 'site', ring: 90 })],
     card: 'sc_declare', at: 30, hail: 480, accept: ['drop'],
     goal: { kind: 'sneak', hold: 0, limit: 200, line: 'Reach the drop point without being detected' },
     win: { text: 'Medicine delivered · no patrol saw you', chits: 130, standing: { gutter: 2 } },

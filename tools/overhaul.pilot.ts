@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs';
+import { appendFileSync, writeFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { LEGS } from '../src/content/road';
 import { SCRIPT } from '../src/content/script';
@@ -21,6 +21,8 @@ const RUNS = Number(process.env.ROAD_RUNS ?? 2);
 const STRATEGIES: Strategy[] = [{ kind: 'focus', branch: 'torpedo', second: 'defence' }];
 const POLICIES: Policy[] = ['run', 'bluff', 'fight'];
 const MAX_SORTIES = 90;
+/** ROAD_LOG=path writes one line a stop: time, cards offered, job flags gained. */
+const LOG = process.env.ROAD_LOG;
 
 interface Run { j: Journey; legTime: number[]; legWrecks: number[]; reached: boolean; stuck: boolean; dropped: string[]; twice: string[]; open: string[]; minutes: number }
 
@@ -35,7 +37,11 @@ function fly(seed: number, strat: Strategy, policy: Policy): Run {
     const leg = Math.max(0, regionOf(sysById(j.chart, j.at)));
     if (def.script) visited.add(def.script);
     const w = new World(seed * 31 + n * 7 + 1, { mode: 'breakout', sortie: def, carry: j.carry });
+    const cards: string[] = [];
+    const offer = w.desk.offer.bind(w.desk) as (...a: unknown[]) => unknown;
+    (w.desk as unknown as { offer: (...a: unknown[]) => unknown }).offer = (c: unknown, ...a: unknown[]) => { cards.push(`${Math.round(w.runTime)}s:${(c as { id: string }).id}`); return offer(c, ...a); };
     flyWorld(w, seed * 31 + n, strat, { maxTime: 1500, breakout: true, policy });
+    if (LOG) appendFileSync(LOG, `${seed} ${policy} #${n} ${def.script ?? def.name} t=${Math.round(w.runTime)} phase=${w.phase} alive=${w.alive} cards=[${cards.join(' ')}] jobs=[${[...w.flags].filter((f) => f.startsWith('job_') && !j.carry.flags.includes(f)).join(' ')}]\n`);
     if (w.phase !== 'over') { run.stuck = true; break; }
     run.legTime[leg] = (run.legTime[leg] ?? 0) + w.runTime;
     if (!w.alive) run.legWrecks[leg] = (run.legWrecks[leg] ?? 0) + 1;

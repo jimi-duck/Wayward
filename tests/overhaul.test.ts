@@ -248,6 +248,31 @@ function toThreshold(c: Partial<Journey['carry']> = {}, seed = 7): Journey {
   return j;
 }
 
+describe('the road never skips a stop', () => {
+  beforeEach(() => mem.clear());
+
+  it('pays a lane-bending place as a find, and never takes a lane past a stop', () => {
+    for (const seed of [5000, 5017, 7]) {
+      const j = newJourney(seed, false, 'road');
+      // every place on the road bends a lane, and an old save carries a lane that skips a stop
+      for (const id of Object.keys(j.chart.places)) j.chart.places[id]!.reward = 'shortcut';
+      const played: string[] = [];
+      endSortie(j, result(j));
+      let guard = 0;
+      while (j.status === 'chart' && guard++ < 90) {
+        const o = options(j);
+        expect(o.length, `seed ${seed} at ${j.at}`).toBe(1);
+        plot(j, o[0]!.to.id);
+        const key = sortieDef(j).script;
+        if (key) played.push(key);
+        endSortie(j, { ...result(j), place: true });
+      }
+      const want = LEGS.slice(1).flat().map((r) => r.script);
+      for (const k of want) expect(played, `seed ${seed}`).toContain(k);
+    }
+  });
+});
+
 const open = (j: Journey) => choices(j).filter((c) => c.open).map((c) => c.def.id);
 
 describe('the endings on the road', () => {
