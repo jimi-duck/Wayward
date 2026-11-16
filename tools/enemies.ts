@@ -13,7 +13,7 @@ import { createRenderer, fitRenderer } from '../src/render/renderer';
 import { glowTexture } from '../src/render/textures';
 import { Streaks } from '../src/render/streaks';
 import { WeaponView } from '../src/render/weapons';
-import { ALIEN_ORDER, ALIEN_TYPES, spawnAlien, type Alien, type Faction, type Shot } from '../src/sim/enemies';
+import { ALIEN_ORDER, ALIEN_TYPES, JINK_ROLL, spawnAlien, type Alien, type Faction, type Shot } from '../src/sim/enemies';
 import { Rng } from '../src/sim/rng';
 import { newShip } from '../src/sim/ship';
 import type { Bolt, Torpedo } from '../src/sim/weapons';
@@ -40,6 +40,7 @@ fx.setLights(tier.name !== 'low');
 const streaks = new Streaks(scene);
 const weapons = new WeaponView(streaks);
 const enemies = new EnemyView(scene, glow, streaks);
+enemies.fx = fx;
 env.setSky(skyFor(Number(params.get('sky') ?? '31337'), null));
 env.setPixelRatio(1);
 
@@ -143,6 +144,14 @@ const frame = (now: number) => {
     if (bf > 5 + Math.round(Number(params.get('at') ?? '0.4') * 60)) { (window as unknown as { __boom: boolean }).__boom = true; if (!post.render(0)) renderer.render(scene, camera); return; }
   }
   t += dt;
+  // ?turn=<rad/s> swings the close hull's heading and velocity in place (steering puffs, drives); ?jink=1 rolls it every 2 s; ?hp=<n> sets its armour
+  const al0 = aliens[0];
+  if (al0 && view === 'close') {
+    const w = Number(params.get('turn') ?? '0'), sp = Number(params.get('speed') ?? '20');
+    if (params.has('hp')) al0.hp = Number(params.get('hp'));
+    if (w || params.has('speed')) { al0.face += w * dt; al0.vx = Math.cos(al0.face) * sp; al0.vz = -Math.sin(al0.face) * sp; }
+    if (params.get('jink') === '1') { const ph = t % 2; al0.roll = ph < JINK_ROLL ? ph : -1; }
+  }
   renderer.info.reset();
   const t0 = performance.now();
   streaks.begin();
