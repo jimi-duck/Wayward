@@ -187,14 +187,17 @@ class Trail {
 }
 
 // ── the shield ────────────────────────────────────────────────────────────
-// Unseen until it takes a hit: then a hex lattice flares, red at the rim
-// (red is damage). It shimmers teal through the grace after a hit. With
-// shield charges up it stands faintly blue at the rim, and a hit it absorbs
-// flares blue instead of red.
+// Unseen until it takes a hit. A hit a shield charge absorbs is a conformal
+// ripple: a hex ring runs out over the field from where it landed, in blue,
+// for about a third of a second. A hit that gets through to the plating never
+// draws the lattice, only a short red rim (red is damage), so the two never
+// read alike. The ripple stays on the side the hit came from and dies out
+// before it wraps the hull: never a bubble. It shimmers teal through the
+// grace after a hit. With shield charges up it stands faintly blue at the rim.
 function shieldMaterial(): ShaderMaterial {
   return new ShaderMaterial({
     transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide,
-    uniforms: { uHit: { value: 0 }, uGrace: { value: 0 }, uTime: { value: 0 }, uCharge: { value: 0 }, uReady: { value: 0 }, uLocal: { value: 0 }, uImpact: { value: new Vector3(1, 0, 0) }, uColor: { value: new Color(2.6, 0.9, 0.35) } },
+    uniforms: { uHit: { value: 0 }, uAbsorb: { value: 0 }, uGrace: { value: 0 }, uTime: { value: 0 }, uCharge: { value: 0 }, uReady: { value: 0 }, uLocal: { value: 0 }, uImpact: { value: new Vector3(1, 0, 0) }, uColor: { value: new Color(2.6, 0.9, 0.35) } },
     vertexShader: /* glsl */ `
       varying vec3 vN; varying vec3 vV; varying vec3 vP;
       void main() {
@@ -203,7 +206,7 @@ function shieldMaterial(): ShaderMaterial {
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: /* glsl */ `
-      uniform float uHit; uniform float uGrace; uniform float uTime; uniform float uCharge; uniform float uReady; uniform float uLocal; uniform vec3 uImpact; uniform vec3 uColor;
+      uniform float uHit; uniform float uGrace; uniform float uTime; uniform float uCharge; uniform float uReady; uniform float uLocal; uniform float uAbsorb; uniform vec3 uImpact; uniform vec3 uColor;
       varying vec3 vN; varying vec3 vV; varying vec3 vP;
       float hexEdge(vec2 p) {
         vec2 r = vec2(1.0, 1.7320508), h = r * 0.5;
@@ -221,7 +224,7 @@ function shieldMaterial(): ShaderMaterial {
         // a blow from a known side: a bright spot and a ring running out from it over the field, the lattice bending as it passes
         float d = acos(clamp(dot(normalize(vP), uImpact), -1.0, 1.0));
         float age = 1.0 - uHit;
-        float rd = (d - age * 2.6) / 0.34;
+        float rd = (d - age * 2.6) / 0.22;
         float ring = exp(-rd * rd) * (1.0 - age);
         float spot = exp(-d * d / 0.2) * (1.0 - age) * (1.0 - age);
         float hex = hexEdge(uv * 1.6 + vec2(0.0, uTime * 0.6) + vec2(ring * 0.3 * uLocal, 0.0));
@@ -234,7 +237,11 @@ function shieldMaterial(): ShaderMaterial {
         float bd = (vP.y - (-1.0 + 2.2 * up)) / 0.2;
         float band = exp(-bd * bd) * uReady;
         float ready = band * (0.18 + hex * 0.7 + fres * 0.5);
-        float a = (fres * 0.75 + hex * 0.26) * max(hitA, pulse) + standing + ready;
+        // a hit the shield took shows as the lattice: a hex ring running out over the field from the impact. A hit that got through
+        // the shield to the plating never draws the lattice, only a short red rim, so the two never read alike
+        float near = mix(1.0, exp(-d * d / 0.45), uAbsorb * uLocal);
+        float hitT = (fres * mix(0.55, 0.75, uAbsorb) + hex * (0.2 + ring * 0.45) * uAbsorb) * hitA * near;
+        float a = max(hitT, (fres * 0.75 + hex * 0.26) * pulse) + standing + ready;
         gl_FragColor = vec4(uColor * a, a);
       }`,
   });
@@ -441,7 +448,7 @@ export class ShipView {
       m.sprite.scale.setScalar(m.size * MODEL_SCALE * (0.8 + 0.2 * v));
     }
     // the shield zone shows the ellipsoid itself, faintly
-    if (this.zoneLevel.defence! > 0.05) this.hit = Math.max(this.hit, this.zoneLevel.defence! * 0.3);
+    if (this.zoneLevel.defence! > 0.05) { this.hit = Math.max(this.hit, this.zoneLevel.defence! * 0.3); this.absorbed = true; }
   }
 
   /** A fit landed on a zone: flash its lights. */
@@ -628,11 +635,13 @@ export class ShipView {
     });
     animateLamps(this.time, dt, Math.min(1.2, wash));
 
-    this.hit = Math.max(0, this.hit - dt * 2.2);
+    // a shield hit is a quick ripple (about a third of a second); a hit on the plating a quicker red rim
+    this.hit = Math.max(0, this.hit - dt * (this.absorbed ? 3.2 : 3.8));
     const st = this.status;
     const grace = st.cloaked ? 1 : s.invuln > 0 && s.rollT < 0 ? Math.min(1, s.invuln) : 0;
     const u = this.shieldMat.uniforms;
     u.uHit!.value = this.hit;
+    u.uAbsorb!.value = this.absorbed ? 1 : 0;
     if (this.hit <= 0) u.uLocal!.value = 0;
     u.uGrace!.value = grace;
     u.uTime!.value = this.time;

@@ -451,6 +451,9 @@ export class Sector {
           this.ship.flareShield(false, e.fx, e.fz);
           this.fx.flash(e.x, 0.3, e.z, 4, ALERT, 0.2);
           this.fx.burst(e.x, 0.3, e.z, 34, FIRE, 14, 0.35, 0.6);
+          // through to the plating: torn metal and hot streaks off the hull, which a shield hit never throws
+          this.fx.rubble('metal', e.x, 0.4, e.z, 3, 0.14, 6);
+          this.fx.streakBurst(e.x, 0.4, e.z, 6, 12, 0.5, 1.2);
           this.fx.light(e.x, 0.5, e.z, [1, 0.35, 0.2], 140, 0.3);
           this.rig.shake(0.65);
           hold = Math.max(hold, 0.06);

@@ -17,7 +17,13 @@ An enemy under a third of its hit points smokes and sheds embers (`Effects.burni
 The hull stays on screen for 1.45 s after the last plate (`DEATH_HOLD`; the sim waits 1.8 s). It vents fire from its wounds and nozzles, goes up stern, middle, bow (`dyingBlasts`), then breaks up in one big blast and disappears.
 
 ## Weapons
-Our lances throw two hot sparks and a faint light from the barrel. Torpedoes trail thin grey smoke. A hit on a hull leaves a hot spot that cools over 0.3 s.
+Our lances throw two hot sparks and a faint light from the barrel, and carry a slim white-hot core inside the red. Torpedoes lay their smoke in segments, a puff and a glowing ember every 0.9 units (`SEGMENT` in `src/render/weapons.ts`), so a heavy round's path never reads as a lance's line. A hit on a hull leaves a hot spot that cools over 0.3 s.
+
+## Shield or plating
+A hit a shield charge absorbs is a small hex ripple on the side it came from, blue, about a third of a second; it fades before it wraps the hull, so it never reads as a bubble. A hit that gets through never draws the lattice: a short red rim, plus torn metal and hot streaks off the hull. Bench: `tools/ship.html?hit=60&age=0.1` (`&abs=1` for an absorbed hit).
+
+## Homing fire out of view
+Plasma that steers, and missiles, closing on the ship from off screen within 70 units show a short red arc on the screen edge along their bearing, pulsing (still with reduced motion), stronger the nearer (`drawIncoming` in `src/ui/targeting.ts`). It goes once the shot is on screen or turns away. Hulls out of view keep their chevrons in their faction's colour.
 
 ## The Wayward's own motion
 - Attitude jets (`ShipView.rcs`, `PORTS` in `src/render/ships.ts`): six ports, two lateral at the bow, two at the stern, a dorsal and ventral pair on the bow. A short burst of cold gas (`Effects.gas`, white with a cool cast, under the bloom line, 0.15 to 0.25 s) as a turn starts or stops, the whole flank away from a jink, and the bow pair into and out of a break's flip. A faint glow stays on the turning pair through a steady turn. Bench: `tools/ship.html?rcs=jink|flip|turn`.

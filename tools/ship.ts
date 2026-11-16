@@ -23,7 +23,7 @@ const spin = params.get('spin') === '1';
 const livery = params.get('livery') === '1';
 // ?sweep=<model x>: freeze the rename's livery pass there (+3.4 the bow, -3.4 the stern)
 const sweep = params.get('sweep');
-// ?hit=<bearing degrees>&age=<seconds into the flare>: freeze a shield flare from that bearing (0 ahead, 90 to starboard)
+// ?hit=<bearing degrees>&age=<seconds into the flare>: freeze a shield flare from that bearing (0 ahead, 90 to starboard); &abs=1 a hit the shield absorbed
 const hitBearing = params.get('hit');
 const hitAge = Number(params.get('age') ?? '0.15');
 // ?plates=<left>&maxplates=<of>: show the wounds for the plates lost (default: none lost)
@@ -108,7 +108,7 @@ const frame = (now: number) => {
   }
   if (hitBearing !== null && !hitDone) {
     const b = Number(hitBearing) * Math.PI / 180;
-    ship.flareShield(false, Math.cos(b) * 5, Math.sin(b) * 5);
+    ship.flareShield(params.get('abs') === '1', Math.cos(b) * 5, Math.sin(b) * 5);
     ship.update(s, hitAge, true);
     hitDone = true;
   }
