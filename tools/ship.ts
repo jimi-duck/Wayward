@@ -55,6 +55,9 @@ if (fitParam === 'all') for (const [id, parts] of Object.entries(FITTED)) fitLev
 else if (fitParam) for (const e of fitParam.split(',')) { const [id, n] = e.split(':'); fitLevels[id!] = Number(n ?? '9'); }
 // ?use=0..1: the run's wear (chips, grime, soot, scorch marks)
 ship.setFit(fitLevels, Number(params.get('use') ?? '0'));
+// ?inspect=<id>[:level]: fit that upgrade a moment after the start, to see the teal inspection trace on the new part
+const inspectFit = params.get('inspect');
+let inspectDone = false;
 // ?cargo=0..1: the hold's fill
 ship.setCargo(Number(params.get('cargo') ?? '1'));
 if (sweep !== null) setLiverySweep(Number(sweep));
@@ -111,6 +114,11 @@ const frame = (now: number) => {
     ship.flareShield(params.get('abs') === '1', Math.cos(b) * 5, Math.sin(b) * 5);
     ship.update(s, hitAge, true);
     hitDone = true;
+  }
+  if (inspectFit && !inspectDone && t > 0.3) {
+    inspectDone = true;
+    const [id, n] = inspectFit.split(':');
+    ship.setFit({ ...fitLevels, [id!]: Number(n ?? '1') }, Number(params.get('use') ?? '0'));
   }
   if (shield) ship.status.charged = 1;
   if (ready !== null) { ship.status.charged = 0; ship.update(s, 0, true); ship.status.charged = 1; ship.update(s, (1 - Number(ready)) * 0.7, true); }

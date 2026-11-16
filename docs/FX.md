@@ -33,6 +33,10 @@ Plasma that steers, and missiles, closing on the ship from off screen within 70 
 - Drive light on her stern (`glowLight` and the painted materials' `ENGINE` term): next to nothing at idle, full at a hard burn, a little past it while a throttle snap spools the drives. It is the drives' own blue: the stock drives burn blue, so an amber wash would not match them.
 - Camera (`src/render/camera.ts`): a throttle snap from low speed or a jink opens the lens up to 4° for a moment (in fast, out slow); past two thirds of full burn at speed a fine hum (0.014 units) comes through the rig. Reduced motion drops both. The rig itself is unchanged.
 
+## Refit and docking
+- A part just fitted is traced in thin teal lines over its edges (`INSPECT` in `src/render/wayward.ts`), two pulses over about 2.4 s of flight, so the player sees on the hull what the bay put there. The bay holds the world, so it plays as she launches. Edge lines are built once per fit; a save loading or a whole build arriving (more than 4 new levels) shows none. Bench: `tools/ship.html?inspect=mo_thrusters:3`. The run's wear (`setUse`) already builds on the hull as she is used.
+- Docking from flight, the port's screen waits 1.3 s (`DOCK_SETTLE_MS`) while the station's sodium floodlight comes up over her deck with a strike flicker, the camera comes in a little and wisps of vented steam drift across the shot. The light is the last of the four thrown lights held as a lamp (`Effects.lamp`), so the scene gets no new light; the low tier has none. Not on the way back from the refit bay, and none of it with reduced motion.
+
 ## Game feel
 - Hits: our lance or torpedo landing on a hull or boss gives the camera a small shake (0.1 to 0.14); hits on us shake harder (as before).
 - Slow motion (`src/core/slowmo.ts`, `loop.timeScale`): a cruiser (radius 2.4 up) or elite kill drops the clock to 0.4 (0.3 for radius 3+) for about 0.25 to 0.35 s, a boss kill to 0.25 for 0.6 s. Eases in over 60 ms and out over 350 ms; 4 s cooldown so a busy fight is not slow. A pause, a pop-up, death or reduced motion clears it at once.

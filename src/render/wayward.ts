@@ -1,6 +1,6 @@
-import { CanvasTexture, Color, Group, Vector3, type Mesh, Vector4, MeshBasicMaterial, MeshStandardMaterial, SRGBColorSpace, type Material, type Texture } from 'three';
+import { AdditiveBlending, CanvasTexture, Color, EdgesGeometry, Group, LineBasicMaterial, LineSegments, Vector3, type Mesh, Vector4, MeshBasicMaterial, MeshStandardMaterial, SRGBColorSpace, type Material, type Texture } from 'three';
 import { Kit, metal, seeded, type V3 } from './kit';
-import { buildFits, fitKey, shown } from './fitted';
+import { buildFits, FITTED, fitKey, shown } from './fitted';
 import { bevelGeo, block, setBevelScale, bolts, frameRing, hatch, lamp, oct, octFaces, panel, pipeRun, vent, type Face } from './parts';
 
 // ── the Wayward ───────────────────────────────────────────────────────────
@@ -77,6 +77,7 @@ export function animateLamps(time: number, dt = 0, burn = 1): void {
   // the drum's blue seam lights wind up and down with the drives, so the whole stern settles together
   const bl = mats?.blue as MeshBasicMaterial | undefined;
   if (bl) bl.color.copy(BLUE).multiplyScalar(0.4 + 0.6 * burn);
+  stepInspect(dt);
   // a wound's burn spreads over about half a second rather than popping
   WOUNDS.forEach((w, i) => {
     w.level += clampStep(w.want - w.level, 2 * dt);
@@ -113,15 +114,67 @@ export function setCargo(frac: number): void {
 let fitGroup: Group | null = null;
 let fitMats: Record<string, Material> | null = null;
 let fitSeen = '';
+let fitWas: Record<string, number> = {};
+let fitBuilt = false;
+// ── the inspection trace ──────────────────────────────────────────────────
+// A part just fitted is traced in thin teal lines over its edges (teal is
+// information: "this is new"), pulsing twice and gone in about two and a half
+// seconds of flight, so the player sees on the hull what the bay put there.
+// Built once per fit, never per frame.
+const INSPECT = new LineBasicMaterial({ color: new Color(0.3, 1.25, 1.2), transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false, toneMapped: false });
+const INSPECT_TIME = 2.4;
+let inspect: Group | null = null;
+let inspectT = INSPECT_TIME;
+/** A save loaded or a new run: more than this many new levels at once is a whole build arriving, not a fit. */
+const INSPECT_MAX = 4;
+
 /** What the upgrades put on her: only what is fitted is built, and only when it changes. */
 export function setFit(levels: Record<string, number>): void {
   if (!fitGroup || !fitMats) return;
   const s = shown(levels), key = fitKey(s);
-  if (key === fitSeen) return;
+  if (key === fitSeen && fitBuilt) return;
+  const first = !fitBuilt;
+  fitBuilt = true;
   fitSeen = key;
-  for (const c of [...fitGroup.children]) { fitGroup.remove(c); (c as Mesh).geometry.dispose(); }
+  if (inspect) { for (const c of inspect.children) (c as LineSegments).geometry.dispose(); inspect = null; }
+  for (const c of [...fitGroup.children]) { fitGroup.remove(c); (c as Mesh).geometry?.dispose(); }
   const g = buildFits(s).build(fitMats);
   g.children.slice().forEach((c) => { (c as Mesh).castShadow = (c as Mesh).receiveShadow = true; fitGroup!.add(c); });
+  // only the levels that are new since the last build
+  const fresh: Record<string, number> = {};
+  let added = 0;
+  for (const id of Object.keys(s)) {
+    const was = fitWas[id] ?? 0;
+    if (s[id]! > was) { fresh[id] = s[id]!; added += s[id]! - was; }
+  }
+  const was = fitWas;
+  fitWas = s;
+  if (first || added === 0 || added > INSPECT_MAX) return;
+  const k = new Kit();
+  for (const id of Object.keys(fresh)) for (let i = was[id] ?? 0; i < fresh[id]!; i++) FITTED[id]![i]!(k);
+  const ng = k.build(fitMats);
+  inspect = new Group();
+  for (const c of ng.children) {
+    const m = c as Mesh;
+    if (!m.geometry) continue;
+    const lines = new LineSegments(new EdgesGeometry(m.geometry, 35), INSPECT);
+    lines.position.copy(m.position); lines.quaternion.copy(m.quaternion); lines.scale.copy(m.scale);
+    lines.scale.multiplyScalar(1.01);
+    inspect.add(lines);
+    m.geometry.dispose();
+  }
+  fitGroup.add(inspect);
+  inspectT = 0;
+}
+
+/** The inspection trace's two pulses, in flight time (the bay holds the world, so it plays once she launches). */
+function stepInspect(dt: number): void {
+  if (!inspect) return;
+  inspectT += dt;
+  const t = inspectT;
+  if (t >= INSPECT_TIME) { inspect.visible = false; INSPECT.opacity = 0; return; }
+  inspect.visible = true;
+  INSPECT.opacity = 0.5 * (1 - Math.cos((2 * Math.PI * t) / (INSPECT_TIME / 2))) * (1 - t / INSPECT_TIME) * 0.9;
 }
 
 /** Scorch marks a run burns in, model space; each grows as `use` passes its turn. */

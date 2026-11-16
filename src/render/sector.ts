@@ -60,6 +60,13 @@ const BLAST_TINT: Record<string, RGB> = {
 
 /** How far the bay's ease must have run before it covers the view completely. */
 const COVERED = 0.985;
+/** Docking from flight: how long the view holds on the ship in the station's floodlights before the port's screen opens. */
+export const DOCK_SETTLE_MS = 1300;
+/** The station's floodlight: low-pressure sodium, a warm orange-amber, and its strength at full. */
+const SODIUM: RGB = [1, 0.58, 0.2];
+const SODIUM_PEAK = 700;
+/** Vented steam, pale and warmed by the sodium. */
+const STEAM: RGB = [0.78, 0.7, 0.6];
 /** The arrival sweep: seconds held on the wide shot, then seconds to swing in behind the ship. */
 const ARRIVE_HOLD = 0.75;
 const ARRIVE_SWING = 3.25;
@@ -136,6 +143,9 @@ export class Sector {
   private seenWorld: World | null = null;
   /** An opaque panel (the refit bay) is over the whole view. */
   covered = false;
+  /** 0 to 1: how far into the station's floodlights a docking ship is (render only; the port's screen follows). */
+  private dockK = 0;
+  private wispT = 0;
   /** An opaque panel (the port) fills the view: nothing behind it needs drawing. */
   blind = false;
   /** Layers the phone readout has switched off. Empty unless `?perf` is open. */
@@ -655,7 +665,10 @@ export class Sector {
     this.time += dt;
     const inBay = this.console !== null && this.console !== 'brief';
     this.bayK += ((inBay ? 1 : 0) - this.bayK) * Math.min(1, 4 * uiDt);
-    this.rig.bay = this.bayK * this.bayK * (3 - 2 * this.bayK);
+    const dockWant = world.phase === 'dock' && world.alive ? 1 : 0;
+    this.dockK += (dockWant - this.dockK) * Math.min(1, (dockWant ? 2.2 : 3) * uiDt);
+    // docking, the camera comes in on her a little as the bay's lights take her
+    this.rig.bay = Math.max(this.bayK * this.bayK * (3 - 2 * this.bayK), this.reduceMotion ? 0 : 0.7 * this.dockK * this.dockK);
     // the pause card's light on the ship is for the card; a photo shows her as she is
     this.ship.light(this.photo ? null : this.console, uiDt);
     this.paintSky(world);
@@ -745,7 +758,9 @@ export class Sector {
       const a = Math.random() * Math.PI * 2;
       this.fx.burst(s.x + Math.cos(a) * 0.9, 0.5, s.z - Math.sin(a) * 0.9, 3, SHIELD, 3, 0.12, 0.35);
     }
-    this.fx.update(dt);
+    this.dockFloods(uiDt);
+    // the world waits while she is docked: the steam still drifts
+    this.fx.update(dt > 0 ? dt : this.dockK > 0.01 ? uiDt : 0);
     this.env.motion = !this.reduceMotion;
     this.env.update(this.rig.camera, this.rig.target.x, this.rig.target.z, s.vx, s.vz, dt);
     this.debris.update(this.rig.target.x, this.rig.target.z, dt);
@@ -912,6 +927,27 @@ export class Sector {
       }
     }
   }
+
+  /**
+   * Docking: the station's sodium floodlights come up over her from above and ahead, and now and then a wisp of vented steam
+   * drifts across the shot (none with reduced motion). One held thrown light (Effects.lamp) and the smoke pool: nothing new.
+   */
+  private dockFloods(uiDt: number): void {
+    const k = this.dockK, s = this.lerped;
+    if (k < 0.01) { if (this.wispOn) { this.fx.lamp(0, 0, 0, SODIUM, 0); this.wispOn = false; } return; }
+    this.wispOn = true;
+    const hx = Math.cos(s.heading), hz = -Math.sin(s.heading);
+    // a slow sodium flicker as the lamps strike
+    const strike = k < 0.6 ? 0.8 + 0.2 * Math.sin(this.time * 31) * Math.sin(this.time * 7.3) : 1;
+    this.fx.lamp(s.x + hx * 1.2, 2.6, s.z + hz * 1.2, SODIUM, SODIUM_PEAK * k * strike);
+    if (this.reduceMotion || (this.wispT -= uiDt) > 0) return;
+    this.wispT = 0.25 + Math.random() * 0.35;
+    // from one side of the shot to the other, across her, at deck height
+    const side = Math.random() < 0.5 ? -1 : 1, along = (Math.random() - 0.3) * 3;
+    const x = s.x + hx * along + hz * side * 3.2, z = s.z + hz * along - hx * side * 3.2;
+    this.fx.wisp(x, 0.6 + Math.random() * 1.2, z, -hz * side * 1.6, hx * side * 1.6, 1.6 + Math.random() * 1, STEAM, 0.38);
+  }
+  private wispOn = false;
 
   /** The interpolated ship, for the HUD. */
   get shipNow() {

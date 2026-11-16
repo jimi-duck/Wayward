@@ -7,7 +7,7 @@ import { PAUSE_KEYS } from './input/keyboard';
 import { ZOOMS } from './render/camera';
 import { QualityGovernor, keptTier, saveTier, tierIndex } from './render/quality';
 import { createRenderer, fitRenderer, matchTier } from './render/renderer';
-import { Sector } from './render/sector';
+import { DOCK_SETTLE_MS, Sector } from './render/sector';
 import { lockLifted } from './sim/postjump';
 import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
@@ -431,7 +431,19 @@ function boot(review: typeof import('./review') | null): void {
   }, () => launch(pick));
   // a new language: the page, then whatever the start card drew itself
   onLang(() => { localize(); showResume(); startOpts.render(); hud.relabel(); });
+  // Docking from flight: the port's screen waits a beat while the view settles into the station's floodlights (render/sector.ts);
+  // not when coming back from the refit bay, and not with reduced motion
+  let dockAt = -1, lastPhase = world.phase;
+  const docked = (): boolean => {
+    if (world.phase === 'dock' && lastPhase === 'play' && !sector.reduceMotion) dockAt = performance.now();
+    lastPhase = world.phase;
+    if (world.phase !== 'dock' || dockAt < 0) return true;
+    if (performance.now() - dockAt < DOCK_SETTLE_MS) return false;
+    dockAt = -1;
+    return true;
+  };
   const stops = () => {
+    const dockReady = docked();
     if (world.phase === 'bay' && !bay.open) {
       // the refit bay: the player opened it, and the world waits until they launch (or go back to the dock)
       input.reset();
@@ -451,7 +463,7 @@ function boot(review: typeof import('./review') | null): void {
         if (journey && world.mode === 'breakout' && journey.status === 'sortie') { bankAnswer(journey, before, world.carry()); saveJourney(journey); }
         input.reset();
       });
-    } else if (world.phase === 'dock' && !port.open) {
+    } else if (world.phase === 'dock' && !port.open && dockReady) {
       // docked at the port, or back from its refit bay
       input.reset();
       port.show(world, () => {
