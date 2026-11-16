@@ -119,6 +119,12 @@ if (view === 'close') camera.position.set(2, 3.5, -1);
 else if (view === 'hit') camera.position.set(-6, 14, 0);
 else if (view === 'break' && params.get('cam') === 'near') camera.position.set(1, 5, 0);
 else camera.position.set(-12, 6, 0);
+// ?orbit=<degrees>: swing the row's camera round the rocks (0 has the sun behind the camera, 90 across the view, 180 against it)
+const orbit = params.get('orbit');
+if (orbit !== null) {
+  const a = (Number(orbit) * Math.PI) / 180, d = 26;
+  camera.position.set(14 - Math.cos(a) * d, 6, -Math.sin(a) * d);
+}
 camera.lookAt(14, 0, 0);
 
 let last = performance.now();

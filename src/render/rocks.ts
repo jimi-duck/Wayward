@@ -1,7 +1,7 @@
 import { rockPose } from './rockmotion';
 import {
   Color, IcosahedronGeometry, LatheGeometry, Vector2, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, Quaternion,
-  Float32BufferAttribute, Vector3, type BufferGeometry, type Object3D, type Scene,
+  Float32BufferAttribute, ShaderChunk, Vector3, type BufferGeometry, type Object3D, type Scene,
 } from 'three';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { STEP } from '../core/loop';
@@ -105,8 +105,28 @@ const KINDS = Object.keys(LOOKS) as RockKind[];
  * frequency for the same grain); `lava` scales the glow; `bump` is the
  * surface relief, in world units. `look` recolours it by kind.
  */
-/** Of the sky's fill light, how much reaches stone (1 as lit before the hard-light pass); the sun's rim on a rock's limb. */
-const ROCK_FILL = 0.5, ROCK_RIM = 0.9;
+/** The sun's rim on a rock's limb. */
+const ROCK_RIM = 0.9;
+/** Where the sun cuts off on a rock's smooth shape (a GLSL float), so grain on the night side never catches it. */
+const ROCK_EDGE = '0.0';
+/** On the face turned from the sun, how much of the other directional light (the cool rim) and the sky's fill stone keeps. */
+const ROCK_NIGHT = 0.12;
+/**
+ * The lights chunk with one change for stone: every directional light after the sun (index 0, the key) is dimmed on the
+ * side of the rock turned away from the sun, judged on the smooth shape rather than the bumped surface, so the night side
+ * goes dark with a clean terminator. Point lights (blasts, the ship's lamps) are left alone.
+ */
+const ROCK_LIGHTS = `
+  float rockNight = 1.0, rockDay = 1.0;
+  #if NUM_DIR_LIGHTS > 0
+    float rockSun = dot(nonPerturbedNormal, directionalLights[0].direction);
+    rockNight = mix(${ROCK_NIGHT.toFixed(2)}, 1.0, smoothstep(-0.1, 0.25, rockSun));
+    rockDay = smoothstep(${ROCK_EDGE}, 0.22, rockSun);
+  #endif
+` + ShaderChunk.lights_fragment_begin.replace(
+  'getDirectionalLightInfo( directionalLight, directLight );',
+  'getDirectionalLightInfo( directionalLight, directLight );\n\t\tdirectLight.color *= UNROLLED_LOOP_INDEX == 0 ? rockDay : rockNight;',
+);
 
 export function lavaRock(detail: number, lava: number, bump: number, look: RockLook = LOOKS.basalt, ember = true): MeshStandardMaterial {
   const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: look.metal, envMapIntensity: 0.35, vertexColors: true });
@@ -204,12 +224,13 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         totalEmissiveRadiance += uGlow / max(uGlow.r, max(uGlow.g, uGlow.b)) * farK * 0.08 * (uEmber * 0.5 + uViolet * 1.3 + uCool * 0.7) * uLava;
         float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
         totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.03 * uViolet + 0.025 * uCool + 0.012 * uEmber) * uLava;`)
+      .replace('#include <lights_fragment_begin>', ROCK_LIGHTS)
       .replace('#include <aomap_fragment>', `
-        // hard light: in vacuum the side away from the sun is close to black, so the sky's fill is cut back on stone and the
-        // terminator between lit face and shadow reads crisp. The sun then catches the silhouette: a thin rim on the limb
+        // hard light: in vacuum the side away from the sun is close to black, so the sky's fill and the cool rim light are cut
+        // back on the night side (ROCK_LIGHTS) and the terminator between lit face and shadow reads crisp. The sun then catches the silhouette: a thin rim on the limb
         // facing it, stronger where the rock stands against the light, so a rock still reads as a form on a dark sky
-        reflectedLight.indirectDiffuse *= ${ROCK_FILL.toFixed(2)};
-        reflectedLight.indirectSpecular *= ${ROCK_FILL.toFixed(2)};
+        reflectedLight.indirectDiffuse *= rockNight;
+        reflectedLight.indirectSpecular *= rockNight;
         #if NUM_DIR_LIGHTS > 0
           vec3 sunL = directionalLights[0].direction;
           vec3 viewV = normalize(vViewPosition);
@@ -220,7 +241,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         #endif
         #include <aomap_fragment>`);
   };
-  m.customProgramCacheKey = () => `stone-rock14-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
+  m.customProgramCacheKey = () => `stone-rock15-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 
