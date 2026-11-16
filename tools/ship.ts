@@ -9,6 +9,8 @@ import { Post } from '../src/render/post';
 import { TIERS, tierIndex } from '../src/render/quality';
 import { createRenderer, fitRenderer } from '../src/render/renderer';
 import { ShipView } from '../src/render/ships';
+import { Effects } from '../src/render/fx';
+import { glowTexture } from '../src/render/textures';
 import { setLightLevel, setLivery, setLiverySweep, setMark } from '../src/render/wayward';
 import { FITTED } from '../src/render/fitted';
 import { newShip } from '../src/sim/ship';
@@ -37,6 +39,9 @@ const camera = new PerspectiveCamera(32, 1, 0.05, 4000);
 const post = new Post(renderer, scene, camera, tier);
 const ship = new ShipView();
 scene.add(ship.root);
+const fx = new Effects(scene, glowTexture());
+// ?rcs=jink|flip|turn: hold the attitude jets firing (a jink to port, so the starboard flank fires, the flip of a break, a turn swinging to and fro)
+const rcs = params.get('rcs');
 (window as unknown as { ship: ShipView }).ship = ship;
 setLivery(livery);
 // ?mark=0..1: the registry struck out and the name written (Ned's yard); ?lights=<level>: her lights as the scan arch leaves them
@@ -109,7 +114,13 @@ const frame = (now: number) => {
   }
   if (shield) ship.status.charged = 1;
   if (ready !== null) { ship.status.charged = 0; ship.update(s, 0, true); ship.status.charged = 1; ship.update(s, (1 - Number(ready)) * 0.7, true); }
-  else ship.update(s, hitBearing !== null ? 0 : dt, true);
+  else {
+    if (rcs === 'jink') { s.rollT = 0.02; s.rollDir = -1; }
+    if (rcs === 'flip') s.breakT = 0.02;
+    if (rcs === 'turn') s.yawRate = Math.sin(t * 7) * 1.4;
+    ship.update(s, hitBearing !== null ? 0 : dt, true);
+  }
+  if (rcs) { fx.setViewportHeight(canvas.clientHeight); ship.rcs(fx, 0, 0, dt); fx.update(dt); }
   env.update(camera, 0, 0, 0, 0, dt);
   // ?fight=gutter|custody|office|voice|thren: the rim as in a fight with that faction
   const fight = params.get('fight');

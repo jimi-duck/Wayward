@@ -31,6 +31,8 @@ class Sparks {
   private readonly decay = new Float32Array(MAX_SPARKS);
   private readonly base = new Float32Array(MAX_SPARKS * 4); // r g b size at birth
   private readonly drag = new Float32Array(MAX_SPARKS);
+  /** 1 for cold gas, which fades evenly instead of cooling from white to red. */
+  private readonly cold = new Uint8Array(MAX_SPARKS);
   private next = 0;
 
   constructor() {
@@ -65,15 +67,17 @@ class Sparks {
     (this.points.material as ShaderMaterial).uniforms.uScale!.value = px;
   }
 
-  emit(x: number, y: number, z: number, vx: number, vy: number, vz: number, c: Color, size: number, life: number, drag = 0.9): void {
+  emit(x: number, y: number, z: number, vx: number, vy: number, vz: number, c: Color, size: number, life: number, drag = 0.9, cold = false): void {
     const i = this.next;
     this.next = (this.next + 1) % MAX_SPARKS;
-    this.pos.set([x, y, z], i * 3);
-    this.vel.set([vx, vy, vz], i * 3);
-    this.base.set([c.r, c.g, c.b, size], i * 4);
+    const i3 = i * 3, i4 = i * 4;
+    this.pos[i3] = x; this.pos[i3 + 1] = y; this.pos[i3 + 2] = z;
+    this.vel[i3] = vx; this.vel[i3 + 1] = vy; this.vel[i3 + 2] = vz;
+    this.base[i4] = c.r; this.base[i4 + 1] = c.g; this.base[i4 + 2] = c.b; this.base[i4 + 3] = size;
     this.life[i] = 1;
     this.decay[i] = 1 / life;
     this.drag[i] = drag;
+    this.cold[i] = cold ? 1 : 0;
   }
 
   update(dt: number): void {
@@ -86,6 +90,14 @@ class Sparks {
       this.pos[i * 3 + 1] = this.pos[i * 3 + 1]! + this.vel[i * 3 + 1]! * dt;
       this.pos[i * 3 + 2] = this.pos[i * 3 + 2]! + this.vel[i * 3 + 2]! * dt;
       const k = Math.max(0, l);
+      if (this.cold[i]) {
+        // cold gas: no colour shift, it thins and spreads as it goes
+        this.col[i * 3] = this.base[i * 4]! * k;
+        this.col[i * 3 + 1] = this.base[i * 4 + 1]! * k;
+        this.col[i * 3 + 2] = this.base[i * 4 + 2]! * k;
+        this.size[i] = this.base[i * 4 + 3]! * (1.9 - 0.9 * k);
+        continue;
+      }
       // embers cool as they die: the blue and green go first
       this.col[i * 3] = this.base[i * 4]! * k;
       this.col[i * 3 + 1] = this.base[i * 4 + 1]! * k * k;
@@ -119,8 +131,8 @@ class HotSparks {
   emit(x: number, y: number, z: number, vx: number, vy: number, vz: number, life: number, len: number): void {
     const i = this.next;
     this.next = (this.next + 1) % MAX_HOT;
-    this.p.set([x, y, z], i * 3);
-    this.v.set([vx, vy, vz], i * 3);
+    this.p[i * 3] = x; this.p[i * 3 + 1] = y; this.p[i * 3 + 2] = z;
+    this.v[i * 3] = vx; this.v[i * 3 + 1] = vy; this.v[i * 3 + 2] = vz;
     this.life[i] = 1; this.decay[i] = 1 / life; this.len[i] = len;
   }
 
@@ -177,11 +189,11 @@ class Debris {
     this.fade[i] = drift ? 0.22 : 0.45;
     this.drag[i] = drift ? 0.997 : 0.985;
     this.next = (this.next + 1) % MAX_DEBRIS;
-    this.p.set([x, y, z], i * 3);
-    this.v.set([vx, vy, vz], i * 3);
+    this.p[i * 3] = x; this.p[i * 3 + 1] = y; this.p[i * 3 + 2] = z;
+    this.v[i * 3] = vx; this.v[i * 3 + 1] = vy; this.v[i * 3 + 2] = vz;
     const ax = Math.random() - 0.5, ay = Math.random() - 0.5, az = Math.random() - 0.5, n = Math.hypot(ax, ay, az) || 1;
-    this.a.set([ax / n, ay / n, az / n, Math.random() * 6], i * 4);
-    this.s.set([size, (Math.random() - 0.5) * (drift ? 3.5 : 10)], i * 2);
+    this.a[i * 4] = ax / n; this.a[i * 4 + 1] = ay / n; this.a[i * 4 + 2] = az / n; this.a[i * 4 + 3] = Math.random() * 6;
+    this.s[i * 2] = size; this.s[i * 2 + 1] = (Math.random() - 0.5) * (drift ? 3.5 : 10);
     this.life[i] = 1;
   }
 
@@ -329,6 +341,21 @@ export class Effects {
   mote(x: number, y: number, z: number, vx: number, vy: number, vz: number, rgb: RGB, size: number, life: number): void {
     this.c.setRGB(...rgb);
     this.sparks.emit(x, y, z, vx, vy, vz, this.c, size, life, 0.94);
+  }
+
+  /**
+   * A puff of cold gas from an attitude thruster: `n` motes out along (dx, dy, dz), a narrow cone, carried with the
+   * ship's own velocity (vx, vz). White with a cool cast, kept under the bloom line; quick to thin out.
+   */
+  gas(x: number, y: number, z: number, dx: number, dy: number, dz: number, n: number, vx: number, vz: number, strength = 1): void {
+    if (this.calm) n = Math.ceil(n * 0.5);
+    this.c.setRGB(0.55 * strength, 0.66 * strength, 0.78 * strength);
+    for (let i = 0; i < n; i++) {
+      const sp = 5 + Math.random() * 4, j = 0.28;
+      this.sparks.emit(x, y, z,
+        vx + (dx + (Math.random() - 0.5) * j) * sp, (dy + (Math.random() - 0.5) * j) * sp, vz + (dz + (Math.random() - 0.5) * j) * sp,
+        this.c, 0.13 + Math.random() * 0.09, 0.15 + Math.random() * 0.1, 0.86, true);
+    }
   }
 
   rubble(kind: 'rock' | 'metal', x: number, y: number, z: number, n: number, size: number, speed: number, drift = false): void {
