@@ -6,6 +6,7 @@ import {
 import { clamp, lerp } from '../core/math';
 import { breakEase, type ShipState } from '../sim/ship';
 import { BREAK_TIME, ROLL_TIME } from '../sim/tuning';
+import type { Effects } from './fx';
 import type { V3 } from './kit';
 import { glowTexture } from './textures';
 import { animateLamps, buildWayward, MODEL_SCALE, setCargo, setDamage, setFit, setHullGlow, setUse, woundPoints, type BuiltHull, type Nozzle } from './wayward';
@@ -171,13 +172,14 @@ class Trail {
       const len = Math.hypot(dx, dz) || 1; dx /= len; dz /= len;
       const t = i / (TRAIL_N - 1), w = this.width * (1 - t * 0.7) * 0.5;
       const ox = -dz * w, oz = dx * w;
-      P.set([p[i * 3]! + ox, p[i * 3 + 1]!, p[i * 3 + 2]! + oz, p[i * 3]! - ox, p[i * 3 + 1]!, p[i * 3 + 2]! - oz], i * 6);
+      const o = i * 6, px = p[i * 3]!, py = p[i * 3 + 1]!, pz = p[i * 3 + 2]!;
+      P[o] = px + ox; P[o + 1] = py; P[o + 2] = pz + oz; P[o + 3] = px - ox; P[o + 4] = py; P[o + 5] = pz - oz;
       const a = this.heat[i]! * fade * fade * (1 - t) * 0.3;
       const H = this.head, T = this.tail;
       const r = (H.r + (T.r - H.r) * t) * a;
       const gg = (H.g + (T.g - H.g) * t) * a;
       const bb = (H.b + (T.b - H.b) * t) * a;
-      C.set([r, gg, bb, r, gg, bb], i * 6);
+      C[o] = C[o + 3] = r; C[o + 1] = C[o + 4] = gg; C[o + 2] = C[o + 5] = bb;
     }
     this.pos.needsUpdate = true;
     this.col.needsUpdate = true;
@@ -266,6 +268,25 @@ const STROBE_PHASE = [0, 0.43];
 
 const SPOOL_UP = 13, SPOOL_DOWN = 4.5;
 
+// ── attitude jets ─────────────────────────────────────────────────────────
+// Six reaction-control ports, model space (+X the bow, +Z starboard), each
+// with the way its gas leaves. The lateral four turn her: a bow port and the
+// stern port on the other flank fire together, so nose and tail swing round
+// the middle (`turn` is the sign of the yaw they push). `side` is the flank,
+// for a jink (the flank away from the kick fires). The dorsal and ventral pair
+// on the bow fire for the flip of a break (`pitch`: -1 into it, 1 out of it).
+interface Port { p: V3; d: V3; turn: number; side: number; pitch: number }
+const PORTS: Port[] = [
+  { p: [2.35, 0.1, 0.3], d: [0, 0, 1], turn: 1, side: 1, pitch: 0 },
+  { p: [2.35, 0.1, -0.3], d: [0, 0, -1], turn: -1, side: -1, pitch: 0 },
+  { p: [-2.5, 0.38, 0.5], d: [0, 0, 1], turn: -1, side: 1, pitch: 0 },
+  { p: [-2.5, 0.38, -0.5], d: [0, 0, -1], turn: 1, side: -1, pitch: 0 },
+  { p: [1.7, 0.62, 0], d: [0, 1, 0], turn: 0, side: 0, pitch: 1 },
+  { p: [1.7, -0.42, 0], d: [0, -1, 0], turn: 0, side: 0, pitch: -1 },
+];
+/** Seconds a jink's or a flip's burst lasts; motes a second from a port at full fire. */
+const RCS_BURST = 0.12, RCS_RATE = 110;
+
 // ── the view ──────────────────────────────────────────────────────────────
 interface Engine { nozzle: Nozzle; disc: Mesh; plume: Mesh; hot: Mesh; phase: number; halo: Sprite; trail: Trail; mat: ShaderMaterial; side: number; }
 
@@ -277,8 +298,10 @@ export class ShipView {
   private readonly model: BuiltHull;
   private readonly engines: Engine[] = [];
   private readonly lights: Sprite[] = [];
-  /** Attitude jets at the bow and stern: one fires on the side the turn needs, fading as the yaw rate settles. */
-  private readonly jets: Array<{ sprite: Sprite; turn: number }> = [];
+  /** Attitude jets (PORTS): a small glow at each, and how hard it is firing this frame (0 to 1). */
+  private readonly jets: Array<{ sprite: Sprite; port: Port; k: number; acc: number }> = [];
+  private lastYawRate = 0;
+  private yawAcc = 0;
   private readonly shield: Mesh;
   private readonly shieldMat = shieldMaterial();
   private readonly plumeMat = plumeMaterial(false);
@@ -347,11 +370,12 @@ export class ShipView {
       this.lights.push(s);
       this.rollG.add(s);
     }
-    // bow jets fire to the outside of the turn's push, stern jets opposite, so the nose and tail swing together
-    for (const [x, y, z, turn] of [[2.35, 0.1, 0.3, 1], [2.35, 0.1, -0.3, -1], [-2.5, 0.38, 0.5, -1], [-2.5, 0.38, -0.5, 1]] as const) {
+    for (const port of PORTS) {
       const sprite = new Sprite(new SpriteMaterial({ map: glow, color: new Color(0, 0, 0), blending: AdditiveBlending, depthWrite: false }));
-      sprite.position.set(x * MODEL_SCALE, y * MODEL_SCALE, z * MODEL_SCALE + Math.sign(z) * 0.05);
-      this.jets.push({ sprite, turn });
+      const [x, y, z] = port.p, [dx, dy, dz] = port.d;
+      sprite.position.set(x * MODEL_SCALE + dx * 0.05, y * MODEL_SCALE + dy * 0.05, z * MODEL_SCALE + dz * 0.05);
+      sprite.visible = false;
+      this.jets.push({ sprite, port, k: 0, acc: 0 });
       this.rollG.add(sprite);
     }
     for (const [zone, pts] of Object.entries(MARKS)) {
@@ -429,6 +453,32 @@ export class ShipView {
   zonePoints(zone: string): Vector3[] {
     this.rollG.updateWorldMatrix(true, false);
     return this.marks.filter((m) => m.zone === zone).map((m) => m.sprite.getWorldPosition(new Vector3()));
+  }
+
+  /** A throttle snap's flare, 0 to 1: the drives spooling past their steady burn (the camera's punch reads it). */
+  get spool(): number { return this.surge; }
+  /** How hard the drives burn, 0 to 1, after the spool. */
+  get burn(): number { return this.heat; }
+
+  /** Cold gas from the attitude jets firing this frame, into `fx`; (vx, vz) is the ship's velocity, so the puffs travel with her. */
+  rcs(fx: Effects, vx: number, vz: number, dt: number): void {
+    const e = this.rollG.matrixWorld.elements;
+    for (const j of this.jets) {
+      if (j.k <= 0) { j.acc = 0; continue; }
+      j.acc += j.k * RCS_RATE * dt;
+      if (j.acc < 1) continue;
+      const n = Math.floor(j.acc);
+      j.acc -= n;
+      const [px, py, pz] = j.port.p, [dx, dy, dz] = j.port.d, S = MODEL_SCALE;
+      PT[0] = px * S; PT[1] = py * S; PT[2] = pz * S;
+      const w = tipWorld(this.rollG, PT);
+      const x = w[0], y = w[1], z = w[2];
+      // the port's direction turned with her (rotation only), then made unit again (the jump's stretch scales the frame)
+      let ox = e[0]! * dx + e[4]! * dy + e[8]! * dz, oy = e[1]! * dx + e[5]! * dy + e[9]! * dz, oz = e[2]! * dx + e[6]! * dy + e[10]! * dz;
+      const l = Math.hypot(ox, oy, oz) || 1;
+      ox /= l; oy /= l; oz /= l;
+      fx.gas(x, y, z, ox, oy, oz, n, vx, vz, 0.75 + 0.25 * j.k);
+    }
   }
 
   /** World positions of the nozzles and how hard they are burning, for exhaust sparks. */
@@ -541,14 +591,33 @@ export class ShipView {
       e.hot.scale.set(len * 0.5, r * 0.36, r * 0.36);
       e.halo.scale.setScalar(r * (1.3 + 0.7 * h + 0.5 * this.surge) * flick);
     }
-    // attitude jets: puff while the yaw rate is up, never when she is flying straight
-    for (const j of this.jets) {
-      const want = clamp(Math.max(0, j.turn * s.yawRate) * 0.9 - 0.12, 0, 1), m = j.sprite.material as SpriteMaterial;
-      m.color.setRGB(0.18 * want, 0.4 * want, 0.9 * want);
-      j.sprite.visible = want > 0.01;
-      j.sprite.scale.setScalar(0.04 + 0.05 * want);
+    // attitude jets: a hauler this heavy is turned by gas. A sharp burst as a turn starts or stops (the yaw rate changing),
+    // the whole flank at once for a jink, the bow's dorsal and ventral pair for the flip of a break; a faint glow held
+    // at the turning pair through a steady turn
+    if (dt > 0) {
+      const acc = (s.yawRate - this.lastYawRate) / dt;
+      this.yawAcc += (acc - this.yawAcc) * Math.min(1, 18 * dt);
     }
-    this.glowLight.intensity = (1.1 + 1.6 * h) * flick;
+    this.lastYawRate = s.yawRate;
+    const jink = s.rollT >= 0 && s.rollT < RCS_BURST ? 1 : 0;
+    const flipIn = s.breakT >= 0 && s.breakT < RCS_BURST ? 1 : 0, flipOut = s.breakT >= BREAK_TIME - RCS_BURST ? 0.8 : 0;
+    for (const j of this.jets) {
+      const pt = j.port;
+      let k = 0;
+      if (pt.turn) {
+        k = clamp(Math.max(0, pt.turn * this.yawAcc) * 0.32 - 0.12, 0, 1);
+        if (jink && pt.side === -s.rollDir) k = 1;
+      } else if (pt.pitch) k = pt.pitch < 0 ? flipIn : flipOut;
+      j.k = k;
+      const glow = Math.max(k, pt.turn ? clamp(Math.max(0, pt.turn * s.yawRate) * 0.9 - 0.12, 0, 1) * 0.5 : 0), m = j.sprite.material as SpriteMaterial;
+      m.color.setRGB(0.3 * glow, 0.42 * glow, 0.62 * glow);
+      j.sprite.visible = glow > 0.01;
+      j.sprite.scale.setScalar(0.05 + 0.08 * glow);
+    }
+    // the drives' own light on her stern, the cargo face and the drum saddles: next to nothing at idle, full at a hard burn,
+    // a beat brighter as a throttle snap spools them past it
+    const wash = h + 0.5 * this.surge;
+    this.glowLight.intensity = (0.15 + 2.9 * wash) * flick;
     // wingtip strobes: port and starboard on their own rates and phases, a sharp flash that dies away
     this.lights.forEach((l, i) => {
       const period = STROBE_PERIOD[i]!, u = (this.time / period + STROBE_PHASE[i]!) % 1;
@@ -557,7 +626,7 @@ export class ShipView {
       m.color.copy(STROBE_COLOR[i]!).multiplyScalar(f);
       l.visible = f > 0.03;
     });
-    animateLamps(this.time, dt, h);
+    animateLamps(this.time, dt, Math.min(1.2, wash));
 
     this.hit = Math.max(0, this.hit - dt * 2.2);
     const st = this.status;
@@ -592,6 +661,7 @@ export class ShipView {
 }
 
 const tmp: [number, number, number] = [0, 0, 0];
+const PT: [number, number, number] = [0, 0, 0];
 function tipWorld(o: Object3D, l: readonly number[]): [number, number, number] {
   const e = o.matrixWorld.elements;
   tmp[0] = e[0]! * l[0]! + e[4]! * l[1]! + e[8]! * l[2]! + e[12]!;

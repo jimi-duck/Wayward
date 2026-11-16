@@ -682,6 +682,12 @@ export class Sector {
     this.rig.warp.lens = wt >= 0 ? lens(wt) : 0;
     this.rig.warp.lock = wt >= 0 ? Math.min(1, wt / 0.35) : 0;
     if (wt >= 0 && !this.reduceMotion && wt < 2.4) this.rig.hum(0.28 * Math.min(1, wt / 0.6));
+    // a throttle snap from low speed or a jink opens the lens for a moment (a tap at cruise barely moves it); a hard burn at speed hums through the rig (camera.ts drops both for reduced motion)
+    if (wt < 0 && world.alive && world.phase === 'play') {
+      this.rig.punch(this.ship.spool * (1 - subject.speedFrac));
+      if (s.rollT >= 0 && s.rollT < 0.06) this.rig.punch(0.6);
+      this.rig.engine = this.ship.burn * subject.speedFrac;
+    } else this.rig.engine = 0;
     this.rig.update(subject, dt, this.reduceMotion);
     // Ned's yard, built into its rock (render/yard.ts)
     this.yard.update(world, dt, this.fx);
@@ -729,7 +735,7 @@ export class Sector {
     this.breakout.update(world, s, this.fx, dt, go ? { t: wt, cross: go.cross, flare: flare(go, wt) } : null);
     this.warp.update(wt, this.rig.camera, go?.dx ?? 0, go?.dz ?? 0, dt, this.reduceMotion);
     this.site.update(world, dt);
-    if (dt > 0) this.ambient(world, s.heading);
+    if (dt > 0) this.ambient(world, s.heading, dt);
     // self-repair: the odd welding spark off the plating while it works
     if (dt > 0 && !world.bk && world.alive && world.mend.state === 'repairing' && (this.weld -= dt) <= 0) {
       this.weld = 0.18 + Math.random() * 0.22;
@@ -860,7 +866,9 @@ export class Sector {
   }
 
   /** Particles that come from state rather than events: exhaust, burning hulls, the anomaly's pull. */
-  private ambient(world: World, heading: number): void {
+  private ambient(world: World, heading: number, dt: number): void {
+    // attitude jets: cold gas off her flanks as she turns, jinks or flips
+    if (world.alive) this.ship.rcs(this.fx, world.ship.vx, world.ship.vz, dt);
     // exhaust: embers off the nozzles while the engines burn
     const ex = this.ship.exhaust();
     if (world.alive && ex.heat > 0.2) {

@@ -19,6 +19,11 @@ The hull stays on screen for 1.45 s after the last plate (`DEATH_HOLD`; the sim 
 ## Weapons
 Our lances throw two hot sparks and a faint light from the barrel. Torpedoes trail thin grey smoke. A hit on a hull leaves a hot spot that cools over 0.3 s.
 
+## The Wayward's own motion
+- Attitude jets (`ShipView.rcs`, `PORTS` in `src/render/ships.ts`): six ports, two lateral at the bow, two at the stern, a dorsal and ventral pair on the bow. A short burst of cold gas (`Effects.gas`, white with a cool cast, under the bloom line, 0.15 to 0.25 s) as a turn starts or stops, the whole flank away from a jink, and the bow pair into and out of a break's flip. A faint glow stays on the turning pair through a steady turn. Bench: `tools/ship.html?rcs=jink|flip|turn`.
+- Drive light on her stern (`glowLight` and the painted materials' `ENGINE` term): next to nothing at idle, full at a hard burn, a little past it while a throttle snap spools the drives. It is the drives' own blue: the stock drives burn blue, so an amber wash would not match them.
+- Camera (`src/render/camera.ts`): a throttle snap from low speed or a jink opens the lens up to 4° for a moment (in fast, out slow); past two thirds of full burn at speed a fine hum (0.014 units) comes through the rig. Reduced motion drops both. The rig itself is unchanged.
+
 ## Game feel
 - Hits: our lance or torpedo landing on a hull or boss gives the camera a small shake (0.1 to 0.14); hits on us shake harder (as before).
 - Slow motion (`src/core/slowmo.ts`, `loop.timeScale`): a cruiser (radius 2.4 up) or elite kill drops the clock to 0.4 (0.3 for radius 3+) for about 0.25 to 0.35 s, a boss kill to 0.25 for 0.6 s. Eases in over 60 ms and out over 350 ms; 4 s cooldown so a busy fight is not slow. A pause, a pop-up, death or reduced motion clears it at once.

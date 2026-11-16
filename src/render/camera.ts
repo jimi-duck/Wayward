@@ -14,8 +14,10 @@ import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
 // zoom step.
 //
 // The rig swings round a beat behind the ship's heading so a turn is felt,
-// widens its field of view with speed, leans into hard turns, shakes on
-// impacts, and recoils a touch on every shot.
+// widens its field of view with speed (and a few degrees more for a moment on
+// a throttle snap or a jink), hums faintly at a hard burn, leans into hard
+// turns, shakes on impacts, and recoils a touch on every shot. With reduced
+// motion: no punch, no hum, no shake.
 
 const ELEV = MathUtils.degToRad(20);
 const PITCH = MathUtils.degToRad(13.5);
@@ -26,6 +28,10 @@ const FOLLOW = 0.08;
 const YAW_FOLLOW = 0.26;
 const BASE_VFOV = 52;
 const FOV_KICK = 6;
+/** A burst of speed (a throttle snap, a jink): the lens opens this many degrees at once, then eases back. */
+const PUNCH_FOV = 4;
+/** A drive at full burn shakes the rig by this much (world units at the closest zoom): a hum felt more than seen. */
+const VIBE = 0.014;
 /** In the jump: the lens opens this many degrees, and the camera drops to this angle (the ship stays where it is in the picture). */
 const WARP_FOV = 38;
 const WARP_ELEV = MathUtils.degToRad(9);
@@ -80,6 +86,8 @@ export class CameraRig {
   private trauma = 0;
   private recoil = 0;
   private t = 0;
+  private punchWant = 0;
+  private punchNow = 0;
   private aspect = 1;
   private w = 1;
   private h = 1;
@@ -119,6 +127,14 @@ export class CameraRig {
     this.trauma = Math.max(this.trauma, level);
   }
 
+  /** A burst of speed, 0 to 1: the lens opens with it and eases back as it passes (none with reduced motion). */
+  punch(amount: number): void {
+    this.punchWant = Math.max(this.punchWant, Math.min(1, amount));
+  }
+
+  /** How hard the drives are working, 0 to 1, set each frame: past two thirds a fine vibration comes through the rig. */
+  engine = 0;
+
   /** A shove backward along the view, for the weight of a shot. */
   kick(amount: number): void {
     this.recoil = Math.min(0.6, this.recoil + amount);
@@ -149,7 +165,10 @@ export class CameraRig {
     this.zoomNow = smoothDamp(this.zoomNow, ZOOMS[this.zoom] ?? 1, this.vzoom, 0.3, dt);
     this.recoil = Math.max(0, this.recoil - this.recoil * 9 * dt - 0.2 * dt);
 
-    const vfov = BASE_VFOV + FOV_KICK * s.speedFrac + (reduceMotion ? 0 : WARP_FOV * lens);
+    // the punch comes in fast and goes out slow, so the eye reads a shove rather than a zoom
+    this.punchWant = Math.max(0, this.punchWant - 1.6 * dt);
+    this.punchNow += (this.punchWant - this.punchNow) * Math.min(1, (this.punchWant > this.punchNow ? 14 : 2.6) * dt);
+    const vfov = BASE_VFOV + FOV_KICK * s.speedFrac + (reduceMotion ? 0 : WARP_FOV * lens + PUNCH_FOV * this.punchNow);
     if (Math.abs(this.camera.fov - vfov) > 0.01) {
       this.camera.fov = vfov;
       this.applyOffset();
@@ -170,6 +189,12 @@ export class CameraRig {
       px += Math.sin(this.t * 53.1) * k;
       py += Math.sin(this.t * 47.7 + 1.3) * k * 0.6;
       pz += Math.sin(this.t * 61.3 + 2.1) * k;
+    }
+    const vibe = reduceMotion ? 0 : clamp((this.engine - 0.65) / 0.35, 0, 1) * VIBE * this.zoomNow;
+    if (vibe > 0) {
+      px += Math.sin(this.t * 91.7) * vibe;
+      py += Math.sin(this.t * 77.3 + 0.7) * vibe * 0.7;
+      pz += Math.sin(this.t * 83.9 + 1.9) * vibe;
     }
     this.camera.position.set(px, py, pz);
     this.camera.up.set(0, 1, 0);
