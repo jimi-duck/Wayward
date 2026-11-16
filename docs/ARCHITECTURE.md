@@ -96,12 +96,15 @@ runs no steps.
 
 ## Mobile
 
-- Phones start on the `medium` quality tier, desktops on `high`.
+- Phones start on the `phone` quality tier, desktops on `high`, or where the
+  device settled last time (kept 14 days).
 - The quality governor (`render/quality.ts`) measures the frame interval and
-  drops one tier under sustained load. It never steps back up, and it treats
-  a steady 30fps as a display cap (iOS Low Power Mode), not as overload.
-  `?quality=low|medium|high` pins a tier. Frame cost: [PERF.md](PERF.md).
-- Device pixel ratio is capped per tier (1.0 / 1.25 / 1.5).
+  drops one tier under sustained load. After 30 s with room to spare it climbs
+  one tier, only while the world is held (a pop-up or the pause card); a tier it
+  had to leave is never tried again. A steady 30fps is a display cap (iOS Low
+  Power Mode), not overload. `?quality=low|phone|medium|high` pins a tier. Frame
+  cost: [PERF.md](PERF.md).
+- Device pixel ratio is capped per tier (1.0 / 1.0 / 1.25 / 1.5).
 - Touch (`input/touch.ts`): the screen splits down the middle. The left half
   is a floating stick: the ring centres exactly under the thumb (a touch
   never steers by itself) and follows the thumb past its rim. It drives like

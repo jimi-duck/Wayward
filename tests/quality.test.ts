@@ -22,16 +22,66 @@ describe('QualityGovernor', () => {
     expect(q.tier.name).toBe('high'); // no verdict before three seconds
     feed(q, 1 / 40, 1);
     expect(q.tier.name).toBe('medium');
+    feed(q, 1 / 40, 180);
+    expect(q.tier.name).toBe('phone');
     feed(q, 1 / 40, 400);
     expect(q.tier.name).toBe('low');
     expect(feed(q, 1 / 40, 400)).toBe(0);
   });
 
-  it('never steps back up when the load goes away', () => {
+  it('never steps back up above a tier that proved too slow', () => {
     const q = new QualityGovernor(HIGH);
     feed(q, 1 / 40, 200);
-    feed(q, 1 / 120, 2000);
+    feed(q, 1 / 60, 4000);
     expect(q.tier.name).toBe('medium');
+    expect(q.wantsUp).toBe(false);
+    expect(q.stepUp()).toBe(false);
+    expect(q.ceiling).toBe(tierIndex('medium'));
+  });
+
+  it('asks for the tier above after half a minute with room, and moves only when told', () => {
+    const q = new QualityGovernor(tierIndex('phone'));
+    feed(q, 1 / 60, 2000);
+    expect(q.tier.name).toBe('phone');
+    expect(q.wantsUp).toBe(true);
+    expect(q.stepUp()).toBe(true);
+    expect(q.tier.name).toBe('medium');
+    expect(q.wantsUp).toBe(false); // a new half minute on the new tier
+    feed(q, 1 / 60, 2000);
+    expect(q.stepUp()).toBe(true);
+    expect(q.tier.name).toBe('high');
+    expect(q.wantsUp).toBe(false); // nothing above
+  });
+
+  it('a tier tried and found slow becomes the ceiling', () => {
+    const q = new QualityGovernor(tierIndex('phone'));
+    feed(q, 1 / 60, 2000);
+    q.stepUp();
+    feed(q, 1 / 40, 200);
+    expect(q.tier.name).toBe('phone');
+    feed(q, 1 / 60, 4000);
+    expect(q.wantsUp).toBe(false);
+  });
+
+  it('no room at a 30fps cap or with jitter, so no climb', () => {
+    const capped = new QualityGovernor(tierIndex('phone'));
+    feed(capped, 1 / 30, 4000);
+    expect(capped.wantsUp).toBe(false);
+    const jumpy = new QualityGovernor(tierIndex('phone'));
+    let flip = false;
+    feed(jumpy, () => ((flip = !flip) ? 0.012 : 0.02), 4000);
+    expect(jumpy.wantsUp).toBe(false);
+  });
+
+  it('a pinned tier never climbs', () => {
+    const q = new QualityGovernor(tierIndex('phone'), true);
+    feed(q, 1 / 60, 4000);
+    expect(q.wantsUp).toBe(false);
+  });
+
+  it('starts no higher than a kept ceiling', () => {
+    const q = new QualityGovernor(HIGH, false, tierIndex('phone'));
+    expect(q.tier.name).toBe('phone');
   });
 
   it('treats a steady 30fps as a display cap, not as overload', () => {
@@ -73,9 +123,9 @@ describe('QualityGovernor', () => {
     q.pin(0);
     expect(q.tier.name).toBe('low');
     expect(feed(q, 1 / 20, 600)).toBe(0);
-    q.pin(tierIndex('medium'));
+    q.pin(tierIndex('phone'));
     q.pin(null);
-    expect(q.tier.name).toBe('medium');
+    expect(q.tier.name).toBe('phone');
     feed(q, 1 / 40, 180);
     expect(q.tier.name).toBe('low');
   });

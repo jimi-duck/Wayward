@@ -417,3 +417,26 @@ From the plan of 2026-11-14 (phone fill rate is the limit; a Medium frame was ab
 Not done, after a look: culling the far group (sun, planet, far works are 30k triangles; a phone's cost there is fill, and fill off screen is already free) and trimming the sun's glare and lens ghosts (the ghosts only show when facing the sun, and are small). A/B frames in `/mnt/project-files/perf-pass/`.
 
 **Not measured:** the phone. With `?perf` (pass 12), Post on and off before and after this pass is the check.
+
+## Pass 14: a Phone tier, and a governor that climbs
+
+The owner chose not to run `?perf` on a phone (2026-11-16), so this pass is set from what can be measured here. **Not measured on a real device:** frame rate, GPU time, heat, battery, or whether the Phone tier's softer picture is noticed on a phone's screen.
+
+**The ladder** is now Low, Phone, Medium, High (`render/quality.ts`). Phone is Medium's look (bloom, grade, colour mood, sun shadow 512, FXAA on touch screens) at one pixel per CSS pixel, without the sky's moving detail tile, with 320 debris chips. Before, a phone that struggled fell from Medium straight to Low and lost all glow and the grade at once.
+
+| Tier, at 844 x 390 (a 3x phone) | Drawing size | Draws | Triangles | Software raster time a frame |
+|---|---|---|---|---|
+| Low | 844 x 390 | 96 | 116k | 187 ms |
+| Phone | 844 x 390 | 138 | 188k | 265 ms |
+| Medium | 1055 x 487 | 136 | 203k | 424 ms |
+| High | 1266 x 585 | 137 | 241k | 800 ms |
+
+Software raster time is SwiftShader's (the CPU drawing the GPU's work) through the readout's GPU timer, the median of six two-second windows in Arcade. It is not a phone's time, but it scales with pixels shaded, which is what limits a phone: Phone costs about 62% of Medium.
+
+**Where a device starts:** a touch screen on Phone, a computer on High, or wherever this device settled last time (`wayward.tier` in local storage, kept 14 days).
+
+**Climbing:** after 30 s of frames that keep up with the display (smoothed interval under about 18 ms, steady) the governor asks for the tier above. The page makes the change only while the world is held (a pop-up or the pause card, not the bay or a jump's settle), with the usual warm-up of new shaders. A tier it then has to leave becomes the device's ceiling and is not tried again, so the picture never flickers between two tiers; a steady 30 fps cap and a jittery frame never count as room. Down steps are as before (3 s under about 48 fps, at once). `?quality=` and Battery saver still pin a tier.
+
+Trade-off: a phone that could run Medium spends its first half minute and first pop-up on Phone. A phone that can't spends at most 3 s too slow, once, on the step it tried.
+
+Shots: `/mnt/project-files/perf-pass/tier-phone-phone.png` and `tier-phone-medium.png` (different skies; the run picks its own).

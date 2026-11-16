@@ -14,7 +14,7 @@ const WINDOW = 2;
 const LAYERS: ReadonlyArray<[PerfLayer, string]> = [
   ['post', 'Post'], ['shadow', 'Shadow'], ['sky', 'Sky'], ['far', 'Stars'], ['rocks', 'Rocks'], ['debris', 'Debris'], ['hud', 'HUD'], ['half', '½ res'],
 ];
-const TIERS = ['low', 'medium', 'high'] as const;
+const TIERS = ['low', 'phone', 'medium', 'high'] as const;
 
 interface TimerExt { TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number }
 
@@ -22,7 +22,7 @@ export interface PerfHooks {
   readonly renderer: WebGLRenderer;
   readonly quality: QualityGovernor;
   readonly off: Set<PerfLayer>;
-  /** Pin a tier (0 low, 1 medium, 2 high). */
+  /** Pin a tier (0 low, 1 phone, 2 medium, 3 high). */
   pin(index: number): void;
   /** Re-size the drawing buffer (after ½ res is switched). */
   fit(): void;
