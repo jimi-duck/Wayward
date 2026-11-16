@@ -11,6 +11,7 @@ import {
 import { Kit, metal, seeded, type V3 } from './kit';
 import { GLOW, HULL_LOOK } from './look';
 import { capitalDesign, designFor } from './hulls';
+import type { Effects } from './fx';
 import { STREAK, type Streaks } from './streaks';
 
 // ── the enemy ─────────────────────────────────────────────────────────────
@@ -402,6 +403,14 @@ function lights(streaks: Streaks, m: Matrix4, model: { engines: V3[]; lamps: Lam
   }
 }
 
+/** What the view keeps of each hull between frames: last velocity and heading, how hard the drives push, how fast it turns. */
+interface Track { vx: number; vy: number; vz: number; face: number; thrust: number; turn: number; puff: number; smoke: number; rolled: boolean; seen: number }
+
+/** Steering puffs and damage trails only show this close to the camera: past it they are a few pixels. */
+const NEAR_FX = 95;
+/** The thin grey trail a hull leaves astern once it is down to half its armour. */
+const DAMAGE_SMOKE: [number, number, number] = [0.36, 0.35, 0.33];
+
 const MAX_BATCH = 48;
 
 /**
@@ -481,6 +490,11 @@ export class EnemyView {
   private time = 0;
   /** The camera's position, for distance-aware glow sizes. */
   readonly eye = new Vector3();
+  /** Where steering puffs and damage smoke go; the bench and the game set it. */
+  fx: Effects | null = null;
+  private readonly tracks = new Map<number, Track>();
+  private readonly spare: Track[] = [];
+  private frame = 0;
 
   constructor(private readonly scene: Scene, private readonly glowTex: Texture, private readonly streaks: Streaks) {
     for (let i = 0; i < 8; i++) {
@@ -551,8 +565,62 @@ export class EnemyView {
     return v;
   }
 
+  /**
+   * This frame's thrust and turn for one hull, from how its velocity and heading changed since the last frame, smoothed so the
+   * sim's fixed steps don't flicker the drives. Close to the camera it also vents: a puff from the nose on a hard turn or a
+   * hard brake, one from the flank when it starts a jink, and below half armour a thin trail of smoke astern.
+   */
+  private track(al: Alien, dt: number, dist: number): Track {
+    let t = this.tracks.get(al.id);
+    if (!t) {
+      t = this.spare.pop() ?? { vx: 0, vy: 0, vz: 0, face: 0, thrust: 0, turn: 0, puff: 0, smoke: 0, rolled: false, seen: 0 };
+      t.vx = al.vx; t.vy = al.vy; t.vz = al.vz; t.face = al.face; t.thrust = 0; t.turn = 0; t.puff = 0; t.smoke = 0; t.rolled = al.roll >= 0;
+      this.tracks.set(al.id, t);
+    }
+    t.seen = this.frame;
+    if (dt <= 0) return t;
+    const fx = Math.cos(al.face), fz = -Math.sin(al.face), sx = -fz, sz = fx;
+    const along = ((al.vx - t.vx) * fx + (al.vz - t.vz) * fz) / dt / Math.max(1, ALIEN_TYPES[al.kind].accel);
+    let dface = al.face - t.face;
+    dface -= Math.round(dface / (Math.PI * 2)) * Math.PI * 2;
+    const k = 1 - Math.exp(-dt * 6);
+    t.thrust += (Math.min(1.2, Math.max(0, along)) - t.thrust) * k;
+    t.turn += (dface / dt - t.turn) * k;
+    t.vx = al.vx; t.vy = al.vy; t.vz = al.vz; t.face = al.face;
+    t.puff -= dt;
+    const fxv = this.fx;
+    if (!fxv || dist > NEAR_FX || al.kind === 'drone' || al.cloak > 0.3) { t.rolled = al.roll >= 0; return t; }
+    const r = al.r, x = this.p.x, y = this.p.y, z = this.p.z;
+    if (al.roll >= 0 && !t.rolled) {
+      // the flank thrusters kick the roll off
+      const d = -al.rollDir;
+      fxv.gas(x + sx * d * r * 0.6, y, z + sz * d * r * 0.6, sx * d, 0.35, sz * d, 6, al.vx, al.vz, 0.85);
+      t.puff = 0.12;
+    } else if (t.puff <= 0 && Math.abs(t.turn) > 1.5) {
+      // the nose jets on the outside of a hard turn
+      const d = Math.sign(t.turn), nx = x + fx * r * 1.15, nz = z + fz * r * 1.15;
+      fxv.gas(nx, y, nz, sx * d, 0.1, sz * d, 3, al.vx, al.vz, 0.7);
+      t.puff = 0.1;
+    } else if (t.puff <= 0 && along < -0.6) {
+      // retro jets on a hard brake, forward from the nose
+      fxv.gas(x + fx * r * 1.15, y, z + fz * r * 1.15, fx, 0, fz, 3, al.vx, al.vz, 0.7);
+      t.puff = 0.12;
+    }
+    t.rolled = al.roll >= 0;
+    const left = al.hp / al.maxHp;
+    if (left <= 0.5 && left >= 0.34 && al.maxHp > 2) {
+      t.smoke -= dt;
+      if (t.smoke <= 0) {
+        t.smoke = 0.06;
+        fxv.dust(x - fx * r * 1.45, y + 0.1, z - fz * r * 1.45, 0.5 + r * 0.18, DAMAGE_SMOKE, 1, 0.5, 1.3, 0.42);
+      }
+    }
+    return t;
+  }
+
   update(aliens: readonly Alien[], bosses: readonly Boss[], shots: readonly Shot[], webs: readonly Web[], alpha: number, dt: number): void {
     this.time += dt;
+    this.frame++;
     const back = (1 - alpha) * STEP;
 
     // plain hulls: batched per model. Cloakers and elites keep a view of their own.
@@ -570,11 +638,17 @@ export class EnemyView {
         const roll = al.roll >= 0 ? al.rollDir * Math.PI * 2 * smooth(al.roll / JINK_ROLL) : 0;
         this.e.set(al.bank + roll + Math.sin(this.time * 1.7 + al.id) * 0.04, al.face, pitch, 'YZX');
       }
-      // the pack's go: every member lights its drives at once
-      const burn = Math.max(Math.min(1, Math.hypot(al.vx, al.vy, al.vz) / 30), al.burst ? 1 + al.burst * 1.4 : 0);
+      const dist = this.p.distanceTo(this.eye);
+      // the drives follow the thrust: a coasting hull runs them low, one pushing hard lights them long, and the pack's go lights every member at once
+      const tr = this.track(al, dt, dist);
+      const cruise = 0.45 * Math.min(1, Math.hypot(al.vx, al.vy, al.vz) / 30);
+      let burn = Math.max(cruise + tr.thrust * 0.9, al.burst ? 1 + al.burst * 1.4 : 0);
+      // a hull down to half its armour runs a drive that catches and cuts out
+      const left = al.hp / al.maxHp;
+      if (left <= 0.5 && al.maxHp > 2 && Math.sin(this.time * 23 + al.id) * Math.sin(this.time * 7.3 + al.id * 2) > 0.45) burn *= 0.15;
       const sync = al.mode === 'muster' && !al.play?.go;
       // engines read from far off: the flare keeps a size on screen as the hull shrinks with distance
-      const far = Math.min(2.4, Math.sqrt(Math.max(1, this.p.distanceTo(this.eye) / 40)));
+      const far = Math.min(2.4, Math.sqrt(Math.max(1, dist / 40)));
       if (plain) {
         const batch = this.batch(al.kind, al.faction);
         this.m.compose(this.p, this.q.setFromEuler(this.e), this.sc.setScalar(al.r));
@@ -598,6 +672,7 @@ export class EnemyView {
       v.flare(this.streaks, al.r, burn, this.time, al.id, far, sync);
     }
     for (const b of this.batches.values()) b.end();
+    for (const [id, t] of this.tracks) if (t.seen !== this.frame) { this.tracks.delete(id); this.spare.push(t); }
     for (const [id, v] of this.live) {
       if (seen.has(id)) continue;
       v.root.removeFromParent();

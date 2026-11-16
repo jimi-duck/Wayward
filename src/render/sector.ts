@@ -162,6 +162,7 @@ export class Sector {
     this.weapons = new WeaponView(this.streaks);
     this.ship = new ShipView(glow);
     this.enemies = new EnemyView(this.scene, glow, this.streaks);
+    this.enemies.fx = this.fx;
     this.pickups = new PickupView(this.scene, glow);
     this.arsenal = new ArsenalView(this.scene);
     this.hazards = new HazardView(this.scene, glow, wreck);

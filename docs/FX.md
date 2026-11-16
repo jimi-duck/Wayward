@@ -13,6 +13,11 @@ Code: `src/render/fx.ts` (the pools and the blast recipes), `src/render/sector.t
 ## Hurt hulls
 An enemy under a third of its hit points smokes and sheds embers (`Effects.burning`), worse as it gets lower; a flame lick past 55 % gone. Hulls with 2 hp or less stay clean.
 
+At half its hit points a hull's drives start to catch and cut out, and until a third it leaves a thin grey trail astern (`EnemyView.track`, one `Effects.dust` puff every 0.06 s, within 95 units of the camera).
+
+## Enemy drives and steering
+An enemy's drives follow its thrust, not its speed (`EnemyView.track` in `src/render/enemies.ts`): a coasting hull runs them low (0.45 of full at top speed), one pushing hard lights them long, and the pack's go still lights every member at once. Within 95 units it vents the same cold gas as the Wayward, dimmer: the nose on the outside of a hard turn (over 1.5 rad/s), the nose forward on a hard brake, the flank as a jink starts. No puffs on Grinders or cloaked hulls. Bench: `tools/enemies.html?view=close&kind=scout&turn=2.2&speed=24` (`&jink=1`, `&hp=<n>`).
+
 ## The player's death
 The hull stays on screen for 1.45 s after the last plate (`DEATH_HOLD`; the sim waits 1.8 s). It vents fire from its wounds and nozzles, goes up stern, middle, bow (`dyingBlasts`), then breaks up in one big blast and disappears.
 
