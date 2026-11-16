@@ -307,7 +307,7 @@ export const MISSIONS: SituationDef[] = [
     id: 'lose_prefect', name: 'Lose the Governor’s Trail', blurb: 'A patrol is using a relay to report your position to Calloway.', group: 'corporate',
     kinds: ['transit', 'contested', 'port'], regions: [1, 6], weight: 0.9,
     prop: 'checkpoint',
-    actors: [act('picket', 3, 'patrol', 'wary', 'Governor’s patrol', { from: 'site', ring: 64 })],
+    actors: [act('picket', 3, 'patrol', 'wary', 'Governor’s patrol', { from: 'site', ring: 90 })],
     card: 'sc_prefect', at: 30, hail: 480, accept: ['lose'],
     goal: { kind: 'sneak', hold: 6, limit: 200, line: 'Erase your trail at the relay without being spotted' },
     win: { text: 'Your trail is erased · Calloway loses a day', chits: 100, notice: { custody: -2 }, flag: 'relay_blind' },

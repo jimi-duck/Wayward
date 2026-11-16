@@ -10,9 +10,9 @@ Pilot numbers, not playtests.
 
 | Seed | Threshold | Flying (min) | Reading cards (min) | Total (min) | Cards | Named captains met | Wrecks |
 |---|---|---|---|---|---|---|---|
-| 5000 | yes | 199 | 34 | 233 | 111 | 19 | 0 |
+| 5000 | yes | 196 | 34 | 230 | 110 | 18 | 0 |
 | 5017 | yes | 201 | 34 | 235 | 112 | 18 | 0 |
-| 5034 | yes | 173 | 34 | 207 | 112 | 21 | 0 |
+| 5034 | yes | 171 | 34 | 205 | 110 | 19 | 0 |
 
 ## Leg by leg (mean minutes, reading included)
 
@@ -23,7 +23,7 @@ Pilot numbers, not playtests.
 | The Salvage Belt | 31 | 4 |
 | The Drift Deep | 27 | 6 |
 | The Breaker Yards | 33 | 6 |
-| The Free Ports | 28 | 5 |
+| The Free Ports | 26 | 5 |
 | The Hollows | 29 | 3 |
 | The Last Lanes | 20 | 2 |
 
@@ -56,7 +56,7 @@ Pilot numbers, not playtests.
 | kill_zone | 1 | 2 | 0 |
 | dead_drop | 3 | 0 | 0 |
 | be_bait | 3 | 0 | 0 |
-| lose_prefect | 0 | 3 | 0 |
+| lose_prefect | 3 | 0 | 0 |
 | recovery_order | 2 | 1 | 0 |
 | sables_crossing | 0 | 0 | 3 |
 | ring_centre | 3 | 0 | 0 |
