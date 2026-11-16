@@ -13,10 +13,10 @@ as it can, and does not read. Pilot numbers, not playtests.
 |---|---|---|---|---|---|---|---|
 | torpedo+defence | run | yes | 161 | 0 | vanish | none | none |
 | torpedo+defence | run | stuck | 20 | 0 | — | nr_answer, nr_note | none |
-| torpedo+defence | bluff | yes | 162 | 1 | sell, trade, seal, vanish | none | none |
-| torpedo+defence | bluff | no | 136 | 2 | — | none | none |
-| torpedo+defence | fight | yes | 168 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 166 | 0 | broadcast, unite, sell, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 158 | 1 | sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 167 | 1 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 171 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 165 | 0 | broadcast, unite, sell, seal, vanish | none | none |
 
 ## Leg by leg
 
@@ -27,9 +27,9 @@ as it can, and does not read. Pilot numbers, not playtests.
 | The Salvage Belt | 16 | 0.0 |
 | The Drift Deep | 16 | 0.0 |
 | The Breaker Yards | 17 | 0.0 |
-| The Free Ports | 18 | 0.0 |
-| The Hollows | 19 | 0.3 |
-| The Last Lanes | 12 | 0.0 |
+| The Free Ports | 17 | 0.0 |
+| The Hollows | 21 | 0.2 |
+| The Last Lanes | 15 | 0.0 |
 
 ## Jobs on the road
 
@@ -66,7 +66,15 @@ never chases a goal, so this shows what is reachable, not how often a player win
 | lose_prefect | 0 | 4 | 1 | 0 |
 | recovery_order | 2 | 2 | 1 | 0 |
 | sables_crossing | 0 | 0 | 0 | 0 |
-| ring_centre | 3 | 0 | 1 | 0 |
+| ring_centre | 4 | 0 | 1 | 0 |
+
+## Notes, 16 November 2026 (open items: Coldvault, Lose the Prefect, Sable's Crossing)
+
+Five of six runs reached the Threshold; the sixth is the run policy stall at the Narrows, a pilot steering fault. Nothing was dropped or played twice.
+
+- **Coldvault.** A named captain who found her before a wreck, his call still waiting, was never recorded as met, so he never rested and waited at the very stop the tow brought her back to (`World.captainResult` now counts it his). The bluff run that wrecked there twice now gets through.
+- **Lose the Prefect.** Its patrol orbited at 64, inside its own scan reach of 62 plus the drop, so the drop could not be held unseen: 0 of 5 wins from the stop, 5 of 5 at a ring of 90 (as Nothing to Declare). The Free Ports chase moved from Gilt Market to Penny Cross, so no chase sits on a sneak (a test holds it). The person pilot wins it 3 of 3; this pilot never flies a goal.
+- **Sable's Crossing.** Not a bug: it rings only after "Take Sable home" at Palecairn, and these pilots take the first answer. Flown with Sable aboard it was won 5 of 5.
 
 ## Notes, 16 November 2026 (a chase on every leg, echoes, no stop skipped)
 

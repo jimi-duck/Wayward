@@ -623,7 +623,9 @@ export class World implements EncounterHost {
   private captainResult(): { id: string; report: Report } | null {
     const c = this.sortie.notice.captain;
     if (!c || !this.captainMet) return null;
-    const report = this.captainEnd ?? (this.captainFighting ? (this.run.escaped ? 'evaded' : 'won') : null);
+    // a captain who found a ship that then broke up, their call still unanswered, counts it theirs: they rest like any meeting,
+    // and do not wait at the very stop the tow brings her back to
+    const report = this.captainEnd ?? (this.captainFighting ? (this.run.escaped ? 'evaded' : 'won') : this.alive ? null : 'won');
     return report ? { id: c.id, report } : null;
   }
 

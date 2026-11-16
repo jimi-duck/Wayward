@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { GATES, LEGS } from '../src/content/road';
+import { MISSIONS } from '../src/content/missions';
 import { SCRIPT } from '../src/content/script';
 import { CARD_BY_ID, choiceView, feeFor, type Ctx as CardCtx } from '../src/sim/comms';
 import { owed } from '../src/sim/contract';
@@ -257,6 +258,8 @@ describe('the chases', () => {
       expect(hunted.length, `leg ${i}`).toBeGreaterThanOrEqual(1);
       for (const s of hunted) expect(s.quiet, s.script).toBeFalsy();
     });
+    // a sneak past a patrol cannot be flown with a chase on top of it
+    for (const s of LEGS.flat()) if (LEG_CHASES[s.script] && s.job) expect(MISSIONS.find((m) => m.id === s.job)?.goal.kind, s.script).not.toBe('sneak');
     expect(chaseAt('b_kiln', ['vell_paid'])).toBeNull();
     expect(chaseAt('m_gannet', [])).not.toBeNull();
     const j = newJourney(7, false, 'road');

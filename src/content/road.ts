@@ -194,8 +194,9 @@ export const LEG_CHASES: Record<string, LegChase> = {
   d_still: { who: ['picket', 'lancer'], ...HUNT },
   // the Breaker Yards: Draper's yard security, sent to break the strike
   y_torch: { who: ['whisper', 'whisper', 'picket'], ...HUNT },
-  // the Free Ports: the Governor's pickets want her copy of the file
-  f_gilt: { who: ['picket', 'picket', 'lancer'], ...HUNT },
+  // the Free Ports: the Governor's pickets want her copy of the file. At Penny Cross, not Gilt Market:
+  // Gilt's job is a sneak past a patrol, and a chase on top of a sneak cannot be won
+  f_penny: { who: ['picket', 'picket', 'lancer'], ...HUNT },
   // the Hollows: Foundry drones at Hollowforge (Ghostcinder, the pressure stop, is a crossing with no fighting)
   h_forge: { who: ['drone', 'probe'], ...HUNT },
   // the Last Lanes: the Patience's pickets

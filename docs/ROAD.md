@@ -113,7 +113,7 @@ Cut for room (story direction plan): the Survey's black-hole job at Ashdeep (an 
 
 ## A chase on every leg
 
-Since 16 November 2026 (owner: a chase on every leg, at a fixed stop that is never a breather) each leg has one hunted stop, listed in `LEG_CHASES` in `content/road.ts`: Branford, Gannet Rigs, Kiln and Tarik's Lamps, Stillwater, Torch Yard, Gilt Market, the Forge (Ghostcinder is a no-fire crossing, so the Hollows chase sits one stop on) and Dusk Lanes. A chased stop sets its own first pursuit, calm, heat and hulls from ahead (`sim/journey.ts chaseAt`), and its named captain stands down so the two never stack. A red arrival notice names who hunts her (`content/script/chase.ts`). Only the Belt chase can be shaken (`shaken` flags).
+Since 16 November 2026 (owner: a chase on every leg, at a fixed stop that is never a breather) each leg has one hunted stop, listed in `LEG_CHASES` in `content/road.ts`: Branford, Gannet Rigs, Kiln and Tarik's Lamps, Stillwater, Torch Yard, Penny Cross (not Gilt Market, whose job is a sneak past a patrol), the Forge (Ghostcinder is a no-fire crossing, so the Hollows chase sits one stop on) and Dusk Lanes. A chased stop sets its own first pursuit, calm, heat and hulls from ahead (`sim/journey.ts chaseAt`), and its named captain stands down so the two never stack. A red arrival notice names who hunts her (`content/script/chase.ts`). Only the Belt chase can be shaken (`shaken` flags).
 
 ## Echoes
 
