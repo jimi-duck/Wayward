@@ -11,25 +11,25 @@ as it can, and does not read. Pilot numbers, not playtests.
 
 | Strategy | Policy | Threshold | Minutes | Wrecks | Endings open | Dropped | Twice |
 |---|---|---|---|---|---|---|---|
-| torpedo+defence | run | yes | 169 | 0 | vanish | none | none |
+| torpedo+defence | run | yes | 161 | 0 | vanish | none | none |
 | torpedo+defence | run | stuck | 20 | 0 | — | nr_answer, nr_note | none |
-| torpedo+defence | bluff | yes | 163 | 1 | sell, trade, seal, vanish | none | none |
-| torpedo+defence | bluff | yes | 188 | 1 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 207 | 1 | broadcast, unite, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 191 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 162 | 1 | sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | no | 136 | 2 | — | none | none |
+| torpedo+defence | fight | yes | 168 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 166 | 0 | broadcast, unite, sell, seal, vanish | none | none |
 
 ## Leg by leg
 
 | Leg | Minutes (mean) | Wrecks (mean) |
 |---|---|---|
-| The Reach | 24 | 0.2 |
-| The Marches | 18 | 0.0 |
-| The Salvage Belt | 18 | 0.0 |
-| The Drift Deep | 17 | 0.0 |
-| The Breaker Yards | 22 | 0.0 |
-| The Free Ports | 19 | 0.0 |
-| The Hollows | 23 | 0.3 |
-| The Last Lanes | 17 | 0.0 |
+| The Reach | 22 | 0.2 |
+| The Marches | 15 | 0.0 |
+| The Salvage Belt | 16 | 0.0 |
+| The Drift Deep | 16 | 0.0 |
+| The Breaker Yards | 17 | 0.0 |
+| The Free Ports | 18 | 0.0 |
+| The Hollows | 19 | 0.3 |
+| The Last Lanes | 12 | 0.0 |
 
 ## Jobs on the road
 
@@ -60,13 +60,25 @@ never chases a goal, so this shows what is reachable, not how often a player win
 | needle | 0 | 4 | 1 | 0 |
 | drift_cache | 0 | 4 | 1 | 0 |
 | voice_wire | 0 | 4 | 1 | 0 |
-| kill_zone | 0 | 2 | 3 | 0 |
+| kill_zone | 2 | 0 | 3 | 0 |
 | dead_drop | 0 | 4 | 1 | 0 |
 | be_bait | 4 | 0 | 1 | 0 |
 | lose_prefect | 0 | 4 | 1 | 0 |
-| recovery_order | 0 | 0 | 0 | 0 |
+| recovery_order | 2 | 2 | 1 | 0 |
 | sables_crossing | 0 | 0 | 0 | 0 |
-| ring_centre | 2 | 2 | 1 | 0 |
+| ring_centre | 3 | 0 | 1 | 0 |
+
+## Notes, 16 November 2026 (a chase on every leg, echoes, no stop skipped)
+
+This run came after Part A of the story improvement plan (#526: shortcut places no longer skip a stop) and Part B: one fixed hunted stop on every leg (`LEG_CHASES` in `content/road.ts`, never a breather or the Ghostcinder crossing), and echo radio lines from earlier choices. Four of six runs reached the Threshold.
+
+No main beat was dropped or played twice on a finished run. Coldvault is now always visited, so the Recovery Order rings (2 won, 2 lost; it never rang before) and Kill Zone was won twice.
+
+The chases cost no wrecks on any leg. Legs got a little shorter because a chased stop's named captain stands down for the chase instead of stacking on it.
+
+One bluff run (seed 5017) wrecked twice at Coldvault: Vance's patrol after the Recovery Order, then Calloway, and the journey ended there. The person pilot (`docs/BALANCE-PERSON.md`) flew Coldvault three times with no wreck, so this is watched, not tuned. The run policy stall at the Narrows (seed 5017) is the same pilot steering fault as before.
+
+No balance changes.
 
 ## Notes, 14 November 2026 (story direction, Phases 2 to 4 and the Belt chase)
 

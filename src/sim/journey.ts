@@ -33,6 +33,7 @@ import { actLine, dueBeat } from './story';
 import { postJump } from './postjump';
 import { ON_ROAD } from '../content/road';
 import { legOf, roadRegion, scriptKey } from './road';
+import { LEG_CHASES, type LegChase } from '../content/road';
 
 // ── the journey ───────────────────────────────────────────────────────────
 // The layer above the world: everything that lasts longer than one system.
@@ -261,12 +262,15 @@ export function sortieDef(j: Journey): SortieDef {
     const check = gateCheck(def.script, j.carry.flags);
     if (check) { def.blockade = true; def.checkpoint = check; }
   }
-  // the Belt chase: the Offices bought her heading from Val's route trade, and pickets wait at Kiln, Tarik's Lamps and the Scrapgate
-  if (leg >= 0 && beltChased(def.script, j.carry.flags)) {
-    def.pace = { first: CHASE_PACE.first, calm: CHASE_PACE.calm };
-    def.heat = Math.max(def.heat, CHASE_HEAT);
-    def.gutter = Math.max(def.gutter, CHASE_AHEAD);
-    def.ahead = ['picket', 'picket', 'lancer'];
+  // the leg's chase (content/road.ts LEG_CHASES): one pressure stop a leg is hunted, two in the Belt (Val sold her heading)
+  const chase = leg >= 0 ? chaseAt(def.script, j.carry.flags) : null;
+  if (chase) {
+    def.pace = { first: chase.first, calm: chase.calm };
+    def.heat = Math.max(def.heat, chase.heat);
+    def.gutter = Math.max(def.gutter, chase.ahead);
+    def.ahead = [...chase.who];
+    // one hunt at a time: a named captain does not come to a stop that is already a chase
+    def.notice = { ...def.notice, captain: null };
   }
   // set adrift here a moment ago: the gate is not dead ahead any more
   const last = j.legs[j.legs.length - 1];
@@ -277,17 +281,17 @@ export function sortieDef(j: Journey): SortieDef {
   return j.trail.length === 2 ? postJump(def) : def;
 }
 
-/** The Belt chase's stops, before its gate (docs/ROAD.md): hunted from Kiln to the Scrapgate. */
-export const CHASE_STOPS = new Set(['b_kiln', 'b_tarik']);
-/** Pursuit in the chase: the first hull this many seconds after arrival, and soon after each calm. */
-export const CHASE_PACE = { first: 20, calm: 6 } as const;
-export const CHASE_HEAT = 0.3;
-/** Of the pursuit in the chase, the share that comes from ahead: Offices pickets on her heading. */
-export const CHASE_AHEAD = 0.6;
-/** The chase is shaken if Val was paid to forget the heading, or her channel was jammed. */
+/** The leg's chase at a stop, if it is hunted and not shaken (docs/ROAD.md, The chases). */
+export function chaseAt(script: string | undefined, flags: readonly string[]): LegChase | null {
+  const c = script ? LEG_CHASES[script] : undefined;
+  if (!c) return null;
+  return (c.shaken ?? []).some((f) => flags.includes(f)) ? null : c;
+}
+/** The Belt chase is shaken if Val was paid to forget the heading, or her channel was jammed. */
 const chaseShaken = (has: (f: string) => boolean) => has('vell_paid') || has('vell_exposed');
+/** Whether a Belt stop is chased (Kiln, Tarik's Lamps): kept for the Belt's own tests. */
 export const beltChased = (script: string | undefined, flags: readonly string[]): boolean =>
-  !!script && CHASE_STOPS.has(script) && !chaseShaken((f) => flags.includes(f));
+  !!script && (script === 'b_kiln' || script === 'b_tarik') && !!chaseAt(script, flags);
 
 /**
  * The card that holds a road gate, if any (content/story.ts): Ashgrove at the Rift (the Narrows is a scene of its own, sim/narrows.ts), the pickets Val sold

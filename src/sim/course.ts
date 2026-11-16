@@ -24,7 +24,8 @@ export interface Course {
   region: string;
   day: number;
   /** The stop she is at. */
-  here: { name: string; kind: SystemKind };
+  /** Where she stands; purpose is the stop's line, for the menu's Previously. */
+  here: { name: string; kind: SystemKind; purpose: string };
   /** The leg goal, with the jumps left to it. */
   goal: Layer & { jumps: number };
   /** What the screen names as the goal: the story's hub while it is ahead (Halden's Reach), else the leg's gate. */
@@ -113,7 +114,7 @@ export function courseView(j: Journey): Course | null {
   return {
     region: regionDef(c, leg)?.name ?? 'The Reach',
     day: Math.floor(j.day) + 1,
-    here: { name: s.name, kind: s.kind },
+    here: { name: s.name, kind: s.kind, purpose: (pos >= 0 ? rows[pos]?.purpose : '') ?? '' },
     goal: { ...gateLayer, jumps: R - pos },
     aim,
     next: stop(pos + 1),

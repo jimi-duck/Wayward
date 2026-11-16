@@ -13,6 +13,7 @@ import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
 import { chapterSave, clearJourney, hasBackup, loadJourney, restartChapter, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
 import { recap } from './sim/chapters';
+import { courseView } from './sim/course';
 import { jobReward } from './sim/jobpay';
 import { cy } from './sim/purse';
 import { ARCADE_SURVIVAL } from './content/survival';
@@ -241,9 +242,14 @@ function boot(review: typeof import('./review') | null): void {
       row.append(Object.assign(document.createElement('i'), { textContent: k }), Object.assign(document.createElement('b'), { textContent: v }));
       return row;
     };
+    // on the road, a returning player is told where the story left her and why the next stop matters
+    const cv = courseView(live);
+    const was = cv?.here.purpose ? line(t('Previously'), `${cv.here.name} · ${t(cv.here.purpose)}`) : null;
+    const next = cv?.next.purpose ? line(t('Next stop'), `${cv.next.name} · ${t(cv.next.purpose)}`) : null;
     trip.replaceChildren(
-      line(t('Current journey'), `${rn || at.name} · ${t('Day {n}', { n: Math.floor(live.day) + 1 })}`),
-      line(t('Next stop'), dest ? `${dest.name}${lane ? ` · ${plural(lane.days, '{n} day', '{n} days')}` : ''}` : t('Plot the next jump')),
+      Object.assign(line(t('Current journey'), `${rn || at.name} · ${t('Day {n}', { n: Math.floor(live.day) + 1 })}`), { className: 'st-tl cur' }),
+      ...(was ? [was] : []),
+      next ?? line(t('Next stop'), dest ? `${dest.name}${lane ? ` · ${plural(lane.days, '{n} day', '{n} days')}` : ''}` : t('Plot the next jump')),
     );
   };
   const showResume = () => {

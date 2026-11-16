@@ -157,3 +157,47 @@ export const COLLISIONS: Record<string, { standing?: Partial<Record<'miners' | '
   missing_payroll: { standing: { miners: -2 } },
   drift_cache: { unflag: 'wren_trust' },
 };
+
+
+// ── the chases: one hunted stop a leg (owner, 16 November 2026) ─────────────
+// Every leg has a stop (the pressure stop, where it fits) where someone comes after Juno by name: the
+// first hull soon after arrival and more after every calm, mostly from ahead,
+// with a red notice saying who and why (content/script/chase.ts). Never a
+// breather. The Belt keeps its two (Val sold her heading), shaken by paying or
+// jamming her. A named captain does not come to a chased stop, so the hunts
+// never stack.
+
+export interface LegChase {
+  /** Who comes, as variant ids (sim/enemies.ts), mostly from ahead. */
+  who: string[];
+  /** Seconds to the first hull, and after each calm. */
+  first: number;
+  calm: number;
+  /** Heat at arrival, and the share of the pursuit from ahead. */
+  heat: number;
+  ahead: number;
+  /** Any of these flags shakes it. */
+  shaken?: string[];
+}
+
+const HUNT = { first: 25, calm: 8, heat: 0.3, ahead: 0.6 } as const;
+/** The chased stops, by script key. */
+export const LEG_CHASES: Record<string, LegChase> = {
+  // the Reach: the stolen hull is posted; milder, the first leg
+  branford: { who: ['enforcer', 'picket'], first: 40, calm: 12, heat: 0.2, ahead: 0.4 },
+  // the Marches: Kellern security boards the rigs, then comes for her
+  m_gannet: { who: ['picket', 'picket', 'lancer'], ...HUNT },
+  // the Belt: the Offices bought her heading from Val
+  b_kiln: { who: ['picket', 'picket', 'lancer'], first: 20, calm: 6, heat: 0.3, ahead: 0.6, shaken: ['vell_paid', 'vell_exposed'] },
+  b_tarik: { who: ['picket', 'picket', 'lancer'], first: 20, calm: 6, heat: 0.3, ahead: 0.6, shaken: ['vell_paid', 'vell_exposed'] },
+  // the Drift Deep: Custody follows her into the swarm
+  d_still: { who: ['picket', 'lancer'], ...HUNT },
+  // the Breaker Yards: Draper's yard security, sent to break the strike
+  y_torch: { who: ['whisper', 'whisper', 'picket'], ...HUNT },
+  // the Free Ports: the Governor's pickets want her copy of the file
+  f_gilt: { who: ['picket', 'picket', 'lancer'], ...HUNT },
+  // the Hollows: Foundry drones at Hollowforge (Ghostcinder, the pressure stop, is a crossing with no fighting)
+  h_forge: { who: ['drone', 'probe'], ...HUNT },
+  // the Last Lanes: the Patience's pickets
+  l_dusk: { who: ['picket', 'lancer', 'lancer'], ...HUNT },
+};
