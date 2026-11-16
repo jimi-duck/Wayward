@@ -7,7 +7,8 @@ import type { RockView } from './rocks';
 // presents it. A hit is local: a small flash where the shot lands, a few
 // chips and sparks thrown the way it came, a shove on the rock and its seams
 // waking in its own colour. A break is a short physical event: stone pieces
-// fly from the rock's body with its drift, dust hangs, and the new rocks grow
+// fly from the rock's body with its drift, dust hangs, fine gravel glints in
+// the sun as it drifts away, and the new rocks grow
 // out of the break (the field gives them a young age). Each kind answers in
 // its own way, and a torpedo lands heavier than a laser, never as a fireball.
 
@@ -18,6 +19,8 @@ const GLINT: RGB = [1.6, 0.8, 2.6];
 const COLD: RGB = [1.4, 2.2, 3.2];
 const WHITE_HOT: RGB = [3.2, 3, 2.8];
 const CHIP_FLASH: RGB = [2.4, 2, 1.6];
+/** Fine gravel catching the sun: a warm white, dim, so a cloud of it sparkles without blooming. */
+const GRIT: RGB = [1.1, 1.02, 0.88];
 
 const BLASTED = new Set(['torpedo', 'mine', 'plasma', 'arc']);
 
@@ -54,6 +57,7 @@ export class RockFx {
     const dust = STONE_DUST[e.kind] ?? STONE_DUST.basalt!;
     if (heavy || Math.random() < 0.5) this.fx.dust(x, y, z, 0.45 * big * k, dust, 1, 1, 0.7, 0.3);
     this.fx.chips(x, y, z, dx, dz, Math.round((1 + Math.random() * 1.5) * k), 0.1 + 0.03 * k, 3.5 + 2 * k);
+    this.fx.grit(x, y, z, Math.round(3 * k), 2.5, GRIT, dx * 1.5, dz * 1.5, 1);
     switch (e.kind) {
       case 'rich':
         // an occasional crystal splinter and a brief violet wake in the seams
@@ -90,6 +94,8 @@ export class RockFx {
     const dust = STONE_DUST[kind] ?? STONE_DUST.basalt!;
     this.fx.dust(x, y, z, r * 0.55, dust, Math.round((3 + 4 * big) * (heavy ? 1.4 : 1)), 1.6 + 2.4 * big, 1.1, heavy ? 0.36 : 0.28);
     this.fx.chips(x, y, z, -dx, -dz, Math.round((2 + 4 * big) * power), 0.1 + 0.07 * big, 6 + 3 * power, 2.2);
+    // a cloud of fine gravel that catches the light, drifting out with the rock's own motion and thinning away
+    this.fx.grit(x, 0.2, z, Math.round((10 + 22 * big) * power), 2 + 3 * big, GRIT, vx * 0.6, vz * 0.6, 1.3 + big);
     if (heavy) this.fx.ring(x, y, z, r * 2.6, [0.9, 0.8, 0.7], 0.3);
     switch (kind) {
       case 'rich':

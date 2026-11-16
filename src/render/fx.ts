@@ -358,6 +358,21 @@ export class Effects {
     }
   }
 
+  /**
+   * Grit: a cloud of fine gravel and dust motes thrown off broken stone, each a point of reflected sunlight (`rgb`, kept
+   * under the bloom line) that drifts slowly out and thins away over a second or two. Points in the spark pool: no draw call.
+   */
+  grit(x: number, y: number, z: number, n: number, speed: number, rgb: RGB, vx = 0, vz = 0, life = 1.4): void {
+    if (this.calm) n = Math.ceil(n * 0.5);
+    for (let i = 0; i < n; i++) {
+      const u = Math.random() * 2 - 1, a = Math.random() * Math.PI * 2, r = Math.sqrt(1 - u * u), sp = speed * (0.2 + Math.random() * 0.8);
+      const k = 0.5 + Math.random() * 0.5;
+      this.c.setRGB(rgb[0] * k, rgb[1] * k, rgb[2] * k);
+      this.sparks.emit(x, y, z, vx + Math.cos(a) * r * sp, u * sp * 0.5, vz + Math.sin(a) * r * sp, this.c,
+        0.06 + Math.random() * 0.07, life * (0.6 + Math.random() * 0.8), 0.975, true);
+    }
+  }
+
   rubble(kind: 'rock' | 'metal', x: number, y: number, z: number, n: number, size: number, speed: number, drift = false): void {
     const pool = kind === 'rock' ? this.rock : this.plating;
     for (let i = 0; i < n; i++) {

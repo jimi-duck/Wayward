@@ -22,6 +22,9 @@ Our lances throw two hot sparks and a faint light from the barrel, and carry a s
 ## Shield or plating
 A hit a shield charge absorbs is a small hex ripple on the side it came from, blue, about a third of a second; it fades before it wraps the hull, so it never reads as a bubble. A hit that gets through never draws the lattice: a short red rim, plus torn metal and hot streaks off the hull. Bench: `tools/ship.html?hit=60&age=0.1` (`&abs=1` for an absorbed hit).
 
+## Rock in hard light
+Stone takes half the sky's fill light (`ROCK_FILL` in `src/render/rocks.ts`), so the side away from the sun goes near black and the terminator reads crisp. The sun then rims the limb facing it, stronger where a rock stands against the light (`ROCK_RIM`), so a rock still reads as a form on a dark sky. Breaking or mining rock throws a cloud of fine gravel that catches the sun (`Effects.grit`, warm white under the bloom line, 1 to 2 s, spark pool, no draw call); a hit throws a few.
+
 ## Homing fire out of view
 Plasma that steers, and missiles, closing on the ship from off screen within 70 units show a short red arc on the screen edge along their bearing, pulsing (still with reduced motion), stronger the nearer (`drawIncoming` in `src/ui/targeting.ts`). It goes once the shot is on screen or turns away. Hulls out of view keep their chevrons in their faction's colour.
 
