@@ -246,6 +246,8 @@ export class Effects {
   private readonly fires: Puff[] = [];
   private readonly smokes: Puff[] = [];
   private readonly glows: Glow[] = [];
+  /** The last thrown light is held as a lamp (`lamp`). */
+  private lampOn = false;
   private readonly c = new Color();
 
   constructor(private readonly scene: Scene, glow: Texture) {
@@ -321,10 +323,38 @@ export class Effects {
 
   /** Light thrown onto everything nearby: hulls, rock, the ship. */
   light(x: number, y: number, z: number, rgb: RGB, peak: number, life = 0.25): void {
-    const g = this.glows.reduce((a, b) => (b.life * b.peak < a.life * a.peak ? b : a));
+    let g = this.glows[0]!;
+    for (let i = 1; i < this.glows.length; i++) {
+      const b = this.glows[i]!;
+      if (this.lampOn && i === this.glows.length - 1) continue;
+      if (b.life * b.peak < g.life * g.peak) g = b;
+    }
     g.light.position.set(x, y + 1, z);
     g.light.color.setRGB(...rgb);
     g.life = 1; g.decay = 1 / life; g.peak = peak;
+  }
+
+  /**
+   * A steady lamp, held for as long as it is asked for each frame (intensity 0 lets it go): the last of the thrown lights,
+   * so it adds no light to the scene. A station's floodlight while she docks. Off with the thrown lights on the low tier.
+   */
+  lamp(x: number, y: number, z: number, rgb: RGB, intensity: number): void {
+    const g = this.glows[this.glows.length - 1]!;
+    this.lampOn = intensity > 0;
+    g.light.position.set(x, y, z);
+    g.light.color.setRGB(...rgb);
+    g.light.intensity = intensity;
+    g.life = 0;
+  }
+
+  /** A wisp of vented steam: a pale puff carried along (vx, vz), swelling and thinning as it goes. */
+  wisp(x: number, y: number, z: number, vx: number, vz: number, size: number, rgb: RGB, alpha = 0.18): void {
+    const p = this.smokes.find((q) => q.life <= 0);
+    if (!p) return;
+    this.place(p, x, y, z, size, 2.4, 1.6 + Math.random() * 0.8, 0.2);
+    p.vx += vx; p.vz += vz;
+    (p.sprite.material as SpriteMaterial).color.setRGB(...rgb);
+    p.alpha = alpha;
   }
 
   /** Sparks thrown out in every direction. */
@@ -552,7 +582,9 @@ export class Effects {
     }
     for (const p of this.fires) this.stepPuff(p, dt);
     for (const p of this.smokes) this.stepPuff(p, dt);
-    for (const g of this.glows) {
+    for (let i = 0; i < this.glows.length; i++) {
+      const g = this.glows[i]!;
+      if (this.lampOn && i === this.glows.length - 1) continue;
       if (g.life <= 0) { g.light.intensity = 0; continue; }
       g.life = Math.max(0, g.life - g.decay * dt);
       g.light.intensity = g.peak * g.life * g.life;
