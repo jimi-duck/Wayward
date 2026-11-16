@@ -280,13 +280,13 @@ export class Environment {
   }
 
   /** Low tier: half the stars and no wisp layer over the cloud (the detail tile is baked the first time a better tier asks). */
-  setDetail(low: boolean): void {
+  setDetail(low: boolean, detail = !low): void {
     this.field.setThin(low);
     this.parallax.setThin(low);
     this.depth.setThin(low);
     const mat = this.dome;
-    if (mat.defines.DETAIL === (low ? undefined : '')) return;
-    if (low) delete mat.defines.DETAIL; else { mat.defines.DETAIL = ''; mat.uniforms.uDetail!.value = detailTile(this.renderer); }
+    if (mat.defines.DETAIL === (detail ? '' : undefined)) return;
+    if (!detail) delete mat.defines.DETAIL; else { mat.defines.DETAIL = ''; mat.uniforms.uDetail!.value = detailTile(this.renderer); }
     mat.needsUpdate = true;
   }
 

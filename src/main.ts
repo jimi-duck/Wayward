@@ -5,7 +5,7 @@ import { SlowMo } from './core/slowmo';
 import { Input } from './input/input';
 import { PAUSE_KEYS } from './input/keyboard';
 import { ZOOMS } from './render/camera';
-import { QualityGovernor, tierIndex } from './render/quality';
+import { QualityGovernor, keptTier, saveTier, tierIndex } from './render/quality';
 import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { Sector } from './render/sector';
 import { lockLifted } from './sim/postjump';
@@ -68,12 +68,17 @@ function boot(review: typeof import('./review') | null): void {
     return;
   }
 
-  // ?quality=low|medium|high pins a tier and switches the governor off.
-  // Otherwise phones start one tier down and everything can only step lower.
+  // ?quality=low|phone|medium|high pins a tier and switches the governor off.
+  // Otherwise a phone starts on Phone and a computer on High, or where this device settled last time (`wayward.tier`):
+  // the governor steps down under load and up when there is room, never above a tier this device found too slow.
   const params = new URLSearchParams(location.search);
   const pinned = tierIndex(params.get('quality'));
   const coarse = matchMedia('(pointer: coarse)').matches;
-  const quality = new QualityGovernor(pinned >= 0 ? pinned : tierIndex(coarse ? 'medium' : 'high'), pinned >= 0);
+  const TIER_KEY = 'wayward.tier';
+  const settled = keptTier(TIER_KEY);
+  const firstTier = () => settled ? settled.tier : tierIndex(coarse ? 'phone' : 'high');
+  const quality = new QualityGovernor(pinned >= 0 ? pinned : firstTier(), pinned >= 0, settled?.ceil);
+  const keepTier = () => { if (pinned < 0 && !saver) saveTier(TIER_KEY, quality.tier.name, quality.ceiling); };
   // Battery saver (a switch on the title's Settings and the pause card): the low tier and 30 frames a second. Kept per device.
   const SAVER_KEY = 'wayward.saver';
   let saver = false;
@@ -689,11 +694,14 @@ function boot(review: typeof import('./review') | null): void {
       const system = world.mode === 'breakout' ? world.sortie.system : '';
       if (world.run !== lastRun || system !== lastSystem || (wasPaused && !loop.paused)) { lastRun = world.run; lastSystem = system; quality.hold(GRACE); }
       wasPaused = loop.paused;
-      if (!loop.paused && quality.sample(dt)) {
+      // down at once when the frames are too slow; up only while the world is held (a pop-up, the pause card), never in flight
+      const moved = !loop.paused ? quality.sample(dt) : started && !settling && !bay.open && quality.stepUp();
+      if (moved) {
         matchTier(renderer, quality.tier);
         sector.setTier(quality.tier);
         fit();
         void sector.warm();
+        keepTier();
       }
     },
   });
@@ -762,7 +770,7 @@ function boot(review: typeof import('./review') | null): void {
     try { localStorage.setItem(SAVER_KEY, on ? '1' : '0'); } catch { /* not kept */ }
     loop.minInterval = on ? 1 / 30 : 0;
     // on: the low tier now. off: back to where a phone starts, and the governor judges again
-    quality.pin(on ? 0 : pinned >= 0 ? pinned : tierIndex(coarse ? 'medium' : 'high'));
+    quality.pin(on ? 0 : pinned >= 0 ? pinned : firstTier());
     if (!on && pinned < 0) quality.pin(null);
     matchTier(renderer, quality.tier);
     sector.setTier(quality.tier);

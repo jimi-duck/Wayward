@@ -159,7 +159,7 @@ export class Sector {
     this.site = new SiteView(this.scene);
     this.yard = new YardView(this.scene);
     this.space = new SpaceView(this.scene, glow);
-    this.warp = new WarpView(this.scene, glow, tier.name === 'low' ? 56 : tier.name === 'medium' ? 110 : 170);
+    this.warp = new WarpView(this.scene, glow, tier.name === 'low' ? 56 : tier.name === 'high' ? 170 : 110);
     this.scene.add(this.ship.root);
   }
 
@@ -204,7 +204,7 @@ export class Sector {
     this.fx.setLights(tier.name !== 'low');
     this.lowFx = tier.name === 'low';
     this.env.setShadow(tier.shadow);
-    this.env.setDetail(tier.name === 'low');
+    this.env.setDetail(tier.name === 'low', tier.skyDetail);
     this.warp.setDetail(tier.name === 'low');
     this.debris.setCount(tier.debris);
   }
