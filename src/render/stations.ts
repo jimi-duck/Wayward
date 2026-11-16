@@ -1,5 +1,5 @@
 import {
-  AdditiveBlending, CanvasTexture, Color, CylinderGeometry, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, SphereGeometry, SRGBColorSpace,
+  AdditiveBlending, CanvasTexture, Color, CylinderGeometry, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace,
   type Material, type Object3D, type Texture,
 } from 'three';
 import { Kit, metal, seeded, type V3 } from './kit';
@@ -82,6 +82,8 @@ export interface StationAnim {
   strobe: MeshBasicMaterial;
   neon: MeshBasicMaterial | null;
   neonBase: Color;
+  /** Small craft working the depot: each flies a slow loop round it at its own height and pace. */
+  craft: Array<{ o: Object3D; r: number; h: number; w: number; ph: number }>;
 }
 
 // ── shared parts ───────────────────────────────────────────────────────────
@@ -514,16 +516,54 @@ function guild(k: Kit, g: Group, rnd: () => number, L: Livery, a: StationAnim): 
 
 const BODY: Record<PortStyle, (k: Kit, g: Group, rnd: () => number, L: Livery, a: StationAnim) => V3> = { frontier, kellern, gutter, holdfast, guild };
 
+/** Where the work craft fly: radius, height over the deck, turns per second (signed), start angle. Clear of the docking arms' height. */
+const CRAFT: Array<[number, number, number, number]> = [[17, 7.5, 0.045, 0.4], [21, 10.5, -0.032, 2.6]];
+
+/**
+ * A work skiff: a stubby hull in the depot's paint, a lit nose and a tail strobe (the depot's own, so it blinks with the
+ * masts). Two materials, so two draws per craft.
+ */
+function skiff(m: Record<string, Material>, strobe: MeshBasicMaterial): Group {
+  const k = new Kit();
+  k.box('hull', [1.5, 0.45, 0.8], [0, 0, 0]);
+  k.box('hull', [0.6, 0.3, 0.6], [-0.2, 0.34, 0]);
+  for (const z of [-0.55, 0.55]) k.box('hull', [0.9, 0.22, 0.3], [-0.35, -0.08, z]);
+  k.box('lamp', [0.12, 0.12, 0.5], [0.78, 0, 0]);
+  const g = k.build({ hull: m.hull!, lamp: m.lamp! });
+  const tail = new Mesh(strobeGeo, strobe);
+  tail.scale.setScalar(0.5);
+  tail.position.set(-0.8, 0.3, 0);
+  g.add(tail);
+  g.scale.setScalar(1.4);
+  return g;
+}
+
+/** A faint warm haze round a lit depot: the lamps' light in the vented gas and dust, so the station sits in its own glow. */
+function haze(g: Group, color: Color): void {
+  if (typeof document === 'undefined') return;
+  const s = new Sprite(new SpriteMaterial({ map: poolTexture(), color: color.clone().multiplyScalar(0.07), transparent: true, blending: AdditiveBlending, depthWrite: false, toneMapped: false }));
+  s.scale.setScalar(44);
+  s.position.set(0, 2, 0);
+  s.renderOrder = 1;
+  g.add(s);
+}
+
 /**
  * A holder's depot, named on its board. `own` is the caller's lamp and window material (tinted by the port's mood); the animated
  * parts ride in `userData.anim` (StationAnim). Stands at the origin with its berth at local (-17, 6).
  */
 export function buildStation(style: PortStyle, name: string, own?: { lamp: Material; win: Material }): Group {
   const L = LIVERY[style], g = new Group(), k = new Kit(), rnd = seeded(9 + style.length * 13);
-  const anim: StationAnim = { spin: [], strobe: new MeshBasicMaterial({ color: new Color(2.4, 2.4, 2.4), toneMapped: false, fog: false }), neon: null, neonBase: new Color() };
+  const anim: StationAnim = { spin: [], strobe: new MeshBasicMaterial({ color: new Color(2.4, 2.4, 2.4), toneMapped: false, fog: false }), neon: null, neonBase: new Color(), craft: [] };
   const signAt = BODY[style](k, g, rnd, L, anim);
-  const m = matsOf(style);
-  g.add(k.build({ ...m, lamp: own?.lamp ?? m.lamp!, win: own?.win ?? windowMaterial() }, 0.6));
+  const m = matsOf(style), lamp = own?.lamp ?? m.lamp!;
+  g.add(k.build({ ...m, lamp, win: own?.win ?? windowMaterial() }, 0.6));
+  for (const [r, h, w, ph] of CRAFT) {
+    const o = skiff({ ...m, lamp }, anim.strobe);
+    g.add(o);
+    anim.craft.push({ o, r, h, w: w * TAU, ph });
+  }
+  if ('color' in lamp) haze(g, (lamp as MeshBasicMaterial).color);
   // the board faces the berth and leans back, so the ship coming in reads it from above
   const board = nameBoard(name, L, style === 'kellern' ? 8 : 9);
   board.g.position.set(...signAt);
@@ -540,6 +580,14 @@ export function animateStation(g: Group, time: number, dt: number): void {
   const a = g.userData.anim as StationAnim | undefined;
   if (!a) return;
   for (const s of a.spin) s.o.rotation.y += s.w * dt;
+  for (const c of a.craft) {
+    // a slow ellipse round the depot, rising and settling a little, nose along the path and banked into the turn
+    const an = c.ph + c.w * time, ca = Math.cos(an), sa = Math.sin(an);
+    c.o.position.set(ca * c.r, c.h + Math.sin(an * 2 + c.ph) * 1.2, sa * c.r * 0.8);
+    const tx = -sa * Math.sign(c.w), tz = ca * 0.8 * Math.sign(c.w);
+    c.o.rotation.set(0, Math.atan2(-tz, tx), 0);
+    c.o.rotateX(-0.18 * Math.sign(c.w));
+  }
   const ph = time % 1.6;
   a.strobe.color.setScalar(ph < 0.07 || (ph > 0.22 && ph < 0.27) ? 2.4 : 0.06);
   if (a.neon) {
