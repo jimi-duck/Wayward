@@ -248,6 +248,30 @@ function toThreshold(c: Partial<Journey['carry']> = {}, seed = 7): Journey {
   return j;
 }
 
+describe('the chases', () => {
+  it('hunts one stop a leg or more, never a breather, and keeps named captains away from it', async () => {
+    const { LEG_CHASES } = await import('../src/content/road');
+    const { chaseAt } = await import('../src/sim/journey');
+    LEGS.forEach((leg, i) => {
+      const hunted = leg.filter((s) => LEG_CHASES[s.script]);
+      expect(hunted.length, `leg ${i}`).toBeGreaterThanOrEqual(1);
+      for (const s of hunted) expect(s.quiet, s.script).toBeFalsy();
+    });
+    expect(chaseAt('b_kiln', ['vell_paid'])).toBeNull();
+    expect(chaseAt('m_gannet', [])).not.toBeNull();
+    const j = newJourney(7, false, 'road');
+    endSortie(j, result(j));
+    let guard = 0, seen = 0;
+    while (j.status === 'chart' && guard++ < 90) {
+      plot(j, options(j)[0]!.to.id);
+      const def = sortieDef(j);
+      if (def.script && LEG_CHASES[def.script]) { seen++; expect(def.notice.captain, def.script).toBeNull(); expect(def.ahead).toEqual(LEG_CHASES[def.script]!.who); }
+      endSortie(j, result(j));
+    }
+    expect(seen).toBe(Object.keys(LEG_CHASES).length);
+  });
+});
+
 describe('the road never skips a stop', () => {
   beforeEach(() => mem.clear());
 

@@ -111,6 +111,18 @@ Val's route trade sells Juno's heading to the Offices (`sim/journey.ts beltChase
 
 Cut for room (story direction plan): the Survey's black-hole job at Ashdeep (an analyst's reading plays there instead), Val's reckoning at Gilt Market (her story ends at the Scrapgate), and Calloway's question at Cutton (her best scene is the Tollgate). The cards stay in the code, unplayed.
 
+## A chase on every leg
+
+Since 16 November 2026 (owner: a chase on every leg, at a fixed stop that is never a breather) each leg has one hunted stop, listed in `LEG_CHASES` in `content/road.ts`: Branford, Gannet Rigs, Kiln and Tarik's Lamps, Stillwater, Torch Yard, Gilt Market, the Forge (Ghostcinder is a no-fire crossing, so the Hollows chase sits one stop on) and Dusk Lanes. A chased stop sets its own first pursuit, calm, heat and hulls from ahead (`sim/journey.ts chaseAt`), and its named captain stands down so the two never stack. A red arrival notice names who hunts her (`content/script/chase.ts`). Only the Belt chase can be shaken (`shaken` flags).
+
+## Echoes
+
+`content/script/echoes.ts` holds short radio lines that answer earlier choices (Calloway named or asked, the Saints ignored, the witness saved, the Gannet crew, Ines refused, Brook freed, Oduya's name, Oren's heir or pilot), and fills the thin stops: Longwater's drift lamps, Ghostcinder's dead foundry, the Mute Hall and Lastlight. Each is a radio row with `stale: 150`, so a busy stop drops it rather than queue it late.
+
+## The menu's Previously line
+
+On a road journey the menu's resume lines read Current journey, Previously (the stop she is at and its purpose) and Next stop with its purpose (`main.ts paintJourney`, from `courseView`). Short phones hide the region line, which the chapter recap already names, and keep each value on one line.
+
 ## Add a stop
 
 1. Add a row to its leg (`ROAD`, `MARCHES` … `LAST`) with a `script` key.
@@ -176,7 +188,8 @@ shows the shape, not the pacing. `npm run pilot:person` flies the road more like
 person ([BALANCE-PERSON.md](BALANCE-PERSON.md)): it takes every job and flies its goal, mines a
 while before each gate, and is charged for reading the cards. `PERSON_LOG=path` adds a line a
 stop (cards offered, job results). The target is a road of 4 to 5 hours (owner, 16 November 2026);
-it still needs human playtests.
+the person pilot makes it 3 h 25 min to 3 h 55 min with every chase and echo in, so nothing was cut.
+It still needs human playtests.
 
 ## The first two systems, and a wreck
 

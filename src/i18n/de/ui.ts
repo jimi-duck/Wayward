@@ -491,6 +491,7 @@ export const UI: Record<string, string> = {
   'Begin': 'Los',
   'Wayward, keep moving': 'Wayward, weiter geht’s',
   'Current journey': 'Aktuelle Reise',
+  'Previously': 'Zuletzt',
   'Next stop': 'Nächster Halt',
   'day {n}': 'Tag {n}',
   '{n} day': '{n} Tag',

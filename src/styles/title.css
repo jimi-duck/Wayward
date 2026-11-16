@@ -97,6 +97,14 @@
 .st-tl { display: flex; flex-wrap: wrap; gap: 0 12px; align-items: baseline; font: 600 12px/1.3 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; text-shadow: 0 1px 8px rgba(var(--black-rgb), .8); }
 .st-tl i { font-style: normal; color: var(--hud-hi); min-width: 8.5em; }
 .st-tl b { font-weight: 600; color: var(--industrial-white); letter-spacing: .14em; }
+/* a short phone keeps the menu on screen: the region is named under the list already, and each value stays on one line */
+@media (max-height: 520px) {
+  .st-trip { gap: 1px; margin-top: 8px; }
+  .st-tl.cur { display: none; }
+  .st-tl { flex-wrap: nowrap; }
+  .st-tl i { min-width: 0; flex: none; }
+  .st-tl b { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
 
 /* the foot: the version, the record, the save's file buttons */
 .st-foot { grid-column: 1 / -1; grid-row: 3; display: flex; align-items: flex-end; gap: 10px 22px; flex-wrap: wrap; }

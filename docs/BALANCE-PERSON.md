@@ -10,28 +10,28 @@ Pilot numbers, not playtests.
 
 | Seed | Threshold | Flying (min) | Reading cards (min) | Total (min) | Cards | Named captains met | Wrecks |
 |---|---|---|---|---|---|---|---|
-| 5000 | yes | 188 | 37 | 225 | 120 | 25 | 0 |
-| 5017 | yes | 181 | 39 | 220 | 133 | 40 | 0 |
-| 5034 | yes | 185 | 36 | 221 | 117 | 26 | 0 |
+| 5000 | yes | 199 | 34 | 233 | 111 | 19 | 0 |
+| 5017 | yes | 201 | 34 | 235 | 112 | 18 | 0 |
+| 5034 | yes | 173 | 34 | 207 | 112 | 21 | 0 |
 
 ## Leg by leg (mean minutes, reading included)
 
 | Leg | Minutes | Of which reading |
 |---|---|---|
-| The Reach | 30 | 4 |
-| The Marches | 26 | 4 |
-| The Salvage Belt | 29 | 5 |
-| The Drift Deep | 26 | 6 |
-| The Breaker Yards | 30 | 6 |
-| The Free Ports | 30 | 6 |
-| The Hollows | 30 | 3 |
-| The Last Lanes | 21 | 3 |
+| The Reach | 33 | 4 |
+| The Marches | 24 | 4 |
+| The Salvage Belt | 31 | 4 |
+| The Drift Deep | 27 | 6 |
+| The Breaker Yards | 33 | 6 |
+| The Free Ports | 28 | 5 |
+| The Hollows | 29 | 3 |
+| The Last Lanes | 20 | 2 |
 
 ## Jobs, taken every time
 
 | Job | Won | Lost | Other |
 |---|---|---|---|
-| nothing_to_declare | 1 | 2 | 0 |
+| nothing_to_declare | 3 | 0 | 0 |
 | follow_cyrite | 3 | 0 | 0 |
 | pirate_toll | 3 | 0 | 0 |
 | lifeboat_wake | 3 | 0 | 0 |
@@ -42,13 +42,13 @@ Pilot numbers, not playtests.
 | one_filter | 3 | 0 | 0 |
 | ransom_crew | 0 | 3 | 0 |
 | wreck_remembered | 3 | 0 | 0 |
-| the_witness | 2 | 1 | 0 |
+| the_witness | 3 | 0 | 0 |
 | long_walk | 2 | 1 | 0 |
 | finders_keepers | 3 | 0 | 0 |
 | something_dark | 3 | 0 | 0 |
 | missing_payroll | 3 | 0 | 0 |
 | last_shift | 3 | 0 | 0 |
-| tarik_bend | 3 | 0 | 0 |
+| tarik_bend | 1 | 2 | 0 |
 | cradle_crew | 3 | 0 | 0 |
 | needle | 3 | 0 | 0 |
 | drift_cache | 3 | 0 | 0 |
@@ -57,6 +57,6 @@ Pilot numbers, not playtests.
 | dead_drop | 3 | 0 | 0 |
 | be_bait | 3 | 0 | 0 |
 | lose_prefect | 0 | 3 | 0 |
-| recovery_order | 0 | 3 | 0 |
+| recovery_order | 2 | 1 | 0 |
 | sables_crossing | 0 | 0 | 3 |
 | ring_centre | 3 | 0 | 0 |
