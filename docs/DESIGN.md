@@ -626,21 +626,22 @@ a plate when you are left alone.
 
 ## Her shape
 
-The Wayward is curved, not stacked (`render/smooth.ts`). Her hull is one body
-lofted through rounded sections (`HULL` in `render/wayward.ts`) from a full
-stern to a blunt bullet nose, with plates pressed onto its curve: each plate
-stands a little off the body and eases down at its rim, so panel lines read
-as soft seams and the paint chips from the rims first. Amber over the back and
-upper flanks, dark machinery, conduits and a few lit slits low on the sides.
-The two drives are short turned nacelles at the stern (`DRUM`, a radius
-profile): pillowed plate bands, a ribbed dark nose, a ribbed heat collar and
-a flared bell with a rolled lip. A smooth mount (`MOUNT`) carries each into
-the hull's flank. The bridge is a rounded cabin at the head of the deck with
-warm visor slits; the deck's containers have rounded corners; the "03" stern
-is a rounded slab (`roundSlab`) over a radiator grille. The wear shader adds
-her own stains (`HERO_STAINS` in `render/kit.ts`). Same mesh in both
-liveries. Bench: `tools/ship.html?view=three`, `?view=stern` and `?view=game`
-(the flight camera's own framing).
+The Wayward is a hard-edged hauler that reads as one body. Her hull is a single
+eight-sided loft (`HULL` in `render/wayward.ts`): straight through the hold,
+then one long taper to a short blunt prow, with no steps. Armour plates
+follow that taper (`facetPlate` in `render/smooth.ts`): each stands off its
+face with a crisp chamfered rim, so the paint chips from the rims first. Ribs
+mark the bays; the prow is one clean cowl of single plates; the stern bay
+carries the ochre stripe. The two drives sit low on the flanks (`TIERS`):
+a flared bell ringed in dashed cyan, a ribbed heat collar, then plated tiers
+that narrow without a step to an ogive nose, so each swells astern and runs
+fine forward. A swept pylon and a split saddle (`mounting`) join each to the
+hull. The bridge is a raked deck at the head of the spine with warm visor
+slits; the "03" stern is a rounded slab (`roundSlab`) over a radiator grille.
+The nose ends a little ahead of the drives, so she reads short and driven in
+the flight camera. The wear shader adds her own stains (`HERO_STAINS` in
+`render/kit.ts`). Same mesh in both liveries. Bench: `tools/ship.html?view=three`,
+`?view=side`, `?view=stern` and `?view=game` (the flight camera's own framing).
 
 ## The hull shows what she carries
 
