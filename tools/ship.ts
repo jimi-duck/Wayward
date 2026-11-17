@@ -81,7 +81,12 @@ const VIEWS: Record<string, [number, number, number, number, number, number]> = 
   hull: [0.5, 2.2, 1.7, 0.5, 0.3, 0],
   sidep: [0.4, 0.5, -3.2, 0.4, 0.1, 0],
   sidew: [0.9, 0.6, 2.4, 0.9, 0.1, 0],
+  // the stern face up close
+  stern: [-4.3, 0.7, 0.9, -1.2, 0, 0],
+  // the flight camera's own framing (render/camera.ts at the closest zoom: 20 degrees up, 13.5 down, the lens at 52): the ship as played
+  game: [-5.98, 2.18, 0, 3.74, -0.15, 0],
 };
+if (view === 'game') camera.fov = 52;
 const fit = () => {
   fitRenderer(renderer, tier);
   camera.aspect = canvas.clientWidth / canvas.clientHeight;

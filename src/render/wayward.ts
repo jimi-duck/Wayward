@@ -1,7 +1,7 @@
 import { AdditiveBlending, CanvasTexture, Color, EdgesGeometry, Group, LineBasicMaterial, LineSegments, Vector3, type Mesh, Vector4, MeshBasicMaterial, MeshStandardMaterial, SRGBColorSpace, type Material, type Texture } from 'three';
 import { Kit, metal, seeded, type V3 } from './kit';
 import { buildFits, FITTED, fitKey, shown } from './fitted';
-import { bevelGeo, block, setBevelScale, bolts, frameRing, hatch, lamp, oct, octFaces, panel, pipeRun, vent, type Face } from './parts';
+import { bevelGeo, block, chamferSlab, setBevelScale, bolts, frameRing, hatch, lamp, oct, octFaces, panel, pipeRun, vent, type Face } from './parts';
 
 // ── the Wayward ───────────────────────────────────────────────────────────
 // A stolen Obedience-class ore hauler, registry OB-7731-A, after brand v1.1
@@ -56,6 +56,8 @@ function materials(hits: Hit[]): Record<string, Material> {
     // white navigation lights, tiny, under the bloom line
     nav: new MeshBasicMaterial({ color: new Color(1.7, 1.8, 1.9), toneMapped: false }),
     blue: new MeshBasicMaterial({ color: new Color(0.55, 1.2, 2.1), toneMapped: false }),
+    // the bridge's visor slits: warm amber cabin light, under the bloom line
+    visor: new MeshBasicMaterial({ color: VISOR.clone(), toneMapped: false }),
     decal: new MeshStandardMaterial({
       map: decalTexture(), transparent: true, alphaTest: 0.35, roughness: 0.8, metalness: 0.1,
       polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
@@ -369,7 +371,7 @@ export function setMark(m: number): void {
 }
 
 /** Her lights as the scan arch leaves them: 1 as she is, 0 dark, above 1 a white flash as they come back. */
-const NAV = new Color(1.7, 1.8, 1.9), RED = new Color(3.2, 0.35, 0.25), LAMP = new Color(3.2, 2.4, 1.5);
+const NAV = new Color(1.7, 1.8, 1.9), RED = new Color(3.2, 0.35, 0.25), LAMP = new Color(3.2, 2.4, 1.5), VISOR = new Color(1.15, 0.62, 0.18);
 let lightLevel = 1;
 export function setLightLevel(v: number): void {
   if (!mats || v === lightLevel) return;
@@ -377,6 +379,7 @@ export function setLightLevel(v: number): void {
   (mats.nav as MeshBasicMaterial).color.copy(NAV).multiplyScalar(v);
   (mats.red as MeshBasicMaterial).color.copy(RED).multiplyScalar(v);
   (mats.lamp as MeshBasicMaterial).color.copy(LAMP).multiplyScalar(v);
+  (mats.visor as MeshBasicMaterial).color.copy(VISOR).multiplyScalar(v);
 }
 
 export interface Nozzle { p: V3; r: number; }
@@ -533,10 +536,11 @@ function deck(k: Kit, rnd: Rnd, top: number): void {
       block(k, key, [len - 0.05, h, cw - 0.04], [x, y, z], [0, 0, 0], 0.02);
       // the lid: two diagonal braces and a seam down the middle
       const top2 = y + h / 2 + 0.003, ang = Math.atan2(cw - 0.12, len - 0.14), d = Math.hypot(len - 0.14, cw - 0.12);
-      // one strong diagonal on most lids, a cross only on the odd one (its own stream, so the layout stays put)
-      const cross = braces() < 0.3, lean = braces() < 0.5 ? -1 : 1;
-      for (const e of cross ? [-1, 1] : [lean]) k.box('dark', [d, 0.011, 0.03], [x, top2, z], [0, e * ang, 0]);
+      // a plain pressed lid: a seam down it and two ribs across; a strong diagonal on the odd one only (its own stream, so the layout
+      // stays put), so the deck reads as cargo and not as a cage
+      if (braces() < 0.3) k.box('dark', [d, 0.011, 0.03], [x, top2, z], [0, (braces() < 0.5 ? -1 : 1) * ang, 0]);
       k.box('hull', [len - 0.08, 0.009, 0.016], [x, top2, z + (rnd() - 0.5) * 0.04]);
+      for (const e of [-1, 1]) k.box('dark', [0.018, 0.01, cw - 0.08], [x + e * len * 0.22, top2, z]);
       // ribs down the side of the box
       for (let i = 1; i < 4; i++) k.box('dark', [0.012, h * 0.8, 0.012], [x - (len - 0.05) / 2 + (i * (len - 0.05)) / 4, y, z + sd * (cw / 2 - 0.02)]);
       if (rnd() < 0.18) k.box('orange', [0.02, 0.02, 0.02], [x + len * 0.3, y, z + sd * (cw / 2 + 0.005)]);
@@ -606,22 +610,38 @@ function hull(k: Kit, rnd: Rnd): void {
   k.cyl('hull', 0.11, 0.05, 0.05, [-0.5, top + 0.3, 0], 'y', 12);
   k.cyl('dark', 0.03, 0.03, 0.08, [-0.5, top + 0.25, 0], 'y', 6);
 
-  // the bridge: a dark block on the forward spine, a band of glass, a brow
-  block(k, 'dark', [0.46, 0.22, 0.54], [1.3, top + 0.16, 0], [0, 0, 0], 0.04);
-  k.box('window', [0.05, 0.07, 0.46], [1.56, top + 0.18, 0], [0, 0, -0.45]);
-  for (const z of [-0.15, 0, 0.15]) k.box('dark', [0.07, 0.09, 0.03], [1.56, top + 0.18, z], [0, 0, -0.45]);
-  block(k, pickAmber(rnd), [0.4, 0.05, 0.6], [1.32, top + 0.29, 0], [0, 0, 0], 0.02);
+  // the bridge: a raked observation deck on a pedestal at the head of the spine, ramped up from the deck and down into the prow,
+  // plated on the roof, a brow over two warm visor slits across its raked face and one down each flank
+  k.loft('dark', [[1.1, 0.2, 0.03, 0.16, 0.6], [1.3, 0.3, 0.27, 0.16, 0.5], [1.56, 0.3, 0.28, 0.16, 0.5], [1.82, 0.2, 0.12, 0.16, 0.55], [2.02, 0.1, 0.0, 0.14, 0.6]], [0, top, 0]);
+  k.wedge(pickAmber(rnd), [[1.3, -0.2], [1.58, -0.22], [1.66, -0.14], [1.66, 0.14], [1.58, 0.22], [1.3, 0.2]], 0.03, [0, top + 0.29, 0]);
+  const rake = Math.atan2(0.16, 0.26);
+  for (const [t, w] of [[0.28, 0.34], [0.6, 0.27]] as const) {
+    const x = 1.56 + 0.26 * t, y = top + 0.28 - 0.16 * t;
+    k.box('rubber', [0.055, 0.01, w + 0.04], [x + 0.004, y + 0.006, 0], [0, 0, -rake]);
+    k.box('visor', [0.022, 0.012, w], [x + 0.006, y + 0.01, 0], [0, 0, -rake]);
+  }
+  for (const sd of [-1, 1]) {
+    k.box('rubber', [0.24, 0.04, 0.01], [1.44, top + 0.17, sd * 0.302]);
+    k.box('visor', [0.2, 0.014, 0.01], [1.44, top + 0.17, sd * 0.306]);
+  }
+  k.cyl('pipe', 0.007, 0.012, 0.3, [1.4, top + 0.44, 0.1], 'y', 6);
+  k.cyl('hull', 0.05, 0.035, 0.04, [1.48, top + 0.31, -0.1], 'y', 10);
 
-  // the stern: a cargo face between the drums, "03" on it
-  // painted in the stripe's ochre: the bold block the chase camera looks at all game
-  block(k, 'paint2', [0.16, HH * 0.96, 0.78], [-2.46, HY, 0], [0, 0, 0], 0.04);
-  block(k, 'rubber', [0.06, 0.46, 0.4], [-2.55, HY + 0.02, 0], [0, 0, 0], 0.01);
-  block(k, 'dark', [0.1, 0.38, 0.34], [-2.57, HY + 0.02, 0], [0, 0, 0], 0.02);
-  for (const [w, h, y, z] of [[0.46, 0.06, 0.26, 0], [0.46, 0.06, -0.22, 0], [0.06, 0.5, 0.02, 0.23], [0.06, 0.5, 0.02, -0.23]] as const) block(k, 'hull', [0.1, h, w], [-2.58, HY + y, z], [0, 0, 0], 0.012);
-  k.decal('decal', DECAL.n03, 0.2, 0.2, [-2.625, HY + 0.02, 0], [-1, 0, 0], UP);
-  block(k, 'paint2', [0.12, 0.1, 0.7], [-2.56, HY + 0.4, 0], [0, 0, 0], 0.02);
-  k.decal('decal', DECAL.hazard, 0.46, 0.06, [-2.625, HY + 0.4, 0], [-1, 0, 0], UP);
-  for (const sd of [-1, 1]) { lamp(k, 'red', [-2.6, HY + 0.36, sd * 0.36]); lamp(k, 'red', [-2.6, HY - 0.3, sd * 0.36]); }
+  // the stern: the "03" bulkhead between the drums, painted in the stripe's ochre, the bold block the chase camera looks at all game.
+  // A pressed slab with its corners cut at 45 degrees and every edge rounded, set in a dark frame; the number over a hazard band,
+  // and under them a radiator grille of horizontal slits, its slats canted down, grimed by its own heat (wear shader)
+  const SX = -2.6;
+  k.add('dark', chamferSlab(0.2, 1.14, 1.0, 0.22, 0.03), [-2.42, HY + 0.01, 0]);
+  k.add('paint2', chamferSlab(0.2, 1.06, 0.92, 0.18, 0.045), [SX + 0.1, HY + 0.01, 0]);
+  k.decal('decal', DECAL.n03, 0.34, 0.34, [SX - 0.004, HY + 0.2, 0], [-1, 0, 0], UP);
+  for (const z of [-0.26, 0, 0.26]) k.decal('decal', DECAL.hazard, 0.26, 0.1, [SX - 0.004, HY + 0.0, z], [-1, 0, 0], UP);
+  k.add('rubber', chamferSlab(0.04, 0.7, 0.28, 0.06, 0.01), [SX + 0.005, HY - 0.23, 0]);
+  for (let i = 0; i < 6; i++) k.box('pipe', [0.045, 0.018, 0.66], [SX - 0.008, HY - 0.335 + i * 0.042, 0], [0, 0, -0.55]);
+  for (const sd of [-1, 1]) {
+    k.box('dark', [0.04, 0.3, 0.035], [SX - 0.01, HY - 0.23, sd * 0.36]);
+    lamp(k, 'orange', [SX - 0.02, HY - 0.23, sd * 0.43], 0.03);
+    lamp(k, 'red', [SX - 0.02, HY + 0.37, sd * 0.38]);
+  }
 
   // the name along both flanks, high on the upper chamfer where the drums do not hide it
   const faces = octFaces(HW, HH);
@@ -641,49 +661,62 @@ function hull(k: Kit, rnd: Rnd): void {
 // in a ringed housing astern.
 
 const DZ = 1.04, DY = -0.04, DR = 0.42;
-const BANDS = [-2.4, -2.0, -1.6, -1.2, -0.8, -0.45];
+/**
+ * The cowl in tiers, stern to bow, each [aft x, fore x, aft radius, fore radius] in DR: the drive's flared bell, then a ribbed heat
+ * collar, then plated tiers stepping in toward the intake, so the nacelle swells astern and runs fine forward instead of a can.
+ */
+const TIERS: Array<[number, number, number, number]> = [[-2.2, -1.68, 1.13, 1.11], [-1.6, -0.97, 1.06, 1.05], [-0.9, -0.44, 1.0, 0.95]];
+const SEG = 32;
 
 function drum(k: Kit, rnd: Rnd, z: number): Nozzle {
   const sd = Math.sign(z), R = DR, y = DY;
-  k.cyl('dark', R, R, 2.1, [-1.4, y, z], 'x', 28);
-  for (let i = 0; i < BANDS.length - 1; i++) {
-    const a = BANDS[i]!, b = BANDS[i + 1]!, mid = (a + b) / 2, len = b - a;
-    // mostly off-white plate; the band nearest the stern is the bold ochre stripe, the one the chase camera sees first
-    const plate = rnd() < 0.86 ? pickAmber(rnd) : 'dark';
-    k.cyl(i === BANDS.length - 2 ? 'paint2' : plate, R * 1.035, R * 1.035, len - 0.07, [mid, y, z], 'x', 28);
-    k.cyl('dark', R * 1.075, R * 1.075, 0.06, [a, y, z], 'x', 28);
-    k.cyl('hull', R * 1.09, R * 1.09, 0.02, [a, y, z], 'x', 28);
-    // a hatch or a vent on the outboard flank of the band
-    if (rnd() < 0.7) {
-      const face: Face = { f: sd * Math.PI / 2, rad: R * 1.035, wid: 0.3 };
-      if (rnd() < 0.5) hatch(k, pickAmber(rnd), face, y, z, mid, 0, len * 0.5, 0.26, 0.012);
-      else vent(k, face, y, z, mid, 0, len * 0.4, 0.26, 0.012);
+  // the core under the plate, tapering with the tiers; it shows dark in every seam
+  k.cyl('dark', R * 0.93, R * 1.1, 2.1, [-1.4, y, z], 'x', SEG);
+  TIERS.forEach(([a, b, ra, rb], i) => {
+    // a long tier is two plates with a seam between; the aft tier is the bold ochre stripe the chase camera sees first
+    const cuts = b - a > 0.55 ? [a, (a + b) / 2, b] : [a, b];
+    for (let j = 0; j + 1 < cuts.length; j++) {
+      const x0 = cuts[j]!, x1 = cuts[j + 1]!, t0 = (x0 - a) / (b - a), t1 = (x1 - a) / (b - a);
+      const plate = i === 0 ? 'paint2' : rnd() < 0.86 ? pickAmber(rnd) : 'dark';
+      k.cyl(plate, R * (ra + (rb - ra) * t1), R * (ra + (rb - ra) * t0), x1 - x0 - 0.035, [(x0 + x1) / 2, y, z], 'x', SEG);
+      // a hatch or a vent on the outboard flank
+      if (rnd() < 0.6) {
+        const face: Face = { f: sd * Math.PI / 2, rad: R * (ra + rb) / 2, wid: 0.3 };
+        if (rnd() < 0.5) hatch(k, pickAmber(rnd), face, y, z, (x0 + x1) / 2, 0, (x1 - x0) * 0.5, 0.24, 0.006);
+        else vent(k, face, y, z, (x0 + x1) / 2, 0, (x1 - x0) * 0.4, 0.24, 0.006);
+      }
     }
-    for (let j = 0; j < 14; j++) {
-      const t = (j / 14) * Math.PI * 2;
-      k.box('hull', [0.02, 0.025, 0.025], [a, y + Math.cos(t) * R * 1.09, z + Math.sin(t) * R * 1.09], [t, 0, 0]);
+    // the step down to the next tier: a 45-degree dark chamfer, its edge picked out in bare metal
+    const next = TIERS[i + 1];
+    if (next) {
+      k.cyl('dark', R * next[2], R * rb * 1.005, next[0] - b, [(b + next[0]) / 2, y, z], 'x', SEG);
+      k.ring('hull', R * rb, 0.012, [b, y, z], 'x', SEG);
     }
-  }
+  });
+  // the heat collar between the stripe and the bell: bare gunmetal, ribbed, the drive's heat soaked into it
+  k.cyl('hull', R * 1.16, R * 1.16, 0.3, [-2.36, y, z], 'x', SEG);
+  for (const x of [-2.47, -2.36, -2.25]) k.ring('dark', R * 1.17, 0.022, [x, y, z], 'x', SEG);
+  k.cyl('dark', R * 1.13, R * 1.17, 0.05, [-2.2, y, z], 'x', SEG);
   // the intake: a tapering cowl, a grille of rings
-  k.cyl('dark', R * 0.84, R * 1.05, 0.26, [-0.32, y, z], 'x', 28);
+  k.cyl('dark', R * 0.84, R * 0.95, 0.26, [-0.32, y, z], 'x', SEG);
   k.cyl('pipe', R * 0.72, R * 0.72, 0.02, [-0.19, y, z], 'x', 24);
   for (const r of [0.3, 0.22, 0.14]) k.ring('dark', r, 0.016, [-0.175, y, z], 'x', 24);
   k.cyl('hull', 0.05, 0.08, 0.08, [-0.17, y, z], 'x', 10);
   // the nose: the drum closes to an ogive of stepped cones, a dark sensor cap on the tip, so it reads as a nacelle and not a can
   const noseKey = pickAmber(rnd);
-  k.cyl(noseKey, R * 0.8, R * 1.0, 0.14, [-0.1, y, z], 'x', 28);
-  k.cyl('dark', R * 0.78, R * 0.8, 0.02, [-0.19, y, z], 'x', 28);
-  k.cyl(noseKey, R * 0.56, R * 0.78, 0.17, [0.04, y, z], 'x', 28);
+  k.cyl(noseKey, R * 0.8, R * 0.95, 0.14, [-0.1, y, z], 'x', SEG);
+  k.cyl('dark', R * 0.78, R * 0.8, 0.02, [-0.19, y, z], 'x', SEG);
+  k.cyl(noseKey, R * 0.56, R * 0.78, 0.17, [0.04, y, z], 'x', SEG);
   k.cyl('dark', R * 0.3, R * 0.56, 0.15, [0.18, y, z], 'x', 24);
   k.cyl('pipe', R * 0.1, R * 0.3, 0.08, [0.3, y, z], 'x', 16);
-  k.ring('hull', R * 0.56, 0.014, [-0.03, y, z], 'x', 28);
+  k.ring('hull', R * 0.56, 0.014, [-0.03, y, z], 'x', SEG);
   lamp(k, 'nav', [0.35, y, z], 0.018);
-  // the drive housing astern: a ringed tube, a dark cap, a pale blue ring round the throat
-  k.cyl('dark', R * 1.16, R * 1.2, 0.4, [-2.65, y, z], 'x', 28, true);
-  k.cyl('dark', R * 1.12, R * 1.12, 0.02, [-2.47, y, z], 'x', 28);
-  k.ring('pipe', R * 1.16, 0.035, [-2.86, y, z], 'x', 28);
+  // the flared exhaust bell astern: it opens wider than the cowl, a heavy lip on its rim, a pale blue ring round the throat
+  k.cyl('dark', R * 1.14, R * 1.3, 0.42, [-2.71, y, z], 'x', SEG, true);
+  k.ring('dark', R * 1.12, 0.05, [-2.82, y, z], 'x', SEG);
+  k.ring('pipe', R * 1.29, 0.042, [-2.91, y, z], 'x', SEG);
+  k.ring('hull', R * 1.23, 0.016, [-2.66, y, z], 'x', SEG);
   k.ring('blue', R * 0.9, 0.016, [-2.84, y, z], 'x', 28);
-  k.ring('hull', R * 0.98, 0.022, [-2.6, y, z], 'x', 28);
   for (let i = 0; i < 6; i++) {
     const a = (i / 6) * Math.PI * 2 + 0.26;
     k.box('dark', [0.04, R * 0.6, 0.035], [-2.62, y + Math.cos(a) * R * 0.62, z + Math.sin(a) * R * 0.62], [a, 0, 0]);
@@ -694,51 +727,46 @@ function drum(k: Kit, rnd: Rnd, z: number): Nozzle {
   k.ring('hull', R * 0.86, 0.012, [-2.77, y, z], 'x', 28);
   for (let i = 0; i < 10; i++) {
     const a = (i / 10) * Math.PI * 2;
-    k.box('dark', [0.13, R * 0.2, 0.06], [-2.83, y + Math.cos(a) * R * 0.93, z + Math.sin(a) * R * 0.93], [a, 0, 0]);
+    k.box('dark', [0.13, R * 0.24, 0.06], [-2.83, y + Math.cos(a) * R * 0.96, z + Math.sin(a) * R * 0.96], [a, 0, 0]);
     if (i % 5 === 0) k.box('blue', [0.01, R * 0.1, 0.03], [-2.86, y + Math.cos(a + 0.31) * R * 0.88, z + Math.sin(a + 0.31) * R * 0.88], [a + 0.31, 0, 0]);
   }
   // on the drum: a pipe run along its crown, utility modules, stencils, lamps
-  pipeRun(k, -2.0, -0.5, y + R * 1.1, z - sd * 0.1, 0.022, 0.42);
-  for (let x = -1.9; x < -0.5; x += 0.4 + rnd() * 0.4) {
+  const crown = R * 1.06;
+  pipeRun(k, -1.6, -0.5, y + crown + 0.02, z - sd * 0.1, 0.022, 0.42);
+  for (let x = -1.5; x < -0.5; x += 0.4 + rnd() * 0.4) {
     if (rnd() < 0.4) continue;
-    block(k, rnd() < 0.5 ? 'dark' : pickAmber(rnd), [0.14 + rnd() * 0.16, 0.05 + rnd() * 0.07, 0.12 + rnd() * 0.12], [x, y + R * 1.1 + 0.03, z + sd * (0.05 + rnd() * 0.1)], [0, 0, 0], 0.015);
+    block(k, rnd() < 0.5 ? 'dark' : pickAmber(rnd), [0.14 + rnd() * 0.16, 0.05 + rnd() * 0.06, 0.12 + rnd() * 0.1], [x, y + crown + 0.02, z + sd * (0.05 + rnd() * 0.08)], [0, 0, 0], 0.015);
   }
-  k.decal('decal', DECAL.hazard, 0.34, 0.08, [-0.9, y - 0.05, z + sd * (R * 1.035 + 0.01)], [0, 0, sd], UP);
-  k.decal('decal', DECAL.n9f, 0.2, 0.2, [-1.4, y + R * 1.04 + 0.005, z + sd * 0.1], UP, FWD);
-  lamp(k, 'red', [-2.46, y + R * 1.12, z + sd * 0.1]);
-  lamp(k, 'red', [-0.5, y + 0.1, z + sd * (R + 0.02)], 0.03);
-  // a seam light along the outboard flank
-  for (const x of [-2.2, -1.75, -1.3, -0.85]) k.box('blue', [0.34, 0.016, 0.016], [x, y + 0.04, z + sd * (R * 1.12)]);
+  k.decal('decal', DECAL.hazard, 0.34, 0.08, [-0.68, y - 0.05, z + sd * (R * 0.99 + 0.01)], [0, 0, sd], UP);
+  k.decal('decal', DECAL.n9f, 0.2, 0.2, [-1.3, y + crown + 0.005, z + sd * 0.1], UP, FWD);
+  lamp(k, 'red', [-2.36, y + R * 1.2, z + sd * 0.1]);
+  lamp(k, 'red', [-0.5, y + 0.1, z + sd * (R * 0.95 + 0.02)], 0.03);
+  // a seam light along the outboard flank of the middle tier
+  for (const x of [-1.45, -1.12]) k.box('blue', [0.26, 0.016, 0.016], [x, y + 0.04, z + sd * (R * 1.08)]);
   return { p: [-2.66, y, z], r: R * 0.98 };
 }
 
-/** The saddles holding a drum to the hull, and cable and machinery in the channel between. */
+/** The pylon sweeping each drum into the hull, the saddle over it, and the conduit channel along its crown. */
 function mounting(k: Kit, rnd: Rnd, z: number): void {
   const sd = Math.sign(z), zc = sd * 0.74;
-  for (const x of [-2.0, -1.4, -0.8]) {
-    // a cross-beam from the hull out to the drum
-    block(k, 'dark', [0.24, 0.13, 0.62], [x, DY + 0.02, sd * 0.62], [0, 0, 0], 0.03);
-    block(k, 'dark', [0.26, 0.12, 0.5], [x, DY + DR + 0.03, sd * 0.78], [0, 0, 0], 0.03);
-    block(k, 'dark', [0.22, 0.12, 0.34], [x, DY - DR + 0.02, sd * 0.86], [0, 0, 0], 0.03);
-    if (rnd() < 0.7) block(k, pickAmber(rnd), [0.2, 0.04, 0.3], [x, DY + DR + 0.1, sd * 0.78], [0, 0, 0], 0.012);
-    k.cyl('hull', 0.03, 0.03, 0.4, [x + 0.15, DY + DR + 0.04, zc], 'z', 8);
-  }
-  // a rounded fairing taking the hull's flank out over the drum, so the two read as one form
-  block(k, 'dark', [2.0, 0.34, 0.5], [-1.4, DY + 0.12, sd * 0.64], [0, 0, 0], 0.12);
-  block(k, 'dark', [1.9, 0.22, 0.5], [-1.4, DY - DR * 0.5, sd * 0.66], [0, 0, 0], 0.1);
-  for (const dz of [-0.06, 0.06]) pipeRun(k, -2.1, -0.4, DY + DR + 0.1, zc + dz, 0.02, 0.45);
+  // the pylon: one swept, chamfered fairing from the hull's flank into the nacelle, deep astern and thinning forward, so hull and drive
+  // read as one body and no beam meets either at a right angle
+  k.loft('dark', [[-2.5, 0.21, 0.42, 0.36, 0.75], [-1.7, 0.22, 0.4, 0.36, 0.72], [-1.0, 0.19, 0.3, 0.3, 0.78], [-0.3, 0.08, 0.08, 0.12, 0.85]], [0, DY, sd * 0.7]);
   // the shoulder: a low wedge from the hull's flank forward over the drum's inboard side, so hull and nacelle meet in one sweep
-  k.wedge('dark', [[-0.5, sd * 0.43], [-0.5, sd * 0.88], [0.18, sd * 0.5]], 0.2, [0, DY + 0.1, 0]);
+  k.wedge('dark', [[-0.5, sd * 0.43], [-0.5, sd * 0.86], [0.18, sd * 0.5]], 0.2, [0, DY + 0.1, 0]);
   k.wedge(pickAmber(rnd), [[-0.46, sd * 0.5], [-0.46, sd * 0.8], [0.0, sd * 0.54]], 0.05, [0, DY + 0.22, 0]);
-  // the saddle fairing: a long plate sloping from the hull's upper flank down over the drum's crown, thin at the front and deep astern,
-  // with a dark lower cheek beneath, so the drive is cowled into the body and not hung on it
-  k.wedge(pickAmber(rnd), [[-2.3, sd * 0.47], [-2.3, sd * 0.98], [-1.2, sd * 0.86], [-0.55, sd * 0.5]], 0.07, [0, DY + DR + 0.12, 0], [sd * 0.06, 0, 0]);
-  k.wedge('dark', [[-2.3, sd * 0.47], [-2.3, sd * 0.9], [-0.6, sd * 0.5]], 0.1, [0, DY - DR * 0.78, 0], [sd * -0.28, 0, 0]);
-  for (const x of [-1.9, -1.45, -1.0]) k.box('hull', [0.012, 0.03, 0.36], [x, DY + DR + 0.165, sd * 0.72], [sd * 0.06, 0, 0]);
-  // the stern fairing: sloped armour taking the hull's aft flank down onto the drum housing, so the drive grows out of the hull
-  block(k, 'dark', [0.62, 0.05, 0.5], [-2.28, DY + DR + 0.1, sd * 0.68], [0, 0, 0.32], 0.02);
-  block(k, 'dark', [0.7, 0.1, 0.12], [-2.3, DY + DR - 0.02, sd * 0.45], [0, 0, 0.18], 0.02);
-  k.box('lamp', [0.03, 0.03, 0.03], [-2.0, DY + DR + 0.16, sd * 0.66]);
+  // the saddle: a long plate laid over the pylon's crown, thin at the front and broad astern, in two halves with a conduit channel
+  // between them, two pipes clamped down in it
+  for (const [a, b, key] of [[0.47, 0.66, pickAmber(rnd)], [0.82, 1.0, pickAmber(rnd)]] as const) {
+    k.wedge(key, [[-2.32, sd * a], [-2.32, sd * b], [-1.2, sd * (b - 0.08)], [-0.62, sd * Math.max(a, b - 0.4)]], 0.06, [0, DY + 0.47, 0], [sd * 0.05, 0, 0]);
+  }
+  k.wedge('rubber', [[-2.3, sd * 0.66], [-2.3, sd * 0.82], [-0.9, sd * 0.78], [-0.9, sd * 0.66]], 0.02, [0, DY + 0.45, 0], [sd * 0.05, 0, 0]);
+  for (const dz of [-0.04, 0.04]) pipeRun(k, -2.25, -0.95, DY + 0.475 + 0.012, zc + dz, 0.02, 0.4);
+  // the cheek under the drum, swept the same way
+  k.wedge('dark', [[-2.3, sd * 0.47], [-2.3, sd * 0.9], [-0.6, sd * 0.5]], 0.1, [0, DY - DR * 0.8, 0], [sd * -0.28, 0, 0]);
+  // the stern fairing: sloped armour taking the hull's aft flank down onto the heat collar
+  block(k, 'dark', [0.5, 0.05, 0.44], [-2.32, DY + DR + 0.08, sd * 0.66], [0, 0, 0.32], 0.02);
+  k.box('lamp', [0.03, 0.03, 0.03], [-1.98, DY + 0.53, sd * 0.56]);
 }
 
 /** The model's own scale: built in kit units, brought to play scale where it is shown (the hitbox is 0.9). */

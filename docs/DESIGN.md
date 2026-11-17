@@ -624,6 +624,21 @@ work faster and mend a second plate a spell; the regenerative hull works
 with hostiles close. The Story mode keeps its own repair: supplies patched into
 a plate when you are left alone.
 
+## Her shape
+
+The Wayward is built in `render/wayward.ts` from pressed, chamfered forms
+rather than stacked boxes. Each nacelle is a cowl in tiers (`TIERS`) that
+swells astern to a ribbed heat collar and a flared exhaust bell, and a swept
+pylon (a loft) carries it into the hull. The stern is the "03" bulkhead, a
+slab with 45-degree corners and rounded edges (`chamferSlab` in
+`render/parts.ts`) over a radiator grille. The bridge is a raked deck on a
+pedestal with warm visor slits, ramped up from the cargo deck and down into
+the prow. The wear shader adds her own stains (`HERO_STAINS` in
+`render/kit.ts`): chipped paint on every pressed edge, tempered gunmetal round
+the bells and grease under the grille, all deeper as `use` rises. Same mesh in
+both liveries. Bench: `tools/ship.html?view=stern` and `?view=game` (the
+flight camera's own framing).
+
 ## The hull shows what she carries
 
 The Wayward grows on screen. `FITTED` in `render/fitted.ts` is a table of
