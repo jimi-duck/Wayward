@@ -1139,14 +1139,17 @@ export function alienFire(al: Alien, s: ShipState, t: number, shots: Shot[], bul
   });
   switch (T.fire) {
     case 'fan': {
-      const a = aim + (rng.next() - 0.5) * 2 * p.spread;
+      // aimed where the ship will be when the shot gets there, by the sky's share (Mods.aim)
+      const ahead = (d / sp) * p.aim;
+      const a = (p.aim ? Math.atan2(-(s.z + s.vz * ahead - al.z), s.x + s.vx * ahead - al.x) : aim) + (rng.next() - 0.5) * 2 * p.spread;
       for (let i = 0; i < al.shots; i++) shot(a + (i - (al.shots - 1) / 2) * 0.2);
       break;
     }
     case 'lead': {
       const lead = d / sp;
       for (let i = 0; i < al.shots; i++) {
-        shot(Math.atan2(-(s.z + s.vz * lead * 0.55 - al.z), s.x + s.vx * lead * 0.55 - al.x) + (rng.next() - 0.5) * 2 * p.spread + (i - (al.shots - 1) / 2) * 0.12);
+        const k = Math.max(0.55, p.aim + 0.15);
+        shot(Math.atan2(-(s.z + s.vz * lead * k - al.z), s.x + s.vx * lead * k - al.x) + (rng.next() - 0.5) * 2 * p.spread + (i - (al.shots - 1) / 2) * 0.12);
       }
       break;
     }

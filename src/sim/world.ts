@@ -27,7 +27,7 @@ import {
 } from './comms';
 import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
-import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
+import { ARCADE_EDGE, EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
 import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_CARD, PAINT_LINE, PAINT_WAKE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, YARD_DONE, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
 import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
@@ -677,9 +677,19 @@ export class World implements EncounterHost {
     return { ships: this.aliens.filter((a) => !cloaked(a) && !a.ward), boss: boss && !boss.arriving ? boss : null, rocks: this.field.rocks };
   }
 
+  /** Seconds the Arcade's hulls are ahead in how they close: they commit from the start instead of looking the ship over first (sim/pacing.ts APPROACHES). */
+  private get approachAhead(): number {
+    return this.mode === 'arcade' && !this.review ? 75 : 0;
+  }
+
+  /** The mode's sky, and in the Arcade its sharper aim and opening (ARCADE_EDGE). */
+  private get flightMods(): Mods {
+    return this.mode === 'arcade' && !this.review ? { ...this.mods, ...ARCADE_EDGE } : this.mods;
+  }
+
   /** The current difficulty. */
   get pressure(): Pressure {
-    return pressure(this.clock, this.mods);
+    return pressure(this.clock, this.flightMods);
   }
 
   /** The arcade's Krail income: the mode's sky says how much; the Story's income is in its rock and salvage rows. */
@@ -761,7 +771,7 @@ export class World implements EncounterHost {
     if (this.bk && (this.supplies <= 0) !== this.thin) this.refreshStats();
     Object.assign(this.prev, this.ship);
     const s = this.ship, t = this.runTime, st = this.stats;
-    const p = pressure(this.clock, this.mods);
+    const p = pressure(this.clock, this.flightMods);
     // Lane Control's recovery has the helm until Sam's code lifts the owner lock
     const held = !!this.bk && recovering(this.flags);
     // ...and Ned's yard has it from the ring to the way out (sim/postjump.ts YARD_ZAP)
@@ -2526,7 +2536,7 @@ export class World implements EncounterHost {
     if (squads.length && this.rng.next() < p.squadChance) {
       const q = squads[this.rng.int(squads.length)]!;
       // the squad closes as its leader would
-      const ap = pickApproach(ALIEN_TYPES[VARIANTS[q.members[0]!]!.kind].role, t, this.rng);
+      const ap = pickApproach(ALIEN_TYPES[VARIANTS[q.members[0]!]!.kind].role, t + this.approachAhead, this.rng);
       for (const al of this.spawnSquad(q, p, ap)) pc.ids.add(al.id);
       pc.left -= q.members.length;
       pc.last = t;
@@ -2536,7 +2546,7 @@ export class World implements EncounterHost {
     if (!v) { pc.next = t + 1; return; }
     const T = ALIEN_TYPES[v.kind];
     const first = pc.n === 1;
-    const lead = this.sendHostile(v.id, first ? 'direct' : pickApproach(T.role, t, this.rng), first ? null : this.rollElite(v.kind, v.faction, p), first);
+    const lead = this.sendHostile(v.id, first ? 'direct' : pickApproach(T.role, t + this.approachAhead, this.rng), first ? null : this.rollElite(v.kind, v.faction, p), first);
     pc.ids.add(lead.id);
     pc.left--;
     pc.last = t;
@@ -2594,7 +2604,7 @@ export class World implements EncounterHost {
   /** A hostile of a variant, from the spawn ring or at a given point, as regular traffic. */
   spawnHostile(variant: string, at?: { x: number; y: number; z: number }, elite: EliteId | null = null, extra = false): Alien {
     const v = VARIANTS[variant] ?? VARIANTS.scout!;
-    const al = spawnAlien(v.kind, this.ship, this.runTime, this.rng, at, { variant: v.id, elite, hp: pressure(this.clock, this.mods).enemyHp });
+    const al = spawnAlien(v.kind, this.ship, this.runTime, this.rng, at, { variant: v.id, elite, hp: pressure(this.clock, this.flightMods).enemyHp });
     al.escort = false;
     al.extra = extra;
     if (al.canCloak && at) al.cloak = 1;
@@ -3596,7 +3606,7 @@ export class World implements EncounterHost {
     this.addScore(points, 'rocks');
     this.kills++;
     this.run.rocks++;
-    this.field.shatter(b, pressure(this.clock, this.mods).rockHp * (this.bk ? MINE_HP : 1));
+    this.field.shatter(b, pressure(this.clock, this.flightMods).rockHp * (this.bk ? MINE_HP : 1));
     this.events.push({ type: 'bulwarkBroken', x: b.x, z: b.z, r: b.r, points });
   }
 
@@ -3672,7 +3682,7 @@ export class World implements EncounterHost {
     this.run.rocks++;
     // the Story: a blast destroys part of what was in it, and the rock is gone with it
     if (this.bk) { this.field.rocks.splice(this.field.rocks.indexOf(r), 1); this.run.blasted++; }
-    else this.field.split(r, pressure(this.clock, this.mods).rockHp);
+    else this.field.split(r, pressure(this.clock, this.flightMods).rockHp);
     let left: number | undefined;
     if (this.bk) {
       // broken, not mined: what the blast left of it

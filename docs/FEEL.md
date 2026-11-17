@@ -25,26 +25,27 @@ flying the model; fights come from the scripted pilot's arcade runs (8 runs, up 
 
 | Measure | Value |
 |---|---|
-| Lances fired per minute | 130.5 |
-| Hull hits per lance (accuracy) | 24% |
-| Jinks per minute | 7.8 |
-| Kills per minute | 7.5 |
-| Median seconds between kills | 4.6 |
-| Hits taken per minute (plates / shields) | 0.23 / 0.63 |
-| First hit taken at (median) | 220.6s |
-| Median seconds between hits taken | 19.3 |
+| Lances fired per minute | 122.2 |
+| Hull hits per lance (accuracy) | 33% |
+| Jinks per minute | 8.4 |
+| Kills per minute | 8.8 |
+| Median seconds between kills | 4.0 |
+| Hits taken per minute (plates / shields) | 0.38 / 1.06 |
+| First hit taken at (median) | 121.5s |
+| Median seconds between hits taken | 18.8 |
 
 ### Time to kill, from first hit to dead
 
 | Hull | Kills | Median | Mean |
 |---|---|---|---|
-| scout | 146 | 3.4s | 5.3s |
-| one-hit kills | 116 | 0.0s | 0.0s |
-| raptor | 66 | 5.3s | 8.3s |
-| lancer | 49 | 11.5s | 13.0s |
-| warbird | 26 | 18.6s | 21.4s |
-| stalker | 16 | 3.6s | 4.4s |
-| drone | 5 | 26.4s | 23.9s |
-| freighter | 4 | 42.5s | 36.0s |
+| scout | 166 | 3.3s | 4.4s |
+| one-hit kills | 114 | 0.0s | 0.0s |
+| raptor | 75 | 8.0s | 8.1s |
+| lancer | 52 | 9.6s | 15.2s |
+| warbird | 13 | 20.4s | 20.0s |
+| freighter | 11 | 34.3s | 31.8s |
+| stalker | 11 | 5.2s | 6.6s |
+| weaver | 3 | 3.5s | 2.5s |
+| drone | 2 | 26.9s | 26.5s |
 
 Stock hull: Obedience class, thrust 1.48, turn 0.92, drag 0.966, grip 0.05.
