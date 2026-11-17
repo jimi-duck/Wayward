@@ -4,7 +4,7 @@ import { COLLISIONS, ON_ROAD } from '../content/road';
 import { cast, SITUATION_BY_ID, type ActorSpec, type SitResult, type SituationDef } from '../content/situations';
 import { CARD_BY_ID, weightOf, type Outcome, type Tone } from './comms';
 import { leave, provoke, type Alien } from './enemies';
-import { bounty, depthExtra, JOB_PAY, Run, scaleOut, type Pt } from './mission';
+import { bounty, depthExtra, HOLD_KNOCK, JOB_PAY, Run, scaleOut, type Pt } from './mission';
 import { stageAnchor } from './sites';
 import type { Encounter } from './encounters';
 import type { Rng } from './rng';
@@ -255,6 +255,13 @@ export class Stage {
   }
 
   /** The leader of a follow: the first living ward that leads. */
+  /** The ship was hit: a hold, a follow or a reading under fire slips back (sim/mission.ts HOLD_KNOCK). */
+  knocked(): void {
+    if (!this.taken || this.result) return;
+    this.hold = Math.max(0, this.hold - HOLD_KNOCK);
+    this.run?.knocked();
+  }
+
   /** How much of the hold is done, 0 to 1. */
   get held(): number { return this.def.goal.hold > 0 ? Math.min(1, this.hold / this.def.goal.hold) : 0; }
   /** Seconds left before the goal is missed (0: no limit). */

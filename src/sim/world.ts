@@ -3402,6 +3402,8 @@ export class World implements EncounterHost {
     // a hit while the drive spools knocks it back: under fire, the jump is earned
     const bk = this.bk;
     if (bk && bk.spool > 0 && bk.jumpT < 0) { bk.spool = Math.max(0, bk.spool - SPOOL_KNOCK); this.spoolKnockT = SPOOL_KNOCK_SHOW; }
+    // and a job's hold slips under fire too
+    this.stage?.knocked();
     hurtMend(this.mend);
     // any damage holds the shield's recharge off
     this.shieldT = st.shieldDelay;

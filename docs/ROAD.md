@@ -117,7 +117,7 @@ Since 16 November 2026 (owner: a chase on every leg, at a fixed stop that is nev
 
 ## Under fire (17 November 2026)
 
-The owner found Story a breeze, so the run bites harder (plan: "Make the run bite"). Story hulls lead their shots and fire a fifth oftener (`director.ts STORY_EDGE`). On a hunted stop the drive spools 1.8 times longer (`SPOOL_HUNTED`), and any hit while it spools knocks 1.5 s off (`SPOOL_KNOCK`; the HUD says "break contact"). The next arrival's title card says what she got away from (`journey.ts ESCAPED_LINES`). Ten jobs that had no twist got one, a job's clock is 0.85 of its row (`stage.ts JOB_LIMIT`), and twists and defence waves bring up to two more hulls deeper down the road (`mission.ts depthExtra`).
+The owner found Story a breeze, so the run bites harder (plan: "Make the run bite"). Story hulls lead their shots and fire a fifth oftener (`director.ts STORY_EDGE`). On a hunted stop the drive spools 1.8 times longer (`SPOOL_HUNTED`), and any hit while it spools knocks 1.5 s off (`SPOOL_KNOCK`; the HUD says "break contact"). The next arrival's title card says what she got away from (`journey.ts ESCAPED_LINES`). Ten jobs that had no twist got one, a job's clock is 0.85 of its row (`stage.ts JOB_LIMIT`), and twists and defence waves bring up to two more hulls deeper down the road (`mission.ts depthExtra`). A hit on the ship also takes 2 s off whatever a job is holding: a drop, a reading, a watch, a tow or a follow (`mission.ts HOLD_KNOCK`).
 
 ## Echoes
 

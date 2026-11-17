@@ -32,6 +32,9 @@ import type { World } from './world';
 //            inside a sweep builds exposure (a spoofer, ghost echo or baffles
 //            slow it); full exposure and the patrols turn.
 
+/** Seconds of a job's hold (a reading, a drop, a tow, a watch or a follow) a hit on the ship takes back: under fire, nothing holds. */
+export const HOLD_KNOCK = 2;
+
 /** Hulls a job's twist or wave brings on top of its row, deeper down the road (sim/journey.ts threatAt: 1 at Cerro, 8 at the end): none early, two at the last legs. */
 export const depthExtra = (threat = 1): number => Math.max(0, Math.min(2, Math.floor((threat - 1) / 2.5)));
 
@@ -119,6 +122,9 @@ export class Run {
   private total = 0;
   private state: 'on' | 'disabled' | 'scattered' = 'on';
   private hold = 0;
+
+  /** The ship was hit: whatever is being held slips back. */
+  knocked(): void { this.hold = Math.max(0, this.hold - HOLD_KNOCK); }
   private waves = 0;
   private rivalNext = 0;
   private reads = 0;
