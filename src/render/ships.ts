@@ -284,12 +284,12 @@ const SPOOL_UP = 13, SPOOL_DOWN = 4.5;
 // on the bow fire for the flip of a break (`pitch`: -1 into it, 1 out of it).
 interface Port { p: V3; d: V3; turn: number; side: number; pitch: number }
 const PORTS: Port[] = [
-  { p: [2.0, 0.1, 0.27], d: [0, 0, 1], turn: 1, side: 1, pitch: 0 },
-  { p: [2.0, 0.1, -0.27], d: [0, 0, -1], turn: -1, side: -1, pitch: 0 },
+  { p: [1.78, 0.1, 0.23], d: [0, 0, 1], turn: 1, side: 1, pitch: 0 },
+  { p: [1.78, 0.1, -0.23], d: [0, 0, -1], turn: -1, side: -1, pitch: 0 },
   { p: [-2.5, 0.38, 0.6], d: [0, 0, 1], turn: -1, side: 1, pitch: 0 },
   { p: [-2.5, 0.38, -0.6], d: [0, 0, -1], turn: 1, side: -1, pitch: 0 },
-  { p: [1.5, 0.7, 0], d: [0, 1, 0], turn: 0, side: 0, pitch: 1 },
-  { p: [1.5, -0.38, 0], d: [0, -1, 0], turn: 0, side: 0, pitch: -1 },
+  { p: [1.0, 0.76, 0], d: [0, 1, 0], turn: 0, side: 0, pitch: 1 },
+  { p: [1.3, -0.38, 0], d: [0, -1, 0], turn: 0, side: 0, pitch: -1 },
 ];
 /** Seconds a jink's or a flip's burst lasts; motes a second from a port at full fire. */
 const RCS_BURST = 0.12, RCS_RATE = 110;
