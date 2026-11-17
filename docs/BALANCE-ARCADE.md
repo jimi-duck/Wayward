@@ -5,10 +5,10 @@ Krail is from wrecks / from rock. The pilot flies the same seeds every time.
 
 | Strategy | Mean time | Contacts | Krail wreck / rock | Wreck share | First refit | Refits | Score | Survived |
 |---|---|---|---|---|---|---|---|---|
-| random | 7:09 | 23.0 | 555 / 198 | 74% | 0:50 | 13.7 | 55,631 | 0/12 |
-| laser+defence | 8:19 | 25.8 | 882 / 487 | 64% | 0:50 | 19.7 | 283,580 | 2/12 |
-| torpedo+laser | 7:27 | 31.6 | 1016 / 257 | 80% | 0:50 | 19.8 | 123,699 | 2/12 |
-| mine+mobility | 7:15 | 24.3 | 697 / 189 | 79% | 0:50 | 14.6 | 61,731 | 0/12 |
+| random | 6:32 | 23.5 | 524 / 177 | 75% | 0:40 | 12.8 | 50,791 | 1/12 |
+| laser+defence | 7:10 | 26.2 | 734 / 402 | 65% | 0:40 | 17.7 | 214,024 | 1/12 |
+| torpedo+laser | 6:33 | 30.4 | 809 / 216 | 79% | 0:40 | 14.3 | 95,442 | 1/12 |
+| mine+mobility | 7:45 | 30.3 | 810 / 200 | 80% | 0:40 | 17.4 | 72,300 | 1/12 |
 
 **The bay and the hull.** *Earned*: the first refit's price aboard; *offered*: the bay first open; *wait*: mean seconds from a price
 aboard to the bay open; *opens/min* and *picks/open*; *first spec*: the first specialisation; *mended*: plates the
@@ -17,21 +17,30 @@ self-repair put back; *hit→plate*: mean seconds from a plate lost to the hull 
 
 | Strategy | First refit earned | First bay | Wait | Opens/min | Picks/open | First spec | Mended | Hit→plate | Overlap |
 |---|---|---|---|---|---|---|---|---|---|
-| random | 0:49 | 0:50 | 15.5 s | 1.54 | 1.24 | 4:59 | 0.7 | 52 s | 0 s |
-| laser+defence | 0:49 | 0:50 | 17.9 s | 1.62 | 1.39 | 5:15 | 0.3 | 49 s | 0 s |
-| torpedo+laser | 0:49 | 0:50 | 14.9 s | 1.83 | 1.38 | 2:11 | 0.5 | 39 s | 1 s |
-| mine+mobility | 0:49 | 0:50 | 15.6 s | 1.57 | 1.25 | 3:17 | 0.5 | 49 s | 0 s |
+| random | 0:37 | 0:40 | 14.9 s | 1.47 | 1.25 | 6:41 | 0.3 | 32 s | 0 s |
+| laser+defence | 0:37 | 0:40 | 16.9 s | 1.51 | 1.50 | 4:55 | 0.7 | 45 s | 1 s |
+| torpedo+laser | 0:37 | 0:40 | 13.9 s | 1.60 | 1.27 | 1:55 | 0.6 | 56 s | 0 s |
+| mine+mobility | 0:37 | 0:40 | 17.0 s | 1.67 | 1.34 | 2:56 | 0.8 | 54 s | 0 s |
 
 **Capital ships and builds.** The pilot always fights a capital ship it can reach, so *avoided* tells little.
 
 | Strategy | First capital | First outcome | Builds (runs) |
 |---|---|---|---|
-| random | 3:27 | killed 12, avoided 0, escaped 0, none 0 | Interceptor / bulwark 2, Bulwark 1, Precision torpedo boat / prospector 1, Chain-lance gunship / torpedo boat 1, Brawler / bulwark 1, Cone gunship 1, Torpedo boat 1, Gunship 1, Cone gunship / interceptor 1, Bulwark / torpedo boat 1, Torpedo boat / gunship 1 |
-| laser+defence | 3:27 | killed 12, avoided 0, escaped 0, none 0 | Cone gunship 4, Chain-lance gunship 4, Heavy-lance gunship 2, Gunship 2 |
-| torpedo+laser | 3:27 | killed 10, avoided 0, escaped 0, none 0 | Heavy torpedo boat 4, Precision torpedo boat 3, Heavy torpedo boat / gunship 2, Heavy-lance gunship / torpedo boat 1, Cone gunship / torpedo boat 1, Singularity torpedo boat 1 |
-| mine+mobility | 3:27 | killed 11, avoided 0, escaped 0, none 0 | Minefield minelayer 7, Chain-reaction minelayer 4, Minelayer 1 |
+| random | 3:27 | killed 9, avoided 0, escaped 0, none 0 | Torpedo boat 3, Interceptor / bulwark 1, Deep-core prospector / torpedo boat 1, Gunship 1, Shock brawler / bulwark 1, Bulwark / interceptor 1, Cone gunship 1, Evasive interceptor / torpedo boat 1, Gunship / prospector 1, Heavy torpedo boat / minelayer 1 |
+| laser+defence | 3:27 | killed 11, avoided 0, escaped 0, none 0 | Cone gunship 6, Bulwark 2, Heavy-lance gunship 2, Gunship 1, Array gunship 1 |
+| torpedo+laser | 3:27 | killed 9, avoided 0, escaped 0, none 0 | Heavy torpedo boat 5, Singularity torpedo boat 3, Precision torpedo boat 3, Heavy torpedo boat / gunship 1 |
+| mine+mobility | 3:27 | killed 12, avoided 0, escaped 0, none 0 | Minefield minelayer 7, Chain-reaction minelayer 4, Chain-reaction minelayer / interceptor 1 |
 
 ## History
+
+**17 November 2026: a livelier opening** (owner: "too slow and easy at the start, the enemy ships feel dumb and
+always miss"). Arcade only (`ARCADE_EDGE` in `sim/director.ts`, `World.approachAhead`): fans of fire lead the ship by
+0.6 of the shot's flight (the hunter's lead from 0.55 to 0.75); the hulls commit from the start instead of looking
+the ship over first (approaches 75 s ahead); and a sharper opening that fades out by 4:00 (bigger, quicker waves,
+quicker and tighter fire). First three minutes, 16 random runs: kills in minute 1 from 6.2 to 8.6 a run, hits taken
+in minute 2 from 0.19 to 0.38. Whole runs about 30 s shorter (tables above against the 14 November evening's 7:09,
+8:19, 7:27, 7:15), 4 of 48 survive 10:00. First refit 0:40 (was 0:50). An earlier try that kept the sharper
+opening all run left no run alive at 10:00.
 
 **14 November 2026, evening: the bay opens by itself between waves whenever a refit is paid for** (owner's call), not
 once per quiet spell. The tables above press B as well. With `PILOT_NO_B=1`: mean times 7:10, 7:58, 7:21, 7:01;

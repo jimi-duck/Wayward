@@ -37,7 +37,14 @@ export interface Mods {
   hazard: number;
   /** Multiplier on the Krail the arcade's rock and wrecks drop (the Story's rows are in the mode's `rock` and `salvage`). */
   income: number;
+  /** How far ahead of the ship a fan of fire is aimed, as a share of the shot's flight time (0: at where it is). */
+  aim?: number;
+  /** The Arcade's sharper opening: tighter, quicker fire and bigger, quicker waves at the start, fading out by 4:00 (0 or 1). */
+  edge?: number;
 }
+
+/** The Arcade's flight: enemies lead the ship and the opening is busier (owner, 17 November 2026: "too slow and easy at the start, enemies dumb and always miss"). */
+export const ARCADE_EDGE: Pick<Mods, 'aim' | 'edge'> = { aim: 0.6, edge: 1 };
 
 export const NO_MODS: Mods = { traffic: 1, toughness: 1, fire: 1, elites: 1, hazard: 1, income: 1 };
 
@@ -58,6 +65,8 @@ export interface Pressure {
   enemyCap: number;
   /** Hulls an encounter brings, before the refits add to it (sim/pacing.ts rounds it). */
   groupSize: number;
+  /** How far ahead of the ship a fan of fire is aimed (Mods.aim). */
+  aim: number;
   /** Seconds of quiet after an encounter, before the next. */
   lull: number;
   /** Multiplier on enemy hull points. */
@@ -88,16 +97,19 @@ export interface Pressure {
 export function pressure(t: number, mods: Mods = NO_MODS): Pressure {
   const m = Math.max(0, t) / 60;
   const late = Math.max(0, m - 8);
+  // the Arcade's sharper opening (Mods.edge) fades out over the first four minutes; the aim stays
+  const e = (mods.edge ?? 0) * clamp(1 - m / 4, 0, 1);
   return {
     m,
-    enemyInterval: Math.max(1.2, 3.4 - 0.22 * m) / mods.traffic,
-    enemyCap: Math.round(clamp(1.1 * m + 0.2, 1, 10) * mods.traffic),
-    groupSize: clamp(1 + 0.6 * m, 1, 8) * mods.traffic,
+    enemyInterval: Math.max(1.2, 3.4 - e - 0.22 * m) / mods.traffic,
+    enemyCap: Math.round(clamp(Math.max(1.1 * m + 0.2, 1 + e), 1, 10) * mods.traffic),
+    groupSize: clamp(1 + e + 0.6 * m, 1, 8) * mods.traffic,
     lull: Math.max(9, 18 - 1.1 * m) / mods.traffic,
     enemyHp: (1 + 0.17 * m + 0.06 * late) * mods.toughness,
     fireCd: Math.max(0.62, 2.2 - 0.17 * m) * mods.fire,
-    shotSpeed: Math.min(5.6, 3.1 + 0.42 * m) * V,
-    spread: Math.max(0.07, 0.26 - 0.03 * m),
+    shotSpeed: Math.min(5.6, 3.1 + 0.8 * e + 0.42 * m) * V,
+    spread: Math.max(0.07, (0.26 - 0.03 * m) * (1 - 0.4 * e)),
+    aim: mods.aim ?? 0,
     eliteChance: clamp((m - 2.5) * 0.04, 0, 0.42) * mods.elites,
     squadChance: clamp((m - 3) * 0.06, 0, 0.55) * mods.elites,
     theatre: Math.max(1, 4 - Math.max(0, m - 4) * 0.75),
