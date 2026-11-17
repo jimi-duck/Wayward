@@ -32,6 +32,9 @@ import type { World } from './world';
 //            inside a sweep builds exposure (a spoofer, ghost echo or baffles
 //            slow it); full exposure and the patrols turn.
 
+/** Hulls a job's twist or wave brings on top of its row, deeper down the road (sim/journey.ts threatAt: 1 at Cerro, 8 at the end): none early, two at the last legs. */
+export const depthExtra = (threat = 1): number => Math.max(0, Math.min(2, Math.floor((threat - 1) / 2.5)));
+
 /** A beacon, a drop or a ring: where the HUD points and where the world draws a mark. */
 export interface Pt { x: number; z: number; on: boolean }
 export interface Focus { x: number; z: number; r: number }
@@ -336,7 +339,7 @@ export class Run {
     const waves = this.def.waves ?? [];
     while (this.waves < waves.length && this.clock >= waves[this.waves]!.at) {
       const wv = waves[this.waves]!;
-      this.foe(w, { variant: wv.variant, n: wv.n, act: 'pass', temper: 'hostile', tag: 'Raider', foe: true, from: 'ahead' });
+      this.foe(w, { variant: wv.variant, n: wv.n + depthExtra(w.sortie.threat), act: 'pass', temper: 'hostile', tag: 'Raider', foe: true, from: 'ahead' });
       this.waves++;
       w.events.push({ type: 'ping', id: `mis_${this.def.id}_w${this.waves}`, from: t('Scope'), caller: 'unknown', text: t('“Hostiles inbound on the rig.”'), moment: 'calm', system: w.sortie.name });
     }

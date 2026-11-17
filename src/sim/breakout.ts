@@ -88,6 +88,10 @@ export const APPROACH = 230;
 /** Seconds from the ship entering the ring to the jump being over: the fly-through (render/warp.ts). */
 export const JUMP_T = 3;
 export const SPOOL_RUN = 2.2;
+/** A hunted stop (content/road.ts LEG_CHASES): the drive takes this much longer to spool, so the gate is reached with them on your tail. */
+export const SPOOL_HUNTED = 1.8;
+/** Seconds of spool a hit on the ship knocks back: under fire the jump is earned, not waited for. */
+export const SPOOL_KNOCK = 1.5;
 /** Within this distance of the Jump Gate, the blockade's checkpoint calls. */
 export const BLOCKADE_AT = 420;
 /** The blockade's hull against an arcade run's first capital ship: she is the system's picket flagship, not an introduction. */
@@ -207,6 +211,10 @@ export interface SortieDef {
   calls: number;
   /** The pursuit's room to breathe (content/systems.ts): the first pursuer's time, and the quiet after an answered card or a beaten pursuer. The Breakout has none. */
   pace?: { first: number; calm: number };
+  /** Seconds the drive takes to spool here (a hunted stop's is longer; SPOOL otherwise). */
+  spool?: number;
+  /** What she got away from on the last jump, for the arrival's title card (English key; null when nothing chased her). */
+  escaped?: string | null;
   /** No raiders, no chance fights, no crew hails: only lingering draws the police (the road's first two systems). */
   safe?: boolean;
   /** The Jump Gate lies this many radians off the ship's heading (set adrift on the road: slightly off course). */
@@ -463,7 +471,7 @@ export interface Breakout {
 export function newBreakout(heading: number, def: SortieDef = HOME): Breakout {
   const c = course(heading, 0, 0, def);
   return {
-    def, lane: c.lane, port: c.port, audit: c.audit, yard: c.yard, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: def.pace?.first ?? PURSUIT_FIRST, chase: null, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: SPOOL, dockT: 0, castOff: false, portCooled: false, docks: 0,
+    def, lane: c.lane, port: c.port, audit: c.audit, yard: c.yard, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: def.pace?.first ?? PURSUIT_FIRST, chase: null, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: def.spool ?? SPOOL, dockT: 0, castOff: false, portCooled: false, docks: 0,
     blockade: 'none', jumpT: -1, nagT: 0,
   };
 }

@@ -752,7 +752,7 @@ export class Hud {
         text($('obj-t'), t('Jump')); text($('obj-left'), ''); ticks($('obj-p'), 1, 30); text($('obj-s'), t('Into the lane'));
       } else if (bk.spool > 0) {
         text($('obj-t'), t('Jump drive')); text($('obj-left'), `${Math.max(0, bk.spoolNeed - bk.spool).toFixed(1)}s`);
-        ticks($('obj-p'), bk.spool / bk.spoolNeed, 30); text($('obj-s'), t('Jump drive charging · fly through the gate'));
+        ticks($('obj-p'), bk.spool / bk.spoolNeed, 30); text($('obj-s'), t(world.spoolKnockT > 0 ? 'Hit · the drive lost charge · break contact' : 'Jump drive charging · fly through the gate'));
       } else if (bk.dockT > 0) {
         text($('obj-t'), bk.port?.name ?? ''); text($('obj-left'), '');
         ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), t('Docking clamps'));
@@ -985,10 +985,11 @@ export class Hud {
   }
 
   /** A jump arrival: the new system's name, like a film's title, while the camera sweeps over it (render/sector.ts). */
-  private titleCard(d: { name: string; kind: SystemKind; netted?: boolean }): void {
+  private titleCard(d: { name: string; kind: SystemKind; netted?: boolean; escaped?: string | null }): void {
     text($('tc-k'), t(d.netted ? 'Netted · Custody control' : KIND_NAME[d.kind]));
     text($('tc-t'), d.name);
-    text($('tc-s'), '');
+    // what she got away from on the jump in (sim/journey.ts ESCAPED_LINES)
+    text($('tc-s'), d.escaped ? t(d.escaped) : '');
     const el = $('title-card');
     el.classList.remove('on', 'name');
     void el.offsetWidth;

@@ -10,22 +10,22 @@ Pilot numbers, not playtests.
 
 | Seed | Threshold | Flying (min) | Reading cards (min) | Total (min) | Cards | Named captains met | Wrecks |
 |---|---|---|---|---|---|---|---|
-| 5000 | yes | 196 | 34 | 230 | 110 | 18 | 0 |
-| 5017 | yes | 201 | 34 | 235 | 112 | 18 | 0 |
-| 5034 | yes | 171 | 34 | 205 | 110 | 19 | 0 |
+| 5000 | yes | 204 | 34 | 239 | 113 | 15 | 1 |
+| 5017 | yes | 173 | 36 | 209 | 119 | 25 | 0 |
+| 5034 | yes | 169 | 34 | 203 | 111 | 20 | 0 |
 
 ## Leg by leg (mean minutes, reading included)
 
 | Leg | Minutes | Of which reading |
 |---|---|---|
-| The Reach | 33 | 4 |
-| The Marches | 24 | 4 |
-| The Salvage Belt | 31 | 4 |
+| The Reach | 32 | 4 |
+| The Marches | 23 | 4 |
+| The Salvage Belt | 31 | 5 |
 | The Drift Deep | 27 | 6 |
-| The Breaker Yards | 33 | 6 |
+| The Breaker Yards | 29 | 5 |
 | The Free Ports | 26 | 5 |
-| The Hollows | 29 | 3 |
-| The Last Lanes | 20 | 2 |
+| The Hollows | 28 | 3 |
+| The Last Lanes | 20 | 3 |
 
 ## Jobs, taken every time
 
@@ -34,7 +34,7 @@ Pilot numbers, not playtests.
 | nothing_to_declare | 3 | 0 | 0 |
 | follow_cyrite | 3 | 0 | 0 |
 | pirate_toll | 3 | 0 | 0 |
-| lifeboat_wake | 3 | 0 | 0 |
+| lifeboat_wake | 2 | 1 | 0 |
 | keep_distance | 3 | 0 | 0 |
 | wanted | 3 | 0 | 0 |
 | missing_shift | 3 | 0 | 0 |
@@ -43,20 +43,20 @@ Pilot numbers, not playtests.
 | ransom_crew | 0 | 3 | 0 |
 | wreck_remembered | 3 | 0 | 0 |
 | the_witness | 3 | 0 | 0 |
-| long_walk | 2 | 1 | 0 |
+| long_walk | 3 | 0 | 0 |
 | finders_keepers | 3 | 0 | 0 |
 | something_dark | 3 | 0 | 0 |
 | missing_payroll | 3 | 0 | 0 |
-| last_shift | 3 | 0 | 0 |
+| last_shift | 2 | 1 | 0 |
 | tarik_bend | 1 | 2 | 0 |
 | cradle_crew | 3 | 0 | 0 |
 | needle | 3 | 0 | 0 |
 | drift_cache | 3 | 0 | 0 |
 | voice_wire | 3 | 0 | 0 |
-| kill_zone | 1 | 2 | 0 |
+| kill_zone | 2 | 1 | 0 |
 | dead_drop | 3 | 0 | 0 |
 | be_bait | 3 | 0 | 0 |
 | lose_prefect | 3 | 0 | 0 |
-| recovery_order | 2 | 1 | 0 |
+| recovery_order | 1 | 2 | 0 |
 | sables_crossing | 0 | 0 | 3 |
 | ring_centre | 3 | 0 | 0 |

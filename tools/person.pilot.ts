@@ -48,7 +48,7 @@ function fly(seed: number): Out {
     flyWorld(w, seed * 31 + n, STRAT, { maxTime: 1800, breakout: true, policy: 'take', chase: true, linger: { cyrite: 45, secs: 180 } });
     const gained = [...w.flags].filter((f) => /^job_.*_(won|lost|declined|ignored)$/.test(f) && !j.carry.flags.includes(f));
     for (const f of gained) { const m = /^job_(.*)_(won|lost|declined|ignored)$/.exec(f)!; o.jobs[m[1]!] = m[2]!; }
-    if (LOG) appendFileSync(LOG, `${seed} #${n} ${def.script ?? def.name} fly=${Math.round(w.runTime)} read=${Math.round(read)} alive=${w.alive} cards=[${[...seen].join(' ')}] jobs=[${gained.join(' ')}]\n`);
+    if (LOG) appendFileSync(LOG, `${seed} #${n} ${def.script ?? def.name} fly=${Math.round(w.runTime)} read=${Math.round(read)} alive=${w.alive} cards=[${[...seen].join(' ')}] jobs=[${gained.join(' ')}] jobT=${Math.round(w.stage?.run?.clock ?? -1)}/${w.stage?.def.goal.limit ?? 0} lost=${w.run.platesLost} shields=${w.run.shieldsAbsorbed}\n`);
     if (w.phase !== 'over') { o.stuck = def.script ?? def.name; break; }
     o.fly += w.runTime; o.read += read; o.leg[leg]! += w.runTime + read; o.legRead[leg]! += read;
     if (!w.alive) o.wrecks++;
