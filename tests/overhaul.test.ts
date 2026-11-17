@@ -268,7 +268,7 @@ describe('the chases', () => {
     while (j.status === 'chart' && guard++ < 90) {
       plot(j, options(j)[0]!.to.id);
       const def = sortieDef(j);
-      if (def.script && LEG_CHASES[def.script]) { seen++; expect(def.notice.captain, def.script).toBeNull(); expect(def.ahead).toEqual(LEG_CHASES[def.script]!.who); }
+      if (def.script && LEG_CHASES[def.script]) { seen++; expect(def.notice.captain, def.script).toBeNull(); expect(def.ahead).toEqual(LEG_CHASES[def.script]!.who); expect(def.spool).toBeGreaterThan(5); }
       endSortie(j, result(j));
     }
     expect(seen).toBe(Object.keys(LEG_CHASES).length);

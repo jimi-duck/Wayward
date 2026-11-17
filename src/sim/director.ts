@@ -46,6 +46,9 @@ export interface Mods {
 /** The Arcade's flight: enemies lead the ship and the opening is busier (owner, 17 November 2026: "too slow and easy at the start, enemies dumb and always miss"). */
 export const ARCADE_EDGE: Pick<Mods, 'aim' | 'edge'> = { aim: 0.6, edge: 1 };
 
+/** The Story's flight: hulls lead the ship as the Arcade's do, and fire a fifth oftener (owner, 17 November 2026: Story "too much of a breeze"). */
+export const STORY_EDGE = { aim: 0.6, fire: 0.8 } as const;
+
 export const NO_MODS: Mods = { traffic: 1, toughness: 1, fire: 1, elites: 1, hazard: 1, income: 1 };
 
 /**

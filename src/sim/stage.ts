@@ -4,7 +4,7 @@ import { COLLISIONS, ON_ROAD } from '../content/road';
 import { cast, SITUATION_BY_ID, type ActorSpec, type SitResult, type SituationDef } from '../content/situations';
 import { CARD_BY_ID, weightOf, type Outcome, type Tone } from './comms';
 import { leave, provoke, type Alien } from './enemies';
-import { bounty, JOB_PAY, Run, scaleOut, type Pt } from './mission';
+import { bounty, depthExtra, JOB_PAY, Run, scaleOut, type Pt } from './mission';
 import { stageAnchor } from './sites';
 import type { Encounter } from './encounters';
 import type { Rng } from './rng';
@@ -50,6 +50,9 @@ const JOB_PAY_IDS = JOB_IDS;
 
 const hash = (s: string): number => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return h >>> 0; };
 
+/** A job's time limit, as a share of its row's. */
+export const JOB_LIMIT = 0.85;
+
 /** The goals a Run (sim/mission.ts) plays. */
 const MISSION = new Set(['destroy', 'strike', 'defend', 'race', 'survey', 'sneak', 'recover']);
 
@@ -84,7 +87,8 @@ export class Stage {
   run: Run | null = null;
 
   constructor(def: SituationDef, at: string, w: World) {
-    this.def = def;
+    // a job's clock is tighter than its row says (owner, 17 November 2026: the jobs were too easy)
+    this.def = JOB_IDS.has(def.id) && def.goal.limit > 0 ? { ...def, goal: { ...def.goal, limit: Math.round(def.goal.limit * JOB_LIMIT) } } : def;
     this.at = at;
     this.early = JOB_IDS.has(def.id);
     const b = w.bk!;
@@ -271,7 +275,8 @@ export class Stage {
     this.clock += dt;
     if (this.threatT >= 0 && (this.threatT -= dt) < 0 && d.threat) {
       const { ux, uz } = this.dir();
-      for (let i = 0; i < d.threat.n; i++) w.spawnHostile(d.threat.variant, { x: s.x + ux * 340 + (i - d.threat.n / 2) * 30, y: 0, z: s.z + uz * 340 + (i - d.threat.n / 2) * 30 }, null, true);
+      const n = d.threat.n + depthExtra(w.sortie.threat);
+      for (let i = 0; i < n; i++) w.spawnHostile(d.threat.variant, { x: s.x + ux * 340 + (i - n / 2) * 30, y: 0, z: s.z + uz * 340 + (i - n / 2) * 30 }, null, true);
       w.events.push({ type: 'ping', id: `say_${d.id}_threat`, from: t('Scope'), caller: 'unknown', text: t(d.threat.say ?? '“Contacts ahead, closing fast.”'), moment: 'calm', system: w.sortie.name });
     }
     if (this.run) {

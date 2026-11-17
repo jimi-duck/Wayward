@@ -20,14 +20,14 @@ import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
 import { ledgerFor, type LedgerRow } from './contract';
-import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, SWARM_DRAWN, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, RELAY_MARK_R, SAFE_R, SAFE_HOLD, HOLD_MAX, holdMax, ROLL_SECRET, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
+import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, SPOOL_KNOCK, JAM_SPOOL, SWARM_WEAVER, SWARM_DRAWN, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, RELAY_MARK_R, SAFE_R, SAFE_HOLD, HOLD_MAX, holdMax, ROLL_SECRET, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, RADIO_GAP, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
   type Outcome, type Standing,
 } from './comms';
 import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
-import { ARCADE_EDGE, EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
+import { ARCADE_EDGE, STORY_EDGE, EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
 import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_CARD, PAINT_LINE, PAINT_WAKE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, YARD_DONE, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
 import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
@@ -132,6 +132,8 @@ export const ROLL_CHAIN_GAP = 2.5;
 export const ROLL_CHAIN_PAY = 999999;
 const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false };
 const BOSS_PLATES = 1;
+/** Seconds the HUD says a hit knocked the drive back. */
+const SPOOL_KNOCK_SHOW = 2.5;
 
 /** The ship's alert (World.alert): clear, yellow (observed) or red (targeted). */
 export type Alert = 'clear' | 'yellow' | 'red';
@@ -390,6 +392,8 @@ export class World implements EncounterHost {
   private scarsIn = 0;
   /** Calloway: seconds into the sortie she arrives; whether she has, and whether her ship is the one fighting. */
   callowayAt = Infinity;
+  /** Seconds the HUD still says the drive was knocked back by a hit. */
+  spoolKnockT = 0;
   callowayMet = false;
   callowayBeaten = false;
   private callowayShip = false;
@@ -684,7 +688,8 @@ export class World implements EncounterHost {
 
   /** The mode's sky, and in the Arcade its sharper aim and opening (ARCADE_EDGE). */
   private get flightMods(): Mods {
-    return this.mode === 'arcade' && !this.review ? { ...this.mods, ...ARCADE_EDGE } : this.mods;
+    if (this.review) return this.mods;
+    return this.mode === 'arcade' ? { ...this.mods, ...ARCADE_EDGE } : this.mode === 'breakout' ? { ...this.mods, aim: STORY_EDGE.aim, fire: this.mods.fire * STORY_EDGE.fire } : this.mods;
   }
 
   /** The current difficulty. */
@@ -1489,6 +1494,7 @@ export class World implements EncounterHost {
     if (this.chain > 0 && (this.chainT -= dt) <= 0) this.chain = 0;
     if (this.surgeN > 0 && (this.surgeT -= dt) <= 0) this.surgeN = 0;
     this.sinceHit += dt;
+    this.spoolKnockT = Math.max(0, this.spoolKnockT - dt);
     if (this.shieldT > 0) this.shieldT = Math.max(0, this.shieldT - dt);
     else if (this.shields < st.shieldMax && this.alive) {
       const was = Math.floor(this.shields);
@@ -3393,6 +3399,9 @@ export class World implements EncounterHost {
     }
     this.run.damageBy[source] = (this.run.damageBy[source] ?? 0) + 1;
     this.sinceHit = 0;
+    // a hit while the drive spools knocks it back: under fire, the jump is earned
+    const bk = this.bk;
+    if (bk && bk.spool > 0 && bk.jumpT < 0) { bk.spool = Math.max(0, bk.spool - SPOOL_KNOCK); this.spoolKnockT = SPOOL_KNOCK_SHOW; }
     hurtMend(this.mend);
     // any damage holds the shield's recharge off
     this.shieldT = st.shieldDelay;

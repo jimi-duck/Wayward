@@ -115,6 +115,10 @@ Cut for room (story direction plan): the Survey's black-hole job at Ashdeep (an 
 
 Since 16 November 2026 (owner: a chase on every leg, at a fixed stop that is never a breather) each leg has one hunted stop, listed in `LEG_CHASES` in `content/road.ts`: Branford, Gannet Rigs, Kiln and Tarik's Lamps, Stillwater, Torch Yard, Penny Cross (not Gilt Market, whose job is a sneak past a patrol), the Forge (Ghostcinder is a no-fire crossing, so the Hollows chase sits one stop on) and Dusk Lanes. A chased stop sets its own first pursuit, calm, heat and hulls from ahead (`sim/journey.ts chaseAt`), and its named captain stands down so the two never stack. A red arrival notice names who hunts her (`content/script/chase.ts`). Only the Belt chase can be shaken (`shaken` flags).
 
+## Under fire (17 November 2026)
+
+The owner found Story a breeze, so the run bites harder (plan: "Make the run bite"). Story hulls lead their shots and fire a fifth oftener (`director.ts STORY_EDGE`). On a hunted stop the drive spools 1.8 times longer (`SPOOL_HUNTED`), and any hit while it spools knocks 1.5 s off (`SPOOL_KNOCK`; the HUD says "break contact"). The next arrival's title card says what she got away from (`journey.ts ESCAPED_LINES`). Ten jobs that had no twist got one, a job's clock is 0.85 of its row (`stage.ts JOB_LIMIT`), and twists and defence waves bring up to two more hulls deeper down the road (`mission.ts depthExtra`).
+
 ## Echoes
 
 `content/script/echoes.ts` holds short radio lines that answer earlier choices (Calloway named or asked, the Saints ignored, the witness saved, the Gannet crew, Ines refused, Brook freed, Oduya's name, Oren's heir or pilot), and fills the thin stops: Longwater's drift lamps, Ghostcinder's dead foundry, the Mute Hall and Lastlight. Each is a radio row with `stale: 150`, so a busy stop drops it rather than queue it late.

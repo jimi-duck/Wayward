@@ -8,7 +8,7 @@ import { DEFAULT_SURVIVAL, survivalOf, type SurvivalId } from '../content/surviv
 import type { RegionSet } from '../content/regions';
 import { weightFuel } from './budgets';
 import { cy, refine } from './purse';
-import { SUPPLIES_MAX, HOME, JUMP_COST, holdMax, type Carry, type SortieDef, type SortieResult } from './breakout';
+import { SUPPLIES_MAX, HOME, JUMP_COST, SPOOL, SPOOL_HUNTED, holdMax, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
   arrive, colsOf, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, regionDef, regionOf, regionsOf, routeBetween, SIGHT, sightPlaces, spreadNet, sysById,
   tierOf, viewOf, type Chart, type StarSystem,
@@ -271,7 +271,11 @@ export function sortieDef(j: Journey): SortieDef {
     def.ahead = [...chase.who];
     // one hunt at a time: a named captain does not come to a stop that is already a chase
     def.notice = { ...def.notice, captain: null };
+    // and the drive takes longer: the gate is reached with them on your tail
+    def.spool = SPOOL * SPOOL_HUNTED;
   }
+  // what she got away from on the last jump, for the title card
+  def.escaped = j.carry.flags.includes(ESCAPED_CALLOWAY) ? ESCAPED_LINES.calloway : j.carry.flags.includes(ESCAPED_CHASE) ? ESCAPED_LINES.chase : null;
   // set adrift here a moment ago: the gate is not dead ahead any more
   const last = j.legs[j.legs.length - 1];
   if (j.chart.regionSet === 'road' && last?.ended === 'destroyed' && last.system === s.id) def.off = (j.lost % 2 ? 1 : -1) * (0.25 + 0.1 * (j.lost % 3));
@@ -282,6 +286,12 @@ export function sortieDef(j: Journey): SortieDef {
 }
 
 /** The leg's chase at a stop, if it is hunted and not shaken (docs/ROAD.md, The chases). */
+/** Flags that carry, for one jump, what she got away from (sim/journey.ts endSortie sets them, sortieDef reads them). */
+export const ESCAPED_CALLOWAY = 'run_escaped_calloway';
+export const ESCAPED_CHASE = 'run_escaped_chase';
+/** The arrival title card's line after an escape (t() keys). */
+export const ESCAPED_LINES = { calloway: 'Lost the Patience · she is a system behind', chase: 'Shook them off · the hunt is a jump behind' } as const;
+
 export function chaseAt(script: string | undefined, flags: readonly string[]): LegChase | null {
   const c = script ? LEG_CHASES[script] : undefined;
   if (!c) return null;
@@ -490,6 +500,15 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   if (res.stall > 0 && !netted(j.chart, s.id)) j.chart.stall[s.id] = (j.chart.stall[s.id] ?? 0) + res.stall;
   else if (res.stall < 0) pushNet(j.chart, s.id, -res.stall);
   if (res.calloway) { j.hunt.caught++; (j.hunt.met ??= []).push(regionOf(s)); }
+  // what she got away from, said on the next arrival's title card (sortieDef reads it back)
+  {
+    const f = res.carry.flags;
+    for (const k of [ESCAPED_CALLOWAY, ESCAPED_CHASE]) { const i = f.indexOf(k); if (i >= 0) f.splice(i, 1); }
+    if (res.ended === 'jumped' && !res.callowayBeaten) {
+      if (res.calloway) f.push(ESCAPED_CALLOWAY);
+      else if (legOf(j.chart, s) >= 0 && chaseAt(scriptKey(j.chart, s), f)) f.push(ESCAPED_CHASE);
+    }
+  }
   if (res.callowayBeaten) { j.hunt.beaten++; j.hunt.delay += BEATEN_DELAY; lines.push(t('Calloway’s ship is crippled · {n} days of repairs', { n: BEATEN_DELAY })); }
   // the system's place, dealt with: it pays now, and any new lane opens from where you go next
   if (res.place) lines.push(...claim(j, s, res.carry, res.ended === 'jumped' && j.dest ? j.dest : s.id));
