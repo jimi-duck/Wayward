@@ -311,6 +311,18 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
 }
 
 /**
+ * The hero hull's own stains (the Wayward, model units): the metal round each drive's bell tempered to a dark, faintly blued
+ * gunmetal, heaviest at the lip; and the stern's radiator weeping streaks of grease down the bulkhead below its slits. Both deepen
+ * with the run's use.
+ */
+const HERO_STAINS = `
+      float wHeat = smoothstep(-1.95, -2.75, wp.x) * (1.0 - smoothstep(0.32, 0.78, length(vec2(wp.y + 0.04, abs(wp.z) - 1.04))));
+      wCol = mix(wCol, vec3(0.075, 0.075, 0.09) * (0.8 + 0.4 * wN), wHeat * (0.5 + 0.35 * uRun) * uWorn);
+      wCol += vec3(0.05, 0.03, 0.09) * wHeat * smoothstep(0.45, 0.7, wFbm(wp * 9.0)) * uWorn;
+      float wGrease = step(wp.x, -2.45) * step(abs(wp.z), 0.48) * smoothstep(0.05, -0.3, wp.y) * smoothstep(0.52, 0.78, wFbm(wp * vec3(1.0, 0.45, 16.0) + 1.3));
+      wCol = mix(wCol, vec3(0.06, 0.045, 0.03), wGrease * (0.55 + 0.4 * uRun) * uWorn);`;
+
+/**
  * Layer hard use onto a kit metal shader (after metal() has patched it):
  * see wear.ts. `painted` decides what wear does to the colour: paint comes
  * off to bright steel; bare metal only scuffs lighter.
@@ -336,6 +348,7 @@ function wearShader(shader: { vertexShader: string; fragmentShader: string }, pa
       // paint worn thin to the dark undercoat in patches, round the dents too
       float wThin = smoothstep(0.64, 0.7, wN * 0.6 + wFbm(wp * 2.2 + 5.3) * 0.6 + wDent.x * 0.25 + wEdge * 0.1);
       float wBare = clamp((max(wChip, wScrape) + uRun * (0.55 * wEdge + 0.3 * smoothstep(0.5, 0.68, wN))) * uWorn, 0.0, 1.0);
+      ${shade && painted ? '// the hero hull: the paint chipped back from every pressed edge, more the harder the run\n      wBare = max(wBare, wEdge * smoothstep(0.46, 0.56, wFbm(wp * 30.0) + (wLow - 0.5) * 0.3) * (0.35 + 0.65 * uRun) * uWorn);' : ''}
       // rust and dirt run down from the seams in streaks
       float wStreak = smoothstep(0.5, 0.85, wFbm(wp * vec3(7.0, 0.7, 7.0) + 2.3)) * smoothstep(0.35, 0.6, wLow);
       vec3 wSteel = vec3(0.45, 0.44, 0.42) * (0.7 + 0.5 * wN);
@@ -359,6 +372,7 @@ function wearShader(shader: { vertexShader: string; fragmentShader: string }, pa
       wCol *= 1.0 - min(wGrime + step(0.62, fract(wTone * 7.3)) * 0.3, 0.65) * uWorn;
       ${painted ? 'wCol = mix(wCol, vec3(0.2, 0.09, 0.04), wStreak * 0.45 * uWorn * (1.0 - wBare));' : ''}
       wCol = mix(wCol, vec3(0.04, 0.035, 0.03), clamp(wSoot * 0.6 + wScorch * 0.9, 0.0, 0.92) * uWorn);
+      ${shade ? HERO_STAINS : ''}
       // light and dirt across the whole hull: the upper surfaces sun-bleached and clean, the underside sooty, broad patches darker or warmer
       ${shade ? "wCol *= mix(0.62, 1.2, smoothstep(-0.55, 0.55, wp.y)) * (0.74 + 0.52 * wLow);" : ''}
       ${shade && painted ? 'wCol = mix(wCol, wCol * vec3(1.14, 0.88, 0.66), smoothstep(0.5, 0.72, wFbm(wp * 0.9 + 8.0)) * 0.7);' : ''}

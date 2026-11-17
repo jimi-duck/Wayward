@@ -286,9 +286,9 @@ interface Port { p: V3; d: V3; turn: number; side: number; pitch: number }
 const PORTS: Port[] = [
   { p: [2.35, 0.1, 0.3], d: [0, 0, 1], turn: 1, side: 1, pitch: 0 },
   { p: [2.35, 0.1, -0.3], d: [0, 0, -1], turn: -1, side: -1, pitch: 0 },
-  { p: [-2.5, 0.38, 0.5], d: [0, 0, 1], turn: -1, side: 1, pitch: 0 },
-  { p: [-2.5, 0.38, -0.5], d: [0, 0, -1], turn: 1, side: -1, pitch: 0 },
-  { p: [1.7, 0.62, 0], d: [0, 1, 0], turn: 0, side: 0, pitch: 1 },
+  { p: [-2.5, 0.38, 0.6], d: [0, 0, 1], turn: -1, side: 1, pitch: 0 },
+  { p: [-2.5, 0.38, -0.6], d: [0, 0, -1], turn: 1, side: -1, pitch: 0 },
+  { p: [1.7, 0.68, 0], d: [0, 1, 0], turn: 0, side: 0, pitch: 1 },
   { p: [1.7, -0.42, 0], d: [0, -1, 0], turn: 0, side: 0, pitch: -1 },
 ];
 /** Seconds a jink's or a flip's burst lasts; motes a second from a port at full fire. */

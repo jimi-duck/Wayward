@@ -45,6 +45,23 @@ function markEdges(g: BufferGeometry): BufferGeometry {
   return g;
 }
 
+/**
+ * A slab along X, `len` deep, its `wid` by `h` face with the corners cut at
+ * 45 degrees (`cut` off each), every edge rounded by `bevel`: a bulkhead or a
+ * plate that reads as pressed, not as a box.
+ */
+export function chamferSlab(len: number, wid: number, h: number, cut: number, bevel = 0.03): BufferGeometry {
+  const u = wid / 2 - bevel, v = h / 2 - bevel, c = Math.min(cut, u, v);
+  const s = new Shape();
+  s.moveTo(-u + c, -v); s.lineTo(u - c, -v); s.lineTo(u, -v + c); s.lineTo(u, v - c);
+  s.lineTo(u - c, v); s.lineTo(-u + c, v); s.lineTo(-u, v - c); s.lineTo(-u, -v + c); s.closePath();
+  const depth = Math.max(0.001, len - 2 * bevel);
+  const g = new ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelSize: bevel, bevelThickness: bevel, bevelSegments: 2 });
+  g.translate(0, 0, -depth / 2);
+  g.rotateY(Math.PI / 2);
+  return markEdges(g);
+}
+
 /** A bevelled block, sized [x, y, z], at pos, turned by rot. */
 export function block(k: Kit, key: string, size: V3, pos: V3, rot: V3 = [0, 0, 0], bevel = 0.025): void {
   k.add(key, bevelGeo(size[0], size[1], size[2], bevel), pos, rot);
