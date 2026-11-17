@@ -74,12 +74,12 @@ export const FITTED: Record<string, Part[]> = {
     k.cyl('blue', 0.02, 0.02, 0.012, [x + 0.215, HY + 0.4, sd * 0.2], 'x', 8);
   }))),
   ph_cone: [(k) => {
-    k.cyl('pipe', 0.15, 0.06, 0.26, [3.12, HY + 0.02, 0], 'x', 12, true);
-    k.cyl('dark', 0.16, 0.16, 0.03, [3.25, HY + 0.02, 0], 'x', 12);
+    k.cyl('pipe', 0.15, 0.06, 0.26, [2.62, 0.04, 0], 'x', 12, true);
+    k.cyl('dark', 0.16, 0.16, 0.03, [2.75, 0.04, 0], 'x', 12);
   }],
   ph_lance: [(k) => sides((sd) => {
-    k.cyl('pipe', 0.022, 0.022, 0.7, [3.25, HY + 0.02, sd * 0.1], 'x', 8);
-    k.cyl('dark', 0.04, 0.04, 0.06, [3.58, HY + 0.02, sd * 0.1], 'x', 8);
+    k.cyl('pipe', 0.022, 0.022, 0.7, [2.7, 0.04, sd * 0.1], 'x', 8);
+    k.cyl('dark', 0.04, 0.04, 0.06, [3.03, 0.04, sd * 0.1], 'x', 8);
   })],
   // armour: primer plates over the flanks and belly; bulkheads ribbed along the shoulders
   df_armour: [
@@ -110,9 +110,9 @@ export const FITTED: Record<string, Part[]> = {
     (k) => { k.ring('hull', 0.27, 0.012, [1.7, -0.38, 0], 'y', 20); k.cyl('blue', 0.03, 0.03, 0.012, [1.7, -0.385, 0], 'y', 8); },
   ],
   // thrusters: a manoeuvring block each at the bow, stern and shoulder
-  mo_thrusters: [2.1, -2.2, 0.75].map((x) => (k: Kit) => sides((sd) => {
-    block(k, 'dark', [0.16, 0.1, 0.07], [x, HY + 0.02, sd * (x > 2 ? 0.34 : 0.5)], [0, 0, 0], 0.015);
-    k.cyl('rubber', 0.03, 0.04, 0.05, [x, HY + 0.02, sd * (x > 2 ? 0.4 : 0.56)], 'z', 8);
+  mo_thrusters: [1.9, -2.2, 0.75].map((x) => (k: Kit) => sides((sd) => {
+    block(k, 'dark', [0.16, 0.1, 0.07], [x, HY + 0.02, sd * (x > 1.5 ? 0.3 : 0.5)], [0, 0, 0], 0.015);
+    k.cyl('rubber', 0.03, 0.04, 0.05, [x, HY + 0.02, sd * (x > 1.5 ? 0.36 : 0.56)], 'z', 8);
   })),
 };
 

@@ -626,18 +626,21 @@ a plate when you are left alone.
 
 ## Her shape
 
-The Wayward is built in `render/wayward.ts` from pressed, chamfered forms
-rather than stacked boxes. Each nacelle is a cowl in tiers (`TIERS`) that
-swells astern to a ribbed heat collar and a flared exhaust bell, and a swept
-pylon (a loft) carries it into the hull. The stern is the "03" bulkhead, a
-slab with 45-degree corners and rounded edges (`chamferSlab` in
-`render/parts.ts`) over a radiator grille. The bridge is a raked deck on a
-pedestal with warm visor slits, ramped up from the cargo deck and down into
-the prow. The wear shader adds her own stains (`HERO_STAINS` in
-`render/kit.ts`): chipped paint on every pressed edge, tempered gunmetal round
-the bells and grease under the grille, all deeper as `use` rises. Same mesh in
-both liveries. Bench: `tools/ship.html?view=stern` and `?view=game` (the
-flight camera's own framing).
+The Wayward is curved, not stacked (`render/smooth.ts`). Her hull is one body
+lofted through rounded sections (`HULL` in `render/wayward.ts`) from a full
+stern to a blunt bullet nose, with plates pressed onto its curve: each plate
+stands a little off the body and eases down at its rim, so panel lines read
+as soft seams and the paint chips from the rims first. Amber over the back and
+upper flanks, dark machinery, conduits and a few lit slits low on the sides.
+The two drives are short turned nacelles at the stern (`DRUM`, a radius
+profile): pillowed plate bands, a ribbed dark nose, a ribbed heat collar and
+a flared bell with a rolled lip. A smooth mount (`MOUNT`) carries each into
+the hull's flank. The bridge is a rounded cabin at the head of the deck with
+warm visor slits; the deck's containers have rounded corners; the "03" stern
+is a rounded slab (`roundSlab`) over a radiator grille. The wear shader adds
+her own stains (`HERO_STAINS` in `render/kit.ts`). Same mesh in both
+liveries. Bench: `tools/ship.html?view=three`, `?view=stern` and `?view=game`
+(the flight camera's own framing).
 
 ## The hull shows what she carries
 
