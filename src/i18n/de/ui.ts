@@ -10,6 +10,8 @@
 export const UI: Record<string, string> = {
   // ── an uncaught error ──
   'Something went wrong': 'Etwas ist schiefgelaufen',
+  'Your run so far is saved. Reload to play again.': 'Dein Lauf bis hierhin ist gespeichert. Neu laden und weiterspielen.',
+  'This run could not be saved. Reload to play again.': 'Dieser Lauf ließ sich nicht speichern. Neu laden und weiterspielen.',
   'Your save is safe. Reload to carry on.': 'Dein Stand ist sicher. Lad neu, um weiterzumachen.',
   'Reload': 'Neu laden',
   // ── the start card ──

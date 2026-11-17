@@ -39,7 +39,7 @@ import { PortPanel, preloadPort } from './ui/port';
 import { BayPanel } from './ui/bay';
 import { showConsole } from './ui/briefing';
 import type { RegionSet } from './content/regions';
-import { installCrashCard } from './ui/crash';
+import { installCrashCard, onCrashKeep } from './ui/crash';
 import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18n';
 
 /** New Story journeys run the eight regions; ?short plays the old three, for testing. */
@@ -531,6 +531,18 @@ function boot(review: typeof import('./review') | null): void {
   // that launches, and in an embedded frame that click also gives the page
   // keyboard focus.
   let started = false;
+  // an Arcade run is only kept when it ends: if the game breaks mid-run, keep its score and time before the crash card
+  onCrashKeep(() => {
+    if (!started || world.mode !== 'arcade' || reported || world.run.time < 1) return null;
+    reported = true;
+    try {
+      recordRun(profile, world.run);
+      persist(profile);
+      return t('Your run so far is saved. Reload to play again.');
+    } catch {
+      return t('This run could not be saved. Reload to play again.');
+    }
+  });
   /** The pause card has been up since the launch: only a resume from it counts as the briefing read. */
   let carded = false;
   document.documentElement.classList.add('prelaunch');
