@@ -90,9 +90,10 @@ The owner asked for a No Man's Sky kind of sky: colour in the sky itself, the HU
 
 ## Cinematic flight (2026-11-18)
 
-- **Camera** (`camera.ts` `FRAMES`, `ZOOMS`). The closest step sits close behind the drives (17° up, 7° down, a 72° lens,
-  VIEW 10.6 x 6): the stern and bells fill the lower middle, the spine runs away to the bridge and the field opens above.
-  Speed stretches the lens up to 7° (the ship holds her size). Z steps out to 18°/10° and then the old high chase
+- **Camera** (`camera.ts` `FRAMES`, `ZOOMS`). The closest step sits low behind the drives, about level with the bells and
+  tilted up along the spine (11° up, 3° up, a 72° lens, VIEW 10.4 x 5.85; user 2026-11-18): the stern and bells fill the
+  lower middle, the bridge rises over the stern and the field opens wide above.
+  Speed stretches the lens up to 7° (the ship holds her size). Z steps out to 14°/5° and then the old high chase
   (20°/13.5°); elevation and pitch ease with the zoom. Every profile moves to the close step once (`Profile.cine`).
 - **Light** (`environment.ts`). The star's key is harder (`KEY` 6.2); the ambient bounce is the nebula's own colour at
   low strength (`HEMI` 0.24), so shadow sides stay deep. Bloom only takes high-luma pixels (threshold 0.82, smoothing

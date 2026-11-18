@@ -22,9 +22,9 @@ import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
 // motion: no punch, no hum, no shake.
 
 /** Per zoom step: [elevation, pitch] in degrees. The first is the cinematic view; the last the old high chase. */
-const FRAMES: ReadonlyArray<readonly [number, number]> = [[17, 7], [18, 10], [20, 13.5]];
-const VIEW_W = 10.6;
-const VIEW_H = 6;
+const FRAMES: ReadonlyArray<readonly [number, number]> = [[11, -3], [14, 5], [20, 13.5]];
+const VIEW_W = 10.4;
+const VIEW_H = 5.85;
 const LOOK_AHEAD = 0.6;
 const FOLLOW = 0.08;
 const YAW_FOLLOW = 0.26;
