@@ -37,17 +37,17 @@ function materials(hits: Hit[]): Record<string, Material> {
   // all of her worn by hard use (wear.ts), sooted astern by her own drives
   hits.forEach((h, i) => HITS[i]!.set(...h));
   const used = { worn: 1, shade: true, run: USE, soot: [2.15, 2.95] as [number, number], hitUniforms: HITS, engine: ENGINE };
-  const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(...LIVERY.stockGlow), ...used });
+  const amber = (tint: number) => metal({ tint, roughness: 0.55, metalness: 0.22, scale: 0.85, painted: true, emissive: new Color(...LIVERY.stockGlow), ...used });
   mats = {
     // weathered grey plate, one shade lighter and one darker, the repaint's three tints under them
     paint: sweepable(amber(LIVERY.stock[0]), 0),
     paint2: sweepable(amber(LIVERY.stock[1]), 1),
     paint3: sweepable(amber(LIVERY.stock[2]), 2),
     // field repairs: plate patched on in grey primer, never painted over
-    primer: metal({ tint: 0x8a8f80, roughness: 0.7, metalness: 0.15, scale: 1.1, painted: true, ...used }),
+    primer: metal({ tint: 0x8a8f80, roughness: 0.68, metalness: 0.2, scale: 1.1, painted: true, ...used }),
     hull: metal({ tint: 0x6a6f78, roughness: 0.55, metalness: 0.5, emissive: new Color(0.018, 0.022, 0.03), ...used }),
     dark: metal({ tint: 0x41454d, roughness: 0.55, metalness: 0.35, scale: 1.5, emissive: new Color(0.014, 0.018, 0.026), ...used }),
-    pipe: metal({ tint: 0x454850, roughness: 0.45, metalness: 0.55, scale: 2, ...used }),
+    pipe: metal({ tint: 0x454850, roughness: 0.45, metalness: 0.5, scale: 2, ...used }),
     rubber: new MeshStandardMaterial({ color: 0x141414, roughness: 0.95, metalness: 0 }),
     window: new MeshStandardMaterial({ color: 0x0b1416, roughness: 0.12, metalness: 0.9, emissive: new Color(0.02, 0.09, 0.11) }),
     red: new MeshBasicMaterial({ color: new Color(3.2, 0.35, 0.25), toneMapped: false }),
@@ -218,8 +218,8 @@ export function setLiveryBlend(t: number): void {
     m.color.copy(A.setHex(LIVERY.stock[i]!).lerp(B.setHex(LIVERY.yellow[i]!), t));
     // the grey plate sits quiet in the sector's dim light; the repaint reads as paint
     m.emissive.setRGB(...(LIVERY.stockGlow.map((v, j) => v + (LIVERY.yellowGlow[j]! - v) * t) as [number, number, number]));
-    // the ochre is flatter and duller than the grey plate: cheap paint, no sheen
-    m.roughness = 0.62 + 0.16 * t;
+    // the ochre is a touch flatter than the grey plate, but keeps enough sheen to catch the star on its edges
+    m.roughness = 0.55 + 0.1 * t;
   });
 }
 export function setLivery(yellow: boolean): void {
@@ -372,7 +372,7 @@ export function setMark(m: number): void {
 }
 
 /** Her lights as the scan arch leaves them: 1 as she is, 0 dark, above 1 a white flash as they come back. */
-const NAV = new Color(1.7, 1.8, 1.9), RED = new Color(3.2, 0.35, 0.25), LAMP = new Color(3.2, 2.4, 1.5), VISOR = new Color(0.85, 0.44, 0.12);
+const NAV = new Color(1.7, 1.8, 1.9), RED = new Color(3.2, 0.35, 0.25), LAMP = new Color(3.2, 2.4, 1.5), VISOR = new Color(1.6, 0.86, 0.26);
 let lightLevel = 1;
 export function setLightLevel(v: number): void {
   if (!mats || v === lightLevel) return;

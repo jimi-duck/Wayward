@@ -2,16 +2,18 @@ import { MathUtils, PerspectiveCamera } from 'three';
 import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
 
 // ── the chase camera ──────────────────────────────────────────────────────
-// Behind the ship and well above it: the hull sits in the lower middle of the
-// picture, with room ahead (where enemies come in from) to see them early and
-// the corner HUD kept clear.
+// The closest step is cinematic: low behind the drives, about level with the
+// bells, the lens wide (72 degrees) and tipped a little up along the spine,
+// so the hull runs away from the eye toward the bridge and the field opens
+// above her. The further steps rise toward the old high chase view, which
+// shows more of the plane ahead (where enemies come in from).
 //
-// Two angles define the framing. ELEV is how far above the ship the camera
-// sits, seen from the ship; PITCH is how far the view looks down. The ship
-// lands ELEV - PITCH below the centre of the picture, and the horizon PITCH
-// above it. Distance is solved per frame so a minimum width and height of
-// the scene at the ship are in view whatever the aspect, then scaled by the
-// zoom step.
+// Two angles define each step. ELEV is how far above the ship the camera
+// sits, seen from the ship; PITCH is how far the view looks down (below zero:
+// up). The ship lands ELEV - PITCH below the centre of the picture, and the
+// horizon PITCH above it. Distance is solved per frame so a minimum width and
+// height of the scene at the ship are in view whatever the aspect, then
+// scaled by the zoom step; elevation and pitch ease with the zoom.
 //
 // The rig swings round a beat behind the ship's heading so a turn is felt,
 // widens its field of view with speed (and a few degrees more for a moment on
@@ -19,21 +21,22 @@ import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
 // turns, shakes on impacts, and recoils a touch on every shot. With reduced
 // motion: no punch, no hum, no shake.
 
-const ELEV = MathUtils.degToRad(20);
-const PITCH = MathUtils.degToRad(13.5);
-const VIEW_W = 11;
-const VIEW_H = 6.2;
+/** Per zoom step: [elevation, pitch] in degrees. The first is the cinematic view; the last the old high chase. */
+const FRAMES: ReadonlyArray<readonly [number, number]> = [[17, 7], [18, 10], [20, 13.5]];
+const VIEW_W = 10.6;
+const VIEW_H = 6;
 const LOOK_AHEAD = 0.6;
 const FOLLOW = 0.08;
 const YAW_FOLLOW = 0.26;
-const BASE_VFOV = 52;
-const FOV_KICK = 6;
+const BASE_VFOV = 72;
+/** The lens stretches this many degrees at top speed (the ship holds her size; the field rushes out round her). */
+const FOV_KICK = 7;
 /** A burst of speed (a throttle snap, a jink): the lens opens this many degrees at once, then eases back. */
 const PUNCH_FOV = 4;
 /** A drive at full burn shakes the rig by this much (world units at the closest zoom): a hum felt more than seen. */
 const VIBE = 0.014;
 /** In the jump: the lens opens this many degrees, and the camera drops to this angle (the ship stays where it is in the picture). */
-const WARP_FOV = 38;
+const WARP_FOV = 26;
 const WARP_ELEV = MathUtils.degToRad(9);
 const WARP_PULL = 0.18;
 /** The rename reveal (render/reveal.ts): the rig swings this far round the ship, lower and further off, so the whole flank shows. */
@@ -57,7 +60,7 @@ const COMPACT_H = 500;
 const COMPACT_PULL = 1.12;
 
 /** Zoom steps, as multiples of the closest framing. The first is the reference's. */
-export const ZOOMS = [1, 1.45, 2.1] as const;
+export const ZOOMS = [1, 1.8, 3] as const;
 
 /** What the rig needs to know about the ship this frame. */
 export interface CameraSubject {
@@ -179,8 +182,9 @@ export class CameraRig {
     // forward along the yaw, and the camera behind and above
     const yaw = this.yaw + REVEAL_ARC * this.reveal + ARRIVE_ARC * this.arrive + this.drift;
     const fx = Math.cos(yaw), fz = -Math.sin(yaw);
-    // the ship keeps its place in the picture (ELEV - PITCH below the middle) while the camera comes down to the plane
-    const elev = ELEV + (WARP_ELEV - ELEV) * lens + (REVEAL_ELEV - ELEV) * this.reveal + (ARRIVE_ELEV - ELEV) * this.arrive + (PHOTO_ELEV - ELEV) * this.photo, pitch = PITCH + (elev - ELEV);
+    // the ship keeps its place in the picture (ELEV - PITCH below the middle) while the camera moves for a jump, a reveal or a photo
+    const [E, P] = this.framing();
+    const elev = E + (WARP_ELEV - E) * lens + (REVEAL_ELEV - E) * this.reveal + (ARRIVE_ELEV - E) * this.arrive + (PHOTO_ELEV - E) * this.photo, pitch = P + (elev - E);
     const back = Math.cos(elev) * dist, up = Math.sin(elev) * dist;
     let px = this.target.x - fx * back, py = up, pz = this.target.z - fz * back;
     this.trauma = Math.max(0, this.trauma - 1.8 * dt);
@@ -204,6 +208,15 @@ export class CameraRig {
     const wantRoll = clamp(-s.yawRate * 0.03, -0.06, 0.06);
     this.roll += (wantRoll - this.roll) * Math.min(1, 6 * dt);
     if (this.roll) this.camera.rotateZ(this.roll);
+  }
+
+  /** Elevation and pitch (radians) for the zoom as it eases between steps. */
+  private framing(): [number, number] {
+    const z = this.zoomNow;
+    let i = 0;
+    while (i < ZOOMS.length - 2 && z > ZOOMS[i + 1]!) i++;
+    const t = clamp((z - ZOOMS[i]!) / (ZOOMS[i + 1]! - ZOOMS[i]!), 0, 1), a = FRAMES[i]!, b = FRAMES[i + 1]!;
+    return [MathUtils.degToRad(a[0] + (b[0] - a[0]) * t), MathUtils.degToRad(a[1] + (b[1] - a[1]) * t)];
   }
 
   private applyOffset(): void {

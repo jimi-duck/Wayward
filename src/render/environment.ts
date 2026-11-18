@@ -40,6 +40,10 @@ const RIM_COLOUR = new Color(0x7f9cc8), FIGHT_TINT = new Color();
 const SUN_WARM = new Color(1, 0.84, 0.66), COOL = new Color(0.45, 0.85, 0.95);
 const RIM_BASE = 1.5, RIM_FIGHT = 2.6;
 const HEMI_SKY = new Color(0x56607a);
+/** The bounce's strength: low, so the night side of a rock or a hull stays deep. */
+const HEMI = 0.24;
+/** The star's key light: hard and bright, so lit faces and edges glint against the dark. */
+const KEY = 6.2;
 /** Each layer's slide against the ship's travel is a sine of the distance: this many units to the cycle (starfield.ts). */
 const SLIDE = 4000;
 /** The cloud's slide (radians of sky) and the far worlds' (units at their own distance), at the sine's top. */
@@ -167,7 +171,7 @@ export class Environment {
     this.group.add(dust);
     this.probe = { sky: [dome], far: [this.stars, this.depth.group, this.parallax.group, dust] };
 
-    this.key = new DirectionalLight(0xf0ebe4, 5.4);
+    this.key = new DirectionalLight(0xf0ebe4, KEY);
     // the sun's shadow covers only the ship's neighbourhood: rocks darken the hull and each other close in
     const cam = this.key.shadow.camera;
     cam.left = cam.bottom = -SHADOW_REACH;
@@ -178,7 +182,7 @@ export class Environment {
     this.key.shadow.normalBias = 0.06;
     this.key.shadow.radius = 2;
     this.rim = new DirectionalLight(RIM_COLOUR, RIM_BASE);
-    this.hemi = new HemisphereLight(HEMI_SKY.getHex(), 0x0b0907, 0.36);
+    this.hemi = new HemisphereLight(HEMI_SKY.getHex(), 0x060504, HEMI);
     this.group.add(this.key, this.key.target, this.hemi, this.rim);
     this.group.add(this.parallax.group);
     scene.add(this.group);
@@ -226,8 +230,8 @@ export class Environment {
     this.parallax.setSky(sky);
     this.field.setSky(sky);
     this.phenomena.setSky(sky);
-    // the ambient fill takes a breath of the sky's blue and violet
-    this.hemi.color.copy(HEMI_SKY).lerp(sky.neb[0], 0.22).lerp(sky.accent, 0.08);
+    // the ambient bounce is the nebula's own colour, kept low, so the shadow sides stay dark but never a dead grey
+    this.hemi.color.copy(HEMI_SKY).lerp(sky.neb[0], 0.55).lerp(sky.accent, 0.08);
     // distant rock fades into the sky's own colour, not into black
     this.haze.copy(sky.neb[0]).lerp(sky.neb[1], 0.3).multiplyScalar(0.16);
     // warm sun on one side, the sky's cool second colour on the rim behind
@@ -259,7 +263,7 @@ export class Environment {
     this.parallax.dim(1 - nebula * 0.6);
     WORLD_RIM.value.copy(this.skyRim).multiplyScalar((1 + flash * 4) * (1 + this.fightK * 0.8));
     if (t) WORLD_RIM.value.r += t[0] * 0.25, WORLD_RIM.value.g += t[1] * 0.25, WORLD_RIM.value.b += t[2] * 0.25;
-    this.key.intensity = 5.4 + flash * 9;
+    this.key.intensity = KEY + flash * 9;
     this.key.color.copy(this.sunCol).lerp(FIGHT_TINT.setRGB(1, 1, 1), flash);
     if (t) this.key.color.lerp(KEY_TINT.setRGB(0.55 + t[0] * 1.6, 0.6 + t[1] * 1.6, 0.7 + t[2] * 1.6), Math.min(0.6, (t[0] + t[1] + t[2]) * 1.1));
   }

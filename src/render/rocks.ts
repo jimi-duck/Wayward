@@ -460,6 +460,8 @@ class Chunks {
 export class RockView {
   /** One instanced mesh per kind per shape: meshes[kind index * ROCK_VARIANTS + variant]. */
   private readonly meshes: InstancedMesh[] = [];
+  /** Instances per mesh this frame (kept, so the frame allocates nothing). */
+  private counts: number[] = [];
   private readonly bulwarks = new Map<number, Mesh>();
   private readonly bulwarkGeo: BufferGeometry[] = [];
   private readonly bulwarkMat = lavaRock(3, 1, 0.1);
@@ -521,6 +523,7 @@ export class RockView {
         scene.add(mesh);
       }
     }
+    this.counts = this.meshes.map(() => 0);
     for (let k = 0; k < BULWARK_VARIANTS; k++) this.bulwarkGeo.push(rockGeometry(k * 5.3 + 20, 5, 3 + k, 0.36, 7 + k));
     // a bulwark is a plain mesh, not an instance: hidden here so the warm-up compiles its program too
     const proxy = new Mesh(this.bulwarkGeo[0]!, this.bulwarkMat);
@@ -542,7 +545,8 @@ export class RockView {
         const j = (k * per + i) * 8;
         const x = rnd() * BACK_BOX, z = rnd() * BACK_BOX;
         const y = (rnd() < 0.5 ? -1 : 1) * (35 + Math.pow(rnd(), 1.5) * 140);
-        const s = 2 + Math.pow(rnd(), 3) * 16;
+        // mostly boulders and hills, and one in nine a colossal anchor of the field, far out where it frames the sky
+        const s = rnd() < 0.11 ? 30 + rnd() * 36 : 1.5 + Math.pow(rnd(), 3) * 18;
         const ax = rnd() * 2 - 1, ay = rnd() * 2 - 1, az = rnd() * 2 - 1, n = Math.hypot(ax, ay, az) || 1;
         this.backBase.set([x, y, z, s, ax / n, ay / n, az / n, (rnd() - 0.5) * 0.2], j);
       }
@@ -558,7 +562,7 @@ export class RockView {
   update(rocks: readonly Rock[], bulwarks: readonly Bulwark[], alpha: number, dt: number, cx: number, cz: number): void {
     this.time += dt;
     lavaTime.value = this.time;
-    const counts = new Array<number>(this.meshes.length).fill(0);
+    const counts = this.counts.fill(0);
     const back = (1 - alpha) * STEP;
     let ns = 0;
     for (const r of rocks) {

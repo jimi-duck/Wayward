@@ -60,7 +60,8 @@ The owner asked for a No Man's Sky kind of sky: colour in the sky itself, the HU
 - **Rocks.** Each mineral has its own tint and a faint glow on the rim and in the far cast: basalt warm brown, iron
   steel blue, rich violet (cyrite), volatile cyan (`rocks.ts`, cache key `stone-rock13`).
 - **The ship.** Off-white plating with a bold worn ochre stripe (`LIVERY` in `wayward.ts`). Smaller on screen: the camera
-  sits lower and further back (`camera.ts` ELEV 20°, PITCH 13.5°, VIEW 11 x 6.2).
+  sits lower and further back (`camera.ts` ELEV 20°, PITCH 13.5°, VIEW 11 x 6.2). Since 2026-11-18 the closest zoom is cinematic
+  (below).
 - **Dust.** The motes take the sun's colour; past about half of top speed they stretch into faint speed streaks and brighten.
 - **Jump arrivals.** A slow sweep: the shot opens wide, high and 120° round to the side, holds 1.5 s, then swings in behind
   the ship over 6.5 s (`Sector.arriveSweep`). A fight or a pop-up cuts it short; never with reduced motion. The HUD shows the
@@ -86,3 +87,16 @@ The owner asked for a No Man's Sky kind of sky: colour in the sky itself, the HU
 - **Depth when turning.** About 420 dim near stars sit at a real distance far under the plane (`depth.ts`), in a box that
   follows the ship, so they slide against the stars at infinity when the camera swings. Every 22 to 55 s a dark rock
   tumbles past right by the lens at one edge of the picture (0.75 s, stretched along its path). Not with reduced motion.
+
+## Cinematic flight (2026-11-18)
+
+- **Camera** (`camera.ts` `FRAMES`, `ZOOMS`). The closest step sits close behind the drives (17° up, 7° down, a 72° lens,
+  VIEW 10.6 x 6): the stern and bells fill the lower middle, the spine runs away to the bridge and the field opens above.
+  Speed stretches the lens up to 7° (the ship holds her size). Z steps out to 18°/10° and then the old high chase
+  (20°/13.5°); elevation and pitch ease with the zoom. Every profile moves to the close step once (`Profile.cine`).
+- **Light** (`environment.ts`). The star's key is harder (`KEY` 6.2); the ambient bounce is the nebula's own colour at
+  low strength (`HEMI` 0.24), so shadow sides stay deep. Bloom only takes high-luma pixels (threshold 0.82, smoothing
+  0.14, `post.ts`); the bridge visor now sits just over that line.
+- **Hull.** Paint at roughness 0.55 to 0.65 and metalness 0.22, so the key light glints on plate edges.
+- **Rocks.** One far backdrop asteroid in nine is a colossal anchor (30 to 66 units across, `rocks.ts`).
+- Bench: `tools/ship.html?view=game&zoom=0..2` is the flight camera itself. Not measured: real-GPU look and cost.

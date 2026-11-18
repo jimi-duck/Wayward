@@ -10,6 +10,7 @@ import { TIERS, tierIndex } from '../src/render/quality';
 import { createRenderer, fitRenderer } from '../src/render/renderer';
 import { ShipView } from '../src/render/ships';
 import { Effects } from '../src/render/fx';
+import { CameraRig } from '../src/render/camera';
 import { glowTexture } from '../src/render/textures';
 import { setLightLevel, setLivery, setLiverySweep, setMark } from '../src/render/wayward';
 import { FITTED } from '../src/render/fitted';
@@ -83,14 +84,17 @@ const VIEWS: Record<string, [number, number, number, number, number, number]> = 
   sidew: [0.9, 0.6, 2.4, 0.9, 0.1, 0],
   // the stern face up close
   stern: [-4.3, 0.7, 0.9, -1.2, 0, 0],
-  // the flight camera's own framing (render/camera.ts at the closest zoom: 20 degrees up, 13.5 down, the lens at 52): the ship as played
-  game: [-5.98, 2.18, 0, 3.74, -0.15, 0],
 };
-if (view === 'game') camera.fov = 52;
+// ?view=game: the flight camera itself (render/camera.ts), at ?zoom=0..2: the ship as played
+const rig = view === 'game' ? new CameraRig() : null;
+if (rig) rig.zoom = Number(params.get('zoom') ?? '0');
+const subject = { x: 0, z: 0, heading: 0, yawRate: 0, speedFrac: 0 };
 const fit = () => {
   fitRenderer(renderer, tier);
   camera.aspect = canvas.clientWidth / canvas.clientHeight;
   camera.updateProjectionMatrix();
+  rig?.resize(canvas.clientWidth, canvas.clientHeight, 0);
+  if (rig) { subject.speedFrac = ship.speedFrac; rig.snap(subject); }
   post.setSize(canvas.clientWidth, canvas.clientHeight);
 };
 new ResizeObserver(fit).observe(canvas);
@@ -108,6 +112,14 @@ const frame = (now: number) => {
   // three.js yaw: heading 0 keeps the model's +X; the bench swings the camera, not the ship
   camera.position.set(x * c - z * sn, y, x * sn + z * c);
   camera.lookAt(lx, ly, lz);
+  if (rig) {
+    subject.yawRate = s.yawRate;
+    subject.speedFrac = ship.speedFrac;
+    rig.update(subject, dt, true);
+    camera.position.copy(rig.camera.position);
+    camera.quaternion.copy(rig.camera.quaternion);
+    if (camera.fov !== rig.camera.fov) { camera.fov = rig.camera.fov; camera.updateProjectionMatrix(); }
+  }
   // ?view=hulk&n=<0..3>: look at one of the sky's dead hulks from 160 units off, for judging them
   if (view === 'hulk') {
     const hs = (env as unknown as { parallax: { hulks: Array<{ g: { position: { x: number; y: number; z: number } } }> } }).parallax.hulks, h = hs[Number(params.get('n') ?? '0') % hs.length]!.g.position;

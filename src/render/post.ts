@@ -53,7 +53,7 @@ export class Post {
     this.composer = new EffectComposer(renderer, { frameBufferType: HalfFloatType, multisampling: 0 });
     this.composer.addPass(new RenderPass(scene, camera));
     // five blur levels, not the default eight: the last three are a few pixels across at half size and add little but passes
-    const bloom = new BloomEffect({ mipmapBlur: true, levels: 5, luminanceThreshold: 0.7, luminanceSmoothing: 0.25, intensity: 1.25, radius: 0.7 });
+    const bloom = new BloomEffect({ mipmapBlur: true, levels: 5, luminanceThreshold: 0.82, luminanceSmoothing: 0.14, intensity: 1.25, radius: 0.7 });
     // half resolution on every tier: mipmap blur hides it, and it is cheaper
     bloom.resolution.scale = 0.5;
     const vignette = new VignetteEffect({ offset: 0.3, darkness: 0.62 });
