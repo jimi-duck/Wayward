@@ -24,11 +24,16 @@ export interface HullLook {
 // Each faction's hulls are dark structure with its coat on the armour: the
 // colour sits on plates, so a silhouette shows its construction.
 export const HULL_LOOK: Record<Faction, HullLook> = {
-  gutter: { base: 0x2f2420, paint: 0x9a5430, patch: 0x8d8272, under: 0x3a2f2a, trim: 0x9c2c1e, worn: 1 },
-  custody: { base: 0x292823, paint: 0xb59a54, patch: 0x7c7248, under: 0x35332c, trim: 0x8c3a24, worn: 0.6 },
-  office: { base: 0x1d2724, paint: 0x587a69, patch: 0x9ab5a6, under: 0x28332f, trim: 0x2f7a5c, worn: 0.4 },
-  voice: { base: 0x151918, paint: 0x2f3735, patch: 0x45544d, under: 0x1e2321, trim: 0x2d6a46, worn: 0.8 },
-  thren: { base: 0x2b2231, paint: 0xa6895c, patch: 0x5e4f72, under: 0x30263a, trim: 0xd0902a, worn: 0.3 },
+  // Custody: navy enamel on gunmetal, white and orange warning decals
+  custody: { base: 0x232830, paint: 0x1f3a5f, patch: 0xb9b6ac, under: 0x1a1e25, trim: 0xd8672a, worn: 0.45 },
+  // Gutter: oxidised iron, rust plate, scuffed industrial yellow, hazard stripes
+  gutter: { base: 0x3a3532, paint: 0xa84b1b, patch: 0xc9941f, under: 0x2a2522, trim: 0xd99b26, worn: 1 },
+  // Office: carbon composite and cold slate, a cold-white diagnostic line, nothing else
+  office: { base: 0x141416, paint: 0x2b2d33, patch: 0x363840, under: 0x0e0e10, trim: 0xe6eaf0, worn: 0.2 },
+  // Voice: blackened iron with tarnished brass, a furnace-orange seam
+  voice: { base: 0x1c1917, paint: 0x8c6d3b, patch: 0x5a4627, under: 0x120f0e, trim: 0xc4501a, worn: 0.8 },
+  // Thren: obsidian under violet and pearl teal, magenta in the veins
+  thren: { base: 0x17111f, paint: 0x3b185f, patch: 0x0e8388, under: 0x100b18, trim: 0xe024c3, worn: 0.3 },
 };
 
 /** Emissive ceilings (linear, before tone mapping). Nothing but a weapon or a drive goes above `core`. */

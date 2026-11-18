@@ -495,12 +495,12 @@ export class Kit {
     this.add(key, along(new CylinderGeometry(rTop, rBot, len, seg, 1, open), axis), pos);
   }
 
-  /** A ring around an axis. */
-  ring(key: string, r: number, tube: number, pos: V3, axis: Axis = 'x', seg = 24): void {
-    const g = new TorusGeometry(r, tube, 6, seg);
+  /** A ring around an axis, all of it or an `arc` of it (a floating carapace segment), turned by `rot` afterwards. */
+  ring(key: string, r: number, tube: number, pos: V3, axis: Axis = 'x', seg = 24, arc = Math.PI * 2, rot: V3 = [0, 0, 0]): void {
+    const g = new TorusGeometry(r, tube, 6, seg, arc);
     if (axis === 'x') g.rotateY(Math.PI / 2);
     else if (axis === 'y') g.rotateX(Math.PI / 2);
-    this.add(key, g, pos);
+    this.add(key, g, pos, rot);
   }
 
   /** A prism from a top-view outline (x forward, z to starboard), `height` thick, centred on pos.y. */

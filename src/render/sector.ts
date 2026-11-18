@@ -7,7 +7,7 @@ import { setLightLevel, setLiveryBlend, setLiverySweep, setMark, SWEEP_SPAN } fr
 import { RenameReveal } from './reveal';
 import { painted } from '../sim/postjump';
 import { SceneArc } from './scenes';
-import type { Faction } from '../sim/enemies';
+import type { AlienKind, Faction } from '../sim/enemies';
 import { inFight } from '../sim/guide';
 import { newShip, topSpeed, type ShipState } from '../sim/ship';
 import type { World } from '../sim/world';
@@ -287,6 +287,9 @@ export class Sector {
     }
     this.renderer.clear();
   }
+
+  /** What a hull is made of (triangles, metal), for the review world's labels. */
+  hullInfo(kind: AlienKind, faction: Faction): { tris: number; capitalTris: number; feel: string } { return this.enemies.hullInfo(kind, faction); }
 
   /** Where a world point lands on screen, in CSS pixels; null when behind the camera. */
   project(x: number, y: number, z: number): { x: number; y: number } | null {

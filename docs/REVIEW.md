@@ -78,3 +78,9 @@ its table is read (`VARIANT_ORDER`, `ELITE_ORDER`, `ROCK_KINDS`, `POWERS`,
 `FEATURE_ORDER`, `NAMED`), and `tests/review.test.ts` fails if one is missing.
 A new kind of thing that is not in those tables is a new row in
 `review/gallery.ts`: a `stop()`, the objects, a `label()` for each.
+
+## Enemy hulls: lineup bench and inspect camera
+
+- `/tools/enemies.html?view=lineup`: every faction's hulls on stanchions, one row each, with triangle counts. `&faction=custody` for one row, `&focus=<variant id>` for one hull, `&elite=armoured|swift|gunner|volatile|regenerative|spinner|cloaked` to dress them, `&capital=1` for the boss hulls. Drag to orbit, wheel to zoom.
+- In `?dev`, hull labels also give triangles and the metal's feel, and **O** (or Orbit view in the menu) circles the camera round the ship, so flying up to a hull shows every side.
+- Faction coats and metal numbers: `src/render/look.ts` (`HULL_LOOK`) and `FEEL` in `render/enemies.ts`. Lit slits take `LAMP`; drives and fire keep `NEON` so a drive is never mistaken for ours.

@@ -10,7 +10,7 @@ import {
 } from '../sim/enemies';
 import { Kit, metal, seeded, type V3 } from './kit';
 import { GLOW, HULL_LOOK } from './look';
-import { capitalDesign, designFor } from './hulls';
+import { capitalDesign, designFor, eliteDesign, type Extent } from './hulls';
 import type { Effects } from './fx';
 import { STREAK, type Streaks } from './streaks';
 
@@ -44,12 +44,24 @@ export const NEON: Record<Faction, Color> = {
   voice: new Color(0.7, 3.6, 0.6),
   thren: new Color(3.0, 1.0, 3.4),
 };
+/**
+ * The light a hull shows from its own windows and slits (and its running lights): Custody's cyan optics, the Gutter's
+ * halogen amber, the Office's cold white line, a Voice furnace's orange, the Thren's magenta veins. The drives and
+ * the fire keep NEON (above), so a hull still reads as its faction from far off and a drive is never mistaken for ours.
+ */
+export const LAMP: Record<Faction, Color> = {
+  gutter: new Color(3.4, 1.9, 0.3),
+  custody: new Color(0.3, 2.8, 3.2),
+  office: new Color(2.6, 2.8, 3.1),
+  voice: new Color(3.6, 1.2, 0.25),
+  thren: new Color(3.2, 0.5, 3.0),
+};
 const WEB = new Color(2.2, 0.9, 3.4);
 
 /** A light on the hull, in model space: position, then length and width (a slit if they differ, a point if not). */
 type Lamp = [number, number, number, number, number];
 
-interface Model { root: Group; engines: V3[]; lamps: Lamp[]; }
+interface Model { root: Group; engines: V3[]; lamps: Lamp[]; lampColour?: Color; strobes?: V3[]; }
 
 function lamp(c: Color): MeshBasicMaterial {
   return new MeshBasicMaterial({ color: c, toneMapped: false });
@@ -67,10 +79,18 @@ const ELITE_GLOW: Record<EliteId, Color> = {
 };
 
 /** Rough extent of each hull: nose x, tail x, half-width z, deck height y. */
-const EXTENT: Partial<Record<AlienKind, [number, number, number, number]>> = {
+const EXTENT: Partial<Record<AlienKind, Extent>> = {
   scout: [1.0, -0.7, 1.0, 0.28], stalker: [1.0, -0.7, 1.0, 0.28], raptor: [1.25, -0.9, 0.8, 0.22],
   lancer: [1.18, -1.05, 0.55, 0.3], warbird: [1.1, -0.6, 1.0, 0.3], freighter: [1.05, -1.05, 0.4, 0.2],
 };
+/** The extent of the hulls `dress` leaves alone (the foundry cube, the crystal): where an elite's accessories hang. */
+const EXTENT_ELITE: Record<AlienKind, Extent> = {
+  scout: [1.0, -0.7, 1.0, 0.28], stalker: [1.0, -0.7, 1.0, 0.28], raptor: [1.25, -0.9, 0.8, 0.22],
+  lancer: [1.18, -1.05, 0.55, 0.3], warbird: [1.1, -0.6, 1.0, 0.3], freighter: [1.05, -1.05, 0.4, 0.2],
+  drone: [0.8, -0.8, 0.65, 0.75], weaver: [1.0, -0.9, 0.7, 0.4],
+};
+/** Warning strobes on an elite: a hard red, on and off. */
+const STROBE = new Color(3.4, 0.25, 0.2);
 
 /**
  * What makes a hull of one faction not another, on top of the archetype's
@@ -138,7 +158,7 @@ function dress(k: Kit, kind: AlienKind, f: Faction, rnd: () => number): void {
 /** A hull of unit radius, nose +X, in a faction's metal. */
 function build(kind: AlienKind, faction: Faction): Model {
   const design = designFor(kind, faction);
-  if (design) return { root: design.k.build(factionMaterials(faction), 0.04), engines: design.engines, lamps: design.lamps };
+  if (design) return { root: design.k.build(factionMaterials(faction), 0.04), engines: design.engines, lamps: design.lamps, lampColour: LAMP[faction] };
   const k = new Kit(), rnd = seeded(kind.length * 31 + kind.charCodeAt(0));
   const engines: V3[] = [];
   // Running lights and windows are not geometry: they are drawn as light
@@ -253,7 +273,7 @@ function build(kind: AlienKind, faction: Faction): Model {
     }
   }
   dress(k, kind, faction, seeded(kind.length * 17 + faction.length * 5));
-  return { root: k.build(factionMaterials(faction)), engines, lamps };
+  return { root: k.build(factionMaterials(faction)), engines, lamps, lampColour: LAMP[faction] };
 }
 
 /** The derelict for the sector event: a lancer hull, dark and dead. */
@@ -292,6 +312,15 @@ function crystalMaterial(body: number, glow: number, core = 0.01, name = 'thren-
 /** How hot a faction's lit slits run: the Office's are a thin quiet line, the Gutter's a working lamp. */
 const SLIT: Record<Faction, number> = { gutter: 0.9, custody: 0.85, office: 0.4, voice: 0.55, thren: 0.6 };
 
+/** How each faction's coat catches the light: the numbers the metal is made with, and what they are meant to read as. */
+const FEEL: Record<Faction, { roughness: number; metalness: number; finish: string }> = {
+  custody: { roughness: 0.45, metalness: 0.6, finish: 'enamelled gunmetal' },
+  gutter: { roughness: 0.85, metalness: 0.3, finish: 'matte, gritty salvage' },
+  office: { roughness: 0.6, metalness: 0.15, finish: 'radar-absorbent composite' },
+  voice: { roughness: 0.5, metalness: 0.75, finish: 'blackened iron and brass' },
+  thren: { roughness: 0.15, metalness: 0.1, finish: 'glassy crystal' },
+};
+
 const factionMats = new Map<string, Record<string, Material>>();
 /**
  * A faction's metal. `grain` multiplies the plating's repeats per model unit: a capital ship is drawn five times the
@@ -302,18 +331,19 @@ function factionMaterials(f: Faction, grain = 1): Record<string, Material> {
   let m = factionMats.get(id);
   if (!m) {
     const l = HULL_LOOK[f];
-    const coat = { painted: true, worn: Math.min(1, l.worn + (grain > 1 ? 0.12 : 0)), roughness: 0.62, metalness: 0.1, engine: NEON[f].clone().multiplyScalar(0.12) };
+    const feel = FEEL[f];
+    const coat = { painted: true, worn: Math.min(1, l.worn + (grain > 1 ? 0.12 : 0)), roughness: feel.roughness + 0.1, metalness: feel.metalness * 0.4, engine: NEON[f].clone().multiplyScalar(0.12) };
     const lit = (c: number, k: number) => new MeshStandardMaterial({ color: c, emissive: new Color(c).multiplyScalar(k), roughness: 0.4, metalness: 0.2 });
     m = {
-      hull: metal({ ...coat, tint: l.base, roughness: 0.6, metalness: 0.45, scale: 1.8 * grain }),
+      hull: metal({ ...coat, tint: l.base, roughness: feel.roughness, metalness: feel.metalness, scale: 1.8 * grain }),
       paint: metal({ ...coat, tint: l.paint, scale: 1.2 * grain }),
       patch: metal({ ...coat, tint: l.patch, scale: 1.4 * grain }),
-      dark: metal({ ...coat, tint: l.under, roughness: 0.55, metalness: 0.5, scale: 1.8 * grain }),
+      dark: metal({ ...coat, tint: l.under, roughness: feel.roughness - 0.05, metalness: feel.metalness, scale: 1.8 * grain }),
       trim: f === 'thren' ? lit(l.trim, GLOW.trim * 0.35) : metal({ ...coat, tint: l.trim, scale: 1.6 * grain, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.12) }),
-      glow: lamp(NEON[f].clone().multiplyScalar(SLIT[f])),
-      lamp: lamp(NEON[f].clone().multiplyScalar(0.9)),
-      crystal: crystalMaterial(l.paint, l.trim, 0.07),
-      violet: crystalMaterial(0x2a1040, 0x9a40ff, 0.5, 'thren-violet'),
+      glow: lamp(LAMP[f].clone().multiplyScalar(SLIT[f])),
+      lamp: lamp(LAMP[f].clone().multiplyScalar(0.9)),
+      crystal: crystalMaterial(l.paint, 0x0a6a6e, 0.05),
+      violet: crystalMaterial(0x2a1040, 0xd030e0, 0.5, 'thren-violet'),
     };
     factionMats.set(id, m);
   }
@@ -333,18 +363,23 @@ class HullView {
   /** Engine nozzles in model space, and whether the flares show. */
   readonly engines: V3[];
   readonly lamps: Lamp[];
+  readonly lampColour: Color | undefined;
+  readonly strobes: V3[] | undefined;
   flaring = true;
   readonly halo: Sprite;
   private cloaked = -1;
   /** `own`: its own materials, so it can fade (cloak) without fading every hull of its kind. */
-  constructor(readonly key: string, model: Model, glowTex: Texture, readonly colour: Color, readonly own = false) {
+  constructor(readonly key: string, model: Model, glowTex: Texture, readonly colour: Color, readonly own = false, extra?: Model) {
     const copy = model.root.clone();
+    if (extra) for (const c of extra.root.children) copy.add(c.clone());
     this.meshes = copy.children as Mesh[];
     if (own) for (const m of this.meshes) m.material = (m.material as Material).clone();
     this.mats = this.meshes.map((m) => m.material as Material);
     this.body.add(copy);
-    this.engines = model.engines;
-    this.lamps = model.lamps;
+    this.engines = extra ? [...model.engines, ...extra.engines] : model.engines;
+    this.lamps = extra ? [...model.lamps, ...extra.lamps] : model.lamps;
+    this.lampColour = model.lampColour;
+    this.strobes = extra?.strobes;
     this.halo = new Sprite(new SpriteMaterial({ map: glowTex, color: 0xffffff, blending: AdditiveBlending, depthWrite: false, opacity: 0.6 }));
     this.halo.visible = false;
     this.root.add(this.body, this.halo);
@@ -381,7 +416,7 @@ const LP = new Vector3(), LBACK = new Vector3(), LFWD = new Vector3();
  * world; `far` grows the flare with distance so a drive still shows from
  * across the sky.
  */
-function lights(streaks: Streaks, m: Matrix4, model: { engines: V3[]; lamps: Lamp[] }, colour: Color, size: number, burn: number, time: number, id: number, far: number, sync = false): void {
+function lights(streaks: Streaks, m: Matrix4, model: { engines: V3[]; lamps: Lamp[]; lampColour?: Color | undefined; strobes?: V3[] | undefined }, colour: Color, size: number, burn: number, time: number, id: number, far: number, sync = false): void {
   const flick = 1 + Math.sin(time * 31 + id) * 0.06;
   LBACK.set(-1, 0, 0).transformDirection(m);
   LFWD.set(1, 0, 0).transformDirection(m);
@@ -393,7 +428,16 @@ function lights(streaks: Streaks, m: Matrix4, model: { engines: V3[]; lamps: Lam
     if (!slit && blink < 0.05) continue;
     LP.set(lx, ly, lz).applyMatrix4(m);
     streaks.push(LP.x, LP.y, LP.z, LFWD.x, LFWD.y, LFWD.z,
-      Math.max(len * size, 0.05) * far, Math.max(wid * size, 0.05) * far, slit ? STREAK.slug : STREAK.orb, colour, blink * (slit ? 0.9 : 1.1), 0);
+      Math.max(len * size, 0.05) * far, Math.max(wid * size, 0.05) * far, slit ? STREAK.slug : STREAK.orb, model.lampColour ?? colour, blink * (slit ? 0.9 : 1.1), 0);
+  }
+  // an elite's warning strobes: hard red, on and off, the two sides out of step
+  if (model.strobes) {
+    for (let i = 0; i < model.strobes.length; i++) {
+      if (Math.sin(time * 11 + id + (i % 2 ? Math.PI : 0)) < 0.35) continue;
+      const q = model.strobes[i]!;
+      LP.set(q[0], q[1], q[2]).applyMatrix4(m);
+      streaks.push(LP.x, LP.y, LP.z, LFWD.x, LFWD.y, LFWD.z, Math.max(0.09 * size, 0.06) * far, Math.max(0.09 * size, 0.06) * far, STREAK.orb, STROBE, 1.3, 0);
+    }
   }
   for (const e of model.engines) {
     LP.set(e[0], e[1], e[2]).applyMatrix4(m);
@@ -474,6 +518,7 @@ class HullBatch {
 export class EnemyView {
   private readonly models = new Map<string, Model>();
   private readonly capitals = new Map<string, Model>();
+  private readonly elites = new Map<string, Model>();
   private readonly pools = new Map<string, HullView[]>();
   private readonly live = new Map<number, HullView>();
   private readonly batches = new Map<string, HullBatch>();
@@ -536,8 +581,27 @@ export class EnemyView {
     let m = this.capitals.get(key);
     if (!m) {
       const design = capitalDesign(kind, faction);
-      m = design ? { root: design.k.build(factionMaterials(faction, CAPITAL_GRAIN), 0.04), engines: design.engines, lamps: design.lamps } : this.model(kind, faction);
+      m = design ? { root: design.k.build(factionMaterials(faction, CAPITAL_GRAIN), 0.04), engines: design.engines, lamps: design.lamps, lampColour: LAMP[faction] } : this.model(kind, faction);
       this.capitals.set(key, m);
+    }
+    return m;
+  }
+
+  /** What a hull is made of, for the review benches: triangles in the fighter's model and in the capital's, and its metal. */
+  hullInfo(kind: AlienKind, faction: Faction): { tris: number; capitalTris: number; feel: string } {
+    const count = (g: Group) => { let n = 0; for (const c of g.children as Mesh[]) { const geo = c.geometry; n += (geo.index ? geo.index.count : geo.attributes.position!.count) / 3; } return n; };
+    const f = FEEL[faction];
+    return { tris: count(this.model(kind, faction).root), capitalTris: count(this.capitalModel(kind, faction).root), feel: `rough ${f.roughness} · metal ${f.metalness} · ${f.finish}` };
+  }
+
+  /** An elite's accessories for a hull, built once per elite, kind and faction. */
+  private dress(kind: AlienKind, faction: Faction, elite: EliteId): Model {
+    const key = `${elite}:${kind}:${faction}`;
+    let m = this.elites.get(key);
+    if (!m) {
+      const d = eliteDesign(elite, EXTENT_ELITE[kind], kind.length * 13 + elite.length * 7);
+      m = { root: d.k.build(factionMaterials(faction), 0.04), engines: d.engines, lamps: d.lamps, strobes: d.strobes };
+      this.elites.set(key, m);
     }
     return m;
   }
@@ -557,10 +621,10 @@ export class EnemyView {
   }
 
   private take(al: Alien): HullView {
-    const key = `${al.kind}:${al.faction}:${al.canCloak ? 1 : 0}`;
+    const key = `${al.kind}:${al.faction}:${al.canCloak ? 1 : 0}:${al.elite ?? ''}`;
     let pool = this.pools.get(key);
     if (!pool) { pool = []; this.pools.set(key, pool); }
-    const v = pool.pop() ?? new HullView(key, this.model(al.kind, al.faction), this.glowTex, NEON[al.faction], al.canCloak);
+    const v = pool.pop() ?? new HullView(key, this.model(al.kind, al.faction), this.glowTex, NEON[al.faction], al.canCloak, al.elite ? this.dress(al.kind, al.faction, al.elite) : undefined);
     this.scene.add(v.root);
     return v;
   }
@@ -747,7 +811,7 @@ export class EnemyView {
     const kind = { gutter: 'raptor', custody: 'lancer', office: 'warbird', voice: 'drone', thren: 'weaver' }[b.faction] as AlienKind;
     const model = this.capitalModel(kind, b.faction);
     // its own materials, so the cloak can fade them
-    const own: Model = { root: model.root.clone(), engines: model.engines, lamps: model.lamps };
+    const own: Model = { root: model.root.clone(), engines: model.engines, lamps: model.lamps, lampColour: model.lampColour };
     const mats: Material[] = [];
     for (const m of own.root.children as Mesh[]) { m.material = (m.material as Material).clone(); mats.push(m.material); }
     const hull = new HullView(kind, own, this.glowTex, NEON[b.faction]);
