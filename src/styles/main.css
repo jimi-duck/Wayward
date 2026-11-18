@@ -1569,6 +1569,17 @@ html:has(#comms:not([hidden])) #pause { display: none; }
 #pause .pause-card.term .voice::before { content: ">"; color: inherit; }
 #pause .pause-card.term .voice::after { content: none; }
 #pause .pause-card.term .voice:empty { display: none; }
+/* the objective: the label with where and when; the goal; a short brief; then facts in hairline rows */
+.p-ph { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.p-where { font: 400 12px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
+#pause .pause-card .p-brief { margin: -4px 0 0; font: 400 14px/1.5 var(--font-mono); letter-spacing: .01em; color: var(--ink-2); max-width: 46ch; }
+#pause .pause-card .p-brief[hidden] { display: none; }
+#pause .pause-card .p-facts { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+#pause .pause-card .p-facts li { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--p-rule); }
+#pause .pause-card .p-facts .k { font: 400 12px/1.3 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+#pause .pause-card .p-facts .v { font: 400 14px/1.35 var(--font-mono); color: var(--ink); }
+#pause .pause-card .p-facts li.caution .v { color: var(--caution); }
+#pause .pause-card .p-facts li.threat .v { color: var(--alert-text); }
 /* the keys: what it does on the left, small light caps on the right, a hairline between rows */
 #pause .pause-card .keys-l { display: grid; grid-template-columns: 1fr; gap: 0; max-width: none; margin: 0; }
 #pause .pause-card .keys-l > div { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 12px; min-height: 40px; padding: 4px 0; border-bottom: 1px solid var(--p-rule); }
@@ -1621,7 +1632,8 @@ html:has(#comms:not([hidden])) #pause { display: none; }
   .p-panel { gap: 6px; padding: 8px 12px; }
   #pause .pause-card .th { font-size: 10px; }
   #pause .pause-card .goal { font-size: 14px; }
-  #pause .pause-card .jobs { font-size: 11px; }
+  #pause .pause-card .p-facts, #pause .pause-card .p-ph { display: none; }
+  #pause .pause-card .p-brief { margin: 0; font-size: 11px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   #pause .pause-card.term .voice { padding-top: 6px; font-size: 10px; }
   #pause .pause-card .keys-l > div { min-height: 0; padding: 2px 0; gap: 8px; }
   #pause .pause-card .keys-l.only-touch-l dt, #pause .pause-card .keys-l.only-touch-l dd { font-size: 10px; letter-spacing: .04em; }

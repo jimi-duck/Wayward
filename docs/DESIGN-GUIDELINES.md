@@ -304,7 +304,7 @@ The HUD's gate line (`world.gateWhy`) always names what the player does next: fl
 
 - A wide, quiet flight terminal: the title and the ship's id at the top left, bare photo and settings icons at the top right (no frame, no words).
 - The camera row: label, three equal buttons (Chase, Wide, Cockpit; the chosen one amber), "Tab to cycle in flight" at the right on desktop.
-- Two plates side by side: Objective (the goal, the jobs, the ship's `>` line at the foot) and Controls (what it does on the left, small light keycaps on the right, a hairline between rows).
+- Two plates side by side: Objective (region and day by its label; the goal; the stop's brief, `RoadStop.brief` in `content/road.ts`, one or two short sentences, else its purpose; Here, Next and Behind you rows, then the jobs; the ship's `>` line at the foot; off the road only the goal, jobs and voice) and Controls (what it does on the left, small light keycaps on the right, a hairline between rows).
 - The ways out sit at the right, Save & exit then amber Resume; "Any key resumes" at the left on desktop.
 - Words are Share Tech Mono; the title and the goal are the display face. Buttons are chamfered Neon Glass (`.ng-n`).
-- Phones on their side drop the id line and the labels, so the card fits 568 x 320 without scrolling.
+- Phones on their side drop the id line, the labels and the fact rows (the brief keeps two lines), so the card fits 568 x 320 without scrolling.

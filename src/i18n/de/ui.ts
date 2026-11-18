@@ -636,6 +636,12 @@ export const UI: Record<string, string> = {
   'Steer & thrust': 'Lenken & Schub',
   'Brake': 'Bremsen',
   'Any key resumes': 'Jede Taste geht weiter',
+  // ── the pause card's Objective: where she is, what is next, who is behind ──
+  'Next': 'Als Nächstes',
+  'Behind you': 'Hinter dir',
+  'half a day behind': 'einen halben Tag hinter dir',
+  '1 day behind': '1 Tag hinter dir',
+  '{n} days behind': '{n} Tage hinter dir',
   'Save & exit': 'Speichern & beenden',
   'Auto-fire': 'Autofeuer',
   'Photo mode · any key or tap returns': 'Fotomodus · Taste oder Tippen bringt dich zurück',  // ── the roll secret ──

@@ -558,7 +558,7 @@ function boot(review: typeof import('./review') | null): void {
     if (on) {
       input.reset();
       showBrief();
-      showConsole(world);
+      showConsole(world, journey && world.mode === 'breakout' ? courseView(journey) : null);
     }
   };
   /** Photo mode, from the pause card: the HUD and the card step away and the camera drifts round the ship. Any key or tap brings the card back. */

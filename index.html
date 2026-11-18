@@ -578,9 +578,10 @@
         <div class="p-panels main-only">
           <section class="p-panel p-goal-s">
             <!-- the one thing to do now, the jobs taken on (src/sim/goal.ts), and the ship's line -->
-            <h3 class="th">Objective</h3>
+            <div class="p-ph"><h3 class="th">Objective</h3><span class="p-where" id="pause-where"></span></div>
             <p class="goal" id="pause-goal"></p>
-            <ul class="jobs" id="pause-jobs"></ul>
+            <p class="p-brief" id="pause-brief" hidden></p>
+            <ul class="jobs p-facts" id="pause-jobs"></ul>
             <div class="voice" id="pause-voice"></div>
           </section>
           <section class="p-panel p-keys-s">
