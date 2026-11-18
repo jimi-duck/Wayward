@@ -282,6 +282,8 @@ export class Environment {
     this.key.castShadow = size > 0;
     if (sh.mapSize.x !== size && size > 0) {
       sh.mapSize.set(size, size);
+      // a finer map gets a wider filter in texels, so the edge stays soft by the same small amount in the world
+      sh.radius = size >= 4096 ? 3.5 : 2;
       sh.map?.dispose();
       sh.map = null;
     }

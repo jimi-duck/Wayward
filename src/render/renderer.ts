@@ -1,9 +1,11 @@
 import { ACESFilmicToneMapping, NoToneMapping, PCFShadowMap, SRGBColorSpace, WebGLRenderer } from 'three';
 import type { QualityTier } from './quality';
+import { installAerial } from './aerial';
 
 // Medium and high tiers render through the post chain, which anti-aliases
 // and tone-maps itself; only the low tier asks the renderer to do either.
 export function createRenderer(canvas: HTMLCanvasElement, tier: QualityTier): WebGLRenderer {
+  installAerial();
   const direct = tier.name === 'low';
   const renderer = new WebGLRenderer({
     canvas,

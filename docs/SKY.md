@@ -113,3 +113,18 @@ landmark planet and sun on the key's bearing, fog in the nebula's colour, sunlit
 - **Dust glints** (`environment.ts`). Facing the star, single motes flash on their own beats; looking away they stay dull. 300 colour writes a frame, no allocation.
 
 Region mapping of the brief: Kethar Belt is the Salvage Belt (amber dust and teal), Black Reach is the Drift Deep and Last Lanes (indigo, violet, magenta accent), the Verge is the Breaker Yards (rust copper and steel teal). Not measured: GPU time.
+
+## Distance pass (2026-11-18, owner: far things looked grey and cut out)
+
+- **Aerial perspective** (`aerial.ts`, installed by `createRenderer`). Replaces three's fog chunks for every material. Toward
+  the star the haze is brighter and warm (in-scatter); away from it, the sky's colour. The haze takes contrast first and never
+  all of a thing (at most 84%, a lit face keeps 30% more), so far rock reads as lit stone in a coloured haze. The near
+  bubble's exp2 curve is unchanged. `thinFog` (monuments) patches the new line (`fogTint, fogFactor )`).
+- **Sky light on the limb** (`rocks.ts` `SKY_LIMB_*`). Every rock's edge takes a little of the nebula's colour (`WORLD_RIM`),
+  more with distance, so far rock is outlined against the sky instead of standing as a flat shape.
+- **Far rock detail.** The backdrop asteroids are full-detail shapes (icosphere 4, was 2), 150 of them (was 90); the far
+  clusters and the debris under the field use the field's stone shader, not flat facets.
+- **Sharper picture.** High: pixel ratio up to 2 (was 1.5), a 4096 sun shadow map (was 1024) with a wider filter; Medium:
+  1.5 and 1024. Phone and Low are unchanged.
+
+Not measured: real-GPU cost. The owner asked to put the look first; the governor still drops a tier on a slow machine.

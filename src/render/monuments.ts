@@ -27,7 +27,7 @@ export function thinFog<T extends Material>(m: T, k: number): T {
   const prev = m.onBeforeCompile, key = m.customProgramCacheKey.bind(m);
   m.onBeforeCompile = (sh, r) => {
     prev?.(sh, r);
-    sh.fragmentShader = sh.fragmentShader.replace('#include <fog_fragment>', ShaderChunk.fog_fragment.replace('fogColor, fogFactor )', `fogColor, fogFactor * ${k.toFixed(2)} )`));
+    sh.fragmentShader = sh.fragmentShader.replace('#include <fog_fragment>', ShaderChunk.fog_fragment.replace('fogTint, fogFactor )', `fogTint, fogFactor * ${k.toFixed(2)} )`));
   };
   m.customProgramCacheKey = () => `${key()}-fog${k.toFixed(2)}`;
   return m;
