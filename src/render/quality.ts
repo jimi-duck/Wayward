@@ -43,8 +43,8 @@ export interface QualityTier {
 export const TIERS: readonly QualityTier[] = [
   { name: 'low', dprCap: 1, msaa: false, smaa: null, shadow: 0, debris: 160, skyDetail: false },
   { name: 'phone', dprCap: 1, msaa: false, smaa: 'low', shadow: 512, debris: 320, skyDetail: false },
-  { name: 'medium', dprCap: 1.25, msaa: false, smaa: 'low', shadow: 512, debris: 480, skyDetail: true },
-  { name: 'high', dprCap: 1.5, msaa: true, smaa: 'high', shadow: 1024, debris: 800, skyDetail: true },
+  { name: 'medium', dprCap: 1.5, msaa: false, smaa: 'low', shadow: 1024, debris: 480, skyDetail: true },
+  { name: 'high', dprCap: 2, msaa: true, smaa: 'high', shadow: 4096, debris: 800, skyDetail: true },
 ];
 
 const EMA = 0.05;

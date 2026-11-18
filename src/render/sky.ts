@@ -1,6 +1,7 @@
-import { AdditiveBlending, BackSide, CanvasTexture, Color, DoubleSide, Euler, EquirectangularReflectionMapping, Group, IcosahedronGeometry, InstancedMesh, LinearFilter, Mesh, MeshLambertMaterial, MirroredRepeatWrapping, MeshStandardMaterial, Object3D, OrthographicCamera, PlaneGeometry, Quaternion, RepeatWrapping, RingGeometry, Scene, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, Vector3, Vector4, WebGLRenderTarget, type Texture, type WebGLRenderer } from 'three';
+import { AdditiveBlending, BackSide, CanvasTexture, Color, DoubleSide, Euler, EquirectangularReflectionMapping, Group, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, LinearFilter, Mesh, MirroredRepeatWrapping, MeshStandardMaterial, Object3D, OrthographicCamera, PlaneGeometry, Quaternion, RepeatWrapping, RingGeometry, Scene, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, Vector3, Vector4, WebGLRenderTarget, type Texture, type WebGLRenderer } from 'three';
 import { BEACON_CLOCK, farWorks } from './farworks';
 import { hulkModel } from './space';
+import { lavaRock, rockGeometry as stoneGeometry } from './rocks';
 import { glowTexture } from './textures';
 
 // ── the sky ───────────────────────────────────────────────────────────────
@@ -743,7 +744,8 @@ export class Parallax {
   private t = 0;
 
   constructor() {
-    this.debris = new InstancedMesh(rockGeometry(), new MeshStandardMaterial({ color: 0x1d1b1a, roughness: 0.95, metalness: 0.1, flatShading: true }), 46);
+    // the same stone as the field, at full detail: lit faces, cracks and a clean terminator, not flat facets
+    this.debris = new InstancedMesh(stoneGeometry(17.3, 3, 1, 0.4, 5), lavaRock(1.3, 0, 0.12), 46);
     this.debris.frustumCulled = false;
     for (let i = 0; i < this.debris.count; i++) {
       this.rocks.push({
@@ -754,7 +756,10 @@ export class Parallax {
     }
     this.group.add(this.debris);
     // lit by the sun like the near rock (flat facets), and lifted toward the sky's own haze so they sit back in it
-    this.far = new InstancedMesh(rockGeometry(), new MeshLambertMaterial({ color: 0xffffff, flatShading: true, fog: false }), FAR_ROCKS);
+    const farMat = lavaRock(1.2, 0, 0.15);
+    farMat.fog = false;
+    this.far = new InstancedMesh(stoneGeometry(23.9, 4, 2, 0.42, 6, [1.15, 0.85, 1]), farMat, FAR_ROCKS);
+    this.far.instanceColor = new InstancedBufferAttribute(new Float32Array(FAR_ROCKS * 3).fill(1), 3);
     this.far.frustumCulled = false;
     this.far.renderOrder = -4;
     this.group.add(this.far);
@@ -801,7 +806,7 @@ export class Parallax {
     this.farRocks.length = 0;
     // rock-brown faces turned toward the sky's colour (hazier and bluer the further out), and a glow of that haze in the shadows
     const base = new Color(), shade = new Color(0x4a4440).lerp(sky.neb[0], 0.3);
-    (this.far.material as MeshLambertMaterial).emissive.copy(sky.neb[0]).lerp(sky.neb[1], 0.3).multiplyScalar(0.16);
+    (this.far.material as MeshStandardMaterial).emissive.copy(sky.neb[0]).lerp(sky.neb[1], 0.3).multiplyScalar(0.16);
     const cx = Array.from({ length: knots }, () => ({ x: fr() * FAR_BOX, z: fr() * FAR_BOX, y: -330 - fr() * 260, w: 70 + fr() * 110 }));
     for (let i = 0; i < FAR_ROCKS; i++) {
       const k = cx[i % knots]!, a = fr() * Math.PI * 2, d = Math.sqrt(fr()) * k.w;
@@ -853,18 +858,6 @@ export class Parallax {
     }
     this.debris.instanceMatrix.needsUpdate = true;
   }
-}
-
-function rockGeometry() {
-  const g = new IcosahedronGeometry(1, 1);
-  const p = g.attributes.position!;
-  for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-    const n = 0.75 + 0.5 * Math.abs(Math.sin(x * 4.1 + y * 2.3) * Math.cos(z * 3.7 - x));
-    p.setXYZ(i, x * n, y * n * 0.8, z * n);
-  }
-  g.computeVertexNormals();
-  return g;
 }
 
 const wisps: Texture[] = [];

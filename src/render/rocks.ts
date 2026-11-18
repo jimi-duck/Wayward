@@ -7,7 +7,7 @@ import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { STEP } from '../core/loop';
 import { fbm } from '../core/noise';
 import { BULWARK_VARIANTS, ROCK_VARIANTS, type Bulwark, type Rock, type RockKind } from '../sim/field';
-import { PERTURB, seeded } from './kit';
+import { PERTURB, seeded, WORLD_RIM } from './kit';
 
 // ── rock ──────────────────────────────────────────────────────────────────
 // Dark, dusty stone, split by fissures; basalt keeps a dull ember in its thinnest cracks. The shapes are built once
@@ -23,7 +23,7 @@ import { PERTURB, seeded } from './kit';
 // three-dimensional.
 
 const PER_VARIANT = 48;
-const BACKDROP = 90;
+const BACKDROP = 150;
 const BACK_BOX = 760;
 
 /** GLSL 3D simplex noise (after Ashima Arts / Stefan Gustavson, MIT). */
@@ -111,6 +111,8 @@ const ROCK_RIM = 0.9;
 const ROCK_EDGE = '0.0';
 /** On the face turned from the sun, how much of the other directional light (the cool rim) and the sky's fill stone keeps. */
 const ROCK_NIGHT = 0.12;
+/** The sky's light on a rock's limb, near and far (times WORLD_RIM, the nebula's colour). */
+const SKY_LIMB_NEAR = 0.05, SKY_LIMB_FAR = 1.0;
 /**
  * The lights chunk with one change for stone: every directional light after the sun (index 0, the key) is dimmed on the
  * side of the rock turned away from the sun, judged on the smooth shape rather than the bumped surface, so the night side
@@ -132,6 +134,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
   const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: look.metal, envMapIntensity: 0.35, vertexColors: true });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = lavaTime;
+    shader.uniforms.uSkyRim = WORLD_RIM;
     shader.uniforms.uDetail = { value: detail };
     shader.uniforms.uLava = { value: lava };
     shader.uniforms.uBump = { value: bump };
@@ -151,7 +154,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
         varying vec3 vRockP; varying float vHit; uniform float uTime; uniform float uDetail; uniform float uLava; uniform float uBump;
-        uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse; uniform float uMineral; uniform float uStrata; uniform float uRim; uniform float uEmber; uniform float uViolet; uniform float uCool;
+        uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse; uniform float uMineral; uniform float uStrata; uniform float uRim; uniform float uEmber; uniform float uViolet; uniform float uCool; uniform vec3 uSkyRim;
         ${SIMPLEX}
         ${PERTURB}
         float rockFbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * snoise(p); p = p * 2.07 + 11.3; a *= 0.5; } return s; }`)
@@ -238,10 +241,14 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
           float facing = clamp(dot(normal, sunL) + 0.15, 0.0, 1.0);
           float behind = clamp(dot(-viewV, sunL), 0.0, 1.0);
           totalEmissiveRadiance += directionalLights[0].color * diffuseColor.rgb * limb * (facing * ${ROCK_RIM.toFixed(2)} + behind * facing * ${(ROCK_RIM * 1.5).toFixed(2)});
+          // the sky's own light on the limb: the nebula behind a rock lights its edge in its colour, more the further off it is,
+          // so a far rock is outlined in the sky's colour instead of standing as a flat cut-out
+          float skyLimb = pow(1.0 - clamp(dot(normalize(nonPerturbedNormal), viewV), 0.0, 1.0), 3.5);
+          totalEmissiveRadiance += uSkyRim * skyLimb * (${SKY_LIMB_NEAR.toFixed(2)} + ${SKY_LIMB_FAR.toFixed(2)} * smoothstep(25.0, 160.0, length(vViewPosition)));
         #endif
         #include <aomap_fragment>`);
   };
-  m.customProgramCacheKey = () => `stone-rock15-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
+  m.customProgramCacheKey = () => `stone-rock16-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 
@@ -537,7 +544,8 @@ export class RockView {
     this.backBase = new Float32Array(per * 3 * 8);
     const rnd = seeded(99);
     for (let k = 0; k < 3; k++) {
-      const mesh = new InstancedMesh(rockGeometry(k * 2.9 + 40, 2, 1, 0.42, 3), backMat, per);
+      // full detail: through the haze a far rock shows its lit faces and broken edges, so its outline must hold up too
+      const mesh = new InstancedMesh(rockGeometry(k * 2.9 + 40, 4, 2, 0.4, 7, k === 1 ? [1.35, 0.8, 0.85] : [1, 0.92, 1]), backMat, per);
       mesh.frustumCulled = false;
       this.backdrop.push(mesh);
       scene.add(mesh);
