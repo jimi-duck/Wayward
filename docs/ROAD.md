@@ -127,11 +127,15 @@ The owner found Story a breeze, so the run bites harder (plan: "Make the run bit
 
 On a road journey the menu's resume lines read Current journey, Previously (the stop she is at and its purpose) and Next stop with its purpose (`main.ts paintJourney`, from `courseView`). Short phones hide the region line, which the chapter recap already names, and keep each value on one line.
 
+## The pause card's brief
+
+The pause card's Objective gives a little more than the HUD (18 November 2026). Each stop's `brief` in `content/road.ts`, and each gate's in `GATES`, is one or two short sentences (30 words at most) on who, why and what is at stake. It does not repeat the goal, Here, Next or Behind you. Without one the card shows the stop's `purpose`. Phones show its first sentence only. The German twins are in `src/i18n/de/briefs.ts`; `tests/briefs.test.ts` checks every stop and gate has one. A brief states the stop, not the player's choices so far, so it reads the same whichever way she played.
+
 ## Add a stop
 
 1. Add a row to its leg (`ROAD`, `MARCHES` … `LAST`) with a `script` key.
 2. Add rows in `content/script/` with `stop` set to that key (or `*`).
-3. Every English line needs a twin in `src/i18n/de/overhaul.ts`. Comms lines
+3. Give it a `purpose` and a `brief` (twins in `src/i18n/de/course.ts` and `briefs.ts`). Every English line needs a twin in `src/i18n/de/overhaul.ts`. Comms lines
    stay at 15 words or fewer.
 4. A new card goes in `content/story.ts` with its Wall clue in `wall.ts`.
 5. `tests/reach.test.ts` and `tests/overhaul.test.ts` check every row has a stop and a real card.

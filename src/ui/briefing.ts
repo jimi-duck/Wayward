@@ -22,7 +22,9 @@ export function showConsole(w: World, c: Course | null = null): void {
   // where and when, beside the plate's label
   $('pause-where').textContent = c ? `${t(c.region)} · ${t('Day {n}', { n: c.day })}` : '';
   // the brief: the stop's own words, else its purpose, never the goal again
-  const brief = c ? sentence(t(c.here.brief || c.here.purpose)) : '';
+  const full = c ? sentence(t(c.here.brief || c.here.purpose)) : '';
+  // a phone's plate has room for one sentence of it
+  const brief = typeof matchMedia === 'function' && matchMedia('(max-height: 520px)').matches ? firstSentence(full) : full;
   const bEl = $('pause-brief');
   bEl.textContent = brief && !same(brief, goal) ? brief : '';
   bEl.hidden = !bEl.textContent;
@@ -52,6 +54,11 @@ function behind(days: number): string {
 function sentence(s: string): string {
   const v = s.trim();
   return v ? `${v[0]!.toUpperCase()}${v.slice(1)}${/[.!?…]$/.test(v) ? '' : '.'}` : '';
+}
+
+/** The first sentence of a brief, whole. */
+function firstSentence(s: string): string {
+  return /^.*?[.!?](?=\s|$)/.exec(s)?.[0] ?? s;
 }
 
 /** Whether two lines say the same thing, near enough (the purpose often is the goal). */

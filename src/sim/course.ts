@@ -114,7 +114,7 @@ export function courseView(j: Journey): Course | null {
   return {
     region: regionDef(c, leg)?.name ?? 'The Reach',
     day: Math.floor(j.day) + 1,
-    here: { name: s.name, kind: s.kind, purpose: (pos >= 0 ? rows[pos]?.purpose : '') ?? '', brief: (pos >= 0 ? rows[pos]?.brief : '') ?? '' },
+    here: { name: s.name, kind: s.kind, purpose: (pos >= 0 ? rows[pos]?.purpose : '') ?? '', brief: (pos >= 0 ? rows[pos]?.brief : s.kind === 'gate' || s.kind === 'edge' ? GATES[leg - 1]?.brief : '') ?? '' },
     goal: { ...gateLayer, jumps: R - pos },
     aim,
     next: stop(pos + 1),
