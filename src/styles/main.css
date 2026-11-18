@@ -1528,97 +1528,105 @@ html.photo #hud, html.photo #pause, html.photo #touch, html.photo #pause-b, html
 /* a card on the table hides the pause card: its words must not show through the glass */
 html:has(#comms:not([hidden])) #pause { display: none; }
 
-/* ── the pause card, to the owner's mockup (2026-11-18) ────────────────────
-   Callsign, ALL STOP and the ship's line; then ruled sections: Objective, Camera (three views, the chosen one in the
-   hand's amber; Tab cycles them in flight), Controls as keycaps; amber Resume and a flat Save & exit. Photo mode and
-   Settings are icons top right. Neon Glass throughout: chamfered nested buttons (.ng-n), Share Tech Mono for the words.
+/* ── the pause card: a flight terminal (owner's mockups, 18 November 2026) ──
+   Wide and quiet: the title and the ship's id with bare photo and settings icons; the camera row (three views, the chosen
+   one amber; Tab cycles them in flight); the objective and the controls side by side on darker plates; the two ways out
+   at the right, Resume amber. Buttons are chamfered Neon Glass (.ng-n); words Share Tech Mono.
    Its rules use --p-rule, not --line: neon.css registers --line as a percentage, so a colour in it never paints. */
-#pause .pause-card { --p-rule: rgba(var(--white-rgb), .16); }
-#pause .pause-card.term { width: min(580px, 94vw); gap: 14px; }
-#pause .pause-card .term-h { padding: 4px 116px 10px 0; border-bottom: 1px solid var(--p-rule); font: 400 14px/1 var(--font-mono); letter-spacing: .14em; }
-#pause .pause-card .th-id, #pause .pause-card .th-id b, #pause .pause-card .th-id i { gap: 0; font: inherit; font-weight: 400; color: var(--teal-bright); opacity: 1; }
-#pause .pause-card .th-id i::before, #pause .pause-card .th-arcade em::before { content: "·"; margin: 0 .6em; }
-#pause .pause-card .th-arcade { padding-right: 0; }
-#pause .pause-card .th-arcade i { margin-left: 0; }
-.p-icons { position: absolute; top: 22px; right: 36px; z-index: 2; display: flex; gap: 14px; }
-#pause .p-icons button { position: relative; top: auto; right: auto; display: grid; place-items: center; width: 48px; height: 42px; padding: 0; color: var(--ink); }
+#pause .pause-card { --p-rule: rgba(var(--white-rgb), .1); --p-plate: rgba(var(--void-rgb), .32); --p-gap: 16px; }
+#pause .pause-card.term { width: min(1040px, 94vw); max-width: min(1040px, 94vw); gap: var(--p-gap); justify-items: stretch; text-align: left; }
+/* the head */
+.p-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding-bottom: var(--p-gap); border-bottom: 1px solid var(--p-rule); }
+.p-title { display: grid; gap: 8px; min-width: 0; }
+#pause .pause-card.term .pause-t { font: 700 30px/1 var(--font-head); letter-spacing: .1em; padding: 0; text-transform: uppercase; color: var(--ink); }
+#pause .pause-card .th-id { display: flex; gap: 0; font: 400 13px/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--teal-bright); }
+#pause .pause-card .th-id b, #pause .pause-card .th-id i, #pause .pause-card .th-id em { font: inherit; font-style: normal; color: inherit; opacity: 1; margin: 0; }
+#pause .pause-card .th-id i::before, #pause .pause-card .th-arcade em::before { content: "·"; margin: 0 .7em; }
+#pause .pause-card .th-arcade { width: auto; padding: 0; }
+/* photo and settings: bare icons, 40px to tap */
+.p-icons { display: flex; gap: 6px; margin: -6px -8px 0 0; }
+#pause .p-icons button { position: static; display: grid; place-items: center; width: 40px; height: 40px; padding: 0;
+  border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--ink-2); cursor: pointer; transition: color .14s var(--ez); }
 #pause .p-icons .ico { display: block; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; }
-#pause .p-icons button:hover, #pause .p-icons button:focus-visible { color: var(--rim-cyan); }
-.pause-head { display: grid; gap: 10px; margin-top: 4px; }
-#pause .pause-card.term .pause-t { font: 700 clamp(30px, 5vw, 46px)/1 var(--font-head); letter-spacing: .08em; color: var(--ink); }
-#pause .pause-card.term .voice { font: 400 17px/1.25 var(--font-mono); letter-spacing: .04em; color: var(--teal-bright); opacity: 1; }
+#pause .p-icons button:hover, #pause .p-icons button:focus-visible { color: var(--rim-cyan); border: 0; }
+#pause .p-icons button:focus-visible { outline: 2px solid var(--blue); outline-offset: 0; }
+/* section labels: small teal caps */
+#pause .pause-card .th { display: block; margin: 0; font: 400 12px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--teal-bright); }
+#pause .pause-card .th::after { content: none; }
+/* the camera row: label, three buttons, the hint */
+.p-cam-s { display: grid; grid-template-columns: 150px minmax(0, 480px) 1fr; align-items: center; gap: 20px; padding-bottom: var(--p-gap); border-bottom: 1px solid var(--p-rule); }
+.p-cam { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+#pause .p-cam button { min-height: 40px; padding: 0 8px; font: 400 13px/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); }
+#pause .p-cam button.on { --rim: var(--rim-ochre); --ng-n: var(--ngn-ochre); --ng-n-hi: var(--ngn-ochre-hi); --ng-n-press: var(--ngn-ochre-press); color: var(--ochre); }
+#pause .p-cam button:not(.on):hover, #pause .p-cam button:not(.on):focus-visible { color: var(--ink); }
+.p-hint { justify-self: end; margin: 0; font: 400 12px/1.2 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+/* the two plates */
+.p-panels { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: var(--p-gap); }
+.p-panel { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding: 20px 24px; background: var(--p-plate); border: 1px solid var(--p-rule); }
+#pause .pause-card .goal { margin: 0; font: 500 22px/1.3 var(--font-display); letter-spacing: 0; color: var(--ink); }
+#pause .pause-card .jobs { font: 400 14px/1.35 var(--font-mono); color: var(--ink-2); }
+#pause .pause-card.term .voice { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--p-rule); font: 400 13px/1.3 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--teal-bright); opacity: 1; }
 #pause .pause-card.term .voice::before { content: ">"; color: inherit; }
 #pause .pause-card.term .voice::after { content: none; }
-#pause .pause-card .term-s { gap: 10px; padding-top: 14px; border-top: 1px solid var(--p-rule); }
-#pause .pause-card .th { font: 400 14px/1 var(--font-mono); letter-spacing: .1em; color: var(--ink-2); }
-#pause .pause-card .th::after { content: none; }
-#pause .pause-card .goal { font: 400 18px/1.35 var(--font-mono); letter-spacing: .02em; color: var(--ink); }
-#pause .pause-card .jobs { font: 400 15px/1.35 var(--font-mono); }
-/* the camera: three equal buttons, the chosen one amber */
-.p-cam { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
-#pause .p-cam button { min-height: 44px; padding: 0 8px; font: 400 16px/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
-#pause .p-cam button.on { --rim: var(--rim-ochre); --ng-n: var(--ngn-ochre-hi); --ng-n-hi: var(--ngn-ochre-hi); --ng-n-press: var(--ngn-ochre-press); color: var(--ochre); }
-#pause .p-cam button:not(.on):hover, #pause .p-cam button:not(.on):focus-visible { color: var(--ink); }
-.p-hint { margin: 2px 0 0; font: 400 15px/1.2 var(--font-mono); letter-spacing: .04em; color: var(--ink-2); }
-/* the keys: caps, then what they do */
-#pause .pause-card .keys-l.only-keys { display: grid; grid-template-columns: 1fr; gap: 10px; }
-#pause .pause-card .keys-l.only-keys div { display: flex; grid-template-columns: none; align-items: center; gap: 40px; }
-#pause .pause-card .keys-l.only-keys dt { display: flex; align-items: center; gap: 6px; min-width: 118px; }
-#pause .pause-card .keys-l.only-keys dt i { font: 400 15px/1 var(--font-mono); font-style: normal; color: var(--ink-2); margin: 0 3px; }
-#pause .pause-card .keys-l kbd { min-width: 30px; height: 30px; padding: 0 8px; border: 1px solid rgba(var(--white-rgb), .28); border-radius: 0; background: rgba(var(--white-rgb), .03); box-shadow: none;
-  font: 400 15px/1 var(--font-mono); color: var(--ink); }
-#pause .pause-card .keys-l dt.w kbd { width: 118px; justify-content: start; place-items: center start; padding: 0 14px; }
-#pause .pause-card .keys-l dd { font: 400 15px/1.2 var(--font-mono); letter-spacing: .04em; text-transform: none; color: var(--ink-2); }
-.touch-ui:not(.pad-ui) #pause .pause-card .only-keys, .pad-ui #pause .pause-card .only-keys { display: none; }
-/* older rules (#p-set, .pause-acts button) set a plain border, which drops the Neon Glass frame: put it back, hover and press too */
-#pause :is(.p-icons, .pause-acts.main-only, .p-cam) button.ng-n { border: 0 solid transparent; border-radius: 0; background: none; box-shadow: none;
-  border-image: var(--ng-n) var(--ngn-slice) fill / calc(var(--ngn-slice) * 1px) / var(--ngn-out) stretch; }
-#pause :is(.p-icons, .pause-acts.main-only, .p-cam) button.ng-n:is(:hover, :focus-visible) { border-image-source: var(--ng-n-hi); }
-#pause :is(.p-icons, .pause-acts.main-only, .p-cam) button.ng-n:active { border-image-source: var(--ng-n-press); }
-/* the two ways out: amber Resume, a flat Save & exit */
-#pause .pause-acts.main-only { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; padding-top: 16px; border-top: 1px solid var(--p-rule); }
+#pause .pause-card.term .voice:empty { display: none; }
+/* the keys: what it does on the left, small light caps on the right, a hairline between rows */
+#pause .pause-card .keys-l { display: grid; grid-template-columns: 1fr; gap: 0; max-width: none; margin: 0; }
+#pause .pause-card .keys-l > div { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 12px; min-height: 40px; padding: 4px 0; border-bottom: 1px solid var(--p-rule); }
+#pause .pause-card .keys-l > div:last-child { border-bottom: 0; }
+#pause .pause-card .keys-l dd { order: -1; margin: 0; font: 400 13px/1.2 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
+#pause .pause-card .keys-l dt { display: flex; align-items: center; gap: 6px; min-width: 0; font: 400 13px/1.2 var(--font-mono); letter-spacing: .04em; color: var(--ink-2); text-transform: none; }
+#pause .pause-card .keys-l dt i { font: 400 13px/1 var(--font-mono); font-style: normal; color: var(--ink-3); margin: 0 4px; }
+#pause .pause-card .keys-l kbd { min-width: 26px; height: 26px; padding: 0 7px; border: 1px solid rgba(var(--white-rgb), .26); border-radius: 0; background: none; box-shadow: none;
+  font: 400 13px/1 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--ink); }
+#pause .pause-card .keys-l dt.w kbd { min-width: 72px; }
+#pause .pause-card .only-touch-l, #pause .pause-card .only-pad { display: none; }
+.touch-ui:not(.pad-ui) #pause .pause-card .only-touch-l, .pad-ui #pause .pause-card .only-pad { display: grid; }
+.touch-ui #pause .pause-card .only-keys, .pad-ui #pause .pause-card .only-keys { display: none; }
+#pause .pause-card .keys-l.only-touch-l > div { grid-template-columns: 150px minmax(0, 1fr); }
+/* the ways out, at the right; a quiet note at the left */
+#pause .pause-acts.main-only { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding: var(--p-gap) 0 0; border-top: 1px solid var(--p-rule); }
 #pause.settings-on .pause-acts.main-only { display: none; }
-#pause .pause-acts.main-only button { justify-content: center; min-height: 54px; padding: 0 12px; font: 700 18px/1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
-:lang(de) #pause .pause-acts.main-only button { letter-spacing: .05em; }
-#pause .pause-card #p-go { color: var(--ochre) !important; }
+.p-any { margin-right: auto; font: 400 12px/1.2 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+#pause :is(.pause-acts.main-only, .p-cam) button.ng-n { border: 0 solid transparent; border-radius: 0; background: none; box-shadow: none;
+  border-image: var(--ng-n) var(--ngn-slice) fill / calc(var(--ngn-slice) * 1px) / var(--ngn-out) stretch; }
+#pause :is(.pause-acts.main-only, .p-cam) button.ng-n:is(:hover, :focus-visible) { border-image-source: var(--ng-n-hi); }
+#pause :is(.pause-acts.main-only, .p-cam) button.ng-n:active { border-image-source: var(--ng-n-press); }
+#pause .pause-acts.main-only button { justify-content: center; min-width: 190px; min-height: 46px; padding: 0 22px; font: 600 15px/1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
+:lang(de) #pause .pause-acts.main-only button { letter-spacing: .06em; }
+#pause .pause-card #p-go { min-width: 230px; color: var(--ochre) !important; }
 #pause .pause-card #p-go::before { content: none; }
-#pause .pause-card #p-exit { color: var(--ink-2); background: none; }
-#pause .pause-card #p-exit:hover, #pause .pause-card #p-exit:focus-visible { color: var(--ink); }
-/* a phone on its side: one screen; the callsign goes, objective and camera sit side by side */
-@media (max-height: 520px) {
-  #pause .pause-card.term { width: min(760px, 96vw); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 22px; row-gap: 8px; }
-  #pause .pause-card.term > * { grid-column: 1 / -1; }
-  #pause .pause-card.term > .p-goal-s { grid-column: 1; }
-  #pause .pause-card.term > .p-cam-s { grid-column: 2; }
-  .p-icons { top: 12px; right: 22px; gap: 10px; }
-  #pause .p-icons button { width: 44px; height: 40px; }
-  .pause-head { gap: 4px; margin: 0; padding-right: 110px; }
-  #pause .pause-card.term .pause-t { font-size: 22px; }
-  #pause .pause-card.term .voice { font-size: 12px; }
-  .pause-head { gap: 3px; }
-  #pause .pause-card.term { row-gap: 6px; }
-  #pause .pause-card .term-s { gap: 5px; padding-top: 6px; }
-  #pause .pause-card .th { display: flex; font-size: 10px; }
-  #pause .pause-card .goal { font-size: 14px; }
-  #pause .pause-card .jobs { font-size: 12px; }
-  .p-cam { gap: 8px; }
-  #pause .p-cam button { min-height: 40px; font-size: 13px; letter-spacing: .06em; }
-  #pause .pause-card .keys-l.only-touch-l { gap: 3px 12px; }
-  #pause .pause-card .keys-l.only-touch-l div { gap: 1px; }
-  #pause .pause-card .keys-l.only-touch-l dt { font: 400 11px/1.2 var(--font-mono); letter-spacing: .03em; color: var(--ink); }
-  #pause .pause-card .keys-l.only-touch-l dd { font-size: 11px; line-height: 1.2; letter-spacing: .03em; }
-  #pause .pause-acts.main-only { gap: 14px; padding-top: 6px; }
-  #pause .pause-acts.main-only button { min-height: 40px; font-size: 15px; }
+#pause .pause-card #p-exit { color: var(--ink); background: none; }
+/* the Settings face keeps the head; its rows sit under it */
+#pause.settings-on .p-top { border-bottom: 0; padding-bottom: 0; }
+#pause.settings-on .pause-card.term { width: min(640px, 94vw); }
+/* a narrower window: the plates stack */
+@media (max-width: 820px) and (min-height: 521px) {
+  .p-panels { grid-template-columns: 1fr; }
+  .p-cam-s { grid-template-columns: 1fr; gap: 10px; }
+  .p-hint { justify-self: start; }
 }
-#pause .p-icons button:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
-/* a laptop window: the same card, a little tighter, so it fits 720 high */
-@media (min-height: 521px) and (max-height: 800px) {
-  #pause .pause-card.term { gap: 10px; }
-  #pause .pause-card .term-s { gap: 8px; padding-top: 10px; }
-  #pause .pause-card.term .pause-t { font-size: 40px; }
-  .pause-head { gap: 8px; margin-top: 0; }
-  #pause .pause-card .keys-l.only-keys { gap: 7px; }
-  #pause .pause-card .keys-l kbd { min-width: 28px; height: 28px; }
-  #pause .pause-acts.main-only { padding-top: 12px; }
-  #pause .pause-acts.main-only button { min-height: 48px; }
+/* a phone on its side: one screen, everything a step smaller; the camera label, the hint and the note go */
+@media (max-height: 520px) {
+  #pause .pause-card { --p-gap: 7px; }
+  #pause .pause-card.term { width: min(860px, 97vw); max-width: min(860px, 97vw); }
+  .p-title { gap: 4px; }
+  #pause .pause-card.term .pause-t { font-size: 20px; }
+  #pause .pause-card .th-id { font-size: 10px; }
+  .p-icons { margin: -8px -10px 0 0; gap: 0; }
+  .p-cam-s { grid-template-columns: 1fr; }
+  #pause .pause-card .p-cam-s > .th, #pause .pause-card .th-id { display: none; }
+  #pause .pause-card .p-panel > .th { display: none; }
+  .p-cam { gap: 8px; }
+  #pause .p-cam button { font-size: 12px; letter-spacing: .1em; }
+  .p-panel { gap: 6px; padding: 8px 12px; }
+  #pause .pause-card .th { font-size: 10px; }
+  #pause .pause-card .goal { font-size: 14px; }
+  #pause .pause-card .jobs { font-size: 11px; }
+  #pause .pause-card.term .voice { padding-top: 6px; font-size: 10px; }
+  #pause .pause-card .keys-l > div { min-height: 0; padding: 2px 0; gap: 8px; }
+  #pause .pause-card .keys-l.only-touch-l dt, #pause .pause-card .keys-l.only-touch-l dd { font-size: 10px; letter-spacing: .04em; }
+  #pause .pause-card .keys-l.only-touch-l > div { grid-template-columns: auto minmax(0, 1fr); }
+  #pause .pause-card .keys-l.only-touch-l dt { justify-content: end; text-align: right; }
+  #pause .pause-acts.main-only button { min-width: 0; min-height: 40px; padding: 0 16px; font-size: 13px; }
+  #pause .pause-card #p-go { min-width: 150px; }
 }

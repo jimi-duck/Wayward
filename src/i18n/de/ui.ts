@@ -635,6 +635,7 @@ export const UI: Record<string, string> = {
   // ── the pause card's keys and buttons ──
   'Steer & thrust': 'Lenken & Schub',
   'Brake': 'Bremsen',
+  'Any key resumes': 'Jede Taste geht weiter',
   'Save & exit': 'Speichern & beenden',
   'Auto-fire': 'Autofeuer',
   'Photo mode · any key or tap returns': 'Fotomodus · Taste oder Tippen bringt dich zurück',  // ── the roll secret ──

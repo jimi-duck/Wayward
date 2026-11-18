@@ -552,27 +552,20 @@
     <div id="pause" role="status">
       <div class="pause-card panel term">
         <i class="wear v3" aria-hidden="true"></i>
-        <!-- a terminal readout: the ship's id and state, the title and the ship's one line, the orders, the status key, the controls, then what you can do -->
-        <header class="term-h">
-          <span class="th-id story-only"><b>Wayward</b><i>OB-7731-A</i></span>
-          <span class="th-id th-arcade arcade-only"><b>Wayward</b><em>Arcade mode</em><i>Survival run</i></span>
+        <!-- a flight terminal (owner's mockups, 18 November): the title and the ship's id, bare icons; the camera row; the
+             objective and the controls side by side; the two ways out at the right -->
+        <header class="p-top">
+          <div class="p-title">
+            <div class="pause-t" id="pause-t">All stop</div>
+            <span class="th-id story-only"><b>Wayward</b><i>OB-7731-A</i></span>
+            <span class="th-id th-arcade arcade-only"><b>Wayward</b><em>Arcade mode</em><i>Survival run</i></span>
+          </div>
+          <div class="p-icons main-only">
+            <button type="button" id="p-photo" aria-label="Photo mode"><svg class="ico"><use href="#i-photo"/></svg></button>
+            <button type="button" id="p-set" aria-label="Settings"><svg class="ico"><use href="#i-gear"/></svg></button>
+          </div>
         </header>
-        <!-- top right: photo mode and Settings, as icons -->
-        <div class="p-icons main-only">
-          <button type="button" class="ng-n dim" id="p-photo" aria-label="Photo mode"><svg class="ico"><use href="#i-photo"/></svg></button>
-          <button type="button" class="ng-n dim" id="p-set" aria-label="Settings"><svg class="ico"><use href="#i-gear"/></svg></button>
-        </div>
-        <div class="pause-head">
-          <div class="pause-t" id="pause-t">All stop</div>
-          <div class="voice" id="pause-voice"></div>
-        </div>
-        <section class="term-s main-only p-goal-s">
-          <!-- the one thing to do now, and the jobs taken on (src/sim/goal.ts) -->
-          <h3 class="th">Objective</h3>
-          <p class="goal" id="pause-goal"></p>
-          <ul class="jobs" id="pause-jobs"></ul>
-        </section>
-        <section class="term-s main-only p-cam-s">
+        <section class="p-cam-s main-only">
           <!-- the camera: three views, the chosen one in the hand's amber; Tab cycles them in flight (main.ts) -->
           <h3 class="th">Camera</h3>
           <div class="p-cam" id="p-cam" role="group" aria-label="Camera">
@@ -582,15 +575,22 @@
           </div>
           <p class="p-hint only-desktop">Tab to cycle in flight</p>
         </section>
-        <section class="term-s main-only p-keys-s">
-          <h3 class="th">Controls</h3>
-          <!-- the controls for what you play with: keys, touch or a pad -->
-          <!-- every mode shows the whole set for the device: the roll is how a run survives late -->
+        <div class="p-panels main-only">
+          <section class="p-panel p-goal-s">
+            <!-- the one thing to do now, the jobs taken on (src/sim/goal.ts), and the ship's line -->
+            <h3 class="th">Objective</h3>
+            <p class="goal" id="pause-goal"></p>
+            <ul class="jobs" id="pause-jobs"></ul>
+            <div class="voice" id="pause-voice"></div>
+          </section>
+          <section class="p-panel p-keys-s">
+            <h3 class="th">Controls</h3>
+            <!-- the controls for what you play with: keys, touch or a pad -->
         <dl class="keys-l only-keys">
           <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><i>/</i><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></dt><dd>Steer & thrust</dd></div>
           <div><dt class="w"><kbd>Space</kbd></dt><dd>Fire lasers</dd></div>
           <div><dt class="w"><kbd>Shift</kbd></dt><dd>Roll</dd></div>
-          <div><dt><kbd>S</kbd><i>/</i><kbd>Down</kbd></dt><dd>Brake</dd></div>
+          <div><dt><kbd>S</kbd><i>/</i><kbd>↓</kbd></dt><dd>Brake</dd></div>
           <div><dt><kbd>2</kbd><i>/</i><kbd>F</kbd></dt><dd>Fire torpedo</dd></div>
         </dl>
         <dl class="keys-l only-touch-l">
@@ -608,7 +608,8 @@
           <div><dt><kbd>B</kbd></dt><dd>Roll</dd></div>
           <div><dt><kbd>L3</kbd></dt><dd>Brake and reverse</dd></div>
         </dl>
-        </section>
+          </section>
+        </div>
         <!-- the other face of the card: the switches, in the same ruled rows -->
         <section class="term-s set-only" id="settings">
           <h3 class="th">Settings</h3>
@@ -622,8 +623,9 @@
           </ol>
         </section>
         <div class="pause-acts main-only">
-          <button type="button" class="ng-n ochre" id="p-go"><span class="story-only">Resume</span><span class="arcade-only">Begin</span></button>
+          <span class="p-any only-desktop">Any key resumes</span>
           <button type="button" class="ng-n dim" id="p-exit"><span class="story-only">Save & exit</span><span class="arcade-only">Exit</span></button>
+          <button type="button" class="ng-n ochre" id="p-go"><span class="story-only">Resume</span><span class="arcade-only">Begin</span></button>
         </div>
         <div class="pause-acts set-only">
           <button type="button" id="p-back"><span>Back</span></button>
