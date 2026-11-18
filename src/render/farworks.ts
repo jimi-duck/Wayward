@@ -1,4 +1,4 @@
-import { Box3, BoxGeometry, Color, CylinderGeometry, Group, IcosahedronGeometry, Matrix4, Mesh, MeshBasicMaterial, Quaternion, Vector3, type BufferGeometry, type Material } from 'three';
+import { AdditiveBlending, Box3, BoxGeometry, BufferAttribute, Color, CylinderGeometry, Float32BufferAttribute, BufferGeometry, Group, Points, ShaderMaterial, IcosahedronGeometry, Matrix4, Mesh, MeshBasicMaterial, Quaternion, Vector3, type Material } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { dirOf, type Sky } from './sky';
 import { Kit, metal, seeded, type V3 } from './kit';
@@ -380,6 +380,72 @@ const LEAN: Record<number, number[]> = {
   0: [0, 4, 1, 3], 1: [3, 5, 2, 4], 2: [6, 2, 3], 5: [5, 2, 3, 4], 6: [2, 4, 6], 7: [2, 1, 3, 5], 8: [0, 5, 4, 1], 9: [6, 3, 2],
 };
 
+/** The beacons' clock: FarBodies.tick sets it (seconds; reduced motion holds it, so they sit at a dim steady glow). */
+export const BEACON_CLOCK = { value: 0 };
+let beaconMat: ShaderMaterial | null = null;
+const BEACON_WHITE = [1.5, 1.55, 1.7], BEACON_AMBER = [1.7, 0.95, 0.32];
+
+/**
+ * Slow navigation strobes on a far work: its highest point and its two widest ends, white or amber (never red, which
+ * stays the threat's). Each blinks on its own beat, a long dim hold and a short flash, so the horizon is alive.
+ * One Points draw for the lot; the work's own geometry is untouched.
+ */
+function beacons(works: Group[], rnd: () => number): Points {
+  const pos: number[] = [], col: number[] = [], beat: number[] = [];
+  const v = new Vector3(), best = [new Vector3(), new Vector3(), new Vector3()];
+  for (const w of works) {
+    w.updateMatrixWorld(true);
+    const centre = new Box3().setFromObject(w).getCenter(new Vector3());
+    const score = [-Infinity, -Infinity, -Infinity];
+    w.traverse((o) => {
+      if (!(o instanceof Mesh)) return;
+      const a = (o.geometry as BufferGeometry).attributes.position as BufferAttribute;
+      for (let i = 0; i < a.count; i += 3) {
+        v.fromBufferAttribute(a, i).applyMatrix4(o.matrixWorld).sub(centre);
+        const s = [v.y, v.x, -v.x];
+        for (let k = 0; k < 3; k++) if (s[k]! > score[k]!) { score[k] = s[k]!; best[k]!.copy(v).add(centre); }
+      }
+    });
+    const white = rnd() < 0.5;
+    for (let k = 0; k < 3; k++) {
+      pos.push(best[k]!.x, best[k]!.y, best[k]!.z);
+      // the top is white, the ends the other colour; no two share a beat
+      const c = (k === 0) === white ? BEACON_WHITE : BEACON_AMBER;
+      col.push(c[0]!, c[1]!, c[2]!);
+      beat.push(rnd() * 6.28, 1.1 + rnd() * 1.1);
+    }
+  }
+  const g = new BufferGeometry();
+  g.setAttribute('position', new Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new Float32BufferAttribute(col, 3));
+  g.setAttribute('beat', new Float32BufferAttribute(beat, 2));
+  beaconMat ??= new ShaderMaterial({
+    transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false, toneMapped: false,
+    uniforms: BEACON_UNIFORMS,
+    vertexShader: /* glsl */ `
+      attribute vec3 color; attribute vec2 beat;
+      uniform float uTime; varying vec3 vCol;
+      void main() {
+        float s = sin(uTime * 6.2832 / beat.y + beat.x);
+        float flash = pow(max(s, 0.0), 10.0);
+        vCol = color * (0.14 + 0.86 * flash);
+        gl_PointSize = 3.0 + 3.5 * flash;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
+    fragmentShader: /* glsl */ `
+      varying vec3 vCol;
+      void main() {
+        float d = length(gl_PointCoord - 0.5) * 2.0;
+        float a = smoothstep(1.0, 0.0, d);
+        gl_FragColor = vec4(vCol * a * a, 1.0);
+      }`,
+  });
+  const out = new Points(g, beaconMat);
+  out.frustumCulled = false;
+  return out;
+}
+const BEACON_UNIFORMS = { uTime: BEACON_CLOCK };
+
 /** One or two far works for a sky, set on the sphere of radius `D`, away from the planet. */
 export function farWorks(sky: Sky, D: number): Group {
   const all = new Group();
@@ -396,5 +462,9 @@ export function farWorks(sky: Sky, D: number): Group {
     work.scale.setScalar(2.3 + rnd() * 0.9);
     all.add(work);
   }
-  return merged(all);
+  all.updateMatrixWorld(true);
+  const lights = beacons(all.children as Group[], rnd);
+  const out = merged(all);
+  out.add(lights);
+  return out;
 }

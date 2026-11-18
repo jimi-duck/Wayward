@@ -1,5 +1,5 @@
 import { AdditiveBlending, BackSide, CanvasTexture, Color, DoubleSide, Euler, EquirectangularReflectionMapping, Group, IcosahedronGeometry, InstancedMesh, LinearFilter, Mesh, MeshLambertMaterial, MirroredRepeatWrapping, MeshStandardMaterial, Object3D, OrthographicCamera, PlaneGeometry, Quaternion, RepeatWrapping, RingGeometry, Scene, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, Vector3, Vector4, WebGLRenderTarget, type Texture, type WebGLRenderer } from 'three';
-import { farWorks } from './farworks';
+import { BEACON_CLOCK, farWorks } from './farworks';
 import { hulkModel } from './space';
 import { glowTexture } from './textures';
 
@@ -153,8 +153,8 @@ function paint(seed: number, r: () => number, p: Palette): Sky {
   // the palettes keep their hue but sit nearer a cool steel grey, so every sky shares one mood
   const calm = (hex: string) => new Color(hex).lerp(STEEL, 0.06);
   const pp = p.planets[Math.floor(r() * p.planets.length)]!;
-  // most systems have a world in view; a few are just the deep
-  const planet: Planet | null = r() < 0.85 ? {
+  // every system has a world in view, its landmark (r() is still drawn, so the rest of each seeded sky stays as it was)
+  const planet: Planet | null = r() < 2 ? {
     kind: (r() < 0.5 ? 0 : r() < 0.6 ? 1 : 2) as 0 | 1 | 2,
     colA: lin(pp[0]), colB: lin(pp[1]), atmo: lin(pp[2]),
     size: 11 + r() * 7, az: offSun(r() * 360), el: -6 - r() * 14,
@@ -588,6 +588,7 @@ export class FarBodies {
   /** The sun's rays turn, very slowly (`t` seconds; reduced motion holds it). */
   tick(t: number): void {
     if (this.rays) this.rays.uniforms.uTime!.value = t;
+    BEACON_CLOCK.value = t;
   }
 
   constructor(sky: Sky, sun: Vector3) {
