@@ -4,7 +4,7 @@ import { FixedStepLoop } from './core/loop';
 import { SlowMo } from './core/slowmo';
 import { Input } from './input/input';
 import { PAUSE_KEYS } from './input/keyboard';
-import { ZOOMS } from './render/camera';
+import { CAMERA_VIEWS, ZOOMS, type CameraView } from './render/camera';
 import { QualityGovernor, keptTier, saveTier, tierIndex } from './render/quality';
 import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { DOCK_SETTLE_MS, Sector } from './render/sector';
@@ -759,6 +759,18 @@ function boot(review: typeof import('./review') | null): void {
     for (const id of ['s-autofire', 's-btnsize']) el(id).hidden = !coarse;
     for (const id of ['p-autofire-r', 'p-btnsize-r']) el(id).hidden = !coarse;
   };
+  // the camera view (Settings): chase by default; kept per device
+  const VIEW_NAMES: Record<CameraView, string> = { chase: 'Chase', cinematic: 'Cinematic', low: 'Engine level', cockpit: 'Cockpit' };
+  const savedView = store('wayward.view');
+  sector.rig.view = (CAMERA_VIEWS as readonly string[]).includes(savedView ?? '') ? (savedView as CameraView) : 'chase';
+  const paintView = () => {
+    for (const id of ['s-view', 'p-view']) el(`${id}-v`).textContent = t(VIEW_NAMES[sector.rig.view]);
+  };
+  const nextView = () => {
+    sector.rig.view = CAMERA_VIEWS[(CAMERA_VIEWS.indexOf(sector.rig.view) + 1) % CAMERA_VIEWS.length]!;
+    keep('wayward.view', sector.rig.view);
+    paintView();
+  };
   let compact = store('wayward.compact') === '1';
   const paintCompact = () => {
     document.documentElement.classList.toggle('compact-hud', compact);
@@ -788,6 +800,7 @@ function boot(review: typeof import('./review') | null): void {
   paintLefty();
   paintTouch();
   paintCompact();
+  paintView();
   const paintSaver = () => {
     for (const id of ['s-saver', 'p-saver']) {
       el(id).classList.toggle('on', saver);
@@ -925,6 +938,7 @@ function boot(review: typeof import('./review') | null): void {
     if (loop.paused && !callHold && !PAUSE_KEYS.includes(e.code)) setPaused(false);
     if (e.code === 'KeyB') openBay();
     if (e.code === 'KeyZ') zoom(sector.rig.zoom === ZOOMS.length - 1 ? -sector.rig.zoom : 1); // cycles round
+    if (e.code === 'KeyC') nextView(); // the camera view, as in Settings
     if (e.code === 'Minus') zoom(1);
     if (e.code === 'Equal') zoom(-1);
   });
@@ -964,6 +978,8 @@ function boot(review: typeof import('./review') | null): void {
   const nextSize = () => { size = SIZES[(SIZES.indexOf(size) + 1) % SIZES.length]!; keep('wayward.btnsize', size); paintTouch(); };
   const toggleCompact = () => { compact = !compact; keep('wayward.compact', compact ? '1' : '0'); paintCompact(); };
   act('p-compact', toggleCompact);
+  act('p-view', nextView);
+  press('s-view', nextView);
   press('s-compact', toggleCompact);
   act('p-autofire', toggleAuto);
   act('p-btnsize', nextSize);
