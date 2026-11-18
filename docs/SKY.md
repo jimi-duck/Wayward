@@ -90,7 +90,7 @@ The owner asked for a No Man's Sky kind of sky: colour in the sky itself, the HU
 
 ## Cinematic flight (2026-11-18)
 
-- **Camera** (`camera.ts` `FRAMES`, `COCKPIT`). A Setting (title Settings and the pause card, key C; kept per device in
+- **Camera** (`camera.ts` `FRAMES`, `COCKPIT`). A Setting (title Settings and the pause card; Tab, Shift+Tab or C in flight; kept per device in
   `wayward.view`). Chase, the default, is the old view (20° up, 13.5° down, a 52° lens, VIEW 11 x 6.2). Cinematic is
   close and wide (17°/7°, 72°); Engine level sits about level with the bells and looks 3° up (11°/-3°, 72°); Cockpit rides
   on the bridge roof and looks 12° down over the prow (72°). The lens stretches with speed in every view. Z zooms the

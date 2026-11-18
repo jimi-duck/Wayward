@@ -766,8 +766,9 @@ function boot(review: typeof import('./review') | null): void {
   const paintView = () => {
     for (const id of ['s-view', 'p-view']) el(`${id}-v`).textContent = t(VIEW_NAMES[sector.rig.view]);
   };
-  const nextView = () => {
-    sector.rig.view = CAMERA_VIEWS[(CAMERA_VIEWS.indexOf(sector.rig.view) + 1) % CAMERA_VIEWS.length]!;
+  const nextView = (dir = 1) => {
+    const n = CAMERA_VIEWS.length;
+    sector.rig.view = CAMERA_VIEWS[(CAMERA_VIEWS.indexOf(sector.rig.view) + dir + n) % n]!;
     keep('wayward.view', sector.rig.view);
     paintView();
   };
@@ -935,10 +936,12 @@ function boot(review: typeof import('./review') | null): void {
     // in Settings a key does not resume: Backspace goes back, the pause keys are Input's
     if (settingsOpen()) { if (e.code === 'Backspace') showSettings(false); return; }
     // a call holds the world itself: its own keys (and any held key) must not lift that hold from under the card
+    // Tab (Shift+Tab back) switches the camera view in flight; while paused it only resumes, as any key does
+    if (e.code === 'Tab' && !loop.paused) nextView(e.shiftKey ? -1 : 1);
     if (loop.paused && !callHold && !PAUSE_KEYS.includes(e.code)) setPaused(false);
     if (e.code === 'KeyB') openBay();
     if (e.code === 'KeyZ') zoom(sector.rig.zoom === ZOOMS.length - 1 ? -sector.rig.zoom : 1); // cycles round
-    if (e.code === 'KeyC') nextView(); // the camera view, as in Settings
+    if (e.code === 'KeyC') nextView(); // the camera view, as Tab and Settings
     if (e.code === 'Minus') zoom(1);
     if (e.code === 'Equal') zoom(-1);
   });
@@ -978,8 +981,8 @@ function boot(review: typeof import('./review') | null): void {
   const nextSize = () => { size = SIZES[(SIZES.indexOf(size) + 1) % SIZES.length]!; keep('wayward.btnsize', size); paintTouch(); };
   const toggleCompact = () => { compact = !compact; keep('wayward.compact', compact ? '1' : '0'); paintCompact(); };
   act('p-compact', toggleCompact);
-  act('p-view', nextView);
-  press('s-view', nextView);
+  act('p-view', () => nextView());
+  press('s-view', () => nextView());
   press('s-compact', toggleCompact);
   act('p-autofire', toggleAuto);
   act('p-btnsize', nextSize);
