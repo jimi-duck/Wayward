@@ -130,7 +130,7 @@ The owner's mockup (14 November 2026), built in `ui/course.ts` and `styles/cours
 - **Next stop panel** (right, about 30%): "Next stop · J1 of n", the name in amber, its line, then Depot (yes or no,
   "Bonded +40%" in amber where `bonded()` applies), Continuance (red ▲ when the Net holds it), Wall (File n/8 ▸,
   opens the Wall under the map; W does the same), Debt once the Account has called. "Route to goal": here, then each
-  jump with its J number. The one button, amber, "Enter <here>" with what is there to do (Refuel · Job · Wall), and the
+  jump with its J number. The one button, amber, "Plot course to <next stop>" (the same name as the panel and the J1 tag), with "<here> first · Refuel · Job · Wall" under it, and the
   keys under it. No fluid gauge or fluid warning: the HUD's objective says when the tank is short.
 - **Under the map**: the legend (Route, Flown, Known lane, Continuance Net, Jump Gate), then "The road · leg n of 8"
   and one bar for the whole game: Prologue ✓, legs done, this leg in amber with its progress (stops reached / stops).

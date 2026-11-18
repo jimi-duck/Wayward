@@ -117,8 +117,9 @@ export class CoursePanel {
     }));
     // the button: into the system she has just reached, and what is there to do in it
     const what = [c.hereAt.depot ? t('Refuel') : '', c.hereAt.job ? t('Job') : '', t('Wall')].filter(Boolean).join(' · ');
-    $('co-go-t').textContent = t('Enter {name}', { name: t(c.here.name) });
-    $('co-go-s').textContent = what;
+    // the button names the jump, as the panel does; what is first to do here is the small line under it
+    $('co-go-t').textContent = t('Plot course to {name}', { name: t(c.next.name) });
+    $('co-go-s').textContent = `${t('{name} first', { name: t(c.here.name) })} · ${what}`;
   }
 
   /** Under the map: the whole road, leg by leg, with the prologue done and this leg in amber. */

@@ -37,7 +37,7 @@ export const COURSE: Record<string, string> = {
   'Flown': 'Geflogen',
   'Known lane': 'Bekannte Bahn',
   'Route to goal': 'Route zum Ziel',
-  'Enter {name}': '{name} anfliegen',
+  '{name} first': 'Zuerst {name}',
   'Next jump needs {n} more fluid': 'Nächster Sprung braucht noch {n} Fluid',
   'Not shown while you rest': 'Nicht angezeigt, solange du rastest',
   'Custody pursuit · {when} behind': 'Custody-Verfolgung · {when} hinter dir',
