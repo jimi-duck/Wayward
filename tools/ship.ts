@@ -118,6 +118,7 @@ const frame = (now: number) => {
     rig.update(subject, dt, true);
     camera.position.copy(rig.camera.position);
     camera.quaternion.copy(rig.camera.quaternion);
+    ship.root.visible = !rig.inCockpit;
     if (camera.fov !== rig.camera.fov) { camera.fov = rig.camera.fov; camera.updateProjectionMatrix(); }
   }
   // ?view=hulk&n=<0..3>: look at one of the sky's dead hulks from 160 units off, for judging them

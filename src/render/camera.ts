@@ -34,8 +34,11 @@ const FRAMES: Record<Exclude<CameraView, 'cockpit'>, Frame> = {
   cinematic: { elev: 17, pitch: 7, fov: 72, kick: 7, w: 10.6, h: 6 },
   low: { elev: 11, pitch: -3, fov: 72, kick: 7, w: 10.4, h: 5.85 },
 };
-/** The cockpit: on the bridge roof (world units ahead of and above the ship's centre), looking a little down over the prow. */
-const COCKPIT = { ahead: 0.72, up: 0.45, pitch: MathUtils.degToRad(12), fov: 72, kick: 7 };
+/**
+ * The cockpit: a flight sim's eye at the prow (world units ahead of and above the ship's centre), level with the plane and
+ * looking a hair down; the hull is hidden there (`inCockpit`), and the view banks into a turn.
+ */
+const COCKPIT = { ahead: 1.15, up: 0.32, pitch: MathUtils.degToRad(2), fov: 72, kick: 7, bank: 0.11, maxBank: 0.32 };
 const LOOK_AHEAD = 0.6;
 const FOLLOW = 0.08;
 const YAW_FOLLOW = 0.26;
@@ -86,6 +89,8 @@ export class CameraRig {
   view: CameraView = 'chase';
   /** 0 to 1: how far in the cockpit the camera is (eases on a change of view, and out for a story moment). */
   private seat = 0;
+  /** Fully in the cockpit: the ship's own model is hidden (render/sector.ts), so the eye sees only space. */
+  get inCockpit(): boolean { return this.seat > 0.97; }
   /** The view last framed: a change of view cuts at once (only a story moment eases the cockpit out and back). */
   private seen: CameraView = 'chase';
   /** Index into ZOOMS. */
@@ -236,7 +241,9 @@ export class CameraRig {
     this.camera.up.set(0, 1, 0);
     this.camera.lookAt(lx, ly, lz);
 
-    const wantRoll = clamp(-s.yawRate * 0.03, -0.06, 0.06);
+    // the chase rig leans a touch into a turn; the cockpit banks with the ship, as a flight sim does
+    const chaseRoll = clamp(-s.yawRate * 0.03, -0.06, 0.06), seatRoll = clamp(-s.yawRate * COCKPIT.bank, -COCKPIT.maxBank, COCKPIT.maxBank);
+    const wantRoll = chaseRoll + (seatRoll - chaseRoll) * this.seat;
     this.roll += (wantRoll - this.roll) * Math.min(1, 6 * dt);
     if (this.roll) this.camera.rotateZ(this.roll);
   }
