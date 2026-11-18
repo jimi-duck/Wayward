@@ -49,9 +49,13 @@ function rand(seed: number) {
 }
 
 const WHITE = new Color(0.95, 0.97, 1), BLUE = new Color(0.7, 0.82, 1), WARM = new Color(1, 0.84, 0.66), ICE = new Color(0.62, 0.86, 1);
+const AMBER = new Color(1, 0.72, 0.42), EMBER = new Color(0.9, 0.5, 0.3);
 
-/** A star colour from its temperature: mostly white, a good share blue-white, a few warm. */
+/** A star colour from its temperature: mostly white, a good share blue-white, a few warm, amber and ember. */
 function tint(t: number, out: Color): Color {
+  // a few dim ember dwarfs (orange, never red), then amber, then the warm whites
+  if (t < 0.025) return out.copy(EMBER).multiplyScalar(0.8);
+  if (t < 0.06) return out.copy(AMBER);
   if (t < 0.1) return out.copy(WARM).lerp(WHITE, t * 4);
   if (t > 0.58) return out.copy(WHITE).lerp(BLUE, Math.min(1, (t - 0.58) * 2.4));
   return out.copy(WHITE);

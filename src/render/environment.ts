@@ -63,6 +63,10 @@ export class Environment {
   private readonly stars = new Group();
   private readonly dustBase: Float32Array;
   private readonly dustPos: BufferAttribute;
+  private readonly dustCol: BufferAttribute;
+  /** Each mote's own glint beat and base brightness. */
+  private readonly dustBeat: Float32Array;
+  private readonly sunV = dirOf(SUN_AZ, SUN_EL);
   /** The dust's colour: the sun's, so the motes read as sunlit; brighter at speed. */
   private readonly dustMat: LineBasicMaterial;
   private readonly rim: DirectionalLight;
@@ -159,12 +163,16 @@ export class Environment {
     this.dustPos = new BufferAttribute(new Float32Array(N * 6), 3);
     g.setAttribute('position', this.dustPos);
     const col = new Float32Array(N * 6);
+    this.dustBeat = new Float32Array(N * 2);
     for (let i = 0; i < N; i++) {
       const b = 0.1 + Math.random() * 0.25;
+      this.dustBeat[i * 2] = b;
+      this.dustBeat[i * 2 + 1] = Math.random() * 6.28;
       // the head of each mote catches the light, the tail fades: a faint streak at speed
       col.set([b, b, b, 0, 0, 0], i * 6);
     }
-    g.setAttribute('color', new Float32BufferAttribute(col, 3));
+    this.dustCol = new BufferAttribute(col, 3);
+    g.setAttribute('color', this.dustCol);
     this.dustMat = new LineBasicMaterial({ color: INK, vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, fog: false });
     const dust = new LineSegments(g, this.dustMat);
     dust.frustumCulled = false;
@@ -334,6 +342,14 @@ export class Environment {
       P[i * 6 + 3] = x + sx + 0.05; P[i * 6 + 4] = y; P[i * 6 + 5] = z + sz;
     }
     this.dustPos.needsUpdate = true;
+    // facing the star, single motes catch a glint (a short flash on each one's own beat); away from it they stay dull
+    const face = Math.max(0, this.fwd.dot(this.sunV) - 0.2) / 0.8, C = this.dustCol.array as Float32Array, D = this.dustBeat;
+    for (let i = 0; i < D.length / 2; i++) {
+      const s = Math.sin(this.t * 1.7 + D[i * 2 + 1]!), g = this.motion && s > 0.93 ? (s - 0.93) * 14 * face : 0;
+      const b = D[i * 2]! * (1 + g * 5);
+      C[i * 6] = b; C[i * 6 + 1] = b; C[i * 6 + 2] = b;
+    }
+    this.dustCol.needsUpdate = true;
   }
 }
 

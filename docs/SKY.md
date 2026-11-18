@@ -101,3 +101,15 @@ The owner asked for a No Man's Sky kind of sky: colour in the sky itself, the HU
 - **Hull.** Paint at roughness 0.55 to 0.65 and metalness 0.22, so the key light glints on plate edges.
 - **Rocks.** One far backdrop asteroid in nine is a colossal anchor (30 to 66 units across, `rocks.ts`).
 - Bench: `tools/ship.html?view=game&zoom=0..2` is the flight camera itself. Not measured: real-GPU look and cost.
+
+## Backdrop pass (2026-11-18)
+
+A review against a "richer space" brief found most of it already here (nebula with dust lanes, four star layers, a
+landmark planet and sun on the key's bearing, fog in the nebula's colour, sunlit dust, far works, ACES grade). What was added:
+
+- **Star temperatures.** A few dim ember dwarfs (orange, never red) and amber stars join the warm whites and blue-whites (`starfield.ts`).
+- **A landmark in every sky.** The one-in-seven "just the deep" sky is gone; every system has its world (`paint`). The draw is kept, so seeded skies are otherwise unchanged.
+- **Far strobes** (`farworks.ts` `beacons`). Each far work has three nav lights (its top and two ends), white or amber, a long dim hold and a short flash on their own beats. One Points draw; reduced motion holds them at a dim glow. Not red: red stays the threat's.
+- **Dust glints** (`environment.ts`). Facing the star, single motes flash on their own beats; looking away they stay dull. 300 colour writes a frame, no allocation.
+
+Region mapping of the brief: Kethar Belt is the Salvage Belt (amber dust and teal), Black Reach is the Drift Deep and Last Lanes (indigo, violet, magenta accent), the Verge is the Breaker Yards (rust copper and steel teal). Not measured: GPU time.
