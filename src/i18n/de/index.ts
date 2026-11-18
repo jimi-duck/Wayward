@@ -2,6 +2,7 @@ import { ARMS } from './arms';
 import { CARDS } from './cards';
 import { COPY } from './copy';
 import { COURSE } from './course';
+import { BRIEFS } from './briefs';
 import { ECONOMY } from './economy';
 import { MISSIONS } from './missions';
 import { POSTJUMP } from './postjump';
@@ -29,7 +30,7 @@ import { DIRECTION } from './direction';
 //   space  · the shared world's features and expanses (content/features.ts)
 //   scenes · situations: their calls, goals and the Archive's sightings (content/situations.ts)
 
-export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...REACH_DE, ...OVERHAUL, ...SIGNALS, ...REWORK, ...ARMS, ...DIRECTION };
+export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...BRIEFS, ...REACH_DE, ...OVERHAUL, ...SIGNALS, ...REWORK, ...ARMS, ...DIRECTION };
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([

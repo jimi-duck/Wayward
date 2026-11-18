@@ -40,13 +40,13 @@ export interface RoadStop {
 
 export const ROAD: RoadStop[] = [
   { kind: 'port', holder: 'kellern', role: 'start', script: 'audit' },
-  { name: 'Northfold', purpose: 'the quiet way to Halden’s Reach', kind: 'transit', holder: 'none', port: null, role: 'landfall', job: 'nothing_to_declare', script: 'northfold' },
-  { name: 'Halden’s Reach', purpose: 'find the Warden’s record', kind: 'port', holder: 'kellern', port: 'Kellern Fuel Dock', role: 'hub', script: 'halden' },
-  { name: 'Hollis', purpose: 'mine, and fill the tank', kind: 'mining', holder: 'none', port: null, role: 'work', job: 'follow_cyrite', script: 'hollis' },
-  { name: 'Marlow', purpose: 'someone here keeps the real books', kind: 'port', holder: 'kellern', port: 'Kellern Claim Office', role: 'turn', script: 'marlow' },
-  { name: 'Vesta', purpose: 'rest here, or keep moving', kind: 'transit', holder: 'none', port: null, quiet: true, role: 'breather', script: 'vesta' },
-  { name: 'Branford', purpose: 'the Net closes behind', kind: 'contested', holder: 'gutter', port: null, role: 'pressure', job: 'pirate_toll', script: 'branford' },
-  { name: 'Copperline', purpose: 'a clerk in trouble', kind: 'port', holder: 'kellern', port: 'Kellern Fuel Dock', role: 'reckoning', script: 'copperline' },
+  { name: 'Northfold', purpose: 'the quiet way to Halden’s Reach', brief: 'The archive named a quiet lane, and this is it. Every other way out is watched, and your hull is posted as stolen. Nobody is hunting you yet.', kind: 'transit', holder: 'none', port: null, role: 'landfall', job: 'nothing_to_declare', script: 'northfold' },
+  { name: 'Halden’s Reach', purpose: 'find the Warden’s record', brief: 'Old Lane Wardens spend their last years in this hospice ring. One of them ran the Narrows relay the night the lanes closed, and kept the paper.', kind: 'port', holder: 'kellern', port: 'Kellern Fuel Dock', role: 'hub', script: 'halden' },
+  { name: 'Hollis', purpose: 'mine, and fill the tank', brief: 'A Kellern claim with rich rock and nobody watching. Mine here before the long run on. Something on the scope is keeping pace with you.', kind: 'mining', holder: 'none', port: null, role: 'work', job: 'follow_cyrite', script: 'hollis' },
+  { name: 'Marlow', purpose: 'someone here keeps the real books', brief: 'A Kellern accounts station. One clerk here keeps the company’s real books, the ones that show where the Scatter’s Krail actually went.', kind: 'port', holder: 'kellern', port: 'Kellern Claim Office', role: 'turn', script: 'marlow' },
+  { name: 'Vesta', purpose: 'rest here, or keep moving', brief: 'A quiet system with no patrols, and nobody hunts you here. Rest as long as you like. A rig boss called Hester wants a word about a toll.', kind: 'transit', holder: 'none', port: null, quiet: true, role: 'breather', script: 'vesta' },
+  { name: 'Branford', purpose: 'the Net closes behind', brief: 'Pirates have put a toll beacon on a mining crew’s lane, and the Net is spreading behind you. Staying long is a risk.', kind: 'contested', holder: 'gutter', port: null, role: 'pressure', job: 'pirate_toll', script: 'branford' },
+  { name: 'Copperline', purpose: 'a clerk in trouble', brief: 'Kellern’s last port before the Narrows. Fit what you can. Custody has traced the company’s real books to Adam Brook, the clerk at Marlow.', kind: 'port', holder: 'kellern', port: 'Kellern Fuel Dock', role: 'reckoning', script: 'copperline' },
 ];
 
 
@@ -65,93 +65,93 @@ const stop = (role: RoadRole, name: string, kind: RoadStop['kind'], holder: Hold
 
 /** The Marches: who stands with you. */
 const MARCHES: RoadStop[] = [
-  stop('landfall', 'Wake', 'transit', 'none', 'm_wake', { purpose: 'a lifeboat, and raiders', job: 'lifeboat_wake' }),
-  stop('hub', 'Kessel Hold', 'port', 'holdfast', 'm_kessel', { port: 'The Claim Hall', purpose: 'the moot wants your file', job: 'keep_distance' }),
-  stop('work', 'Tamsin Field', 'contested', 'gutter', 'm_tamsin', { purpose: 'someone offers to settle your debt', job: 'wanted' }),
-  stop('turn', 'The Long Walk', 'transit', 'none', 'm_walk', { purpose: 'the Drift kept the names' }),
-  stop('breather', 'Low Harrow', 'transit', 'none', 'm_harrow', { purpose: 'rest, and listen to the Drift', scene: 'thren_curious' }),
-  stop('pressure', 'Gannet Reach', 'mining', 'holdfast', 'm_gannet', { purpose: 'the rigs are boarded', job: 'missing_shift' }),
-  stop('reckoning', 'Sallow Port', 'transit', 'guild', 'm_sallow', { port: 'Guild Hall', purpose: 'refit before the Rift', job: 'heavy_tanker' }),
+  stop('landfall', 'Wake', 'transit', 'none', 'm_wake', { purpose: 'a lifeboat, and raiders', brief: 'You are through the Narrows and into the Scatter, cut off for seventy years. Ada’s note sends you on. Raiders work this lane, and a lifeboat is calling.', job: 'lifeboat_wake' }),
+  stop('hub', 'Kessel Hold', 'port', 'holdfast', 'm_kessel', { port: 'The Claim Hall', purpose: 'the moot wants your file', brief: 'A Holdfast port that lost kin the night the lanes closed. Its moot is meeting, and the file you carry is what they want to hear.', job: 'keep_distance' }),
+  stop('work', 'Tamsin Field', 'contested', 'gutter', 'm_tamsin', { purpose: 'someone offers to settle your debt', brief: 'Gutter ground. Kellern’s recovery accounts desk has found you, and an offer to settle your debt is coming. They want you alive, and in their hands.', job: 'wanted' }),
+  stop('turn', 'The Long Walk', 'transit', 'none', 'm_walk', { purpose: 'the Drift kept the names', brief: 'A Drift fleet that never stops moving. Ma Saffi’s people kept the manifests of every ship lost the night the lanes went dark, and want them in your file.' }),
+  stop('breather', 'Low Harrow', 'transit', 'none', 'm_harrow', { purpose: 'rest, and listen to the Drift', brief: 'A gutted Drift hull lies here, scored in long parallel lines. The people nearby have rules for something that follows full tanks. Rest, and listen.', scene: 'thren_curious' }),
+  stop('pressure', 'Gannet Reach', 'mining', 'holdfast', 'm_gannet', { purpose: 'the rigs are boarded', brief: 'Kellern security is boarding Holdfast rigs and taking the claims. Whoever stood with you at Kessel Hold is counting on you here. Expect Kellern ships.', job: 'missing_shift' }),
+  stop('reckoning', 'Sallow Port', 'transit', 'guild', 'm_sallow', { port: 'Guild Hall', purpose: 'refit before the Rift', brief: 'Last refit before the Rift, a broken relay with no beacons. A fixer’s tanker job and the crews’ need for the filters it carries pull against each other.', job: 'heavy_tanker' }),
 ];
 
 /** The Salvage Belt: what things are worth. */
 const BELT: RoadStop[] = [
-  stop('landfall', 'Breakwater', 'transit', 'none', 'b_breakwater', { purpose: 'listen to the wrecks', job: 'one_filter' }),
-  stop('hub', 'Scrap Exchange', 'port', 'guild', 'b_exchange', { port: 'Dust Traders Exchange', purpose: 'everyone knows what you carry', job: 'ransom_crew' }),
-  stop('work', 'The Graveyard', 'mining', 'guild', 'b_graveyard', { purpose: 'a wreck that remembers', job: 'wreck_remembered' }),
-  stop('turn', 'Kessler’s Wreck', 'contested', 'guild', 'b_kessler', { purpose: 'a recorder that still runs' }),
-  stop('breather', 'Saltmarsh', 'transit', 'none', 'b_saltmarsh', { purpose: 'something crosses the lane', scene: 'thren_swarm' }),
-  stop('pressure', 'Kiln', 'contested', 'gutter', 'b_kiln', { purpose: 'someone is selling routes', job: 'the_witness' }),
-  stop('reckoning', 'Tarik’s Lamps', 'transit', 'guild', 'b_tarik', { port: 'Salvage Barge', purpose: 'the charts they burned', job: 'long_walk' }),
+  stop('landfall', 'Breakwater', 'transit', 'none', 'b_breakwater', { purpose: 'listen to the wrecks', brief: 'The Belt is wreck country, worked by the Dust Traders, and everything has a price. It is quiet here, but Hester’s people are down to their last filter.', job: 'one_filter' }),
+  stop('hub', 'Scrap Exchange', 'port', 'guild', 'b_exchange', { port: 'Dust Traders Exchange', purpose: 'everyone knows what you carry', brief: 'The Belt’s market. Word has spread about what you carry, and Val, a broker of the Gutter, is the first to name a price for it.', job: 'ransom_crew' }),
+  stop('work', 'The Graveyard', 'mining', 'guild', 'b_graveyard', { purpose: 'a wreck that remembers', brief: 'A field of broken ships. One wreck still holds a recording of a hull that met something and turned back. A salvage broker wants it opened.', job: 'wreck_remembered' }),
+  stop('turn', 'Kessler’s Wreck', 'contested', 'guild', 'b_kessler', { purpose: 'a recorder that still runs', brief: 'Dov Kessler is stripping a Warden wreck whose recorder still runs. It heard the night the lanes went dark, and he can’t cut it free alone.' }),
+  stop('breather', 'Saltmarsh', 'transit', 'none', 'b_saltmarsh', { purpose: 'something crosses the lane', brief: 'A quiet lane. A river of tiny lights drifts across your course and turns toward a full tank. Wait it out, or burn fluid to run dark.', scene: 'thren_swarm' }),
+  stop('pressure', 'Kiln', 'contested', 'gutter', 'b_kiln', { purpose: 'someone is selling routes', brief: 'Gutter-held and hot. Someone sold your heading to the Offices, and their pickets are on the way. A witness knows who, and wants out.', job: 'the_witness' }),
+  stop('reckoning', 'Tarik’s Lamps', 'transit', 'guild', 'b_tarik', { port: 'Salvage Barge', purpose: 'the charts they burned', brief: 'A salvage barge where Tarik Silva draws lanes by hand from charts the Continuance burned. Put together, the closures make a shape, and he can show you.', job: 'long_walk' }),
 ];
 
 /** The Drift Deep: the ring. */
 const DEEP: RoadStop[] = [
-  stop('landfall', 'Longwater', 'transit', 'none', 'd_longwater', { purpose: 'ask the Drift where the closures run', scene: 'lane_signal' }),
-  stop('hub', 'The Quiet Ferry', 'transit', 'none', 'd_ferry', { port: 'Free Dock', purpose: 'a lane ahead, no questions', job: 'finders_keepers' }),
-  stop('work', 'Lantern Mile', 'mining', 'none', 'd_lantern', { purpose: 'a warm object, moving', job: 'something_dark' }),
-  stop('turn', 'Ninth Fold', 'transit', 'none', 'd_fold', { purpose: 'someone aboard is watching', job: 'missing_payroll' }),
-  stop('breather', 'Hushlight', 'transit', 'none', 'd_hush', { purpose: 'a quiet relay', scene: 'thren_shadow' }),
-  stop('pressure', 'Stillwater', 'mining', 'holdfast', 'd_still', { purpose: 'Hester’s own rig', job: 'last_shift' }),
-  stop('reckoning', 'Kindmere', 'port', 'holdfast', 'd_kindmere', { port: 'Holdfast Stores', purpose: 'a lane only Tarik drew', job: 'tarik_bend' }),
+  stop('landfall', 'Longwater', 'transit', 'none', 'd_longwater', { purpose: 'ask the Drift where the closures run', brief: 'The Drift Deep is fleets that never stop, past where the Net has reached. The lanes were closed in a pattern, and the Drift may remember it.', scene: 'lane_signal' }),
+  stop('hub', 'The Quiet Ferry', 'transit', 'none', 'd_ferry', { port: 'Free Dock', purpose: 'a lane ahead, no questions', brief: 'Ossie Raine runs a ferry nobody hunts. He can carry you a lane ahead of anyone behind you, for stores and no questions.', job: 'finders_keepers' }),
+  stop('work', 'Lantern Mile', 'mining', 'none', 'd_lantern', { purpose: 'a warm object, moving', brief: 'A mining field the Survey Office is watching. Something warm and slow moves through it toward the lanes, and heavy digging seems to make it louder.', job: 'something_dark' }),
+  stop('turn', 'Ninth Fold', 'transit', 'none', 'd_fold', { purpose: 'someone aboard is watching', brief: 'One of the ferry’s passengers has watched you the whole way. A fixer’s payroll job waits here too, and the wages are Hester’s crews’.', job: 'missing_payroll' }),
+  stop('breather', 'Hushlight', 'transit', 'none', 'd_hush', { purpose: 'a quiet relay', brief: 'A quiet relay, and the first time the Voice speaks to you. It is an old Accord intelligence that kept the lane keys. It knows who is behind you.', scene: 'thren_shadow' }),
+  stop('pressure', 'Stillwater', 'mining', 'holdfast', 'd_still', { purpose: 'Hester’s own rig', brief: 'Hester’s own rig, and Custody has followed you into the Deep. Her crew is holding the last shift and needs you to hold it with them.', job: 'last_shift' }),
+  stop('reckoning', 'Kindmere', 'port', 'holdfast', 'd_kindmere', { port: 'Holdfast Stores', purpose: 'a lane only Tarik drew', brief: 'Holdfast stores, the last stop before the Slow Door. On a chart the closures form a ring. Tarik drew one lane through it, and only he knows it.', job: 'tarik_bend' }),
 ];
 
 /** The Breaker Yards: who built it. */
 const YARDS: RoadStop[] = [
-  stop('landfall', 'Cutton', 'transit', 'none', 'y_cutton', { purpose: 'forty sealed in a cradle', job: 'cradle_crew' }),
-  stop('hub', 'Yard Nine', 'port', 'kellern', 'y_nine', { port: 'Kellern Claim Office', purpose: 'the first work order', job: 'needle' }),
-  stop('work', 'Anvil Slip', 'mining', 'kellern', 'y_anvil', { purpose: 'a cargo train broke up here', job: 'drift_cache' }),
-  stop('turn', 'Keelberth', 'contested', 'kellern', 'y_keel', { purpose: 'Sam, through the relays', job: 'voice_wire' }),
-  stop('breather', 'Cradle Gap', 'transit', 'none', 'y_cradle', { purpose: 'a breaker still holds something' }),
-  stop('pressure', 'Torchwall', 'contested', 'gutter', 'y_torch', { purpose: 'the crews may strike', job: 'kill_zone' }),
-  stop('reckoning', 'Davit Dock', 'port', 'frontier', 'y_davit', { port: 'Free Dock', purpose: 'who has been paying you', scene: 'yard_hulk' }),
+  stop('landfall', 'Cutton', 'transit', 'none', 'y_cutton', { purpose: 'forty sealed in a cradle', brief: 'Custody’s breaker yards, watched hard. Forty crew are sealed in a cradle awaiting the cutters, and their radio is still on.', job: 'cradle_crew' }),
+  stop('hub', 'Yard Nine', 'port', 'kellern', 'y_nine', { port: 'Kellern Claim Office', purpose: 'the first work order', brief: 'Ben Anand, a yard clerk, has the first work order for the breakers, signed in the Continuance’s own hand. Handing it over costs him his pension.', job: 'needle' }),
+  stop('work', 'Anvil Slip', 'mining', 'kellern', 'y_anvil', { purpose: 'a cargo train broke up here', brief: 'A cargo train broke up here and its cargo is drifting loose. A Guild salvage desk has an open claim, but the cargo belongs to the Drift.', job: 'drift_cache' }),
+  stop('turn', 'Keelberth', 'contested', 'kellern', 'y_keel', { purpose: 'Sam, through the relays', brief: 'Sam, silent since the Narrows, reaches you through three relays. The hulls coming into the yards are scarred, and his brother Eben works there.', job: 'voice_wire' }),
+  stop('breather', 'Cradle Gap', 'transit', 'none', 'y_cradle', { purpose: 'a breaker still holds something', brief: 'A quiet gap between the yards. One breaker still holds a knot of tiny lights in a cage, as if it was built to keep something in.' }),
+  stop('pressure', 'Torchwall', 'contested', 'gutter', 'y_torch', { purpose: 'the crews may strike', brief: 'The yard crews are ready to strike. Marit Voss asks you to stand with them, and Draper’s yard security is coming for you either way.', job: 'kill_zone' }),
+  stop('reckoning', 'Davit Dock', 'port', 'frontier', 'y_davit', { port: 'Free Dock', purpose: 'who has been paying you', brief: 'Director Draper has run Kellern’s accounts desk all along. He heads the Offices’ asset recovery, and he is about to show himself. He wants the file.', scene: 'yard_hulk' }),
 ];
 
 /** The Free Ports: who was in the room. */
 const PORTS: RoadStop[] = [
-  stop('landfall', 'Saltquay', 'transit', 'none', 'f_saltquay', { purpose: 'the free ports kept the names', scene: 'voice_guide' }),
-  stop('hub', 'Duarte Harbour', 'port', 'guild', 'f_duarte', { port: 'Dust Traders Exchange', purpose: 'a berth, no questions' }),
-  stop('work', 'Penny Cross', 'mining', 'gutter', 'f_penny', { purpose: 'something answers a full tank', job: 'dead_drop' }),
-  stop('turn', 'Mirren’s Pier', 'transit', 'none', 'f_mirren', { purpose: 'forty names in a box', job: 'be_bait' }),
-  stop('breather', 'Lucky Haven', 'transit', 'none', 'f_haven', { purpose: 'people who live with them' }),
-  stop('pressure', 'Gilt Market', 'contested', 'gutter', 'f_gilt', { purpose: 'everyone wants a copy', job: 'lose_prefect' }),
-  stop('reckoning', 'Ninehaven', 'port', 'gutter', 'f_nine', { port: 'The Bent Nail', purpose: 'static on the approach', scene: 'thren_exchange' }),
+  stop('landfall', 'Saltquay', 'transit', 'none', 'f_saltquay', { purpose: 'the free ports kept the names', brief: 'The Free Ports are Gutter ports where everyone trades and nobody asks. They also kept the names of the people who were in the room when the lanes closed.', scene: 'voice_guide' }),
+  stop('hub', 'Duarte Harbour', 'port', 'guild', 'f_duarte', { port: 'Dust Traders Exchange', purpose: 'a berth, no questions', brief: 'Ines Duarte, harbour-master of the Dust Traders, offers you a berth and no questions. The Guild only wants to know you as a friend.' }),
+  stop('work', 'Penny Cross', 'mining', 'gutter', 'f_penny', { purpose: 'something answers a full tank', brief: 'A rough mining stop. Something answers a full tank here, and the Governor’s pickets want your copy of the file.', job: 'dead_drop' }),
+  stop('turn', 'Mirren’s Pier', 'transit', 'none', 'f_mirren', { purpose: 'forty names in a box', brief: 'Old Mirren keeps the list of everyone who was in the room when the order was read. Forty names. She will let you read them.', job: 'be_bait' }),
+  stop('breather', 'Lucky Haven', 'transit', 'none', 'f_haven', { purpose: 'people who live with them', brief: 'People live here beside the strange lights and sell glass made from what they leave. A quiet harbour: rest, and see what fear looks like when it is ordinary.' }),
+  stop('pressure', 'Gilt Market', 'contested', 'gutter', 'f_gilt', { purpose: 'everyone wants a copy', brief: 'A busy Gutter market where everyone wants a copy of your file. A hearing is held here over what you carry, and Ines’s offer is still open.', job: 'lose_prefect' }),
+  stop('reckoning', 'Ninehaven', 'port', 'gutter', 'f_nine', { port: 'The Bent Nail', purpose: 'static on the approach', brief: 'Static on the approach plays Ada’s first note back to you. Then the Voice speaks: it built the breakers that closed the lanes, and it kept the keys.', scene: 'thren_exchange' }),
 ];
 
 /** The Hollows: what it was for. */
 const HOLLOWS: RoadStop[] = [
-  stop('landfall', 'Ashdeep', 'transit', 'none', 'h_ashdeep', { purpose: 'where the lanes began' }),
-  stop('hub', 'Hollowforge', 'mining', 'voice', 'h_forge', { purpose: 'a pattern on the scope' }),
-  stop('work', 'Coldvault', 'contested', 'voice', 'h_vault', { purpose: 'a tug for your registry', job: 'recovery_order' }),
-  stop('turn', 'Palecairn', 'transit', 'thren', 'h_cairn', { purpose: 'two voices want something', job: 'sables_crossing' }),
-  stop('breather', 'Mute Hall', 'transit', 'none', 'h_mute', { purpose: 'they line the lane', scene: 'thren_watch' }),
-  stop('pressure', 'Ghostcinder', 'contested', 'thren', 'h_cinder', { purpose: 'the swarm lane', scene: 'foundry_both' }),
-  stop('reckoning', 'Gaunt Watch', 'mining', 'none', 'h_gaunt', { purpose: 'the Governor’s aide', job: 'ring_centre' }),
+  stop('landfall', 'Ashdeep', 'transit', 'none', 'h_ashdeep', { purpose: 'where the lanes began', brief: 'Nothing human lives in the Hollows, only the Voice’s old foundries and the Thren’s lanes. This is where the lanes were first built.' }),
+  stop('hub', 'Hollowforge', 'mining', 'voice', 'h_forge', { purpose: 'a pattern on the scope', brief: 'A Voice foundry. The pattern on the scope is the Thren speaking, with the Voice translating. They follow the Cyrite, and you carry it.' }),
+  stop('work', 'Coldvault', 'contested', 'voice', 'h_vault', { purpose: 'a tug for your registry', brief: 'Kellern’s recovery tug has caught up with you. It is here to take the ship back in the company’s name, the last step of the account that began in Cerro.', job: 'recovery_order' }),
+  stop('turn', 'Palecairn', 'transit', 'thren', 'h_cairn', { purpose: 'two voices want something', brief: 'Two voices want something from you. One is a fragment of the Voice asking to be freed. The other is Sable, touched by the Thren, who wants to go home.', job: 'sables_crossing' }),
+  stop('breather', 'Mute Hall', 'transit', 'none', 'h_mute', { purpose: 'they line the lane', brief: 'A line of silent shapes runs along the lane, too even to be an accident. Nobody drew it. Whatever built the lanes built this.', scene: 'thren_watch' }),
+  stop('pressure', 'Ghostcinder', 'contested', 'thren', 'h_cinder', { purpose: 'the swarm lane', brief: 'The swarm lane, the hardest crossing yet. The Voice’s drones are not fighting the swarm, they are opening the gates for it. Hold your course.', scene: 'foundry_both' }),
+  stop('reckoning', 'Gaunt Watch', 'mining', 'none', 'h_gaunt', { purpose: 'the Governor’s aide', brief: 'Noor Haddad, the Governor’s aide, calls ahead of the Seam. She holds one of the three keys, and wants to hear what you plan to do with the file.', job: 'ring_centre' }),
 ];
 
 /** The Last Lanes: what you do with it. The Threshold follows the last row. */
 const LAST: RoadStop[] = [
-  stop('landfall', 'Lastlight', 'transit', 'none', 'l_lastlight', { purpose: 'the last relay ahead' }),
-  stop('hub', 'The Last Toll', 'port', 'none', 'l_toll', { port: 'The Last Toll', purpose: 'every lane ends here' }),
-  stop('work', 'Thin Gap', 'transit', 'thren', 'l_gap', { purpose: 'the first question' }),
-  stop('turn', 'Dimrim', 'mining', 'none', 'l_dimrim', { purpose: 'the second question' }),
-  stop('breather', 'Lone Step', 'transit', 'none', 'l_step', { purpose: 'the third question' }),
-  stop('pressure', 'Dusk Mark', 'contested', 'voice', 'l_dusk', { purpose: 'instruments disagree', scene: 'unknown_pulse' }),
-  stop('reckoning', 'Wane Rest', 'transit', 'none', 'l_wane', { purpose: 'the Threshold is ahead' }),
+  stop('landfall', 'Lastlight', 'transit', 'none', 'l_lastlight', { purpose: 'the last relay ahead', brief: 'The last stretch. One relay ahead, then the Threshold, where the chase ends. Whatever you do with the file, you must decide before you get there.' }),
+  stop('hub', 'The Last Toll', 'port', 'none', 'l_toll', { port: 'The Last Toll', purpose: 'every lane ends here', brief: 'Oren Lisle keeps the last toll, an archivist’s window at the end of every lane. He will let you through, but he asks three questions first.' }),
+  stop('work', 'Thin Gap', 'transit', 'thren', 'l_gap', { purpose: 'the first question', brief: 'Oren’s first question: who are you to carry that file? Answer as a hauler pilot, a Warden’s heir, or not at all. It is logged.' }),
+  stop('turn', 'Dimrim', 'mining', 'none', 'l_dimrim', { purpose: 'the second question', brief: 'Oren’s second question: what has carrying the file cost other people? Your answer is logged, and the epilogue reads it back.' }),
+  stop('breather', 'Lone Step', 'transit', 'none', 'l_step', { purpose: 'the third question', brief: 'Oren’s third question: what is the file for? Truth, mercy or freedom. The Voice asks too, and wants to know who you trust with it.' }),
+  stop('pressure', 'Dusk Mark', 'contested', 'voice', 'l_dusk', { purpose: 'instruments disagree', brief: 'Instruments disagree here. Ashgrove, the Custody inspector, signals you through or flies with Draper, depending on how you treated him.', scene: 'unknown_pulse' }),
+  stop('reckoning', 'Wane Rest', 'transit', 'none', 'l_wane', { purpose: 'the Threshold is ahead', brief: 'The last quiet before the Threshold. Draper’s fleet has gathered ahead, and the relays you lit may carry Sam’s voice again.' }),
 ];
 
 /** Every leg of the road, the Reach first (its audit dock included). */
 export const LEGS: RoadStop[][] = [ROAD, MARCHES, BELT, DEEP, YARDS, PORTS, HOLLOWS, LAST];
 
 /** Each leg's gate: its script key, and what the Course says of it. The last is the Threshold. */
-export const GATES: Array<{ script: string; purpose: string }> = [
-  { script: 'narrows', purpose: NARROWS.purpose },
-  { script: 'rift', purpose: 'a broken relay, no beacons' },
-  { script: 'scrapgate', purpose: 'a gate made of ships' },
-  { script: 'slowdoor', purpose: 'three minutes to open' },
-  { script: 'breaker', purpose: 'the machine itself' },
-  { script: 'tollgate', purpose: 'Calloway’s field' },
-  { script: 'seam', purpose: 'the relay is awake' },
+export const GATES: Array<{ script: string; purpose: string; /** What is going on at this gate, for the pause card (as RoadStop.brief). */ brief?: string }> = [
+  { script: 'narrows', purpose: NARROWS.purpose, brief: 'Custody has locked the gate. Ada’s relay still answers to her key and will knock the gate offline for ninety seconds. The Governor is on her way.' },
+  { script: 'rift', purpose: 'a broken relay, no beacons', brief: 'A broken relay with no beacons, the gate between the Marches and the Belt. A Custody inspector, Ashgrove, runs a checkpoint here and wants your registry.' },
+  { script: 'scrapgate', purpose: 'a gate made of ships', brief: 'A gate made of welded ship hulls. Its relay answers to Ada’s key. She left another note, and this one is in her own voice.' },
+  { script: 'slowdoor', purpose: 'three minutes to open', brief: 'The Slow Door takes three minutes to open, long enough for anyone behind you to catch up. Ada’s note waits at the relay.' },
+  { script: 'breaker', purpose: 'the machine itself', brief: 'This is a lane breaker, one of the machines that shut the outer lanes seventy years ago. Ada’s next note says who it was built for.' },
+  { script: 'tollgate', purpose: 'Calloway’s field', brief: 'Calloway has closed this gate behind you. No guns, no jump, until you answer her about the name signed on the order.' },
+  { script: 'seam', purpose: 'the relay is awake', brief: 'The relay is awake, and the Voice asks for its key. Ada’s implant is still in the helm, and you decide what happens to it.' },
   { script: 'threshold', purpose: 'the last relay' },
 ];
 

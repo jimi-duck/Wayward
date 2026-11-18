@@ -1633,7 +1633,7 @@ html:has(#comms:not([hidden])) #pause { display: none; }
   #pause .pause-card .th { font-size: 10px; }
   #pause .pause-card .goal { font-size: 14px; }
   #pause .pause-card .p-facts, #pause .pause-card .p-ph { display: none; }
-  #pause .pause-card .p-brief { margin: 0; font-size: 11px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  #pause .pause-card .p-brief { margin: 0; font-size: 11px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   #pause .pause-card.term .voice { padding-top: 6px; font-size: 10px; }
   #pause .pause-card .keys-l > div { min-height: 0; padding: 2px 0; gap: 8px; }
   #pause .pause-card .keys-l.only-touch-l dt, #pause .pause-card .keys-l.only-touch-l dd { font-size: 10px; letter-spacing: .04em; }
