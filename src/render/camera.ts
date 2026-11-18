@@ -2,12 +2,11 @@ import { MathUtils, PerspectiveCamera } from 'three';
 import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
 
 // ── the chase camera ──────────────────────────────────────────────────────
-// The player picks the view in Settings (`view`). Chase, the default, is
+// The player picks the view on the pause card (`view`). Chase, the default, is
 // behind the ship and well above it: the hull in the lower middle of the
 // picture, with room ahead (where enemies come in from) to see them early.
-// Cinematic is closer and lower with a wide lens, looking down the spine;
-// Low sits about level with the drives and looks a little up; Cockpit rides
-// on the bridge and looks over the prow.
+// Cinematic (the card's "Wide") is closer and lower with a wide lens,
+// looking down the spine; Cockpit is a flight sim's eye at the prow.
 //
 // Two angles define each chase view. ELEV is how far above the ship the
 // camera sits, seen from the ship; PITCH is how far the view looks down
@@ -24,15 +23,14 @@ import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
 // turns, shakes on impacts, and recoils a touch on every shot. With reduced
 // motion: no punch, no hum, no shake.
 
-/** The views a player can pick in Settings. */
-export const CAMERA_VIEWS = ['chase', 'cinematic', 'low', 'cockpit'] as const;
+/** The views a player can pick on the pause card (Chase, Wide, Cockpit). */
+export const CAMERA_VIEWS = ['chase', 'cinematic', 'cockpit'] as const;
 export type CameraView = (typeof CAMERA_VIEWS)[number];
 /** A chase view: elevation and pitch (degrees), the lens (degrees, and its stretch at top speed), the scene's width and height at the ship. */
 interface Frame { elev: number; pitch: number; fov: number; kick: number; w: number; h: number }
 const FRAMES: Record<Exclude<CameraView, 'cockpit'>, Frame> = {
   chase: { elev: 20, pitch: 13.5, fov: 52, kick: 6, w: 11, h: 6.2 },
   cinematic: { elev: 17, pitch: 7, fov: 72, kick: 7, w: 10.6, h: 6 },
-  low: { elev: 11, pitch: -3, fov: 72, kick: 7, w: 10.4, h: 5.85 },
 };
 /**
  * The cockpit: a flight sim's eye at the prow (world units ahead of and above the ship's centre), level with the plane and
