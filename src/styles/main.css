@@ -1580,6 +1580,8 @@ html:has(#comms:not([hidden])) #pause { display: none; }
 #pause .pause-card .p-facts .v { font: 400 14px/1.35 var(--font-mono); color: var(--ink); }
 #pause .pause-card .p-facts li.caution .v { color: var(--caution); }
 #pause .pause-card .p-facts li.threat .v { color: var(--alert-text); }
+#pause .pause-card .p-facts li.ahead .v { color: var(--ochre); }
+#pause .pause-card .p-facts li.ready .v { color: var(--teal-bright); }
 /* the keys: what it does on the left, small light caps on the right, a hairline between rows */
 #pause .pause-card .keys-l { display: grid; grid-template-columns: 1fr; gap: 0; max-width: none; margin: 0; }
 #pause .pause-card .keys-l > div { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 12px; min-height: 40px; padding: 4px 0; border-bottom: 1px solid var(--p-rule); }

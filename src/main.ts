@@ -10,7 +10,7 @@ import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { DOCK_SETTLE_MS, Sector } from './render/sector';
 import { lockLifted } from './sim/postjump';
 import { World } from './sim/world';
-import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
+import { bestsOf, grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
 import { chapterSave, clearJourney, hasBackup, loadJourney, restartChapter, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
 import { recap } from './sim/chapters';
 import { courseView } from './sim/course';
@@ -558,7 +558,7 @@ function boot(review: typeof import('./review') | null): void {
     if (on) {
       input.reset();
       showBrief();
-      showConsole(world, journey && world.mode === 'breakout' ? courseView(journey) : null);
+      showConsole(world, journey && world.mode === 'breakout' ? courseView(journey) : null, world.mode === 'arcade' ? bestsOf(profile, world.survival.id) : null);
     }
   };
   /** Photo mode, from the pause card: the HUD and the card step away and the camera drifts round the ship. Any key or tap brings the card back. */

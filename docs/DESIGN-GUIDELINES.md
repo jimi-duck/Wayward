@@ -307,4 +307,5 @@ The HUD's gate line (`world.gateWhy`) always names what the player does next: fl
 - Two plates side by side: Objective (region and day by its label; the goal; the stop's brief, `RoadStop.brief` in `content/road.ts`, one or two short sentences, else its purpose; Here, Next and Behind you rows, then the jobs; the ship's `>` line at the foot; off the road only the goal, jobs and voice) and Controls (what it does on the left, small light keycaps on the right, a hairline between rows).
 - The ways out sit at the right, Save & exit then amber Resume; "Any key resumes" at the left on desktop.
 - Words are Share Tech Mono; the title and the goal are the display face. Buttons are chamfered Neon Glass (`.ng-n`).
+- In the Arcade the Objective plate is a run sheet: difficulty and run time by its label, a line on what is happening (a capital ship, a wave, the last plate, the quiet), then This run, Your best (ahead in amber) and Next refit (ready in teal); before the first launch it teaches the loop (Mine, Refit, Survive).
 - Phones on their side drop the id line, the labels and the fact rows (the brief keeps two lines), so the card fits 568 x 320 without scrolling.
