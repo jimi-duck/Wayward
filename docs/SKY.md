@@ -90,17 +90,18 @@ The owner asked for a No Man's Sky kind of sky: colour in the sky itself, the HU
 
 ## Cinematic flight (2026-11-18)
 
-- **Camera** (`camera.ts` `FRAMES`, `ZOOMS`). The closest step sits low behind the drives, about level with the bells and
-  tilted up along the spine (11° up, 3° up, a 72° lens, VIEW 10.4 x 5.85; user 2026-11-18): the stern and bells fill the
-  lower middle, the bridge rises over the stern and the field opens wide above.
-  Speed stretches the lens up to 7° (the ship holds her size). Z steps out to 14°/5° and then the old high chase
-  (20°/13.5°); elevation and pitch ease with the zoom. Every profile moves to the close step once (`Profile.cine`).
+- **Camera** (`camera.ts` `FRAMES`, `COCKPIT`). A Setting (title Settings and the pause card, key C; kept per device in
+  `wayward.view`). Chase, the default, is the old view (20° up, 13.5° down, a 52° lens, VIEW 11 x 6.2). Cinematic is
+  close and wide (17°/7°, 72°); Engine level sits about level with the bells and looks 3° up (11°/-3°, 72°); Cockpit rides
+  on the bridge roof and looks 12° down over the prow (72°). The lens stretches with speed in every view. Z zooms the
+  chase views (`ZOOMS` 1, 1.45, 2.1). A jump, the reveal, an arrival, photo mode and the bay always use the chase rig:
+  the cockpit eases out for them and back after (user 2026-11-18: the low view was too low to play by default).
 - **Light** (`environment.ts`). The star's key is harder (`KEY` 6.2); the ambient bounce is the nebula's own colour at
   low strength (`HEMI` 0.24), so shadow sides stay deep. Bloom only takes high-luma pixels (threshold 0.82, smoothing
   0.14, `post.ts`); the bridge visor now sits just over that line.
 - **Hull.** Paint at roughness 0.55 to 0.65 and metalness 0.22, so the key light glints on plate edges.
 - **Rocks.** One far backdrop asteroid in nine is a colossal anchor (30 to 66 units across, `rocks.ts`).
-- Bench: `tools/ship.html?view=game&zoom=0..2` is the flight camera itself. Not measured: real-GPU look and cost.
+- Bench: `tools/ship.html?view=game&cam=chase|cinematic|low|cockpit&zoom=0..2` is the flight camera itself. Not measured: real-GPU look and cost.
 
 ## Backdrop pass (2026-11-18)
 

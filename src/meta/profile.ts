@@ -70,8 +70,6 @@ export interface Profile {
   cosmetic: string;
   /** The camera distance last chosen (an index into the zoom steps). */
   zoom: number;
-  /** The cinematic camera (2026-11-18) has been offered: an older profile's zoom moves to it once. */
-  cine: boolean;
   /** The way in last chosen: the Breakout or the arcade. */
   mode: 'breakout' | 'arcade';
   /** The arcade's briefing has been read through once (it opens in full the first time). */
@@ -96,8 +94,7 @@ const fresh = (): Profile => ({
   earned: [],
   survival: DEFAULT_SURVIVAL,
   cosmetic: 'engine-stock',
-  zoom: 0,
-  cine: true,
+  zoom: 1,
   mode: 'breakout',
   briefed: false,
   trained: false,
@@ -110,8 +107,9 @@ export function loadProfile(): Profile {
     const raw = localStorage.getItem(KEY);
     if (!raw) return fresh();
     const p = migrate(JSON.parse(raw) as Record<string, any>) as Partial<Profile>;
-    // the closest camera step became the cinematic one (2026-11-18): every player starts there once, and Z still steps out
-    if (!p.cine) { p.zoom = 0; p.cine = true; }
+    // a profile moved to the close cinematic step for a day (2026-11-18) goes back to the usual middle zoom; the view is a Setting now
+    const q = p as Partial<Profile> & { cine?: boolean };
+    if (q.cine) { q.zoom = 1; delete q.cine; }
     const f = fresh();
     return { ...f, ...p, best: { ...f.best, ...p.best }, life: { ...f.life, ...p.life }, archive: { ...f.archive, ...p.archive } } as Profile;
   } catch {

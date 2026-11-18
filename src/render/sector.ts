@@ -15,7 +15,7 @@ import { ArsenalView } from './arsenal';
 import { BreakoutView } from './breakout';
 import { SiteView } from './site';
 import { YardView } from './yard';
-import { CameraRig } from './camera';
+import { CameraRig, type CameraSubject } from './camera';
 import { DebrisField } from './debris';
 import { Environment } from './environment';
 import { Effects, type RGB } from './fx';
@@ -83,6 +83,8 @@ export type PerfLayer = 'post' | 'shadow' | 'sky' | 'far' | 'rocks' | 'debris' |
 export class Sector {
   readonly scene = new Scene();
   readonly rig = new CameraRig();
+  /** The ship as the camera rig reads it, filled each frame (no allocation). */
+  private readonly subject: CameraSubject = { x: 0, z: 0, heading: 0, yawRate: 0, speedFrac: 0 };
   private readonly env: Environment;
   private readonly rocks: RockView;
   private readonly rockfx: RockFx;
@@ -694,7 +696,9 @@ export class Sector {
     }
     if (this.seenWorld !== world) { this.seenWorld = world; this.reveal.reset(); }
     const wt = this.jumpClock(world, s);
-    const subject = { x: s.x, z: s.z, heading: s.heading, yawRate: s.yawRate, speedFrac: Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(world.hull)) };
+    const subject = this.subject;
+    subject.x = s.x; subject.z = s.z; subject.heading = s.heading; subject.yawRate = s.yawRate;
+    subject.speedFrac = Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(world.hull));
     if (!this.snapped) { this.rig.snap(subject); this.snapped = true; }
     if (wt >= 0) this.jumpSeen = true;
     this.rig.arrive = this.arriveSweep(world, dt);

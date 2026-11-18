@@ -2,18 +2,21 @@ import { MathUtils, PerspectiveCamera } from 'three';
 import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
 
 // ── the chase camera ──────────────────────────────────────────────────────
-// The closest step is cinematic: low behind the drives, about level with the
-// bells, the lens wide (72 degrees) and tipped a little up along the spine,
-// so the hull runs away from the eye toward the bridge and the field opens
-// above her. The further steps rise toward the old high chase view, which
-// shows more of the plane ahead (where enemies come in from).
+// The player picks the view in Settings (`view`). Chase, the default, is
+// behind the ship and well above it: the hull in the lower middle of the
+// picture, with room ahead (where enemies come in from) to see them early.
+// Cinematic is closer and lower with a wide lens, looking down the spine;
+// Low sits about level with the drives and looks a little up; Cockpit rides
+// on the bridge and looks over the prow.
 //
-// Two angles define each step. ELEV is how far above the ship the camera
-// sits, seen from the ship; PITCH is how far the view looks down (below zero:
-// up). The ship lands ELEV - PITCH below the centre of the picture, and the
-// horizon PITCH above it. Distance is solved per frame so a minimum width and
-// height of the scene at the ship are in view whatever the aspect, then
-// scaled by the zoom step; elevation and pitch ease with the zoom.
+// Two angles define each chase view. ELEV is how far above the ship the
+// camera sits, seen from the ship; PITCH is how far the view looks down
+// (below zero: up). The ship lands ELEV - PITCH below the centre of the
+// picture, and the horizon PITCH above it. Distance is solved per frame so a
+// minimum width and height of the scene at the ship are in view whatever the
+// aspect, then scaled by the zoom step. Story camera moments (a jump, the
+// reveal, an arrival, photo mode, the refit bay) always use the chase rig, so
+// the cockpit eases out to it for them and back after.
 //
 // The rig swings round a beat behind the ship's heading so a turn is felt,
 // widens its field of view with speed (and a few degrees more for a moment on
@@ -21,22 +24,27 @@ import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
 // turns, shakes on impacts, and recoils a touch on every shot. With reduced
 // motion: no punch, no hum, no shake.
 
-/** Per zoom step: [elevation, pitch] in degrees. The first is the cinematic view; the last the old high chase. */
-const FRAMES: ReadonlyArray<readonly [number, number]> = [[11, -3], [14, 5], [20, 13.5]];
-const VIEW_W = 10.4;
-const VIEW_H = 5.85;
+/** The views a player can pick in Settings. */
+export const CAMERA_VIEWS = ['chase', 'cinematic', 'low', 'cockpit'] as const;
+export type CameraView = (typeof CAMERA_VIEWS)[number];
+/** A chase view: elevation and pitch (degrees), the lens (degrees, and its stretch at top speed), the scene's width and height at the ship. */
+interface Frame { elev: number; pitch: number; fov: number; kick: number; w: number; h: number }
+const FRAMES: Record<Exclude<CameraView, 'cockpit'>, Frame> = {
+  chase: { elev: 20, pitch: 13.5, fov: 52, kick: 6, w: 11, h: 6.2 },
+  cinematic: { elev: 17, pitch: 7, fov: 72, kick: 7, w: 10.6, h: 6 },
+  low: { elev: 11, pitch: -3, fov: 72, kick: 7, w: 10.4, h: 5.85 },
+};
+/** The cockpit: on the bridge roof (world units ahead of and above the ship's centre), looking a little down over the prow. */
+const COCKPIT = { ahead: 0.72, up: 0.45, pitch: MathUtils.degToRad(12), fov: 72, kick: 7 };
 const LOOK_AHEAD = 0.6;
 const FOLLOW = 0.08;
 const YAW_FOLLOW = 0.26;
-const BASE_VFOV = 72;
-/** The lens stretches this many degrees at top speed (the ship holds her size; the field rushes out round her). */
-const FOV_KICK = 7;
 /** A burst of speed (a throttle snap, a jink): the lens opens this many degrees at once, then eases back. */
 const PUNCH_FOV = 4;
 /** A drive at full burn shakes the rig by this much (world units at the closest zoom): a hum felt more than seen. */
 const VIBE = 0.014;
 /** In the jump: the lens opens this many degrees, and the camera drops to this angle (the ship stays where it is in the picture). */
-const WARP_FOV = 26;
+const WARP_FOV = 38;
 const WARP_ELEV = MathUtils.degToRad(9);
 const WARP_PULL = 0.18;
 /** The rename reveal (render/reveal.ts): the rig swings this far round the ship, lower and further off, so the whole flank shows. */
@@ -59,8 +67,8 @@ const PHOTO_ELEV = MathUtils.degToRad(12);
 const COMPACT_H = 500;
 const COMPACT_PULL = 1.12;
 
-/** Zoom steps, as multiples of the closest framing. The first is the reference's. */
-export const ZOOMS = [1, 1.8, 3] as const;
+/** Zoom steps, as multiples of the closest framing (no effect in the cockpit). */
+export const ZOOMS = [1, 1.45, 2.1] as const;
 
 /** What the rig needs to know about the ship this frame. */
 export interface CameraSubject {
@@ -73,7 +81,11 @@ export interface CameraSubject {
 }
 
 export class CameraRig {
-  readonly camera = new PerspectiveCamera(BASE_VFOV, 1, 0.2, 4000);
+  readonly camera = new PerspectiveCamera(FRAMES.chase.fov, 1, 0.12, 4000);
+  /** The view picked in Settings. */
+  view: CameraView = 'chase';
+  /** 0 to 1: how far in the cockpit the camera is (eases on a change of view, and out for a story moment). */
+  private seat = 0;
   /** Index into ZOOMS. */
   zoom = 0;
   /** The point on the plane the camera follows, after smoothing. */
@@ -150,6 +162,7 @@ export class CameraRig {
     this.vx.v = this.vz.v = this.vyaw.v = 0;
     this.yaw = s.heading;
     this.zoomNow = ZOOMS[this.zoom] ?? 1;
+    this.seat = this.view === 'cockpit' ? 1 : 0;
   }
 
   update(s: CameraSubject, dt: number, reduceMotion: boolean): void {
@@ -171,19 +184,26 @@ export class CameraRig {
     // the punch comes in fast and goes out slow, so the eye reads a shove rather than a zoom
     this.punchWant = Math.max(0, this.punchWant - 1.6 * dt);
     this.punchNow += (this.punchWant - this.punchNow) * Math.min(1, (this.punchWant > this.punchNow ? 14 : 2.6) * dt);
-    const vfov = BASE_VFOV + FOV_KICK * s.speedFrac + (reduceMotion ? 0 : WARP_FOV * lens + PUNCH_FOV * this.punchNow);
+    // the cockpit gives way to the chase rig for a jump, the reveal, an arrival, photo mode and the bay
+    const moment = Math.max(lens, this.reveal, this.arrive, this.photo, this.bay);
+    const seatWant = this.view === 'cockpit' ? 1 - moment : 0;
+    this.seat += (seatWant - this.seat) * Math.min(1, (seatWant < this.seat && moment > 0 ? 12 : 4) * dt);
+    if (Math.abs(this.seat - seatWant) < 0.001) this.seat = seatWant;
+    const F = FRAMES[this.view === 'cockpit' ? 'chase' : this.view], seat = this.seat;
+    const baseFov = F.fov + (COCKPIT.fov - F.fov) * seat, kick = F.kick + (COCKPIT.kick - F.kick) * seat;
+    const vfov = baseFov + kick * s.speedFrac + (reduceMotion ? 0 : WARP_FOV * lens + PUNCH_FOV * this.punchNow);
     if (Math.abs(this.camera.fov - vfov) > 0.01) {
       this.camera.fov = vfov;
       this.applyOffset();
     }
     const tanV = Math.tan(MathUtils.degToRad(vfov) / 2);
-    const dist = (Math.max(VIEW_H / (2 * tanV), VIEW_W / (2 * tanV * this.aspect)) + (reduceMotion ? 0 : this.recoil)) * this.zoomNow * this.pull * (1 - 0.12 * this.bay) * (1 + (reduceMotion ? 0 : WARP_PULL * lens)) * (1 + REVEAL_PULL * this.reveal) * (1 + ARRIVE_PULL * this.arrive) * (1 + PHOTO_PULL * this.photo);
+    const dist = (Math.max(F.h / (2 * tanV), F.w / (2 * tanV * this.aspect)) + (reduceMotion ? 0 : this.recoil)) * this.zoomNow * this.pull * (1 - 0.12 * this.bay) * (1 + (reduceMotion ? 0 : WARP_PULL * lens)) * (1 + REVEAL_PULL * this.reveal) * (1 + ARRIVE_PULL * this.arrive) * (1 + PHOTO_PULL * this.photo);
 
     // forward along the yaw, and the camera behind and above
     const yaw = this.yaw + REVEAL_ARC * this.reveal + ARRIVE_ARC * this.arrive + this.drift;
     const fx = Math.cos(yaw), fz = -Math.sin(yaw);
     // the ship keeps its place in the picture (ELEV - PITCH below the middle) while the camera moves for a jump, a reveal or a photo
-    const [E, P] = this.framing();
+    const E = MathUtils.degToRad(F.elev), P = MathUtils.degToRad(F.pitch);
     const elev = E + (WARP_ELEV - E) * lens + (REVEAL_ELEV - E) * this.reveal + (ARRIVE_ELEV - E) * this.arrive + (PHOTO_ELEV - E) * this.photo, pitch = P + (elev - E);
     const back = Math.cos(elev) * dist, up = Math.sin(elev) * dist;
     let px = this.target.x - fx * back, py = up, pz = this.target.z - fz * back;
@@ -200,23 +220,22 @@ export class CameraRig {
       py += Math.sin(this.t * 77.3 + 0.7) * vibe * 0.7;
       pz += Math.sin(this.t * 83.9 + 1.9) * vibe;
     }
+    // look down by PITCH along the yaw
+    let lx = px + fx * Math.cos(pitch), ly = py - Math.sin(pitch), lz = pz + fz * Math.cos(pitch);
+    if (seat > 0) {
+      // the cockpit: on the ship herself (no follow lag, or she would slide under the eye), facing her heading
+      const hx = Math.cos(s.heading), hz = -Math.sin(s.heading), cp = COCKPIT.pitch;
+      const cx = s.x + hx * COCKPIT.ahead, cy = COCKPIT.up + (py - up), cz = s.z + hz * COCKPIT.ahead;
+      px += (cx - px) * seat; py += (cy - py) * seat; pz += (cz - pz) * seat;
+      lx += (px + hx * Math.cos(cp) - lx) * seat; ly += (py - Math.sin(cp) - ly) * seat; lz += (pz + hz * Math.cos(cp) - lz) * seat;
+    }
     this.camera.position.set(px, py, pz);
     this.camera.up.set(0, 1, 0);
-    // look down by PITCH along the yaw
-    this.camera.lookAt(px + fx * Math.cos(pitch), py - Math.sin(pitch), pz + fz * Math.cos(pitch));
+    this.camera.lookAt(lx, ly, lz);
 
     const wantRoll = clamp(-s.yawRate * 0.03, -0.06, 0.06);
     this.roll += (wantRoll - this.roll) * Math.min(1, 6 * dt);
     if (this.roll) this.camera.rotateZ(this.roll);
-  }
-
-  /** Elevation and pitch (radians) for the zoom as it eases between steps. */
-  private framing(): [number, number] {
-    const z = this.zoomNow;
-    let i = 0;
-    while (i < ZOOMS.length - 2 && z > ZOOMS[i + 1]!) i++;
-    const t = clamp((z - ZOOMS[i]!) / (ZOOMS[i + 1]! - ZOOMS[i]!), 0, 1), a = FRAMES[i]!, b = FRAMES[i + 1]!;
-    return [MathUtils.degToRad(a[0] + (b[0] - a[0]) * t), MathUtils.degToRad(a[1] + (b[1] - a[1]) * t)];
   }
 
   private applyOffset(): void {

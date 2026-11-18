@@ -627,6 +627,11 @@ export const UI: Record<string, string> = {
   'Small': 'Klein',
   'Large': 'Groß',
   'Button size': 'Tastengröße',
+  // ── the camera view (Settings) ──
+  'Chase': 'Verfolger',
+  'Cinematic': 'Kino',
+  'Engine level': 'Triebwerkshöhe',
+  'Cockpit': 'Cockpit',
   'Auto-fire': 'Autofeuer',
   'Photo mode · any key or tap returns': 'Fotomodus · Taste oder Tippen bringt dich zurück',  // ── the roll secret ──
   'Secret found': 'Geheimnis gefunden',
