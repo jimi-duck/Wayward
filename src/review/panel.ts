@@ -47,6 +47,7 @@ export class ReviewPanel {
       if (e.code === 'BracketRight') { this.gallery.step(1); this.group = this.gallery.current.group; this.render(); e.preventDefault(); }
       else if (e.code === 'BracketLeft') { this.gallery.step(-1); this.group = this.gallery.current.group; this.render(); e.preventDefault(); }
       else if (e.code === 'KeyV') { this.sky((this.palette + 1) % PALETTE_COUNT); e.preventDefault(); }
+      else if (e.code === 'KeyO') { this.orbit(!this.orbiting); e.preventDefault(); }
       else if (e.code === 'KeyH') { this.names = !this.names; this.labels.classList.toggle('off', !this.names); e.preventDefault(); }
     });
     this.sky(0);
@@ -58,6 +59,15 @@ export class ReviewPanel {
     if (!window.confirm(`Start the Story at chapter ${chapter + 1}? This replaces your saved journey.`)) return;
     saveJourney(journeyAtChapter(Math.floor(Math.random() * 1e9), chapter));
     location.search = '?chapter';
+  }
+
+  private orbiting = false;
+
+  /** The inspect camera: the shot circles the ship slowly (photo mode's drift), so flying up to a hull shows it from every side. */
+  private orbit(on: boolean): void {
+    this.orbiting = on;
+    this.sector.photo = on;
+    this.render();
   }
 
   private open(on: boolean): void {
@@ -90,6 +100,8 @@ export class ReviewPanel {
     const skies = make('div', undefined, { className: 'rv-row' });
     SKY_NAMES.forEach((n, i) => skies.append(button(n, () => this.sky(i), this.palette === i)));
     skies.append(button('Another sky', () => this.sky(this.palette, true)));
+    const view = make('div', undefined, { className: 'rv-row' });
+    view.append(button('Orbit view (O)', () => this.orbit(!this.orbiting), this.orbiting));
     // the Story, from the start of any chapter: a new journey on the road, saved as the Story save (the old one is kept as its safety copy)
     const chapters = make('div', undefined, { className: 'rv-stops' });
     const names = journeyAtChapter(1, 0);
@@ -101,9 +113,10 @@ export class ReviewPanel {
       head,
       make('p', 'Show', { className: 'rv-k' }), groups, list,
       make('p', 'Background', { className: 'rv-k' }), skies,
+      make('p', 'Inspect', { className: 'rv-k' }), view,
       make('p', 'Play the Story from a chapter', { className: 'rv-k' }), chapters,
       make('p', 'Starts a new journey at that chapter\'s gate and replaces the saved one (the old save is kept as the safety copy). The chapters before it are not played, so their choices are not made.', { className: 'rv-hint' }),
-      make('p', 'Fly with the usual keys or stick. Nothing here can hurt you. [ ] step through the stops, V changes the sky, H hides the names.', { className: 'rv-hint' }),
+      make('p', 'Fly with the usual keys or stick. Nothing here can hurt you. [ ] step through the stops, V changes the sky, O circles the camera round the ship, H hides the names.', { className: 'rv-hint' }),
     );
   }
 
@@ -132,7 +145,10 @@ export class ReviewPanel {
         const key = l.text + '|' + (l.sub ?? '');
         if (tag.dataset.k !== key) {
           tag.dataset.k = key;
-          tag.replaceChildren(l.text, ...(l.sub ? [Object.assign(document.createElement('small'), { textContent: l.sub })] : []));
+          // a hull also says how it is built: triangles and the feel of its metal
+          const info = l.hull ? this.sector.hullInfo(l.hull.kind, l.hull.faction) : null;
+          const make = (text: string) => Object.assign(document.createElement('small'), { textContent: text });
+          tag.replaceChildren(l.text, ...(l.sub ? [make(l.sub)] : []), ...(info ? [make(`${l.hull!.capital ? info.capitalTris : info.tris} tris · ${info.feel}`)] : []));
         }
       }
     }

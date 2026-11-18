@@ -1,7 +1,7 @@
 import { NAMED, FEATURES, FEATURE_ORDER, type FeatureId } from '../content/features';
 import { FACTIONS, type Boss, type Strike, type Telegraph } from '../sim/bosses';
 import { newBreakout } from '../sim/breakout';
-import { ELITE_ORDER, ELITES, VARIANT_ORDER, VARIANTS, spawnAlien, type Faction, type Shot } from '../sim/enemies';
+import { ELITE_ORDER, ELITES, VARIANT_ORDER, VARIANTS, spawnAlien, type AlienKind, type Faction, type Shot } from '../sim/enemies';
 import { ENCOUNTERS, type Encounter, type EncounterId } from '../sim/encounters';
 import type { Bulwark, RockKind, RockSize } from '../sim/field';
 import { ROCK_KINDS } from '../sim/field';
@@ -52,6 +52,8 @@ export interface Label {
   sub?: string;
   /** Shown while the ship is within this many units. */
   reach: number;
+  /** A hull's make, for the panel to say how it is built (triangles, metal) beside its name. */
+  hull?: { kind: AlienKind; faction: Faction; capital?: boolean };
   /** A far feature's name hangs in the sky on this bearing, wherever the ship is, instead of at x, z. */
   bearing?: number;
 }
@@ -168,8 +170,8 @@ export class Gallery {
     return [34 + i * dx, z + (i - (n - 1) / 2) * dz];
   }
 
-  private label(stop: string, x: number, y: number, z: number, text: string, sub?: string, reach = 90): void {
-    this.labels.push({ stop, x, y, z, text, sub, reach });
+  private label(stop: string, x: number, y: number, z: number, text: string, sub?: string, reach = 90, hull?: Label['hull']): void {
+    this.labels.push({ stop, x, y, z, text, sub, reach, ...(hull ? { hull } : {}) });
   }
 
   private hulls(): void {
@@ -181,19 +183,19 @@ export class Gallery {
       const al = spawnAlien(v.kind, w.ship, 0, w.rng, { x, y: 0, z: zz }, { variant: id, hp: 1 });
       al.face = FACE; al.cloak = 0; al.escort = false; al.mode = 'watch';
       w.aliens.push(al);
-      this.label('hulls', x, 4.5, zz, v.label, `${FACTION_NAME[v.faction]} · ${v.kind}`, 70);
+      this.label('hulls', x, 4.5, zz, v.label, `${FACTION_NAME[v.faction]} · ${v.kind}`, 70, { kind: v.kind, faction: v.faction });
     });
   }
 
   private elites(): void {
     const w = this.world;
-    const z = this.stop('ships', 'elites', 'Elites', 'The seven elite marks, each on a strike fighter. Only an elite wears a halo.');
+    const z = this.stop('ships', 'elites', 'Elites', 'The seven elite marks, each on a strike fighter. An elite wears a halo, two red strobes and a part of its own: a mantlet, nacelles, hardpoints, canisters.');
     ELITE_ORDER.forEach((id, i) => {
       const x = 50 + i * 18, zz = z + (i % 2 ? 7 : -7);
       const al = spawnAlien('raptor', w.ship, 0, w.rng, { x, y: 0, z: zz }, { variant: 'raptor', elite: id, hp: 1 });
       al.face = FACE; al.cloak = 0; al.escort = false; al.mode = 'watch';
       w.aliens.push(al);
-      this.label('elites', x, 5, zz, ELITES[id].label, 'Strike fighter', 70);
+      this.label('elites', x, 5, zz, ELITES[id].label, 'Strike fighter', 70, { kind: 'raptor', faction: 'gutter' });
     });
   }
 
@@ -208,7 +210,7 @@ export class Gallery {
         fuse: def.fuse, leaving: false, cloak: 0, hitT: 0, soaked: 0, beams: [], chargeT: 0, fightT: 0, orbit: 0, arriveT: 0, unaware: false, aware: 0, stay: 0, jumpT: 0, sense: 0,
       };
       this.bosses.push(b);
-      this.label('capitals', x, 11, zz, def.names[0]!, `${FACTION_NAME[f]} capital ship · ${def.hull}`, 130);
+      this.label('capitals', x, 11, zz, def.names[0]!, `${FACTION_NAME[f]} capital ship · ${def.hull}`, 130, { kind: def.hull, faction: f, capital: true });
     });
     w.review!.bosses = this.bosses;
   }
