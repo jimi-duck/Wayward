@@ -717,7 +717,7 @@ export class Sector {
     this.yard.update(world, dt, this.fx);
     if (this.dyingT > 0) this.dyingT = Math.max(0, this.dyingT - dt);
     if (!world.alive) this.deathAge += dt; else this.hullGone = false;
-    this.ship.root.visible = (world.alive || (!this.hullGone && this.deathAge < DEATH_HOLD + 0.3)) && (wt < 0 || whiteout(wt) < 0.97);
+    this.ship.root.visible = (world.alive || (!this.hullGone && this.deathAge < DEATH_HOLD + 0.3)) && (wt < 0 || whiteout(wt) < 0.97) && !this.rig.inCockpit;
     this.fx.calm = this.reduceMotion || this.lowFx;
     this.ship.stretch(wt >= 0 && !this.reduceMotion ? stretch(wt) : 1);
     // the shield stands at the rim as it fills, and fully once a charge is up
