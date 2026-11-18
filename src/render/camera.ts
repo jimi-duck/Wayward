@@ -86,6 +86,8 @@ export class CameraRig {
   view: CameraView = 'chase';
   /** 0 to 1: how far in the cockpit the camera is (eases on a change of view, and out for a story moment). */
   private seat = 0;
+  /** The view last framed: a change of view cuts at once (only a story moment eases the cockpit out and back). */
+  private seen: CameraView = 'chase';
   /** Index into ZOOMS. */
   zoom = 0;
   /** The point on the plane the camera follows, after smoothing. */
@@ -187,6 +189,7 @@ export class CameraRig {
     // the cockpit gives way to the chase rig for a jump, the reveal, an arrival, photo mode and the bay
     const moment = Math.max(lens, this.reveal, this.arrive, this.photo, this.bay);
     const seatWant = this.view === 'cockpit' ? 1 - moment : 0;
+    if (this.view !== this.seen) { this.seen = this.view; this.seat = seatWant; }
     this.seat += (seatWant - this.seat) * Math.min(1, (seatWant < this.seat && moment > 0 ? 12 : 4) * dt);
     if (Math.abs(this.seat - seatWant) < 0.001) this.seat = seatWant;
     const F = FRAMES[this.view === 'cockpit' ? 'chase' : this.view], seat = this.seat;
