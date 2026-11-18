@@ -1782,6 +1782,9 @@ export class World implements EncounterHost {
     else this.bayFloor = this.krail + ARCADE_PRICE;
   }
 
+  /** The Arcade: the Cyrite aboard at which the bay next opens by itself (a refit's price, or one more after a pass). */
+  get nextRefit(): number { return Math.max(ARCADE_PRICE, this.bayFloor); }
+
   /** The Arcade's Fit another: there is Cyrite for another refit, and something to fit with it. */
   canFitAnother(): boolean {
     if (this.bk || this.phase !== 'bay' || this.krail < ARCADE_PRICE) return false;
