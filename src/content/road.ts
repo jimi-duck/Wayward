@@ -25,6 +25,11 @@ export interface RoadStop {
   role: RoadRole;
   /** What the stop is for, in a few words, for the Course screen (provisional: the story thread owns the copy). */
   purpose?: string;
+  /**
+   * What is going on here, for the pause card's Objective: one or two short sentences (30 words at most) that give a
+   * little more than the HUD (who, why, what is at stake). Absent: the card shows the purpose. The story thread owns it.
+   */
+  brief?: string;
   /** A job (content/missions.ts) pinned here, and nowhere else. */
   job?: string;
   /** The key of this stop's script (content/script/). */
