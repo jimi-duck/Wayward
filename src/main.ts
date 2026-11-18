@@ -759,18 +759,28 @@ function boot(review: typeof import('./review') | null): void {
     for (const id of ['s-autofire', 's-btnsize']) el(id).hidden = !coarse;
     for (const id of ['p-autofire-r', 'p-btnsize-r']) el(id).hidden = !coarse;
   };
-  // the camera view (Settings): chase by default; kept per device
-  const VIEW_NAMES: Record<CameraView, string> = { chase: 'Chase', cinematic: 'Cinematic', low: 'Engine level', cockpit: 'Cockpit' };
-  const savedView = store('wayward.view');
+  // the camera view (the pause card's Camera row, and the title's Settings): chase by default; kept per device.
+  // Wide is the cinematic rig; the old Engine level view was folded into it when the card got its three buttons
+  const VIEW_NAMES: Record<CameraView, string> = { chase: 'Chase', cinematic: 'Wide', cockpit: 'Cockpit' };
+  const savedView = store('wayward.view') === 'low' ? 'cinematic' : store('wayward.view');
   sector.rig.view = (CAMERA_VIEWS as readonly string[]).includes(savedView ?? '') ? (savedView as CameraView) : 'chase';
+  const camButtons = [...document.querySelectorAll<HTMLButtonElement>('#p-cam button[data-view]')];
   const paintView = () => {
-    for (const id of ['s-view', 'p-view']) el(`${id}-v`).textContent = t(VIEW_NAMES[sector.rig.view]);
+    el('s-view-v').textContent = t(VIEW_NAMES[sector.rig.view]);
+    for (const b of camButtons) {
+      const on = b.dataset.view === sector.rig.view;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+    }
+  };
+  const setView = (v: CameraView) => {
+    sector.rig.view = v;
+    keep('wayward.view', v);
+    paintView();
   };
   const nextView = (dir = 1) => {
     const n = CAMERA_VIEWS.length;
-    sector.rig.view = CAMERA_VIEWS[(CAMERA_VIEWS.indexOf(sector.rig.view) + dir + n) % n]!;
-    keep('wayward.view', sector.rig.view);
-    paintView();
+    setView(CAMERA_VIEWS[(CAMERA_VIEWS.indexOf(sector.rig.view) + dir + n) % n]!);
   };
   let compact = store('wayward.compact') === '1';
   const paintCompact = () => {
@@ -981,7 +991,7 @@ function boot(review: typeof import('./review') | null): void {
   const nextSize = () => { size = SIZES[(SIZES.indexOf(size) + 1) % SIZES.length]!; keep('wayward.btnsize', size); paintTouch(); };
   const toggleCompact = () => { compact = !compact; keep('wayward.compact', compact ? '1' : '0'); paintCompact(); };
   act('p-compact', toggleCompact);
-  act('p-view', () => nextView());
+  for (const b of camButtons) act(b.id, () => setView(b.dataset.view as CameraView));
   press('s-view', () => nextView());
   press('s-compact', toggleCompact);
   act('p-autofire', toggleAuto);

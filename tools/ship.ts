@@ -85,7 +85,7 @@ const VIEWS: Record<string, [number, number, number, number, number, number]> = 
   // the stern face up close
   stern: [-4.3, 0.7, 0.9, -1.2, 0, 0],
 };
-// ?view=game: the flight camera itself (render/camera.ts), at ?zoom=0..2 and ?cam=chase|cinematic|low|cockpit: the ship as played
+// ?view=game: the flight camera itself (render/camera.ts), at ?zoom=0..2 and ?cam=chase|cinematic|cockpit: the ship as played
 const rig = view === 'game' ? new CameraRig() : null;
 if (rig) { rig.zoom = Number(params.get('zoom') ?? '1'); rig.view = (params.get('cam') ?? 'chase') as CameraView; }
 const subject = { x: 0, z: 0, heading: 0, yawRate: 0, speedFrac: 0 };

@@ -74,6 +74,7 @@
       <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2l8 3v7c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5z M12 8v8"/></symbol>
       <symbol id="i-signal" viewBox="0 0 24 24"><path d="M12 12v9 M8 21h8 M7.5 7.5a6.4 6.4 0 000 9 M16.5 7.5a6.4 6.4 0 010 9 M4 4.5a11 11 0 000 15 M20 4.5a11 11 0 010 15"/></symbol>
       <symbol id="i-link" viewBox="0 0 24 24"><path d="M9 7H5l-3 5 3 5h4 M15 7h4l3 5-3 5h-4 M8 12h8"/></symbol>
+      <symbol id="i-photo" viewBox="0 0 24 24"><path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.6"/><path d="M17.5 10.5h1"/></symbol>
       <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.5"/><path d="M12 2v3.5 M12 18.5V22 M2 12h3.5 M18.5 12H22 M4.9 4.9l2.5 2.5 M16.6 16.6l2.5 2.5 M4.9 19.1l2.5-2.5 M16.6 7.4l2.5-2.5"/></symbol>
       <symbol id="i-job" viewBox="0 0 24 24"><path d="M12 2l10 10-10 10L2 12z M12 7v6 M12 15.500v1.500"/></symbol>
       <symbol id="i-cyrite" viewBox="0 0 24 24"><path d="M12 2l4 6-4 14-4-14z M8 8h8 M3 12l5-4 M21 12l-5-4"/></symbol>
@@ -556,26 +557,41 @@
           <span class="th-id story-only"><b>Wayward</b><i>OB-7731-A</i></span>
           <span class="th-id th-arcade arcade-only"><b>Wayward</b><em>Arcade mode</em><i>Survival run</i></span>
         </header>
-        <button type="button" id="p-set" aria-label="Settings"><svg class="ico"><use href="#i-gear"/></svg></button>
-        <div class="pause-t" id="pause-t">All stop</div>
-        <div class="voice" id="pause-voice"></div>
-        <section class="term-s main-only">
+        <!-- top right: photo mode and Settings, as icons -->
+        <div class="p-icons main-only">
+          <button type="button" class="ng-n dim" id="p-photo" aria-label="Photo mode"><svg class="ico"><use href="#i-photo"/></svg></button>
+          <button type="button" class="ng-n dim" id="p-set" aria-label="Settings"><svg class="ico"><use href="#i-gear"/></svg></button>
+        </div>
+        <div class="pause-head">
+          <div class="pause-t" id="pause-t">All stop</div>
+          <div class="voice" id="pause-voice"></div>
+        </div>
+        <section class="term-s main-only p-goal-s">
           <!-- the one thing to do now, and the jobs taken on (src/sim/goal.ts) -->
           <h3 class="th">Objective</h3>
           <p class="goal" id="pause-goal"></p>
           <ul class="jobs" id="pause-jobs"></ul>
         </section>
-        <section class="term-s full main-only">
+        <section class="term-s main-only p-cam-s">
+          <!-- the camera: three views, the chosen one in the hand's amber; Tab cycles them in flight (main.ts) -->
+          <h3 class="th">Camera</h3>
+          <div class="p-cam" id="p-cam" role="group" aria-label="Camera">
+            <button type="button" class="ng-n dim" id="p-cam-chase" data-view="chase" aria-pressed="false">Chase</button>
+            <button type="button" class="ng-n dim" id="p-cam-wide" data-view="cinematic" aria-pressed="false">Wide</button>
+            <button type="button" class="ng-n dim" id="p-cam-cockpit" data-view="cockpit" aria-pressed="false">Cockpit</button>
+          </div>
+          <p class="p-hint only-desktop">Tab to cycle in flight</p>
+        </section>
+        <section class="term-s main-only p-keys-s">
           <h3 class="th">Controls</h3>
           <!-- the controls for what you play with: keys, touch or a pad -->
           <!-- every mode shows the whole set for the device: the roll is how a run survives late -->
         <dl class="keys-l only-keys">
-          <div><dt><kbd>←</kbd><kbd>→</kbd></dt><dd>Steer</dd></div>
-          <div><dt><kbd>↑</kbd></dt><dd>Thrust</dd></div>
-          <div><dt><kbd>↓</kbd></dt><dd>Brake and reverse</dd></div>
-          <div><dt><kbd>Shift</kbd></dt><dd>Roll</dd></div>
-          <div><dt><kbd>Space</kbd></dt><dd>Fire lasers</dd></div>
-          <div><dt><kbd>2</kbd></dt><dd>Fire torpedo</dd></div>
+          <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><i>/</i><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></dt><dd>Steer & thrust</dd></div>
+          <div><dt class="w"><kbd>Space</kbd></dt><dd>Fire lasers</dd></div>
+          <div><dt class="w"><kbd>Shift</kbd></dt><dd>Roll</dd></div>
+          <div><dt><kbd>S</kbd><i>/</i><kbd>Down</kbd></dt><dd>Brake</dd></div>
+          <div><dt><kbd>2</kbd><i>/</i><kbd>F</kbd></dt><dd>Fire torpedo</dd></div>
         </dl>
         <dl class="keys-l only-touch-l">
           <div><dt>Left thumb</dt><dd>Steer and thrust</dd></div>
@@ -601,15 +617,13 @@
             <li id="p-autofire-r" hidden><button type="button" id="p-autofire" aria-pressed="false"><span class="l">Auto-fire</span><b id="p-autofire-v">Off</b></button></li>
             <li id="p-btnsize-r" hidden><button type="button" id="p-btnsize" aria-pressed="false"><span class="l">Button size</span><b id="p-btnsize-v">Normal</b></button></li>
             <li id="p-compact-r" hidden><button type="button" id="p-compact" aria-pressed="false"><span class="l">Compact HUD</span><b id="p-compact-v">Off</b></button></li>
-            <li><button type="button" id="p-view" aria-pressed="false"><span class="l">Camera</span><b id="p-view-v">Chase</b></button></li>
             <li><button type="button" id="p-saver" aria-pressed="false"><span class="l">Battery saver</span><b id="p-saver-v">Off</b></button></li>
             <li class="paintrow" id="p-paint-r" aria-label="Engine colour" hidden><span class="l">Engine</span><span id="paint" class="mods"></span></li>
           </ol>
         </section>
         <div class="pause-acts main-only">
-          <button type="button" id="p-go"><span class="only-desktop"><span class="story-only">Resume · press any key</span><span class="arcade-only">Begin · press any key</span></span><span class="only-touch"><span class="story-only">Resume</span><span class="arcade-only">Begin</span></span></button>
-          <button type="button" id="p-photo"><span>Photo mode</span></button>
-          <button type="button" id="p-exit"><span class="story-only">Save and exit</span><span class="arcade-only">Exit</span></button>
+          <button type="button" class="ng-n ochre" id="p-go"><span class="story-only">Resume</span><span class="arcade-only">Begin</span></button>
+          <button type="button" class="ng-n dim" id="p-exit"><span class="story-only">Save & exit</span><span class="arcade-only">Exit</span></button>
         </div>
         <div class="pause-acts set-only">
           <button type="button" id="p-back"><span>Back</span></button>

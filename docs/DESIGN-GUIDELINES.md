@@ -299,3 +299,11 @@ clipping, every answer reachable on the phone. For motion, sample the animations
 ### A shut Jump Gate says why
 
 The HUD's gate line (`world.gateWhy`) always names what the player does next: fly to the relay mast, wait for a named caller, clear the hostiles or hold still so that call can come (a card never opens over a fight, mining or tight flying), or wait for a countdown. It never says only that "a call is coming". `tests/gatecall.test.ts` plays every road stop in the chart to a shut gate that opens once its call is answered.
+
+## The pause card (18 November 2026, owner's mockup)
+
+- Top down: callsign (teal mono), ALL STOP, the ship's line (`> …`, teal), then ruled sections: Objective, Camera, Controls.
+- Photo mode and Settings are icon buttons top right. Camera is three equal buttons (Chase, Wide, Cockpit), the chosen one amber; "Tab to cycle in flight" shows on desktop only.
+- Controls are keycaps and a plain label (the pad and touch lists stay text). The way out is amber Resume beside a flat Save & exit.
+- Words are Share Tech Mono; the title is the display face. Buttons are chamfered Neon Glass (`.ng-n`).
+- Phones on their side drop the callsign and put Objective and Camera side by side, so the card fits 568 x 320 without scrolling.

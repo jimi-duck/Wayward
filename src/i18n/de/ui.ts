@@ -627,11 +627,15 @@ export const UI: Record<string, string> = {
   'Small': 'Klein',
   'Large': 'Groß',
   'Button size': 'Tastengröße',
-  // ── the camera view (Settings) ──
+  // ── the camera view (the pause card's Camera row, the title's Settings) ──
   'Chase': 'Verfolger',
-  'Cinematic': 'Kino',
-  'Engine level': 'Triebwerkshöhe',
+  'Wide': 'Weit',
   'Cockpit': 'Cockpit',
+  'Tab to cycle in flight': 'Tab wechselt im Flug',
+  // ── the pause card's keys and buttons ──
+  'Steer & thrust': 'Lenken & Schub',
+  'Brake': 'Bremsen',
+  'Save & exit': 'Speichern & beenden',
   'Auto-fire': 'Autofeuer',
   'Photo mode · any key or tap returns': 'Fotomodus · Taste oder Tippen bringt dich zurück',  // ── the roll secret ──
   'Secret found': 'Geheimnis gefunden',

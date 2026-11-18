@@ -1527,3 +1527,98 @@ html.photo #hud, html.photo #pause, html.photo #touch, html.photo #pause-b, html
 
 /* a card on the table hides the pause card: its words must not show through the glass */
 html:has(#comms:not([hidden])) #pause { display: none; }
+
+/* ── the pause card, to the owner's mockup (2026-11-18) ────────────────────
+   Callsign, ALL STOP and the ship's line; then ruled sections: Objective, Camera (three views, the chosen one in the
+   hand's amber; Tab cycles them in flight), Controls as keycaps; amber Resume and a flat Save & exit. Photo mode and
+   Settings are icons top right. Neon Glass throughout: chamfered nested buttons (.ng-n), Share Tech Mono for the words.
+   Its rules use --p-rule, not --line: neon.css registers --line as a percentage, so a colour in it never paints. */
+#pause .pause-card { --p-rule: rgba(var(--white-rgb), .16); }
+#pause .pause-card.term { width: min(580px, 94vw); gap: 14px; }
+#pause .pause-card .term-h { padding: 4px 116px 10px 0; border-bottom: 1px solid var(--p-rule); font: 400 14px/1 var(--font-mono); letter-spacing: .14em; }
+#pause .pause-card .th-id, #pause .pause-card .th-id b, #pause .pause-card .th-id i { gap: 0; font: inherit; font-weight: 400; color: var(--teal-bright); opacity: 1; }
+#pause .pause-card .th-id i::before, #pause .pause-card .th-arcade em::before { content: "·"; margin: 0 .6em; }
+#pause .pause-card .th-arcade { padding-right: 0; }
+#pause .pause-card .th-arcade i { margin-left: 0; }
+.p-icons { position: absolute; top: 22px; right: 36px; z-index: 2; display: flex; gap: 14px; }
+#pause .p-icons button { position: relative; top: auto; right: auto; display: grid; place-items: center; width: 48px; height: 42px; padding: 0; color: var(--ink); }
+#pause .p-icons .ico { display: block; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+#pause .p-icons button:hover, #pause .p-icons button:focus-visible { color: var(--rim-cyan); }
+.pause-head { display: grid; gap: 10px; margin-top: 4px; }
+#pause .pause-card.term .pause-t { font: 700 clamp(30px, 5vw, 46px)/1 var(--font-head); letter-spacing: .08em; color: var(--ink); }
+#pause .pause-card.term .voice { font: 400 17px/1.25 var(--font-mono); letter-spacing: .04em; color: var(--teal-bright); opacity: 1; }
+#pause .pause-card.term .voice::before { content: ">"; color: inherit; }
+#pause .pause-card.term .voice::after { content: none; }
+#pause .pause-card .term-s { gap: 10px; padding-top: 14px; border-top: 1px solid var(--p-rule); }
+#pause .pause-card .th { font: 400 14px/1 var(--font-mono); letter-spacing: .1em; color: var(--ink-2); }
+#pause .pause-card .th::after { content: none; }
+#pause .pause-card .goal { font: 400 18px/1.35 var(--font-mono); letter-spacing: .02em; color: var(--ink); }
+#pause .pause-card .jobs { font: 400 15px/1.35 var(--font-mono); }
+/* the camera: three equal buttons, the chosen one amber */
+.p-cam { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+#pause .p-cam button { min-height: 44px; padding: 0 8px; font: 400 16px/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+#pause .p-cam button.on { --rim: var(--rim-ochre); --ng-n: var(--ngn-ochre-hi); --ng-n-hi: var(--ngn-ochre-hi); --ng-n-press: var(--ngn-ochre-press); color: var(--ochre); }
+#pause .p-cam button:not(.on):hover, #pause .p-cam button:not(.on):focus-visible { color: var(--ink); }
+.p-hint { margin: 2px 0 0; font: 400 15px/1.2 var(--font-mono); letter-spacing: .04em; color: var(--ink-2); }
+/* the keys: caps, then what they do */
+#pause .pause-card .keys-l.only-keys { display: grid; grid-template-columns: 1fr; gap: 10px; }
+#pause .pause-card .keys-l.only-keys div { display: flex; grid-template-columns: none; align-items: center; gap: 40px; }
+#pause .pause-card .keys-l.only-keys dt { display: flex; align-items: center; gap: 6px; min-width: 118px; }
+#pause .pause-card .keys-l.only-keys dt i { font: 400 15px/1 var(--font-mono); font-style: normal; color: var(--ink-2); margin: 0 3px; }
+#pause .pause-card .keys-l kbd { min-width: 30px; height: 30px; padding: 0 8px; border: 1px solid rgba(var(--white-rgb), .28); border-radius: 0; background: rgba(var(--white-rgb), .03); box-shadow: none;
+  font: 400 15px/1 var(--font-mono); color: var(--ink); }
+#pause .pause-card .keys-l dt.w kbd { width: 118px; justify-content: start; place-items: center start; padding: 0 14px; }
+#pause .pause-card .keys-l dd { font: 400 15px/1.2 var(--font-mono); letter-spacing: .04em; text-transform: none; color: var(--ink-2); }
+.touch-ui:not(.pad-ui) #pause .pause-card .only-keys, .pad-ui #pause .pause-card .only-keys { display: none; }
+/* older rules (#p-set, .pause-acts button) set a plain border, which drops the Neon Glass frame: put it back, hover and press too */
+#pause :is(.p-icons, .pause-acts.main-only, .p-cam) button.ng-n { border: 0 solid transparent; border-radius: 0; background: none; box-shadow: none;
+  border-image: var(--ng-n) var(--ngn-slice) fill / calc(var(--ngn-slice) * 1px) / var(--ngn-out) stretch; }
+#pause :is(.p-icons, .pause-acts.main-only, .p-cam) button.ng-n:is(:hover, :focus-visible) { border-image-source: var(--ng-n-hi); }
+#pause :is(.p-icons, .pause-acts.main-only, .p-cam) button.ng-n:active { border-image-source: var(--ng-n-press); }
+/* the two ways out: amber Resume, a flat Save & exit */
+#pause .pause-acts.main-only { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; padding-top: 16px; border-top: 1px solid var(--p-rule); }
+#pause.settings-on .pause-acts.main-only { display: none; }
+#pause .pause-acts.main-only button { justify-content: center; min-height: 54px; padding: 0 12px; font: 700 18px/1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+:lang(de) #pause .pause-acts.main-only button { letter-spacing: .05em; }
+#pause .pause-card #p-go { color: var(--ochre) !important; }
+#pause .pause-card #p-go::before { content: none; }
+#pause .pause-card #p-exit { color: var(--ink-2); background: none; }
+#pause .pause-card #p-exit:hover, #pause .pause-card #p-exit:focus-visible { color: var(--ink); }
+/* a phone on its side: one screen; the callsign goes, objective and camera sit side by side */
+@media (max-height: 520px) {
+  #pause .pause-card.term { width: min(760px, 96vw); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 22px; row-gap: 8px; }
+  #pause .pause-card.term > * { grid-column: 1 / -1; }
+  #pause .pause-card.term > .p-goal-s { grid-column: 1; }
+  #pause .pause-card.term > .p-cam-s { grid-column: 2; }
+  .p-icons { top: 12px; right: 22px; gap: 10px; }
+  #pause .p-icons button { width: 44px; height: 40px; }
+  .pause-head { gap: 4px; margin: 0; padding-right: 110px; }
+  #pause .pause-card.term .pause-t { font-size: 22px; }
+  #pause .pause-card.term .voice { font-size: 12px; }
+  .pause-head { gap: 3px; }
+  #pause .pause-card.term { row-gap: 6px; }
+  #pause .pause-card .term-s { gap: 5px; padding-top: 6px; }
+  #pause .pause-card .th { display: flex; font-size: 10px; }
+  #pause .pause-card .goal { font-size: 14px; }
+  #pause .pause-card .jobs { font-size: 12px; }
+  .p-cam { gap: 8px; }
+  #pause .p-cam button { min-height: 40px; font-size: 13px; letter-spacing: .06em; }
+  #pause .pause-card .keys-l.only-touch-l { gap: 3px 12px; }
+  #pause .pause-card .keys-l.only-touch-l div { gap: 1px; }
+  #pause .pause-card .keys-l.only-touch-l dt { font: 400 11px/1.2 var(--font-mono); letter-spacing: .03em; color: var(--ink); }
+  #pause .pause-card .keys-l.only-touch-l dd { font-size: 11px; line-height: 1.2; letter-spacing: .03em; }
+  #pause .pause-acts.main-only { gap: 14px; padding-top: 6px; }
+  #pause .pause-acts.main-only button { min-height: 40px; font-size: 15px; }
+}
+#pause .p-icons button:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+/* a laptop window: the same card, a little tighter, so it fits 720 high */
+@media (min-height: 521px) and (max-height: 800px) {
+  #pause .pause-card.term { gap: 10px; }
+  #pause .pause-card .term-s { gap: 8px; padding-top: 10px; }
+  #pause .pause-card.term .pause-t { font-size: 40px; }
+  .pause-head { gap: 8px; margin-top: 0; }
+  #pause .pause-card .keys-l.only-keys { gap: 7px; }
+  #pause .pause-card .keys-l kbd { min-width: 28px; height: 28px; }
+  #pause .pause-acts.main-only { padding-top: 12px; }
+  #pause .pause-acts.main-only button { min-height: 48px; }
+}
