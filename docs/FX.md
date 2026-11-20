@@ -70,3 +70,14 @@ Every puff of flame, smoke, dust and steam is an instance in one of two draws (`
 
 ## Plating finish (2026-11-20)
 The kit metal's plating carries a roughness map in its height map's green channel (`platingTextures` in `src/render/kit.ts`): each plate its own finish (satin, matt, or rubbed bright), seams dull, rivet heads polished, wiped patches where hands and hoses rub. Under the hard key light neighbouring plates catch the sun differently, which is most of what makes metal read as metal. Close up, a finer relief from the same height map at seven times the scale adds to the bump and fades out by screen size (`fwidth`) before it can shimmer. Every hull, station and part built on `metal()` gets both; no new texture, one more set of three texture reads where the camera is close.
+
+## Finds (2026-11-20, effects plan step 8)
+
+Krail is glass: the body scatters little (diffuse at 55%), so the sky's reflection (`reflect.ts`) carries the facets, and
+now and then one facet catches the light for a moment (a per-facet beat, well under the bloom line). `tools/finds.html`
+shows Krail of three worths, Cyrite, ore and parts close up (`?t=` holds the clock).
+
+Left out of the plan's last step, on purpose: auto-exposure (it needs a read of the frame back from the GPU, which stalls
+phones, and the sky is dark enough that it would mostly do nothing) and screen-space AO on High (a second full scene pass
+for little gain in open space; the sun's shadow map already grounds the hull's parts). Jump and shield distortion stay out
+(owner: no shimmer).

@@ -79,18 +79,28 @@ function krailCluster(): BufferGeometry {
  * instance colour carries the worth). A bright core, a rim that fills at a
  * glancing angle, and a slow shimmer that passes from facet to facet.
  */
-function krailMaterial(_clock: { value: number }): MeshStandardMaterial {
-  // lit like mineral, not like a lamp: the stone takes the scene's light and
-  // a faint inner colour keeps it readable in shadow, well under the bloom line
-  const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.28, metalness: 0.15, flatShading: true, envMapIntensity: 0.8 });
+function krailMaterial(clock: { value: number }): MeshStandardMaterial {
+  // lit like mineral, not like a lamp: the stone takes the scene's light and the sky's reflection (glassy, so the
+  // reflection carries it), a faint inner colour keeps it readable in shadow, and now and then one facet catches the
+  // light for a moment. All well under the bloom line.
+  const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.16, metalness: 0.15, flatShading: true, envMapIntensity: 1.3 });
   m.onBeforeCompile = (sh) => {
+    sh.uniforms.uTime = clock;
     sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform float uTime;')
       .replace('#include <color_fragment>', `#include <color_fragment>
-        vec3 krailTint = diffuseColor.rgb;`)
+        vec3 krailTint = diffuseColor.rgb;
+        // glass: little of the light scatters in the body, so it sits darker and the sky's reflection carries the facets
+        diffuseColor.rgb *= 0.55;`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        totalEmissiveRadiance += krailTint * 0.12;`);
+        totalEmissiveRadiance += krailTint * 0.16;
+        // a glint: each facet (its face normal, in the stone's world) has its own slow beat and flashes briefly on the crest
+        vec3 kf = floor(normalize(cross(dFdx(vViewPosition), dFdy(vViewPosition))) * 6.0);
+        float kh = fract(sin(dot(kf, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+        float kg = smoothstep(0.985, 1.0, sin(uTime * (0.6 + kh * 0.8) + kh * 60.0));
+        totalEmissiveRadiance += mix(krailTint, vec3(1.0), 0.5) * kg * 0.5;`);
   };
-  m.customProgramCacheKey = () => 'krail-crystal-lit';
+  m.customProgramCacheKey = () => 'krail-crystal-glint';
   return m;
 }
 
