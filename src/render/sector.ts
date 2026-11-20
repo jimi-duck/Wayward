@@ -1,4 +1,5 @@
-import { ACESFilmicToneMapping, Scene, Vector3, type Group, type InstancedMesh, type Object3D, type WebGLRenderer } from 'three';
+import { Scene, Vector3, type Group, type InstancedMesh, type Object3D, type WebGLRenderer } from 'three';
+import { rendererTone } from './tone';
 import { COSMETICS } from '../content/unlocks';
 import { clamp, lerp } from '../core/math';
 import { HOLD_MAX, JUMP_T, type SortieDef } from '../sim/breakout';
@@ -810,7 +811,7 @@ export class Sector {
     const r = this.renderer, auto = r.shadowMap.autoUpdate, tone = r.toneMapping;
     if (this.off.has('shadow')) r.shadowMap.autoUpdate = false;
     if (this.off.has('post') || !this.post?.render(dt)) {
-      r.toneMapping = ACESFilmicToneMapping;
+      r.toneMapping = rendererTone();
       r.render(this.scene, this.rig.camera);
     }
     r.shadowMap.autoUpdate = auto;

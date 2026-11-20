@@ -1,6 +1,7 @@
-import { ACESFilmicToneMapping, NoToneMapping, PCFShadowMap, SRGBColorSpace, WebGLRenderer } from 'three';
+import { NoToneMapping, PCFShadowMap, SRGBColorSpace, WebGLRenderer } from 'three';
 import type { QualityTier } from './quality';
 import { installAerial } from './aerial';
+import { rendererTone } from './tone';
 
 // Medium and high tiers render through the post chain, which anti-aliases
 // and tone-maps itself; only the low tier asks the renderer to do either.
@@ -19,7 +20,7 @@ export function createRenderer(canvas: HTMLCanvasElement, tier: QualityTier): We
   // need it; ?debug=1 and the dev server keep it for anyone writing one.
   renderer.debug.checkShaderErrors = import.meta.env.DEV || new URLSearchParams(location.search).get('debug') === '1';
   renderer.outputColorSpace = SRGBColorSpace;
-  renderer.toneMapping = direct ? ACESFilmicToneMapping : NoToneMapping;
+  renderer.toneMapping = direct ? rendererTone() : NoToneMapping;
   renderer.shadowMap.enabled = tier.shadow > 0;
   renderer.shadowMap.type = PCFShadowMap;
   return renderer;
@@ -27,7 +28,7 @@ export function createRenderer(canvas: HTMLCanvasElement, tier: QualityTier): We
 
 /** Keep the renderer's own tone mapping in step with whether the post chain runs. */
 export function matchTier(renderer: WebGLRenderer, tier: QualityTier): void {
-  renderer.toneMapping = tier.name === 'low' ? ACESFilmicToneMapping : NoToneMapping;
+  renderer.toneMapping = tier.name === 'low' ? rendererTone() : NoToneMapping;
   renderer.shadowMap.enabled = tier.shadow > 0;
 }
 
