@@ -2,15 +2,15 @@ import { ACESFilmicToneMapping, AgXToneMapping, NeutralToneMapping, type ToneMap
 import { ToneMappingMode } from 'postprocessing';
 
 // ── the tone map ──────────────────────────────────────────────────────────
-// The one curve that turns the HDR picture into screen colour. ACES is the default; `?tone=agx` or `?tone=neutral`
-// swaps it everywhere (the post chain, the low tier's direct draw, the readout), for a side-by-side.
-// AgX keeps a fireball orange as it brightens and deep blue blue, where ACES pulls them toward yellow and violet.
+// The one curve that turns the HDR picture into screen colour. Khronos PBR Neutral, the owner's pick (2026-11-20): it
+// keeps a material's own colour and saturation through the mid tones and rolls the highlights off late. `?tone=aces`
+// or `?tone=agx` swaps it everywhere (the post chain, the low tier's direct draw, the readout), for a side-by-side.
 
 export type ToneName = 'aces' | 'agx' | 'neutral';
 
 export function toneName(): ToneName {
   const q = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('tone');
-  return q === 'agx' || q === 'neutral' ? q : 'aces';
+  return q === 'agx' || q === 'aces' ? q : 'neutral';
 }
 
 /** The renderer's own tone map, for the draw that skips the post chain. */

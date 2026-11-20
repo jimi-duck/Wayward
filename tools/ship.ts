@@ -40,7 +40,7 @@ const camera = new PerspectiveCamera(32, 1, 0.05, 4000);
 const post = new Post(renderer, scene, camera, tier);
 const ship = new ShipView();
 scene.add(ship.root);
-const fx = new Effects(scene, glowTexture());
+const fx = new Effects(scene, glowTexture(), renderer);
 // ?rcs=jink|flip|turn: hold the attitude jets firing (a jink to port, so the starboard flank fires, the flip of a break, a turn swinging to and fro)
 const rcs = params.get('rcs');
 (window as unknown as { ship: ShipView }).ship = ship;

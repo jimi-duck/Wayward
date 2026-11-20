@@ -35,7 +35,7 @@ renderer.info.autoReset = false; // the post chain renders several times a frame
 const camera = new PerspectiveCamera(52, 1, 0.1, 4000);
 const post = new Post(renderer, scene, camera, tier);
 const glow = glowTexture();
-const fx = new Effects(scene, glow);
+const fx = new Effects(scene, glow, renderer);
 fx.setLights(tier.name !== 'low');
 const streaks = new Streaks(scene);
 const weapons = new WeaponView(streaks);

@@ -159,7 +159,7 @@ export class Sector {
     this.env = new Environment(this.scene, renderer);
     this.rocks = new RockView(this.scene);
     this.debris = new DebrisField(this.scene);
-    this.fx = new Effects(this.scene, glow);
+    this.fx = new Effects(this.scene, glow, renderer, tier.name === 'low' || tier.name === 'phone' ? 512 : 1024);
     this.rockfx = new RockFx(this.fx, this.rocks);
     this.streaks = new Streaks(this.scene);
     this.weapons = new WeaponView(this.streaks);
