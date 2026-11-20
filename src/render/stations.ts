@@ -31,10 +31,13 @@ interface Livery {
   win: Color; strip: Color;
   /** The name board: its face and its letters, and whether it is neon on a dark board (lit letters) or a lit board. */
   board: string; ink: string; neon: boolean;
+  /** A painted plate lit by the star and its own lamps, not a lit board; and the depot's lamps, windows and sodium held under the bloom line. */
+  shaded?: boolean;
 }
 
 const LIVERY: Record<PortStyle, Livery> = {
-  frontier: { hull: 0x8b8e92, trim: 0x2d2e30, accent: 0xf2b21f, deck: 0x5a5d61, win: new Color(1.5, 1.05, 0.55), strip: new Color(1.4, 1.0, 0.32), board: '#f2b21f', ink: '#16120a', neon: false },
+  // dark gunmetal and oiled steel, a weathered amber-yellow kept for hazards and guides, every glow under the bloom line
+  frontier: { hull: 0x24272c, trim: 0x16181b, accent: 0xd99818, deck: 0x1c1e22, win: new Color(0.45, 0.38, 0.22), strip: new Color(0.55, 0.42, 0.15), board: '#181a1d', ink: '#c9c2b0', neon: false, shaded: true },
   kellern: { hull: 0xdadde0, trim: 0x26354b, accent: 0x34557f, deck: 0x8e98a3, win: new Color(0.95, 1.15, 1.35), strip: new Color(0.25, 1.15, 1.35), board: '#e8ecf0', ink: '#1c2a3d', neon: false },
   gutter: { hull: 0x70492f, trim: 0x2c2724, accent: 0x4c7464, deck: 0x463d35, win: new Color(1.7, 0.9, 0.36), strip: new Color(1.7, 0.85, 0.28), board: '#101615', ink: '#5ee6d4', neon: true },
   holdfast: { hull: 0x8e826b, trim: 0x37362f, accent: 0x6e7c48, deck: 0x6a6253, win: new Color(1.6, 1.12, 0.6), strip: new Color(0.55, 1.25, 0.55), board: '#1b1a16', ink: '#f2e3bf', neon: true },
@@ -58,10 +61,10 @@ function matsOf(st: PortStyle): Record<string, Material> {
   const L = LIVERY[st];
   m = {
     ...materials(),
-    hull: metal({ tint: L.hull, roughness: 0.58, metalness: 0.3, painted: true, worn: 0.3, scale: 0.8 }),
+    hull: metal({ tint: L.hull, roughness: 0.58, metalness: 0.3, painted: !L.shaded, worn: L.shaded ? 0.12 : 0.3, scale: L.shaded ? 1.6 : 0.8 }),
     trim: metal({ tint: L.trim, roughness: 0.5, metalness: 0.65, scale: 1.2 }),
     accent: metal({ tint: L.accent, roughness: 0.55, metalness: 0.1, painted: true, worn: 0.45 }),
-    paint: metal({ tint: L.accent, roughness: 0.6, metalness: 0.08, painted: true, worn: 0.35 }),
+    paint: metal({ tint: L.accent, roughness: 0.6, metalness: 0.08, painted: true, worn: L.shaded ? 0.5 : 0.35 }),
     deck: metal({ tint: L.deck, roughness: 0.82, metalness: 0.3, scale: 1.4, bump: 0.006 }),
     glass: new MeshStandardMaterial({ color: 0x0b1418, roughness: 0.1, metalness: 0.85, envMapIntensity: 1.8 }),
     cool: new MeshBasicMaterial({ color: L.win, toneMapped: false, fog: false }),
@@ -69,6 +72,17 @@ function matsOf(st: PortStyle): Record<string, Material> {
     // greenhouse light: plants under lamps, dim, never a glow
     green: new MeshBasicMaterial({ color: new Color(0.15, 0.36, 0.17), toneMapped: false, fog: false }),
     stone: stoneOf(),
+    // oxidised bronze for the fuel spheres; docking pips, teal for the way in and amber for the joints, never HDR
+    bronze: metal({ tint: 0x8c7446, roughness: 0.42, metalness: 0.65, worn: 0.5 }),
+    pipT: new MeshBasicMaterial({ color: new Color(0.16, 0.42, 0.46), toneMapped: false, fog: false }),
+    pipA: new MeshBasicMaterial({ color: new Color(0.45, 0.32, 0.1), toneMapped: false, fog: false }),
+    ...(L.shaded ? {
+      lamp: new MeshBasicMaterial({ color: new Color(0.78, 0.62, 0.4), toneMapped: false, fog: false }),
+      amber: new MeshBasicMaterial({ color: new Color(0.6, 0.4, 0.12), toneMapped: false, fog: false }),
+      win: new MeshBasicMaterial({ color: L.win, toneMapped: false, fog: false }),
+      // the runway and ring markers: a quiet teal, information, never a glow
+      edge: new MeshBasicMaterial({ color: new Color(0.16, 0.48, 0.52), toneMapped: false, fog: false }),
+    } : {}),
     ...clothMats(),
     ...Object.fromEntries(PATCH.map((c, i) => [`p${i}`, metal({ tint: c, roughness: 0.62, metalness: 0.35, painted: true, worn: 0.6 })])),
   };
@@ -120,9 +134,12 @@ function strobes(g: Group, m: MeshBasicMaterial, at: V3[]): void {
 }
 
 /** The holder's name on a lit board: two faces back to back, so it reads from either side, leaning back to be read from above. */
-function nameBoard(name: string, L: Livery, w: number): { g: Group; mat: MeshBasicMaterial } {
+function nameBoard(name: string, L: Livery, w: number): { g: Group; mat: MeshBasicMaterial | MeshStandardMaterial } {
   const g = new Group();
-  const mat = new MeshBasicMaterial({ color: new Color(1, 1, 1).multiplyScalar(L.neon ? 1.25 : 0.95), toneMapped: false, fog: false });
+  // a shaded board is a painted plate: the star and the lamps over it light it, with a faint self-light so it reads in shadow
+  const mat = L.shaded
+    ? new MeshStandardMaterial({ color: 0xffffff, roughness: 0.78, metalness: 0.2, emissive: new Color(0.1, 0.1, 0.1) })
+    : new MeshBasicMaterial({ color: new Color(1, 1, 1).multiplyScalar(L.neon ? 1.25 : 0.95), toneMapped: false, fog: false });
   if (typeof document !== 'undefined') {
     const c = document.createElement('canvas');
     c.width = 1024; c.height = 192;
@@ -146,6 +163,7 @@ function nameBoard(name: string, L: Livery, w: number): { g: Group; mat: MeshBas
     tex.colorSpace = SRGBColorSpace;
     tex.anisotropy = 4;
     mat.map = tex;
+    if (mat instanceof MeshStandardMaterial) mat.emissiveMap = tex;
     void document.fonts?.ready.then(draw);
   }
   const h = w * (192 / 1024);
@@ -225,9 +243,9 @@ function chevrons(k: Kit, x: number, y: number, z: number, face: 'x' | 'z', faci
 }
 
 /** A rail with posts between two points at deck height y, and amber sodium lamps every few posts: a walkway's edge. */
-function railing(k: Kit, a: V3, b: V3, posts: number, lampEvery = 0): void {
+function railing(k: Kit, a: V3, b: V3, posts: number, lampEvery = 0, key = 'trim'): void {
   const top = (p: V3): V3 => [p[0], p[1] + 0.6, p[2]];
-  strut(k, 'trim', top(a), top(b), 0.035, 3);
+  strut(k, key, top(a), top(b), 0.035, 3);
   for (let i = 0; i <= posts; i++) {
     const t = i / posts, p: V3 = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
     k.box('trim', [0.06, 0.6, 0.06], [p[0], p[1] + 0.3, p[2]]);
@@ -250,7 +268,7 @@ function gantryArch(k: Kit): void {
       const z = s * Z;
       k.box('trim', [1.8, 0.6, 1.8], [x, 1.3, z]);
       k.box('paint', [1.4, 0.3, 1.4], [x, 1.75, z]);
-      girder(k, [x, 1.9, z], [x, top, z], 1.0, 7, 'paint', 0.11);
+      girder(k, [x, 1.9, z], [x, top, z], 1.0, 7, 'trim', 0.11);
       // knee braces where the leg meets the beam
       strut(k, 'trim', [x, top - 2.8, z], [x, top - 0.3, z - s * 2.6], 0.12, 5);
       // a ladder up the outer face, sodium lamps on it
@@ -258,7 +276,7 @@ function gantryArch(k: Kit): void {
       for (let y = 3.2; y < top; y += 2.2) k.box('amber', [0.1, 0.12, 0.14], [x - 0.66, y, z]);
     }
     // the top chord and the lower one, braced between: one deep frame
-    girder(k, [x, top, -Z - 0.8], [x, top, Z + 0.8], 1.0, 12, 'paint', 0.12);
+    girder(k, [x, top, -Z - 0.8], [x, top, Z + 0.8], 1.0, 12, 'hull', 0.12);
     girder(k, [x, low, -Z], [x, low, Z], 0.6, 10, 'trim', 0.08);
     for (let i = 0; i < 6; i++) {
       const z0 = -Z + (i * 2 * Z) / 6, z1 = -Z + ((i + 1) * 2 * Z) / 6;
@@ -283,13 +301,13 @@ function gantryArch(k: Kit): void {
   }
   for (const x of GANTRY_X) {
     k.box('deck', [1.1, 0.08, 2 * Z + 1.4], [x, top + 0.62, 0]);
-    for (const e of [-0.55, 0.55]) railing(k, [x + e, top + 0.66, -Z - 0.6], [x + e, top + 0.66, Z + 0.6], 8, 2);
+    for (const e of [-0.55, 0.55]) railing(k, [x + e, top + 0.66, -Z - 0.6], [x + e, top + 0.66, Z + 0.6], 8, 2, 'paint');
   }
   k.box('deck', [rx - fx - 1, 0.08, 0.9], [(fx + rx) / 2, top + 0.62, 0]);
-  railing(k, [fx + 0.6, top + 0.66, 0.45], [rx - 0.6, top + 0.66, 0.45], 5, 2);
+  railing(k, [fx + 0.6, top + 0.66, 0.45], [rx - 0.6, top + 0.66, 0.45], 5, 2, 'paint');
   // a catwalk behind the board, at the lower chord
   k.box('deck', [0.9, 0.08, 2 * Z - 1], [fx + 1.0, low - 0.32, 0]);
-  railing(k, [fx + 1.4, low - 0.28, -Z + 0.5], [fx + 1.4, low - 0.28, Z - 0.5], 8, 2);
+  railing(k, [fx + 1.4, low - 0.28, -Z + 0.5], [fx + 1.4, low - 0.28, Z - 0.5], 8, 2, 'paint');
   // floods on the front shoulders, angled down at the deck and out to the berth
   for (const z of [-Z, -2.4, 2.4, Z]) {
     k.box('trim', [0.7, 0.5, 0.9], [fx - 0.75, top - 0.75, z], [0, 0, -0.55]);
@@ -299,11 +317,17 @@ function gantryArch(k: Kit): void {
     k.box('trim', [0.7, 0.5, 0.9], [rx + 0.75, top - 0.75, s * Z], [0, 0, 0.55]);
     k.box('lamp', [0.08, 0.42, 0.72], [rx + 1.1, top - 0.98, s * Z], [0, 0, 0.55]);
   }
+  // three small lamps on the top chord, leaning out over the board and pointing down onto it
+  for (const z of [-3.2, 0, 3.2]) {
+    strut(k, 'trim', [fx - 0.4, top - 0.2, z], [fx - 1.5, top - 0.3, z], 0.05, 4);
+    k.box('trim', [0.42, 0.3, 0.6], [fx - 1.6, top - 0.45, z], [0, 0, 0.7]);
+    k.box('lamp', [0.32, 0.05, 0.48], [fx - 1.68, top - 0.6, z], [0, 0, 0.7]);
+  }
   // the hoist over the cargo yard, hanging from the front frame
-  k.box('paint', [1.1, 0.6, 1.3], [fx, low - 0.7, -5.4]);
-  for (const d of [-0.35, 0.35]) strut(k, 'dark', [fx, low - 1.0, -5.4 + d], [fx - 0.2, 3.3, -5.4 + d], 0.04, 3);
-  k.box('paint', [1.2, 0.7, 1.0], [fx - 0.2, 3.0, -5.4]);
-  stripes(k, fx - 0.2, 3.37, -5.4, 'z', 1.0, 1.2, 3);
+  k.box('paint', [1.1, 0.6, 1.3], [fx, low - 0.7, -4.6]);
+  for (const d of [-0.35, 0.35]) strut(k, 'dark', [fx, low - 1.0, -4.6 + d], [fx - 0.2, 3.6, -4.6 + d], 0.04, 3);
+  k.box('paint', [1.2, 0.7, 1.0], [fx - 0.2, 3.3, -4.6]);
+  stripes(k, fx - 0.2, 3.67, -4.6, 'z', 1.0, 1.2, 3);
   // the beacon mast you steer for, on the arch's back
   k.box('trim', [0.8, 4.6, 0.8], [rx, top + 2.9, 0]);
   k.box('trim', [2.4, 0.3, 0.3], [rx, top + 3.6, 0]);
@@ -341,8 +365,16 @@ function keel(k: Kit): void {
   }
   // the tip under the hub: an antenna down to the strobe
   k.cyl('trim', 0.12, 0.12, 1.4, [0, -10.2, 0], 'y', 6);
-  // pump housings hung under the cross spine
-  for (const z of [-11, -5, 7, 13]) k.box('hull', [1.8, 0.9, 1.8], [0, y - 1.3, z]);
+  // corrugated radiator banks in frames hung from the cross spine, fins parallel to it
+  for (const [z0, z1] of [[-10.5, -4], [5, 11.5]] as const) {
+    const zc = (z0 + z1) / 2, zl = z1 - z0;
+    for (const s of [-1, 1]) {
+      k.box('hull', [0.14, 0.14, zl], [s * 1.3, y - 0.9, zc]);
+      k.box('hull', [0.14, 0.14, zl], [s * 1.3, y - 2.5, zc]);
+      for (const e of [z0, (z0 + z1) / 2, z1]) strut(k, 'trim', [s * 1.3, y - 0.5, e], [s * 1.3, y - 2.5, e], 0.07, 4);
+      for (let f = 0; f < 6; f++) k.box('trim', [0.04, 1.4, zl - 0.4], [s * (0.95 + f * 0.13), y - 1.7, zc]);
+    }
+  }
   // conduits and fuel lines along the spines
   for (const s of [-1, 1]) {
     k.cyl('trim', 0.22, 0.22, 22, [3, y + 1.1, s * 1.15], 'x', 8);
@@ -350,11 +382,18 @@ function keel(k: Kit): void {
     k.cyl('trim', 0.2, 0.2, 24, [s * 1.1, y + 1.0, 1], 'z', 8);
     for (let x = -6; x <= 13; x += 3.8) k.ring('dark', 0.3, 0.06, [x, y + 1.1, s * 1.15], 'x', 10);
   }
+  // radiator banks beside the keel post, between the spine and the lower chord, fins parallel to the keel
+  for (const s of [-1, 1]) {
+    k.box('hull', [7, 0.14, 0.14], [5.5, y - 1.5, s * 1.9]);
+    k.box('hull', [7, 0.14, 0.14], [5.5, lo + 0.2, s * 1.9]);
+    for (const e of [2, 5.5, 9]) strut(k, 'trim', [e, y - 1.5, s * 1.9], [e, lo + 0.2, s * 0.6], 0.06, 4);
+    for (let f = 0; f < 6; f++) k.box('trim', [6.6, 1.3, 0.04], [5.5, (y - 1.5 + lo + 0.2) / 2, s * (1.2 + f * 0.13)]);
+  }
   // maintenance walkways beside the long spine, railed, under sodium lamps
   for (const s of [-1, 1]) {
     k.box('deck', [19, 0.08, 0.9], [3, y - 0.9, s * 1.55]);
     for (let x = -6.5; x < 13; x += 1.1) k.box('dark', [0.06, 0.05, 0.86], [x, y - 0.84, s * 1.55]);
-    railing(k, [-6.5, y - 0.86, s * 2.0], [12.5, y - 0.86, s * 2.0], 9, 2);
+    railing(k, [-6.5, y - 0.86, s * 2.0], [12.5, y - 0.86, s * 2.0], 9, 2, 'paint');
   }
 }
 
@@ -371,7 +410,8 @@ function tankCage(k: Kit, tx: number, tz: number, an: number, sphere: boolean): 
       else strut(k, 'dark', [p[0], 2.9, p[2]], [q[0], 4.8, q[2]], 0.05, 3);
     }
     for (const y of [0.1, cy, 5.0]) k.ring('trim', r, 0.08, [tx, y, tz], 'y', 24);
-    k.ring('paint', 1.97, 0.13, [tx, cy + 0.9, tz], 'y', 24);
+    k.ring('trim', 1.97, 0.13, [tx, cy + 0.9, tz], 'y', 24);
+    for (let i = 0; i < 8; i++) { const t = (i / 8) * TAU; k.box('trim', [0.22, 0.3, 0.16], [tx + Math.cos(t) * 2.04, cy + 0.9, tz + Math.sin(t) * 2.04], [0, -t, 0]); }
     // a ladder up the side toward the hub, lamps at the rungs' head
     const lx = tx - ca * (r + 0.1), lz = tz - sa * (r + 0.1);
     for (const d of [-0.22, 0.22]) k.box('trim', [0.04, 5.0, 0.04], [lx - sa * d, 2.5, lz + ca * d]);
@@ -382,12 +422,13 @@ function tankCage(k: Kit, tx: number, tz: number, an: number, sphere: boolean): 
       for (const d of [-1, 1]) k.box('trim', [0.14, 3.8, 0.14], [tx + e, 2.2, tz + d * 1.75]);
       k.box('trim', [0.14, 0.14, 3.6], [tx + e, 4.1, tz]);
       k.ring('trim', 1.6, 0.07, [tx + e, 2.4, tz], 'x', 18);
+      for (const d of [-1, 1]) k.box('trim', [0.2, 0.16, 0.24], [tx + e, 2.4 + d * 1.6, tz]);
     }
     for (const [yy, d] of [[4.1, -1], [4.1, 1], [0.4, -1], [0.4, 1]] as const) k.box('trim', [6.4, 0.14, 0.14], [tx, yy, tz + d * 1.75]);
     for (const d of [-1, 1]) for (const [a0, a1] of [[-3.1, -1.0], [1.0, 3.1]] as const) strut(k, 'dark', [tx + a0, 0.4, tz + d * 1.75], [tx + a1, 4.1, tz + d * 1.75], 0.05, 3);
     for (const e of [-2.6, 2.6]) {
-      k.box('paint', [0.5, 1.6, 0.5], [tx + e, -0.1, tz - 0.9]);
-      k.box('paint', [0.5, 1.6, 0.5], [tx + e, -0.1, tz + 0.9]);
+      k.box('hull', [0.5, 1.6, 0.5], [tx + e, -0.1, tz - 0.9]);
+      k.box('hull', [0.5, 1.6, 0.5], [tx + e, -0.1, tz + 0.9]);
       k.box('trim', [0.7, 0.3, 2.4], [tx + e, -0.95, tz]);
     }
     for (const y of [1.2, 2.6, 3.8]) k.box('amber', [0.1, 0.1, 0.12], [tx - 3.25, y, tz + 1.75]);
@@ -417,17 +458,28 @@ function cradle(k: Kit, x0: number): void {
     // hydraulic rams from the lower tier up to the arm: a yellow barrel and a bright rod
     for (const x of [xs + 2.5, mid, x0 - 2.5]) {
       const a: V3 = [x - 1.0, -2.1, z + s * 0.35], b: V3 = [x + 0.9, -0.5, z + s * 0.35], m: V3 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, z + s * 0.35];
-      strut(k, 'paint', a, m, 0.17, 8);
+      strut(k, 'hull', a, m, 0.17, 8);
       strut(k, 'trim', m, b, 0.08, 6);
     }
-    // a guide rail along the inner edge, edge lamps on it
+    // a teal marker line down the inner edge of the deck: the runway in
+    k.box('edge', [len - 1.2, 0.03, 0.07], [mid + 0.4, 0.27, z - s * 0.36]);
+    // a guide rail along the inner edge, pips on it
     const zr = z - s * 0.55;
-    k.box('trim', [len - 1.5, 0.16, 0.16], [mid + 0.6, 1.0, zr]);
+    k.box('paint', [len - 1.5, 0.16, 0.16], [mid + 0.6, 1.0, zr]);
     for (let i = 0; i <= 5; i++) {
       const x = xs + 1.4 + (i * (len - 2.5)) / 5;
       k.box('trim', [0.12, 0.7, 0.12], [x, 0.62, zr]);
-      k.box('edge', [0.2, 0.1, 0.2], [x, 1.14, zr]);
+      k.box('pipT', [0.16, 0.08, 0.16], [x, 1.12, zr]);
     }
+    // an articulated alignment arm from the fender post, folded in toward her: two links, a knuckle, a pad, its pips
+    const p0: V3 = [xs, 0.9, z - s * 0.9], kn: V3 = [xs + 1.1, 0.9, z - s * 1.5], pad: V3 = [xs + 2.3, 0.9, z - s * 1.15];
+    strut(k, 'hull', p0, kn, 0.12, 6);
+    strut(k, 'hull', kn, pad, 0.1, 6);
+    k.cyl('trim', 0.2, 0.2, 0.36, kn, 'y', 10);
+    k.box('dark', [0.7, 0.55, 0.16], [pad[0], pad[1], pad[2] - s * 0.1]);
+    k.box('paint', [0.7, 0.08, 0.18], [pad[0], pad[1] + 0.3, pad[2] - s * 0.1]);
+    k.box('pipT', [0.12, 0.08, 0.12], [pad[0] - 0.2, pad[1] + 0.38, pad[2] - s * 0.1]);
+    k.box('pipA', [0.12, 0.08, 0.12], [kn[0], kn[1] + 0.22, kn[2]]);
     // the fender at the berth: a dark pad facing her, chevrons on it, a bumper strobe's housing at the tip
     k.box('dark', [1.6, 1.3, 0.3], [xs, 0.55, z - s * 0.85]);
     chevrons(k, xs, 0.55, z - s * 1.02, 'z', -s, 1.5, 1.0, 5);
@@ -439,10 +491,10 @@ function cradle(k: Kit, x0: number): void {
     girder(k, [ax, 0.3, az + s * 3.4], [ax, 5.4, az + s * 3.4], 0.7, 4, 'trim', 0.08);
     k.box('trim', [1.0, 0.4, 1.0], [ax, 0.4, az + s * 3.4]);
   }
-  k.box('paint', [0.8, 0.8, 7.8], [ax, 5.7, az]);
-  stripes(k, ax, 6.12, az, 'z', 7.6, 0.8, 9);
+  k.box('trim', [0.8, 0.8, 7.8], [ax, 5.7, az]);
+  for (const s of [-1, 1]) stripes(k, ax, 6.12, az + s * 3.2, 'z', 1.4, 0.8, 3);
   k.box('dark', [0.5, 0.3, 6.4], [ax, 5.18, az]);
-  for (let i = -2; i <= 2; i++) k.box('edge', [0.28, 0.08, 0.36], [ax, 4.99, az + i * 1.25]);
+  for (let i = -2; i <= 2; i++) k.box(i % 2 ? 'pipA' : 'pipT', [0.28, 0.08, 0.36], [ax, 4.99, az + i * 1.25]);
   for (const s of [-1, 1]) {
     k.box('trim', [0.6, 0.45, 0.7], [ax - 0.6, 5.25, az + s * 3.0], [0, 0, -0.5]);
     k.box('lamp', [0.08, 0.36, 0.56], [ax - 0.92, 5.1, az + s * 3.0], [0, 0, -0.5]);
@@ -453,7 +505,7 @@ function frontier(k: Kit, g: Group, rnd: () => number, L: Livery, a: StationAnim
   // the hub: a drum core on a broad skirt, a lit habitat ring round it, a control drum on top with a window band
   k.cyl('hull', 4.5, 5.5, 3, [0, 0, 0], 'y', 28);
   k.cyl('trim', 5.9, 5.9, 0.4, [0, -1.2, 0], 'y', 28);
-  k.cyl('paint', 3, 3.6, 1.6, [0, 2.2, 0], 'y', 20);
+  k.cyl('hull', 3, 3.6, 1.6, [0, 2.2, 0], 'y', 20);
   k.cyl('trim', 3.1, 3.1, 0.22, [0, 3.1, 0], 'y', 20);
   k.cyl('glass', 2.4, 3, 1.0, [0, 3.7, 0], 'y', 20);
   k.cyl('deck', 2.6, 2.6, 0.2, [0, 4.3, 0], 'y', 20);
@@ -462,7 +514,8 @@ function frontier(k: Kit, g: Group, rnd: () => number, L: Livery, a: StationAnim
   for (let i = 0; i < 12; i++) {
     const an = (i / 12) * TAU, ca = Math.cos(an), sa = Math.sin(an);
     k.box('hull', [2.6, 1.6, 2.2], [ca * 7, 0.2, sa * 7], [0, -an, 0]);
-    k.box(i % 3 ? 'paint' : 'deck', [2.2, 0.16, 1.8], [ca * 7, 1.08, sa * 7], [0, -an, 0]);
+    k.box('deck', [2.2, 0.16, 1.8], [ca * 7, 1.08, sa * 7], [0, -an, 0]);
+    if (i % 4 === 1) stripes(k, ca * 7, 1.18, sa * 7, Math.abs(ca) > Math.abs(sa) ? 'z' : 'x', 1.8, 0.4, 5);
     k.box('trim', [0.5, 0.5, 2.2], [Math.cos(an + 0.26) * 7, -0.2, Math.sin(an + 0.26) * 7], [0, -an - 0.26, 0]);
     for (const y of [0.0, 0.5]) for (const t of [-0.6, 0, 0.6]) if (rnd() > 0.25) k.box('win', [0.08, 0.2, 0.32], [ca * 8.33 - sa * t, y, sa * 8.33 + ca * t], [0, -an, 0]);
     k.cyl('trim', 0.22, 0.22, 0.7, [ca * 6.4 + sa * 0.5, 1.5, sa * 6.4 - ca * 0.5], 'y', 6);
@@ -472,18 +525,30 @@ function frontier(k: Kit, g: Group, rnd: () => number, L: Livery, a: StationAnim
   cradle(k, -6);
   keel(k);
   // cargo yard and the tank farm: pressure spheres and long capsule tanks in roll-cages, piped to the hub and down to the keel
-  for (let i = 0; i < 6; i++) crate(k, ['paint', 'p1', 'hull'][i % 3]!, -3.2 - (i % 3) * 1.8, 0.1, -4.8 - Math.floor(i / 3) * 1.3, (rnd() - 0.5) * 0.3, 1.6, 0.95, 1.05);
+  // a cargo lockup on the ring roof under the hoist: crates packed tight in a framed bay
+  {
+    const cx = -5.6, cz = -4.1, rot = Math.PI / 4, c = Math.cos(rot), sn = Math.sin(rot);
+    const at = (u: number, v: number): [number, number] => [cx + u * c + v * sn, cz - u * sn + v * c];
+    k.box('deck', [3.8, 0.2, 2.6], [cx, 1.25, cz], [0, rot, 0]);
+    for (const [u, v] of [[-1.85, -1.25], [1.85, -1.25], [-1.85, 1.25], [1.85, 1.25]] as const) { const [x, z] = at(u, v); k.box('trim', [0.14, 2.4, 0.14], [x, 2.45, z]); }
+    for (const v of [-1.25, 1.25]) { const [x, z] = at(0, v); k.box('trim', [3.8, 0.12, 0.12], [x, 3.6, z], [0, rot, 0]); }
+    ['p1', 'hull', 'p1', 'hull'].forEach((key, i) => { const [x, z] = at(-0.85 + (i % 2) * 1.7, -0.58 + Math.floor(i / 2) * 1.16); crate(k, key, x, 1.83, z, rot, 1.6, 0.95, 1.05); });
+    const [tx2, tz2] = at(-0.85, 0); crate(k, 'paint', tx2, 2.8, tz2, rot, 1.6, 0.95, 1.05);
+  }
   PORT_TANKS.forEach(([tx, tz], i) => {
     const an = Math.atan2(tz, tx);
     if (i % 2) {
-      k.cyl('paint', 1.5, 1.5, 4.6, [tx, 2.4, tz], 'x', 16);
-      for (const e of [-1, 1]) k.add('paint', new SphereGeometry(1.5, 14, 8, 0, TAU, 0, Math.PI / 2).rotateZ(-e * Math.PI / 2), [tx + e * 2.3, 2.4, tz]);
+      k.cyl('bronze', 1.5, 1.5, 4.6, [tx, 2.4, tz], 'x', 16);
+      for (const e of [-1, 1]) k.add('bronze', new SphereGeometry(1.5, 14, 8, 0, TAU, 0, Math.PI / 2).rotateZ(-e * Math.PI / 2), [tx + e * 2.3, 2.4, tz]);
       for (const e of [-1.4, 0, 1.4]) k.ring('trim', 1.52, 0.08, [tx + e, 2.4, tz], 'x', 16);
       for (const e of [-1.6, 1.6]) k.box('trim', [0.4, 1.8, 2.6], [tx + e, 0.7, tz]);
       stripes(k, tx, 3.92, tz, 'x', 3.6, 0.5, 5);
-    } else tank(k, tx, tz, 1.9, an);
+    } else tank(k, tx, tz, 1.9, an, 'bronze');
     tankCage(k, tx, tz, an, !(i % 2));
-    k.cyl('trim', 0.2, 0.2, 7, [Math.cos(an) * 9, 0, Math.sin(an) * 9], 'x', 6);
+    // a bundle of three conduits from the hub's skirt out to the tank's manifold, banded where they run
+    const ca = Math.cos(an), sa = Math.sin(an);
+    for (const [d, h, r] of [[-0.28, -0.7, 0.16], [0.28, -0.7, 0.16], [0, -0.38, 0.12]] as const) strut(k, 'trim', [ca * 5.6 - sa * d, h, sa * 5.6 + ca * d], [ca * 8.7 - sa * d, h, sa * 8.7 + ca * d], r, 6);
+    for (const t of [6.4, 7.6]) k.box('dark', [0.3, 0.55, 0.95], [ca * t, -0.6, sa * t], [0, -an, 0]);
     cable(k, [Math.cos(an) * 6, 1.4, Math.sin(an) * 6], [Math.cos(an) * 12.3, 2.7, Math.sin(an) * 12.3], 1.2, 0.09);
   });
   // the arch over the yard that carries the name, and radiators round the control drum
@@ -504,12 +569,12 @@ function frontier(k: Kit, g: Group, rnd: () => number, L: Livery, a: StationAnim
   g.add(dish);
   a.spin.push({ o: dish, w: 0.35 });
   const [fx, rx] = GANTRY_X, Z = GANTRY_Z, top = GANTRY_TOP;
+  // halogen throws on dark grating: small, faint, where a lamp points
   pools(g, L.strip, [
-    [0, 4.45, 0, 4], [-11, 0.35, BERTH.z, 6], [-15.5, 0.35, BERTH.z, 4], [-4.5, 0.2, -5.5, 4],
-    // under the arch's floods, on the ring roof and the yard in front of it
-    [fx - 2, 1.2, -4, 4], [fx - 2, 1.2, 4, 4], [(fx + rx) / 2, 1.2, 0, 5],
-    ...PORT_TANKS.map(([x, z]): [number, number, number, number] => [x, 0.1, z, 4.4]),
-  ]);
+    [0, 4.45, 0, 2.4], [-13, 0.35, BERTH.z, 3], [-17, 0.35, BERTH.z, 2.6], [-5.6, 1.4, -4.1, 2.2],
+    [fx - 1.8, 1.2, -4, 2.2], [fx - 1.8, 1.2, 4, 2.2],
+    ...PORT_TANKS.map(([x, z]): [number, number, number, number] => [x, 0.1, z, 2.6]),
+  ], 0.08);
   strobes(g, a.strobe, [
     [rx, top + 7, 0], [fx, top + 1.4, -Z - 0.8], [fx, top + 1.4, Z + 0.8], [rx, top + 1.4, -Z - 0.8], [rx, top + 1.4, Z + 0.8],
     [0, -11, 0], [14.2, -4.4, 0],
@@ -815,8 +880,9 @@ export function buildStation(style: PortStyle, name: string, own?: { lamp: Mater
   const L = LIVERY[style], g = new Group(), k = new Kit(), rnd = seeded(9 + style.length * 13);
   const anim: StationAnim = { spin: [], strobe: new MeshBasicMaterial({ color: new Color(2.4, 2.4, 2.4), toneMapped: false, fog: false }), neon: null, neonBase: new Color(), craft: [] };
   const signAt = BODY[style](k, g, rnd, L, anim);
-  const m = matsOf(style), lamp = own?.lamp ?? m.lamp!;
-  g.add(k.build({ ...m, lamp, win: own?.win ?? windowMaterial() }, 0.6));
+  // a shaded depot keeps its own dim lamps and windows; the others take the port's mood-tinted ones
+  const m = matsOf(style), lamp = (L.shaded ? m.lamp : own?.lamp) ?? m.lamp!;
+  g.add(k.build({ ...m, lamp, win: (L.shaded ? m.win : own?.win) ?? windowMaterial() }, 0.6));
   for (const [r, h, w, ph] of CRAFT) {
     const o = skiff({ ...m, lamp }, anim.strobe);
     g.add(o);
@@ -829,7 +895,7 @@ export function buildStation(style: PortStyle, name: string, own?: { lamp: Mater
   board.g.rotation.set(0, -Math.PI / 2, 0);
   board.g.rotateX(-0.55);
   g.add(board.g);
-  if (style === 'gutter') { anim.neon = board.mat; anim.neonBase.copy(board.mat.color); }
+  if (style === 'gutter' && board.mat instanceof MeshBasicMaterial) { anim.neon = board.mat; anim.neonBase.copy(board.mat.color); }
   g.userData.anim = anim;
   return g;
 }

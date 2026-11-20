@@ -26,7 +26,7 @@ where `sim/solids.ts` puts them, so what you see is what you bump.
 
 | Holder | Look |
 |---|---|
-| Frontier Supply (also Voice, Thren, nobody's) | the yellow fuel depot: habitat ring, a gantry arch carrying the name board and the beacon mast, caged tanks, a keel of box girders and ballast down to y -9.5, a cradle round the berth (second truss tier, rams, guide rails, fenders, a service arch over the throat), a turning dish |
+| Frontier Supply (also Voice, Thren, nobody's) | the fuel depot in dark gunmetal with amber-yellow kept for hazards and guides, every glow under the bloom line (`Livery.shaded`): habitat ring, a gantry arch carrying a shaded, lamp-lit name plate and the beacon mast, bronze tanks in steel cages, a keel of box girders and ballast down to y -9.5 with radiator banks in its bays, a cradle round the berth (second truss tier, rams, guide rails, alignment arms, teal runway markers, fenders, a service arch over the throat), a turning dish |
 | Kellern | an off-white octagonal tower in navy bands, cool windows, a glass bridge, a landing deck with teal edge lamps, a claims office over a skybridge, and a checkpoint arch over the approach with a teal scan strip |
 | the Gutter | a patched drum in scaffold and sodium lamps, a salvage crane that swings, and a gutted freighter lying behind it, ribs showing, its bridge still lit; the name in stuttering teal neon |
 | a Holdfast | a hub dug into a rock: habitat blocks in the rock face, green-lit greenhouse domes, four flak turrets that turn |
