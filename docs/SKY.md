@@ -130,3 +130,23 @@ Region mapping of the brief: Kethar Belt is the Salvage Belt (amber dust and tea
   1.5 and 1024. Phone and Low are unchanged.
 
 Not measured: real-GPU cost. The owner asked to put the look first; the governor still drops a tier on a slow machine.
+
+## The great nebulae (2026-11-20, owner's Hubble references)
+
+Every sky now carries one great shaped nebula, painted into the bake (`Hero` in `sky.ts`, `hero()` in the bake shader),
+round the far side from the planet and clear of the sun. Four kinds, after the owner's pictures:
+
+| Kind | After | What |
+|---|---|---|
+| `pillars` | Eagle, Carina, Horsehead | Dark columns of dust standing out of a ragged bank, lit gas behind combed along the light, the heads rimmed toward their star |
+| `bipolar` | Butterfly, Hourglass | Two lobes blown out of a pinched waist, walls brighter at the edge, filaments, a dust lane across a hot core; now and then a ring round the eye |
+| `bubble` | N44F, AG Carinae | A clumpy bright wall round a hot star, a cavity inside, the field's gas and dust lanes outside |
+| `remnant` | Crab | An oval cage of tangled filaments, hot colours at the rim, a pale glow filling it |
+
+Each region leans to its kinds (`HERO_LEAN`). Colours come from the palette, so no sky turns red: where the pictures are
+red (hydrogen), the game uses the region's own pair. The bake is now 4096 wide (was 2048), once per system.
+`?hero=pillars|bipolar|bubble|remnant` paints that kind just right of where the camera first looks; the bench is
+`tools/sky.html?palette=0..9&hero=…`.
+
+Also: more warm stars (amber and orange, as in the Hubble fields), the black hole about 1.7 times larger, the rift wider
+and softer at the rim. Not measured: real-GPU bake time and memory (one 4096 x 2048 target).

@@ -48,6 +48,44 @@ export interface Sky {
   accent: Color;
   /** Which palette painted it (0 to 9): the region's identity, for what else shows in its sky. */
   palette?: number;
+  /** The sky's great nebula, painted into the bake (see HERO in the bake shader). */
+  hero?: Hero;
+}
+
+/**
+ * One great shaped nebula a sky, after the Hubble pictures: 0 dark pillars of dust standing in lit gas, their heads
+ * rimmed by the star that is eating them; 1 a bipolar nebula, two lobes blown out of a pinched, dusty waist; 2 a bubble,
+ * a clumpy bright wall blown round a hot star; 3 a supernova's remnant, an oval cage of tangled filaments.
+ */
+export interface Hero {
+  kind: 0 | 1 | 2 | 3;
+  /** Where, in degrees, and its half-size in radians of sky. */
+  az: number;
+  el: number;
+  size: number;
+  /** Its tilt (radians), its own noise seed and its strength. */
+  rot: number;
+  seed: number;
+  k: number;
+}
+
+export const HERO_KINDS = ['pillars', 'bipolar', 'bubble', 'remnant'] as const;
+/** Which great nebulae a palette leans to (the arcade's extras take any). */
+const HERO_LEAN: Record<number, Hero['kind'][]> = {
+  0: [1, 2, 3, 0], 1: [0, 2], 2: [3, 1], 5: [0, 0, 2], 6: [1, 2, 3], 7: [0, 3], 8: [0, 2], 9: [3, 1],
+};
+
+function heroFor(seed: number, palette: number | undefined, planetAz: number | null): Hero {
+  // its own draw, so the rest of every seeded sky is as it was
+  const r = rand(seed * 29 + 13);
+  const pool = HERO_LEAN[palette ?? -1] ?? [0, 1, 2, 3];
+  let kind = pool[Math.floor(r() * pool.length)]!;
+  const force = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('hero');
+  const fi = HERO_KINDS.indexOf(force as (typeof HERO_KINDS)[number]);
+  if (fi >= 0) kind = fi as Hero['kind'];
+  // round the far side from the planet (the hole and the rift take the near quarter), clear of the sun
+  const az = offSun((planetAz ?? r() * 360) + 200 + r() * 70);
+  return { kind, az, el: -4 - r() * 12, size: [0.5, 0.4, 0.36, 0.4][kind]! * (0.85 + r() * 0.35), rot: (r() - 0.5) * (kind === 0 ? 0.35 : 1.4), seed: r() * 50, k: 0.9 + r() * 0.3 };
 }
 
 interface Planet {
@@ -118,7 +156,9 @@ export function hashSeed(key: string): number {
 export function skyFor(seed: number, region: number | null): Sky {
   const r = rand(seed);
   const i = region === null ? ARCADE[Math.floor(r() * ARCADE.length)]! : Math.max(0, Math.min(PALETTES.length - 1, region));
-  return { ...paint(seed, r, PALETTES[i]!), palette: i };
+  const sky: Sky = { ...paint(seed, r, PALETTES[i]!), palette: i };
+  sky.hero = heroFor(sky.seed, i, sky.planet?.az ?? null);
+  return sky;
 }
 
 /** How many palettes there are: the three regions' and the arcade's extras. */
@@ -127,7 +167,9 @@ export const PALETTE_COUNT = PALETTES.length;
 /** The sky for a seed in one named palette (the review world's switch; the game draws through skyFor). */
 export function skyIn(seed: number, palette: number): Sky {
   const i = Math.max(0, Math.min(PALETTES.length - 1, palette));
-  return { ...paint(seed, rand(seed), PALETTES[i]!), palette: i };
+  const sky: Sky = { ...paint(seed, rand(seed), PALETTES[i]!), palette: i };
+  sky.hero = heroFor(sky.seed, i, sky.planet?.az ?? null);
+  return sky;
 }
 
 const STEEL = new Color('#4a5a6e');
@@ -240,7 +282,7 @@ const BAKE = /* glsl */ `
   varying vec2 vUv;
   uniform float uSeed, uGlow, uClouds, uStars, uMode;
   uniform vec3 uNebA, uNebB, uNebC, uNebD, uBand, uBandN;
-  uniform vec4 uKnot;
+  uniform vec4 uKnot, uHero, uHeroP;
   uniform vec4 uC[5];
   ${NOISE}
   float hash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
@@ -285,6 +327,139 @@ const BAKE = /* glsl */ `
     return o;
   }
 
+
+  // ── the sky's great nebula (Hero in sky.ts), after the Hubble pictures ──
+  // Worked in a flat frame round its direction (p in units of its half-size, y up the sky), warped by noise so no edge is
+  // ever geometry. Each returns its light and writes how much it hides what lies behind (dark).
+  float hf(vec2 p, float z, int o) { return fbm(vec3(p, z), o); }
+  float sq(float x) { return x * x; }
+
+  // the dust of the pillars: a ragged bank along the bottom and two or three columns standing out of it, heads swollen
+  float pillarDust(vec2 p, float sd) {
+    vec2 w = vec2(hf(p * 2.6, sd, 4), hf(p * 2.6 + 7.1, sd + 1.3, 4)) - 0.5;
+    vec2 q = p + w * 0.2 + (vec2(hf(p * 9.0, sd + 4.0, 3), hf(p * 9.0 + 3.3, sd + 5.0, 3)) - 0.5) * 0.04;
+    float bank = smoothstep(0.03, -0.07, q.y + 0.42 - 0.22 * hf(vec2(q.x * 2.2, 1.0), sd, 4));
+    float pil = 0.0;
+    for (int i = 0; i < 3; i++) {
+      float fi = float(i);
+      float x0 = (fi - 1.0) * 0.44 + (hash(vec3(sd, fi, 1.0)) - 0.5) * 0.22;
+      float top = 0.05 + hash(vec3(sd, fi, 2.0)) * 0.6 - abs(fi - 1.0) * 0.2;
+      float lean = (hash(vec3(sd, fi, 3.0)) - 0.5) * 0.45;
+      float y = clamp((q.y + 0.42) / (top + 0.42), 0.0, 1.0);
+      float wid = mix(0.22, 0.09, y) * (0.75 + hash(vec3(sd, fi, 4.0)) * 0.5);
+      wid += 0.03 * exp(-sq((y - 0.88) * 5.0));
+      float dx = abs(q.x - x0 - lean * (q.y + 0.42));
+      pil = max(pil, smoothstep(wid, wid * 0.35, dx) * smoothstep(top + 0.03, top - 0.06, q.y));
+    }
+    return max(bank, pil) * (0.72 + 0.28 * hf(q * 8.0, sd + 3.0, 4));
+  }
+
+  vec3 heroPillars(vec2 p, float sd, out float dark) {
+    // the star that lights them is above and a little to one side; their heads face it
+    vec2 L = normalize(vec2(-0.35, 1.0));
+    float D = pillarDust(p, sd);
+    float Dl = pillarDust(p + L * 0.012, sd);
+    float rim = smoothstep(0.02, 0.35, D - Dl) * (0.5 + 0.7 * hf(p * 20.0, sd + 11.0, 3)) * smoothstep(-0.3, 0.1, p.y);
+    float halo = smoothstep(0.0, 0.4, D - pillarDust(p + L * 0.14, sd)) * (1.0 - D * 0.7);
+    // the gas behind: brightest toward the star, combed into streaks along the light (the striations in the photographs)
+    float r2 = dot(p, p);
+    float comb = 0.75 + 0.5 * hf(vec2(dot(p, vec2(L.y, -L.x)) * 26.0, dot(p, L) * 1.4), sd + 9.0, 4);
+    float em = exp(-r2 / 1.1) * (0.45 + 0.8 * hf(p * 3.0, sd + 2.0, 5)) * comb * (0.5 + 1.1 * smoothstep(-0.5, 0.9, dot(p, L)));
+    float hue = hf(p * 1.6, sd + 6.0, 3);
+    vec3 gas = mix(uNebA, uNebB, smoothstep(0.35, 0.7, hue + p.y * 0.25));
+    vec3 hot = mix(uNebC, vec3(1.0, 0.86, 0.66), 0.35);
+    dark = D * 0.98;
+    // inside the dust a little of the light leaks through, brown; the rim is the brightest thing in the picture
+    // lit a little on the face toward the star, so the columns have form and are not holes
+    float face = smoothstep(-0.05, 0.25, D - pillarDust(p - L * 0.05, sd));
+    vec3 dust = mix(vec3(0.05, 0.034, 0.024), vec3(0.16, 0.11, 0.075), face * 0.6) * (0.35 + hf(p * 12.0, sd + 1.0, 5)) * (0.3 + em);
+    return gas * em * 1.1 * (1.0 - D) + dust * D + mix(gas, hot, 0.5) * rim * 0.2 + mix(gas, hot, 0.3) * halo * 0.45 * em;
+  }
+
+  // two lobes blown out of a pinched waist, their walls brighter at the edge, threaded with filaments; a dust lane across the core
+  vec3 heroBipolar(vec2 p, float sd, out float dark) {
+    vec2 w = vec2(hf(p * 2.2, sd, 4), hf(p * 2.2 + 4.3, sd + 2.0, 4)) - 0.5;
+    vec2 q = p + w * 0.12;
+    float r = length(q), ax = abs(q.y) / max(r, 1e-4);
+    float th = atan(q.x, abs(q.y));
+    float R = 0.95 * pow(ax, 0.75) * (0.7 + 0.6 * hf(vec2(th * 2.2, q.y > 0.0 ? 1.0 : 5.0) + w, sd, 4));
+    float inside = smoothstep(R, R * 0.6, r);
+    float wall = exp(-sq((r - R * 0.9) / (0.03 + 0.06 * r))) * smoothstep(0.02, 0.15, r);
+    float fil = pow(1.0 - abs(snoise(vec3(th * 4.0, r * 2.0, sd) + vec3(w, 0.0) * 2.0)), 3.0) * inside * smoothstep(0.05, 0.3, r);
+    float body = hf(q * 4.0 + w * 2.0, sd + 12.0, 5);
+    float fine = pow(1.0 - abs(snoise(vec3(q * 7.0, sd + 3.0))), 4.0);
+    float glow = exp(-r * r / 0.05), core = exp(-r * r / 0.0012);
+    // a ring round the eye, now and then (the Hourglass)
+    float ring = step(0.5, hash(vec3(sd, 7.0, 1.0))) * exp(-sq((length(q * vec2(1.0, 2.6)) - 0.13) / 0.014));
+    dark = exp(-sq(q.y / (0.018 + 0.03 * abs(q.x)))) * exp(-q.x * q.x / 0.06) * 0.85;
+    vec3 inner = mix(uNebC, uNebB, smoothstep(0.05, 0.7, r));
+    vec3 edge = mix(uNebB, uNebD, 0.45 + 0.4 * hf(q * 3.0, sd + 8.0, 3));
+    vec3 c = inner * inside * (0.12 + 0.55 * body * body + 0.2 * fil) + edge * wall * (0.3 + 0.5 * body) + uNebC * glow * 0.35 + mix(uNebC, vec3(1.0), 0.5) * core * 0.8 + uNebB * ring * 0.6;
+    // turbulent outer wings of the second colour, as the Butterfly's
+    float wing = sq(max(hf(q * 3.0 + w * 3.0, sd + 1.0, 5), 0.0)) * exp(-r * r / 0.8) * smoothstep(0.2, 0.7, ax);
+    c += edge * wing * 0.7;
+    return c * (1.0 - dark * 0.9);
+  }
+
+  // a blown bubble (N44F, AG Carinae): a clumpy bright wall round a hot star, a cavity inside, the field's gas outside
+  vec3 heroBubble(vec2 p, float sd, out float dark) {
+    vec2 w = vec2(hf(p * 2.4, sd, 4), hf(p * 2.4 + 3.7, sd + 1.0, 4)) - 0.5;
+    vec2 q = p + w * 0.12;
+    float a = atan(q.y, q.x);
+    float r = length(q * vec2(1.0, 1.08));
+    float R = 0.6 * (0.88 + 0.28 * hf(vec2(cos(a), sin(a)) * 1.4, sd + 2.0, 3));
+    float clump = hf(q * 7.0 + w * 2.0, sd + 5.0, 5);
+    float wall = exp(-sq((r - R) / (0.05 + 0.07 * clump))) * (0.35 + 1.1 * clump * clump);
+    float strand = pow(1.0 - abs(snoise(vec3(a * 3.0, r * 5.0, sd) + vec3(w * 2.0, 0.0))), 6.0) * smoothstep(R * 1.1, R * 0.7, r) * smoothstep(0.12, 0.4, r);
+    float fill = smoothstep(R, R * 0.5, r) * (0.25 + 0.6 * hf(q * 3.0, sd + 4.0, 5)) * smoothstep(0.05, 0.3, r);
+    float outer = exp(-dot(p, p) / 1.3) * (0.3 + 0.7 * hf(p * 3.0, sd + 8.0, 5)) * smoothstep(R * 0.9, R * 1.3, r);
+    float star = exp(-r * r / 0.0008), glow = exp(-r * r / 0.02);
+    float lanes = smoothstep(0.55, 0.78, hf(p * 4.5 + w, sd + 7.0, 4));
+    dark = lanes * 0.55 * smoothstep(R * 0.8, R * 1.2, r);
+    vec3 rimC = mix(uNebB, uNebC, 0.2) * 1.2;
+    vec3 warm = mix(uNebA, uNebC, 0.3);
+    return warm * fill * 0.5 + rimC * (wall * 0.7 + strand * 0.15) + uNebA * outer * 0.45 * (1.0 - lanes * 0.7) + mix(uNebC, vec3(1.0), 0.6) * (star * 2.2 + glow * 0.35);
+  }
+
+  // a supernova's remnant (the Crab): an oval cage of tangled filaments, hot at the rim, a pale glow filling it
+  vec3 heroRemnant(vec2 p, float sd, out float dark) {
+    vec2 w = vec2(hf(p * 2.0, sd, 4), hf(p * 2.0 + 5.1, sd + 2.0, 4)) - 0.5;
+    vec2 q = p + w * 0.14;
+    float a = atan(q.y, q.x);
+    float r = length(q * vec2(1.0, 1.32));
+    float R = 0.82 * (0.85 + 0.3 * hf(vec2(cos(a), sin(a)) * 1.6, sd + 3.0, 4));
+    float inside = smoothstep(R, R * 0.8, r);
+    float web = pow(1.0 - abs(snoise(vec3(q * 4.0 + w * 3.0, sd))), 5.0) + 0.7 * pow(1.0 - abs(snoise(vec3(q * 10.0 + w * 5.0, sd + 1.0))), 7.0)
+      + 0.25 * pow(1.0 - abs(snoise(vec3(q * 16.0 + w * 4.0, sd + 2.0))), 8.0);
+    float edgeK = smoothstep(0.35, 1.0, r / R);
+    float glow = exp(-r * r / 0.2) * (0.5 + 0.5 * hf(q * 3.0, sd + 6.0, 4));
+    dark = 0.0;
+    vec3 inner = uNebB * 1.25, edge = mix(uNebA, uNebD, 0.35) * 1.2;
+    vec3 fil = mix(inner, edge, edgeK);
+    return mix(uNebB, uNebC, 0.35) * glow * 0.45 * inside + fil * web * inside * (0.4 + 0.6 * edgeK) + edge * exp(-sq((r - R) / 0.12)) * 0.18;
+  }
+
+  vec3 hero(vec3 d, out float dark) {
+    dark = 0.0;
+    if (uHero.w < 0.0) return vec3(0.0);
+    vec3 c = uHero.xyz;
+    float cd = dot(d, c);
+    if (cd < 0.5) return vec3(0.0);
+    vec3 t1 = normalize(cross(vec3(0.0, 1.0, 0.0), c)), t2 = cross(c, t1);
+    vec2 p = vec2(dot(d, t1), dot(d, t2)) / (cd * uHeroP.x);
+    float cr = cos(uHeroP.y), sr = sin(uHeroP.y);
+    p = vec2(cr * p.x - sr * p.y, sr * p.x + cr * p.y);
+    float fade = smoothstep(1.6, 0.9, length(p * vec2(0.85, 1.0)));
+    if (fade <= 0.0) return vec3(0.0);
+    vec3 o;
+    if (uHero.w < 0.5) o = heroPillars(p, uHeroP.z, dark);
+    else if (uHero.w < 1.5) o = heroBipolar(p, uHeroP.z, dark);
+    else if (uHero.w < 2.5) o = heroBubble(p, uHeroP.z, dark);
+    else o = heroRemnant(p, uHeroP.z, dark);
+    dark *= fade;
+    return o * fade * uHeroP.w;
+  }
+
   void main() {
     if (uMode > 0.5) { gl_FragColor = vec4(detail(vUv), 1.0); return; }
     float phi = (vUv.x - 0.5) * 6.2831853, th = (vUv.y - 0.5) * 3.1415927;
@@ -317,6 +492,11 @@ const BAKE = /* glsl */ `
       shade *= 1.0 - exp(-kd / 0.004) * 0.6;
     }
     col *= 1.0 - shade;
+    // the great nebula: its dust hides what lies behind, its gas and rims light over it
+    float heroDark;
+    vec3 heroC = hero(d, heroDark);
+    col = col * (1.0 - heroDark) + heroC * uGlow;
+    shade = max(shade, heroDark);
 
     // pinprick stars too small for points: thicker in the band
     vec3 cell = floor(d * 900.0);
@@ -348,7 +528,7 @@ function bakePass() {
       uSeed: { value: 0 }, uGlow: { value: 0 }, uClouds: { value: 0 }, uStars: { value: 0 }, uMode: { value: 0 },
       uNebA: { value: new Color() }, uNebB: { value: new Color() }, uNebC: { value: new Color() }, uNebD: { value: new Color() },
       uBand: { value: new Color() }, uBandN: { value: new Vector3() },
-      uC: { value: [0, 1, 2, 3, 4].map(() => new Vector4()) }, uKnot: { value: new Vector4() },
+      uC: { value: [0, 1, 2, 3, 4].map(() => new Vector4()) }, uKnot: { value: new Vector4() }, uHero: { value: new Vector4(0, 1, 0, -1) }, uHeroP: { value: new Vector4() },
     },
     depthTest: false, depthWrite: false,
   });
@@ -373,7 +553,7 @@ export function skyLayout(sky: Sky): { clouds: Vector4[]; bandN: Vector3; seed: 
 }
 
 /** Paint a sky into an equirectangular texture, on the GPU. The caller owns (and disposes) the target. */
-export function bakeSky(renderer: WebGLRenderer, sky: Sky, width = 2048): WebGLRenderTarget {
+export function bakeSky(renderer: WebGLRenderer, sky: Sky, width = 4096): WebGLRenderTarget {
   const target = new WebGLRenderTarget(width, width / 2, { colorSpace: SRGBColorSpace, magFilter: LinearFilter, minFilter: LinearFilter, generateMipmaps: false, depthBuffer: false });
   target.texture.mapping = EquirectangularReflectionMapping;
   const lay = skyLayout(sky);
@@ -389,6 +569,12 @@ export function bakeSky(renderer: WebGLRenderer, sky: Sky, width = 2048): WebGLR
     knot.set(d.x, d.y, d.z, 0.5 + kr() * 0.5);
   } else knot.set(0, 1, 0, 0);
   u.uGlow!.value = sky.glow; u.uClouds!.value = sky.clouds; u.uStars!.value = sky.stars;
+  const h = sky.hero, hv = u.uHero!.value as Vector4;
+  if (h) {
+    const hd = dirOf(h.az, h.el);
+    hv.set(hd.x, hd.y, hd.z, h.kind);
+    (u.uHeroP!.value as Vector4).set(h.size, h.rot, h.seed, h.k);
+  } else hv.set(0, 1, 0, -1);
   (u.uNebA!.value as Color).copy(sky.neb[0]); (u.uNebB!.value as Color).copy(sky.neb[1]); (u.uNebC!.value as Color).copy(sky.neb[2]);
   (u.uNebD!.value as Color).copy(sky.accent);
   (u.uBand!.value as Color).copy(sky.band);

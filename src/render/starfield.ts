@@ -54,9 +54,10 @@ const AMBER = new Color(1, 0.72, 0.42), EMBER = new Color(0.9, 0.5, 0.3);
 /** A star colour from its temperature: mostly white, a good share blue-white, a few warm, amber and ember. */
 function tint(t: number, out: Color): Color {
   // a few dim ember dwarfs (orange, never red), then amber, then the warm whites
-  if (t < 0.025) return out.copy(EMBER).multiplyScalar(0.8);
-  if (t < 0.06) return out.copy(AMBER);
-  if (t < 0.1) return out.copy(WARM).lerp(WHITE, t * 4);
+  // as in the Hubble fields: a good share of the stars are warm, amber and orange
+  if (t < 0.04) return out.copy(EMBER).multiplyScalar(0.85);
+  if (t < 0.14) return out.copy(AMBER);
+  if (t < 0.3) return out.copy(WARM).lerp(WHITE, (t - 0.14) * 3);
   if (t > 0.58) return out.copy(WHITE).lerp(BLUE, Math.min(1, (t - 0.58) * 2.4));
   return out.copy(WHITE);
 }
