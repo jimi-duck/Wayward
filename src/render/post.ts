@@ -1,9 +1,10 @@
 import {
   Effect, BlendFunction, BloomEffect, BrightnessContrastEffect, EffectComposer, EffectPass, FXAAEffect, HueSaturationEffect, NoiseEffect, RenderPass, SMAAEffect, SMAAPreset,
-  ToneMappingEffect, ToneMappingMode, VignetteEffect,
+  ToneMappingEffect, VignetteEffect,
 } from 'postprocessing';
 import { Color, HalfFloatType, Uniform, Vector3, type Camera, type Scene, type WebGLRenderer } from 'three';
 import type { QualityTier } from './quality';
+import { postTone } from './tone';
 
 // Bloom is what turns HDR colour into light: engines, lava, lances,
 // explosions. Only colours well above white bloom (a high threshold), so
@@ -62,7 +63,7 @@ export class Post {
     // a light grade: the sky carries colour now (each system its own two), so nothing is drained; the HUD guards its own text
     const grade = new HueSaturationEffect({ saturation: 0.04 });
     const contrast = new BrightnessContrastEffect({ contrast: 0.06 });
-    const tone = new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC });
+    const tone = new ToneMappingEffect({ mode: postTone() });
     const fxaa = tier.smaa === 'low' && matchMedia('(pointer: coarse)').matches;
     if (tier.smaa && !fxaa) this.composer.addPass(new EffectPass(camera, new SMAAEffect({ preset: tier.smaa === 'high' ? SMAAPreset.HIGH : SMAAPreset.LOW })));
     this.composer.addPass(new EffectPass(camera, bloom, this.mood, vignette, grain, grade, contrast, tone));

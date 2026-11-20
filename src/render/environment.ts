@@ -1,6 +1,6 @@
 import {
   AdditiveBlending, BackSide, BufferAttribute, BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, FogExp2,
-  Group, HemisphereLight, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, PlaneGeometry, PMREMGenerator,
+  Group, HemisphereLight, LineBasicMaterial, LineSegments, Mesh,
   Scene, ShaderMaterial, SphereGeometry, Vector2, Vector3, type Camera, type Object3D, type Texture, type WebGLRenderer, type WebGLRenderTarget,
 } from 'three';
 import { bakeSky, detailTile, dirOf, FarBodies, Parallax, skyFor, SUN_AZ, SUN_EL, type Sky } from './sky';
@@ -8,6 +8,7 @@ import { Starfield } from './starfield';
 import { Phenomena } from './phenomena';
 import { Depth } from './depth';
 import { WORLD_RIM } from './kit';
+import { SkyReflections } from './reflect';
 
 // ── deep space ────────────────────────────────────────────────────────────
 // No grid and no floor: just the dark. Back to front: the sky (render/sky.ts:
@@ -19,9 +20,8 @@ import { WORLD_RIM } from './kit';
 // and rock fades into the haze with distance instead of staying a cut-out.
 //
 // Lights: a hard warm key from high on the left (the reference's sun), a
-// faint cold fill, and a dim rim from behind. Metal needs something to
-// reflect, so the scene also gets a small, dark environment map: a black
-// sky with a warm window where the key light is and a cold one opposite.
+// faint cold fill, and a dim rim from behind. Metal reflects the system's
+// own sky, with the sun as a hot spot where the key light is (reflect.ts).
 
 /** The distance haze: a dark, cool steel grey, so far rock fades up out of the dark instead of staying a cut-out. */
 const HAZE = new Color('#25323f');
@@ -89,6 +89,8 @@ export class Environment {
   private sky: Sky | null = null;
   private heroAim = typeof location !== 'undefined' && new URLSearchParams(location.search).has('hero');
   private baked: WebGLRenderTarget | null = null;
+  /** What metal reflects: this sky, rebuilt with each bake. */
+  private readonly reflect: SkyReflections;
   private readonly dome: ShaderMaterial;
   /** The phone readout's switches (ui/perf.ts): the nebula dome; the stars, far worlds, sun, deep and dust. */
   readonly probe: { sky: Object3D[]; far: Object3D[] };
@@ -149,7 +151,7 @@ export class Environment {
     this.group.add(dome);
     this.fog = new FogExp2(HAZE.getHex(), FOG_BASE);
     scene.fog = this.fog;
-    scene.environment = reflections(renderer);
+    this.reflect = new SkyReflections(renderer);
 
     this.stars.add(this.field.group, this.phenomena.group);
     this.group.add(this.stars, this.depth.group);
@@ -247,6 +249,7 @@ export class Environment {
     this.haze.copy(sky.neb[0]).lerp(sky.neb[1], 0.3).multiplyScalar(0.16);
     // warm sun on one side, the sky's cool second colour on the rim behind
     this.sunCol.copy(SUN_WARM).lerp(sky.star, 0.4);
+    this.scene.environment = this.reflect.update(this.baked.texture, this.sunCol);
     this.dome.uniforms.uSunC!.value.copy(sky.star);
     const c2 = sky.neb[1], m = Math.max(c2.r, c2.g, c2.b, 1e-3);
     this.rimCol.setRGB(c2.r / m, c2.g / m, c2.b / m).lerp(COOL, 0.5);
@@ -333,6 +336,7 @@ export class Environment {
       const old = this.baked;
       this.baked = bakeSky(this.renderer, this.sky);
       this.dome.uniforms.uMap!.value = this.baked.texture;
+      this.scene.environment = this.reflect.update(this.baked.texture, this.sunCol);
       old?.dispose();
     }
     this.far?.face(camera.getWorldDirection(this.fwd));
@@ -367,25 +371,6 @@ export class Environment {
     }
     this.dustCol.needsUpdate = true;
   }
-}
-
-/** A small, dark environment for metal to reflect: black sky, a warm window for the sun, a cold one opposite. */
-function reflections(renderer: WebGLRenderer) {
-  const env = new Scene();
-  env.add(new Mesh(new SphereGeometry(10, 16, 8), new MeshBasicMaterial({ color: 0x07080b, side: BackSide })));
-  const panel = (color: Color, w: number, h: number, x: number, y: number, z: number) => {
-    const m = new Mesh(new PlaneGeometry(w, h), new MeshBasicMaterial({ color, side: BackSide }));
-    m.position.set(x, y, z);
-    m.lookAt(0, 0, 0);
-    env.add(m);
-  };
-  panel(new Color(2.4, 2.0, 1.6), 5, 3, -6, 6, -1);
-  panel(new Color(0.25, 0.32, 0.48), 8, 4, 6, 2, 3);
-  panel(new Color(0.1, 0.1, 0.12), 14, 3, 0, -6, 0);
-  const pmrem = new PMREMGenerator(renderer);
-  const target = pmrem.fromScene(env, 0.04);
-  pmrem.dispose();
-  return target.texture;
 }
 
 /** Half-width of the sun's shadow window, in world units. */
