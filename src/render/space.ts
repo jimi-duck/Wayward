@@ -61,7 +61,7 @@ const SOLID_RANGE = 700;
 const CHUNKS: BufferGeometry[] = [];
 function chunk(i: number): BufferGeometry {
   // the same shaped, cratered rock as the field's, so rubble and hulks' debris are not bare polyhedra
-  if (!CHUNKS.length) for (let k = 0; k < 4; k++) CHUNKS.push(rockGeometry(k * 4.1 + 60, 3, 1 + (k % 2), 0.4, 3 + (k % 3)));
+  if (!CHUNKS.length) for (let k = 0; k < 4; k++) CHUNKS.push(rockGeometry(k * 4.1 + 60, 6, 1 + (k % 2), 0.4, 3 + (k % 3)));
   return CHUNKS[i % CHUNKS.length]!;
 }
 const BOX = new BoxGeometry(1, 1, 1);

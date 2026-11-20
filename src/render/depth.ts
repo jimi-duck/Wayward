@@ -57,7 +57,7 @@ export class Depth {
     stars.renderOrder = -1;
 
     this.rockMat = new MeshStandardMaterial({ color: 0x2a2724, roughness: 0.95, metalness: 0.05, flatShading: true, transparent: true, opacity: 0, depthWrite: false, fog: false });
-    this.rock = new Mesh(rockGeometry(4242, 2, 1, 0.45, 3), this.rockMat);
+    this.rock = new Mesh(rockGeometry(4242, 8, 1, 0.45, 3), this.rockMat);
     this.rock.frustumCulled = false;
     this.holder.add(this.rock);
     this.holder.visible = false;

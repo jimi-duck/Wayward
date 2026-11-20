@@ -17,7 +17,7 @@ import { TIERS } from '../src/render/quality';
 import { createRenderer, fitRenderer } from '../src/render/renderer';
 import { glowTexture } from '../src/render/textures';
 import { Space } from '../src/sim/space';
-import type { Rock, RockKind } from '../src/sim/field';
+import type { Bulwark, Rock, RockKind } from '../src/sim/field';
 
 const params = new URLSearchParams(location.search);
 const view = params.get('view') ?? 'close';
@@ -42,6 +42,13 @@ const list: Rock[] = kinds.map((kind, i) => ({
   ax: 0.3, ay: 1, az: 0.2, spin: 0.12, age: 9, hitT: 0, ox: 0, oz: 0, rot: 0,
 }));
 
+// ?view=bulwark: one bulwark (?v=0..2 its shape, ?r its radius), seen as the chase camera passes it
+const bulwarks: Bulwark[] = [];
+if (view === 'bulwark') {
+  list.length = 0;
+  const r = Number(params.get('r') ?? '10');
+  bulwarks.push({ id: 5, x: 14 + r, z: 0, vx: 0, vz: 0, r, variant: Number(params.get('v') ?? '0'), ax: 0.2, ay: 1, az: 0.1, spin: 0.03, age: 9, hp: 99, maxHp: 99 });
+}
 const fx = new Effects(scene, glow);
 fx.setLights(true);
 const rockfx = new RockFx(fx, rocks);
@@ -118,14 +125,16 @@ fit();
 if (view === 'close') camera.position.set(2, 3.5, -1);
 else if (view === 'hit') camera.position.set(-6, 14, 0);
 else if (view === 'break' && params.get('cam') === 'near') camera.position.set(1, 5, 0);
+else if (view === 'bulwark') camera.position.set(-4, 9, -6);
 else camera.position.set(-12, 6, 0);
-// ?orbit=<degrees>: swing the row's camera round the rocks (0 has the sun behind the camera, 90 across the view, 180 against it)
+// ?orbit=<degrees> (&d= its distance): swing the row's camera round the rocks (0 has the sun behind the camera, 90 across the view, 180 against it)
 const orbit = params.get('orbit');
 if (orbit !== null) {
-  const a = (Number(orbit) * Math.PI) / 180, d = 26;
-  camera.position.set(14 - Math.cos(a) * d, 6, -Math.sin(a) * d);
+  const a = (Number(orbit) * Math.PI) / 180, d = Number(params.get('d') ?? '26');
+  camera.position.set(14 - Math.cos(a) * d, d * 0.23, -Math.sin(a) * d);
 }
-camera.lookAt(14, 0, 0);
+const lookZ = Number(params.get('z') ?? '0');
+camera.lookAt(view === 'bulwark' ? 14 + Number(params.get('r') ?? '10') * 0.6 : 14, 0, lookZ);
 
 let last = performance.now();
 const frame = (now: number) => {
@@ -140,7 +149,7 @@ const frame = (now: number) => {
     for (const r of field.rocks) { r.x += r.vx * dt; r.z += r.vz * dt; r.age += dt; r.rot += r.spin * dt; if (r.hitT > 0) r.hitT = Math.max(0, r.hitT - dt); }
     for (const e of events.splice(0)) rockfx.react(e);
     rocks.update(field.rocks, [], 1, dt, 0, 0);
-  } else rocks.update(list, [], 1, dt, 0, 0);
+  } else rocks.update(list, bulwarks, 1, dt, 0, 0);
   fx.update(dt);
   stream.update(space, 14, 0, dt, false);
   env.update(camera, 0, 0, 0, 0, dt);
