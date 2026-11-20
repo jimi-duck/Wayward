@@ -250,6 +250,7 @@ export class Environment {
     // warm sun on one side, the sky's cool second colour on the rim behind
     this.sunCol.copy(SUN_WARM).lerp(sky.star, 0.4);
     this.scene.environment = this.reflect.update(this.baked.texture, this.sunCol);
+    this.field.setSkyMap(this.baked.texture);
     this.dome.uniforms.uSunC!.value.copy(sky.star);
     const c2 = sky.neb[1], m = Math.max(c2.r, c2.g, c2.b, 1e-3);
     this.rimCol.setRGB(c2.r / m, c2.g / m, c2.b / m).lerp(COOL, 0.5);
@@ -337,6 +338,7 @@ export class Environment {
       this.baked = bakeSky(this.renderer, this.sky);
       this.dome.uniforms.uMap!.value = this.baked.texture;
       this.scene.environment = this.reflect.update(this.baked.texture, this.sunCol);
+      this.field.setSkyMap(this.baked.texture);
       old?.dispose();
     }
     this.far?.face(camera.getWorldDirection(this.fwd));

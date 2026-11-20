@@ -1,4 +1,4 @@
-import { AdditiveBlending, BufferGeometry, Color, Float32BufferAttribute, Group, Points, ShaderMaterial, Vector3 } from 'three';
+import { AdditiveBlending, BufferGeometry, Color, Float32BufferAttribute, Group, Points, ShaderMaterial, Vector3, type Texture } from 'three';
 import { dirOf, skyLayout, type Sky } from './sky';
 
 // ── the stars ─────────────────────────────────────────────────────────────
@@ -68,21 +68,31 @@ export class Starfield {
   private readonly layers: { pts: Points; layer: Layer }[] = [];
   private sky: Sky | null = null;
   private thin = 1;
+
+  /** The baked sky, whose alpha says how much starlight its dust lets through. */
+  setSkyMap(map: Texture): void {
+    this.mat.uniforms.uSky!.value = map;
+    this.mat.uniforms.uSkyOn!.value = 1;
+  }
   private t = 0;
 
   constructor() {
     this.mat = new ShaderMaterial({
       transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false,
-      uniforms: { uDpr: { value: 1 }, uTime: { value: 0 }, uMotion: { value: 1 } },
+      uniforms: { uDpr: { value: 1 }, uTime: { value: 0 }, uMotion: { value: 1 }, uSky: { value: null as Texture | null }, uSkyOn: { value: 0 } },
       vertexShader: /* glsl */ `
         attribute float size; attribute vec3 color; attribute vec3 fx;
         varying vec3 vCol; varying vec2 vFx;
-        uniform float uDpr, uTime, uMotion;
+        uniform float uDpr, uTime, uMotion, uSkyOn; uniform sampler2D uSky;
+        vec2 eq(vec3 d) { return vec2(atan(d.z, d.x) * 0.15915494 + 0.5, asin(clamp(d.y, -1.0, 1.0)) * 0.31830989 + 0.5); }
         void main() {
           // fx: glow, phase, twinkle depth. Each star keeps its own pace and phase; with reduced motion they hold at the middle.
           float wave = mix(0.0, sin(uTime * (0.7 + fract(fx.y * 7.13) * 3.1) + fx.y * 40.0), uMotion);
           float tw = 1.0 - fx.z * (0.5 - 0.5 * wave);
-          vCol = color;
+          // the sky's dust stands in front of the stars: a star behind a dark lane is dimmed or hidden (the bake's alpha)
+          float a = texture2D(uSky, eq(normalize(position))).a;
+          float through = mix(1.0, a * a, uSkyOn);
+          vCol = color * through;
           vFx = vec2(fx.x, tw);
           gl_PointSize = size * uDpr * mix(1.0, 0.88 + 0.12 * tw, fx.x);
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
