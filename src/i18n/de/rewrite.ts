@@ -433,7 +433,7 @@ export const REWRITE: Record<string, string> = {
   "Unknown": "Unbekannt",
   "Don’t dock.": "Dock nicht an.",
   "Krail reserves: 94%.": "Krail-Reserven: 94 %.",
-  "Set course: Halden’s Reach": "Kurs setzen: Halden’s Reach",
+  "Set course: Northfold": "Kurs setzen: Northfold",
   "A legacy key, good for this hull only, opened it. It points to the old relay in Halden’s Reach.": "Ein Altschlüssel, nur für diesen Rumpf gültig, öffnete es. Er weist auf das alte Relais in Halden’s Reach.",
   "Open": "Öffnen",
   "Launcher": "Werfer",

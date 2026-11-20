@@ -20,6 +20,9 @@ export const REACH: Row[] = [
   // the Wall's first line about the order, wherever it was taken
   notice('wall_order', '*', { on: 'flag', flag: 'clue_order_sig' }, 'teal', 'The Wall', 'the closing order, signed L. C.'),
 
+  // ── The audit dock's system: the first jump is Northfold, the quiet lane the archive points to (Halden's Reach is the one after) ──
+  objective('au_gate', 'audit', { on: 'leave' }, 'Jump to Northfold', 'Then Halden’s Reach · find the Warden’s record'),
+
   // ── Stop 1 · Northfold (landfall) ──
   notice('nf_notice', 'northfold', { on: 'arrive' }, 'teal', 'Northfold', 'Kellern space, quiet crossing'),
   objective('nf_objective', 'northfold', { on: 'arrive' }, 'Next: Halden’s Reach · find the Warden’s record', 'The Narrows · 7 jumps'),

@@ -346,7 +346,7 @@ export const STORY_CARDS: CardDef[] = [
     text: 'If you’re reading this, the lock’s off and she’s yours now. I hid this where the company’s auditors never bother looking.\nSeventy years ago the gates to the outer worlds went dark. They said the Krail had run out, and everyone left outside became the Scatter.\nBut the reserve log for that day says Krail reserves: 94%. The same day someone signed the order to shut the gates.\nI don’t know the whole story. I know it’s not the one they told us.\nStart at Halden’s Reach. The old Warden families retire there. Someone will remember.',
     cargo: 'The Wayward · a stored message in the hull’s archive',
     choices: [
-      { id: 'lead', label: 'Set course: Halden’s Reach', tone: 'help', hint: '',
+      { id: 'lead', label: 'Set course: Northfold', tone: 'help', hint: '',
         win: { text: 'The record is on the Wall · next lead: Halden’s Reach', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'],
           signal: { tone: 'amber', headline: 'Registry: unregistered', reason: 'Paint won’t pass a scan' },
           radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.5, text: '“A name of your own, and a lead. That’s more than most of us ever get. Keep moving, Juno.”' } } },
