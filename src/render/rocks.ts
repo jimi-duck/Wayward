@@ -23,6 +23,10 @@ import { PERTURB, seeded, WORLD_RIM } from './kit';
 // three-dimensional.
 
 const PER_VARIANT = 48;
+/** Icosphere subdivisions: a field rock, and a bulwark (few on screen, seen up close). */
+const FIELD_DETAIL = 11, BULWARK_DETAIL = 22;
+/** Bulwarks are lumpy potatoes, not spheres: each shape stretched its own way. */
+const BULWARK_STRETCH: ReadonlyArray<[number, number, number]> = [[1.12, 0.9, 0.94], [0.94, 1, 1.1], [1.18, 0.86, 1]];
 const BACKDROP = 150;
 const BACK_BOX = 760;
 
@@ -92,10 +96,10 @@ interface RockLook {
 }
 
 const LOOKS: Record<RockKind, RockLook> = {
-  basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [1.08, 0.84, 0.68], zone: 0,    pulse: 1.4, metal: 0.04, mineral: 0,   strata: 0.5, rim: 0 },
-  iron:     { id: 'iron',     glow: [1.4, 0.3, 0.08],  tint: [0.66, 0.8, 1.04], zone: -0.2, pulse: 0.6, metal: 0.55, mineral: 0.25, strata: 0.9, rim: 0 },
-  rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.86, 0.6, 1.36], zone: 0.3,  pulse: 2.2, metal: 0.1, mineral: 1,   strata: 0.6, rim: 0.25 },
-  volatile: { id: 'volatile', glow: [0.5, 1.7, 3.0],   tint: [0.6, 0.96, 1.2], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
+  basalt:   { id: 'basalt',   glow: [3.2, 0.45, 0.06], tint: [0.95, 0.82, 0.72], zone: -0.1,  pulse: 1.2, metal: 0.06, mineral: 0,    strata: 0.65, rim: 0 },
+  iron:     { id: 'iron',     glow: [1.2, 0.25, 0.06], tint: [0.65, 0.75, 0.92], zone: -0.25, pulse: 0.5, metal: 0.72, mineral: 0.2,  strata: 0.85, rim: 0 },
+  rich:     { id: 'rich',     glow: [2.2, 0.7, 3.8],   tint: [0.82, 0.55, 1.25], zone: 0.15,  pulse: 1.8, metal: 0.15, mineral: 0.85, strata: 0.5,  rim: 0.2 },
+  volatile: { id: 'volatile', glow: [0.8, 1.8, 3.2],   tint: [0.7, 0.95, 1.15],  zone: 0.25,  pulse: 6,   metal: 0.06, mineral: 0,    strata: 0.35, rim: 0.5 },
 };
 const KINDS = Object.keys(LOOKS) as RockKind[];
 
@@ -110,7 +114,7 @@ const ROCK_RIM = 0.9;
 /** Where the sun cuts off on a rock's smooth shape (a GLSL float), so grain on the night side never catches it. */
 const ROCK_EDGE = '0.0';
 /** On the face turned from the sun, how much of the other directional light (the cool rim) and the sky's fill stone keeps. */
-const ROCK_NIGHT = 0.12;
+const ROCK_NIGHT = 0.03;
 /** The sky's light on a rock's limb, near and far (times WORLD_RIM, the nebula's colour). */
 const SKY_LIMB_NEAR = 0.05, SKY_LIMB_FAR = 1.0;
 /**
@@ -123,7 +127,7 @@ const ROCK_LIGHTS = `
   #if NUM_DIR_LIGHTS > 0
     float rockSun = dot(nonPerturbedNormal, directionalLights[0].direction);
     rockNight = mix(${ROCK_NIGHT.toFixed(2)}, 1.0, smoothstep(-0.1, 0.25, rockSun));
-    rockDay = smoothstep(${ROCK_EDGE}, 0.22, rockSun);
+    rockDay = smoothstep(${ROCK_EDGE}, 0.18, rockSun);
   #endif
 ` + ShaderChunk.lights_fragment_begin.replace(
   'getDirectionalLightInfo( directionalLight, directLight );',
@@ -131,7 +135,7 @@ const ROCK_LIGHTS = `
 );
 
 export function lavaRock(detail: number, lava: number, bump: number, look: RockLook = LOOKS.basalt, ember = true): MeshStandardMaterial {
-  const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: look.metal, envMapIntensity: 0.35, vertexColors: true });
+  const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: look.metal, envMapIntensity: 0.3, vertexColors: true });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = lavaTime;
     shader.uniforms.uSkyRim = WORLD_RIM;
@@ -149,84 +153,104 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
     shader.uniforms.uCool = { value: ember && look.id === 'volatile' ? 1 : 0 };
     shader.uniforms.uEmber = { value: ember && (look.id === 'basalt' || look.id === 'volatile') ? 1 : 0 };
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vRockP;\nattribute float aHit;\nvarying float vHit;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRockP = position;\nvHit = aHit;');
+      .replace('#include <common>', '#include <common>\nvarying vec3 vRockP;\nattribute float aHit;\nvarying float vHit;\nattribute float aGeode;\nvarying float vGeode;\nvarying float vRockAO;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRockP = position;\nvHit = aHit;\nvGeode = aGeode;\nvRockAO = color.r;');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
-        varying vec3 vRockP; varying float vHit; uniform float uTime; uniform float uDetail; uniform float uLava; uniform float uBump;
+        varying vec3 vRockP; varying float vHit; varying float vGeode; varying float vRockAO; uniform float uTime; uniform float uDetail; uniform float uLava; uniform float uBump;
         uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse; uniform float uMineral; uniform float uStrata; uniform float uRim; uniform float uEmber; uniform float uViolet; uniform float uCool; uniform vec3 uSkyRim;
         ${SIMPLEX}
         ${PERTURB}
         float rockFbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * snoise(p); p = p * 2.07 + 11.3; a *= 0.5; } return s; }`)
       .replace('#include <map_fragment>', `
         vec3 rp = vRockP * uDetail;
+        // how much stone one pixel covers: each fine term fades out before it is small enough to shimmer
+        float lod = length(fwidth(rp));
+        float lodK = 1.0 - smoothstep(0.06, 0.16, lod), lodF = 1.0 - smoothstep(0.025, 0.07, lod);
         float rn = rockFbm(rp * 0.9);
-        float fine = snoise(rp * 5.0) * 0.5 + snoise(rp * 9.0) * 0.12;
+        float fine = snoise(rp * 5.0) * 0.5 * lodK + snoise(rp * 11.0) * 0.2 * lodF;
         // the crack network: thin ridges of a warped noise, two scales
         float ridgeA = 1.0 - abs(snoise(rp * 0.55 + vec3(rn * 0.7)));
         float ridgeB = 1.0 - abs(snoise(rp * 1.35 + vec3(7.1, 2.3, 5.9) + vec3(rn * 0.4)));
-        // lava only in some regions of a rock, and only in its thinnest cracks
+        float ridge = max(ridgeA, ridgeB * 0.97);
+        // seams are live only in some regions of a rock
         float zone = smoothstep(0.15 - uZone, 0.55 - uZone, snoise(rp * 0.28 + 3.3));
-        float crack = (smoothstep(0.972, 0.995, ridgeA) + smoothstep(0.982, 0.997, ridgeB) * 0.6) * zone;
-        float heat = smoothstep(0.93, 0.99, max(ridgeA, ridgeB * 0.95)) * zone;
-        vec3 stone = mix(vec3(0.06, 0.055, 0.05), vec3(0.24, 0.215, 0.19), smoothstep(-0.55, 0.65, rn + fine * 0.35));
-        stone = mix(stone, vec3(0.32, 0.29, 0.26), smoothstep(0.55, 0.9, rn) * 0.6);
-        stone = mix(stone, vec3(0.025, 0.018, 0.015), heat * 0.5);
-        // strata: beds laid down in a slanted plane, warped, each its own shade; the edge of a bed catches light
+        // how far down a crevice this point lies (baked from the shape): heat and crystal live only down there, never on an open face
+        float deep = smoothstep(0.86, 0.5, vRockAO);
+        float crackL = smoothstep(0.975, 0.997, ridgeA) + smoothstep(0.982, 0.998, ridgeB) * 0.6;
+        // strata: beds laid down in a slanted plane, warped, in patches; two widths of ribbon, each its own shade
         float bedPos = dot(rp, normalize(vec3(0.35, 0.9, 0.25))) * 1.7 + rn * 1.4;
-        float bed = sin(bedPos * 5.0) * 0.5 + 0.5, bedId = floor(bedPos * 0.5);
-        float bedTone = fract(sin(bedId * 12.9898) * 43758.5453);
-        stone *= 1.0 + uStrata * ((bed - 0.5) * 0.35 + (bedTone - 0.5) * 0.5);
-        float lip = smoothstep(0.86, 1.0, bed) * uStrata;
-        // inclusions: lit crystals set in the stone, thresholded from fine noise
-        float incl = smoothstep(0.63, 0.72, snoise(rp * vec3(1.6, 7.5, 2.2) + 4.7) * 0.6 + snoise(rp * 2.1 + 9.0) * 0.5) * uMineral * (1.0 - heat);
-        stone = mix(stone, mix(vec3(0.5, 0.46, 0.42), vec3(0.2, 0.1, 0.34), uViolet), incl * 0.5);
-        stone = mix(vec3(dot(stone, vec3(0.3, 0.5, 0.2))), stone, 0.35) * 0.34;
-        stone *= 0.85 + 0.4 * pow(1.0 - abs(snoise(rp * 3.6 + 1.7)), 3.0);
-        diffuseColor.rgb *= stone * uTint;
-        float pulse = 0.78 + 0.22 * sin(uTime * uPulse + rn * 9.0);
-        // cooled stone: the thinnest cracks keep a dull ember, steady and under the bloom line (basalt and volatile only)
-        vec3 lavaGlow = uGlow * crack * heat * mix(0.1, 0.17, uCool) * uLava * uEmber;
-        // volatile rock: a few deep pockets lit cold from under the surface, sharp and local
-        float pocket = smoothstep(0.62, 0.74, snoise(rp * vec3(2.3, 2.9, 2.1) + 13.1)) * smoothstep(0.9, 0.97, max(ridgeA, ridgeB)) * uCool;
-        lavaGlow += uGlow * pocket * 0.26 * uLava;
-        float web = smoothstep(0.9, 0.985, max(ridgeA, ridgeB * 0.97)) * smoothstep(-0.25, 0.3, snoise(rp * 0.4 + 8.0)) * uCool;
-        lavaGlow += (uGlow * 0.14 + vec3(0.1, 0.12, 0.14) * smoothstep(0.96, 0.99, max(ridgeA, ridgeB))) * web * uLava * (0.85 + 0.25 * sin(uTime * 2.4 + rn * 9.0));
-        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.03, 0.04), pocket * 0.6);
-        // rich rock: violet veins through the stone and crystals set in it, steady and well under the bloom line
-        float vein = (smoothstep(0.95, 0.99, ridgeA) * 0.7 + smoothstep(0.965, 0.993, ridgeB) * 0.5) * (0.25 + 0.75 * zone);
-        lavaGlow += uGlow * (vein * 0.07 + incl * 0.07) * uLava * uViolet;
-        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.06, 0.16), vein * 0.4 * uViolet);
-        // a hit, or damage taken, wakes the seams in the rock's own colour: cracks for basalt, veins for rich, fissures for volatile
-        vec3 kindC = uGlow / max(uGlow.r, max(uGlow.g, uGlow.b));
-        float seamK = crack * heat * uEmber * (1.0 - uCool) * 1.5 + vein * uViolet * 1.4 + (web + pocket) * uCool * 1.3;
-        lavaGlow += kindC * vHit * seamK * 0.3 * uLava * min(uEmber + uViolet, 1.0);
-        diffuseColor.rgb *= 1.0 - (smoothstep(0.955, 0.99, ridgeA) * 0.3 + crack * 0.3);
-        // sharp crests between broken faces: a creased noise
+        float bed = sin(bedPos * 5.0) * 0.5 + 0.5;
+        float ribbon = sin(bedPos * 13.0 + fine * 1.5) * 0.5 + 0.5;
+        float bedTone = fract(sin(floor(bedPos * 0.8) * 12.9898) * 43758.5453);
+        float strataK = uStrata * smoothstep(-0.35, 0.25, snoise(rp * 0.35 + 6.0));
+        // regolith: charcoal and grey-brown dust over the stone, paler where bare rock shows
+        vec3 stone = mix(vec3(0.04, 0.038, 0.036), vec3(0.14, 0.127, 0.113), smoothstep(-0.6, 0.6, rn + fine * 0.3));
+        stone = mix(stone, vec3(0.3, 0.27, 0.22) * (0.7 + 0.5 * bedTone), strataK * smoothstep(0.55, 0.95, ribbon) * 0.5);
+        stone *= 1.0 + strataK * ((bed - 0.5) * 0.4 + (bedTone - 0.5) * 0.45);
+        // inclusions: grains of metal and mineral set in the stone
+        float incl = smoothstep(0.63, 0.72, snoise(rp * vec3(1.6, 7.5, 2.2) + 4.7) * 0.6 + snoise(rp * 2.1 + 9.0) * 0.5) * uMineral * (1.0 - uViolet);
+        stone = mix(stone, vec3(0.3, 0.3, 0.3), incl * 0.5);
+        // speckle: light and dark grains in the stone
+        stone *= 0.8 + 0.4 * smoothstep(-0.4, 0.6, snoise(rp * 13.0 + 1.1)) * lodF + 0.2 * (1.0 - lodF);
+        stone = mix(vec3(dot(stone, vec3(0.3, 0.5, 0.2))), stone, 0.6);
+        // crack lines and the crust beside a live seam go dark
+        stone *= 1.0 - min(0.75, crackL * 0.35 * deep + smoothstep(0.9, 0.975, ridge) * zone * deep * 0.45);
+        // the kind tints the stone only lightly: outside, every rock is dusty charcoal; its colour lives in its seams
+        diffuseColor.rgb *= stone * mix(vec3(1.0), uTint, 0.3 - 0.15 * uViolet);
+        // stepped exfoliation: each layer a sloping tread with a sharp lip that catches grazing light
+        float layer = fract(bedPos * 2.2 + fine * 0.15);
+        float exfol = (layer - smoothstep(0.84, 1.0, layer)) * strataK;
+        // sharp crests between broken faces, and a granular crumble at two scales (creased noise), so the stone reads hard, not moulded
         float crest = pow(1.0 - abs(snoise(rp * 3.0 + 1.7)), 3.0);
-        // angular relief: chipped conchoidal facets (a quantised, creased noise) and sharp crests over a low swell, not a soft lump
-        float chipN = snoise(rp * 2.4 + 5.2) * 0.5 + 0.5;
-        float chip = floor(chipN * 4.0) / 4.0 + smoothstep(0.0, 0.25, fract(chipN * 4.0)) * 0.25;
-        float chipE = pow(1.0 - abs(snoise(rp * 5.5 + 2.9)), 5.0);
-        float rockH = crest * 0.38 + rn * 0.22 + chip * 0.5 + chipE * 0.28 + fine * 0.2 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + mix(incl * 0.2, incl * 0.4, uViolet);
-        // pitted stone: deep scoured holes, dark inside, with bare pale rock on their rims and on the sharp edges
-        float pitN = snoise(rp * 3.1 + 9.0) * 0.5 + snoise(rp * 6.3 + 2.0) * 0.28;
-        float pit = smoothstep(0.18, 0.5, pitN);
-        float rim = smoothstep(0.08, 0.2, pitN) * (1.0 - smoothstep(0.2, 0.34, pitN));
-        rockH = rockH - pit * 0.85 + rim * 0.2;
-        diffuseColor.rgb *= 1.0 - pit * 0.55;
-        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 2.3 + vec3(0.012, 0.013, 0.015), clamp(chipE * 0.38 + rim * 0.5, 0.0, 0.6));`)
+        float gran = pow(1.0 - abs(snoise(rp * 7.5 + 4.4)), 4.0) * lodK + pow(1.0 - abs(snoise(rp * 16.0 + 8.8)), 5.0) * 0.6 * lodF;
+        // micro craters at two scales: a round bowl, dark inside, with a raised lip that catches the sun
+        float mcA = snoise(rp * 2.9 + 9.0), mcB = snoise(rp * 6.5 + 2.0) * lodK;
+        float bowl = smoothstep(0.35, 0.8, mcA) + smoothstep(0.4, 0.85, mcB) * 0.5;
+        float lipC = smoothstep(0.2, 0.35, mcA) * (1.0 - smoothstep(0.35, 0.45, mcA)) + smoothstep(0.25, 0.4, mcB) * (1.0 - smoothstep(0.4, 0.5, mcB)) * 0.5;
+        // regolith pores: sparse fine pockmarks, faded out once they are smaller than a pixel
+        float poreF = 1.0 - smoothstep(0.01, 0.03, lod);
+        float pore = smoothstep(0.62, 0.85, snoise(rp * 22.0 + 3.1)) * poreF;
+        // the geode (rich rock): a cavity lined with crystal, faceted so each face throws its own light
+        float geo = smoothstep(0.12, 0.55, vGeode) * uViolet;
+        float facet = fract(snoise(rp * 4.5 + 2.0) * 2.5 + snoise(rp * 9.0) * 0.6 * lodF);
+        float rockH = crest * 0.34 + rn * 0.24 + gran * 0.14 + exfol * 0.7 + fine * 0.1 - crackL * 0.35 * deep - bowl * 0.3 + lipC * 0.1 - pore * 0.2;
+        rockH = mix(rockH, facet * 0.9, geo);
+        diffuseColor.rgb *= (1.0 - bowl * 0.3) * (1.0 - pore * 0.45) * (0.8 + 0.5 * gran);
+        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 1.9 + 0.006, clamp(lipC * 0.3 + crest * 0.15 + exfol * 0.25, 0.0, 0.5));
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.16, 0.05, 0.3) * (0.6 + 0.6 * facet), geo);
+        float pulse = 0.85 + 0.15 * sin(uTime * uPulse + rn * 9.0);
+        vec3 lavaGlow = vec3(0.0);
+        // basalt: magma recessed into the deepest fissures, in three tiers: black crust, dull crimson, a white-hot thread at the centre
+        float fis = smoothstep(0.96, 0.998, ridge) * zone * deep;
+        vec3 magma = mix(vec3(0.3, 0.02, 0.006), vec3(1.4, 0.28, 0.035), smoothstep(0.25, 0.7, fis));
+        magma = mix(magma, vec3(2.0, 1.35, 0.8), smoothstep(0.8, 1.0, fis) * deep);
+        lavaGlow += magma * fis * 0.55 * uEmber * (1.0 - uCool) * uLava * (0.92 + 0.08 * pulse) * (uGlow.r / 3.2);
+        // volatile: hairline fissures, cyan with a white-hot core, a slow restless pulse
+        float hair = smoothstep(0.972, 0.998, ridge) * smoothstep(0.93, 0.6, vRockAO) * zone;
+        vec3 cold = mix(vec3(0.04, 0.3, 0.55), vec3(1.0, 1.2, 1.35), smoothstep(0.55, 1.0, hair));
+        lavaGlow += cold * hair * 0.6 * uCool * uLava * (0.75 + 0.25 * pulse);
+        // rich: thin violet veins down in the crevices, and the geode's faint inner light
+        float vein = smoothstep(0.965, 0.995, ridge) * deep * (0.3 + 0.7 * zone);
+        lavaGlow += (vec3(0.3, 0.08, 0.6) * vein * 0.2 + vec3(0.2, 0.05, 0.42) * geo * (0.25 + 0.35 * smoothstep(0.7, 1.0, facet)) * (0.5 + 0.5 * smoothstep(0.3, 0.9, vGeode))) * uViolet * uLava;
+        // a hit, or damage taken, wakes the seams in the rock's own colour
+        vec3 kindC = uGlow / max(uGlow.r, max(uGlow.g, uGlow.b));
+        float seamK = fis * uEmber * (1.0 - uCool) * 1.5 + (vein + geo * 0.4) * uViolet * 1.4 + hair * uCool * 1.3 + smoothstep(0.95, 0.99, ridge) * zone * 0.4;
+        lavaGlow += kindC * vHit * seamK * 0.3 * uLava * min(uEmber + uViolet, 1.0);`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-        roughnessFactor = clamp(0.8 + fine * 0.15 - heat * 0.2 - incl * 0.1 * uViolet, 0.6, 1.0);`)
+        roughnessFactor = clamp(0.86 + fine * 0.12 - incl * 0.15 - (bed - 0.5) * strataK * 0.12 - metalness * 0.45 * (1.0 - bowl), 0.3, 1.0);
+        roughnessFactor = mix(roughnessFactor, 0.14 + 0.1 * facet, geo);`)
+      .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+        // the crystal's highlights take its violet; iron's cleavage faces flash, its dust and craters do not
+        metalnessFactor = mix(metalnessFactor * (1.0 - bowl * 0.5) * (1.0 - pore * 0.4), 0.6, geo);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         normal = kitPerturb(-vViewPosition, normal, rockH * uBump, faceDirection);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        // at chase distance the cracks are sub-pixel: the kind shows as a cast of its own colour instead (a hint of glow, so a field reads
-        // as a colourful scene and not grey gravel), still under the bloom line
+        // at chase distance the seams are sub-pixel: the kind shows as a faint cast of its own colour instead, under the bloom line
         float farK = smoothstep(18.0, 70.0, length(vViewPosition));
-        totalEmissiveRadiance += uGlow / max(uGlow.r, max(uGlow.g, uGlow.b)) * farK * 0.08 * (uEmber * 0.5 + uViolet * 1.3 + uCool * 0.7) * uLava;
+        totalEmissiveRadiance += kindC * farK * 0.06 * (uEmber * (1.0 - uCool) * 0.4 + uViolet + uCool * 0.6) * uLava;
         float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
-        totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.03 * uViolet + 0.025 * uCool + 0.012 * uEmber) * uLava;`)
+        totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.012 * uViolet + 0.01 * uCool) * uLava;`)
       .replace('#include <lights_fragment_begin>', ROCK_LIGHTS)
       .replace('#include <aomap_fragment>', `
         // hard light: in vacuum the side away from the sun is close to black, so the sky's fill and the cool rim light are cut
@@ -248,33 +272,41 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         #endif
         #include <aomap_fragment>`);
   };
-  m.customProgramCacheKey = () => `stone-rock16-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
+  m.customProgramCacheKey = () => `stone-rock17-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 
 /**
- * A rock shape of unit radius: an icosphere of the given subdivision, pushed
- * out by noise and pitted with craters, a little flattened. Smooth normals.
+ * A rock shape of unit radius: an icosphere pushed out by noise, with concave impact basins (a parabolic bowl, a raised
+ * ejecta lip and, on the big ones, a central rebound peak), broken faces that step down in jagged ledges, and faults
+ * where one half slid. Smooth normals; the creases are baked in as occlusion (vertex colour). `geode` (radians) opens
+ * a deep cavity lined for crystal (rich rock): its weight is the `aGeode` attribute and its axis `userData.geode`.
  */
-export function rockGeometry(seed: number, detail: number, craters: number, rough = 0.42, cuts = 0, stretch: readonly [number, number, number] = [1, 1, 1]): BufferGeometry {
+export function rockGeometry(seed: number, detail: number, craters: number, rough = 0.42, cuts = 0, stretch: readonly [number, number, number] = [1, 1, 1], geode = 0): BufferGeometry {
   const g = mergeVertices(new IcosahedronGeometry(1, detail).deleteAttribute('normal').deleteAttribute('uv'), 1e-4);
   const p = g.attributes.position!;
-  const v = new Vector3();
+  const v = new Vector3(), u = new Vector3();
   const rnd = seeded(Math.round(seed * 1000) + 7);
-  const pits = Array.from({ length: craters }, () => {
-    const d = new Vector3(rnd() * 2 - 1, rnd() * 2 - 1, rnd() * 2 - 1).normalize();
-    return { d, size: 0.18 + rnd() * 0.32, depth: 0.05 + rnd() * 0.09 };
-  });
-  // fracture planes: the rock was broken off something bigger, and keeps flat faces
-  const planes = Array.from({ length: Math.round(cuts * 2.2) }, () => ({
-    n: new Vector3(rnd() * 2 - 1, (rnd() * 2 - 1) * 0.7, rnd() * 2 - 1).normalize(), d: 0.46 + rnd() * 0.3,
+  // impact basins: a few big ones that shape the outline, and a scatter of small ones that only a fine mesh shows
+  const pit = (size: number, depth: number) => ({ d: new Vector3(rnd() * 2 - 1, rnd() * 2 - 1, rnd() * 2 - 1).normalize(), size, depth });
+  const pits = [
+    ...Array.from({ length: craters }, () => { const size = 0.2 + rnd() * 0.3; return pit(size, size * (0.22 + rnd() * 0.16)); }),
+    ...(detail >= 8 ? Array.from({ length: 4 + craters * 3 }, () => { const size = 0.07 + rnd() * 0.1; return pit(size, size * (0.2 + rnd() * 0.15)); }) : []),
+  ];
+  // broken faces: where the rock split off something bigger it steps down in ledges (exfoliation), not one flat cut
+  const breaks = Array.from({ length: Math.round(cuts * 0.6) }, () => ({
+    n: new Vector3(rnd() * 2 - 1, (rnd() * 2 - 1) * 0.7, rnd() * 2 - 1).normalize(), d: 0.5 + rnd() * 0.28, step: 0.05 + rnd() * 0.05,
   }));
   // faults: the rock sheared along a plane and one half slid, so the outline gets real steps and overhangs
   const faults = Array.from({ length: Math.min(3, 1 + Math.floor(cuts / 4)) }, () => {
     const n = new Vector3(rnd() * 2 - 1, (rnd() * 2 - 1) * 0.6, rnd() * 2 - 1).normalize();
     const t = new Vector3(rnd() * 2 - 1, rnd() * 2 - 1, rnd() * 2 - 1).cross(n).normalize();
-    return { n, t, d: (rnd() - 0.5) * 0.7, slide: (0.2 + rnd() * 0.22) * (rnd() < 0.5 ? -1 : 1), lift: 0.07 + rnd() * 0.1 };
+    return { n, t, d: (rnd() - 0.5) * 0.7, slide: (0.14 + rnd() * 0.18) * (rnd() < 0.5 ? -1 : 1), lift: 0.06 + rnd() * 0.08 };
   });
+  // the geode: one deep cavity with a ragged mouth, and a smaller one across the rock
+  const geodes = geode > 0 ? [new Vector3(rnd() - 0.5, rnd() * 0.6 + 0.4, rnd() - 0.5).normalize()] : [];
+  if (geodes.length) geodes.push(geodes[0]!.clone().negate().add(new Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).multiplyScalar(0.8)).normalize());
+  const gw = new Float32Array(p.count);
   const st = new Vector3(...stretch);
   const ledge = new Vector3(rnd() - 0.5, rnd() * 0.8 + 0.2, rnd() - 0.5).normalize();
   for (let i = 0; i < p.count; i++) {
@@ -283,17 +315,40 @@ export function rockGeometry(seed: number, detail: number, craters: number, roug
     const mid = fbm(v.x * 3.1 + seed, v.y * 3.1, v.z * 3.1, 3, seed + 9);
     const ridge = 1 - Math.abs(fbm(v.x * 2.2 - seed, v.y * 2.2, v.z * 2.2, 2, seed + 4));
     const crag = Math.pow(1 - Math.abs(fbm(v.x * 4.4 + seed * 2, v.y * 4.4, v.z * 4.4, 2, seed + 21)), 5);
-    let k = 1 + big * rough + mid * 0.17 + ridge * 0.1 + crag * 0.16 - 0.04;
+    const grit = detail >= 8 ? fbm(v.x * 9 + seed, v.y * 9, v.z * 9, 2, seed + 33) : 0;
+    // a fine mesh would turn the crags into spines: it takes less of them and more of the fine crumble
+    let k = 1 + big * rough + mid * 0.15 + ridge * 0.08 + crag * (detail >= 8 ? 0.08 : 0.14) + grit * 0.035 - 0.04;
     // ledges: a broken bed steps in terraces along the rock's own slant, so the outline has shelves and overhangs
     const bed = (v.x * ledge.x + v.y * ledge.y + v.z * ledge.z) * 3.2 + big * 1.6;
     const fr = bed - Math.floor(bed);
     k += (fr < 0.82 ? fr * 0.07 : (1 - fr) * 0.39) * rough * 0.9 - 0.03 * rough;
     for (const c of pits) {
       const a = Math.acos(Math.min(1, v.dot(c.d))) / c.size;
-      if (a < 1.35) k += a < 1 ? -c.depth * (1 - a * a) : c.depth * 0.6 * Math.sin(((a - 1) / 0.35) * Math.PI);
+      if (a < 1.4) {
+        if (a < 1) {
+          // a parabolic bowl, and for a big basin a central peak where the floor rebounded
+          k -= c.depth * (1 - a * a);
+          if (c.size > 0.28 && a < 0.35) k += c.depth * 0.45 * (1 - a / 0.35);
+        } else k += c.depth * 0.4 * Math.sin(((a - 1) / 0.4) * Math.PI); // the raised ejecta lip
+      }
     }
+    let gk = 0;
+    geodes.forEach((d, j) => {
+      const size = geode * (j ? 0.55 : 1) * (1 + mid * 0.5);
+      const a = Math.acos(Math.min(1, v.dot(d))) / size;
+      if (a < 1) { const w = 1 - a * a; k -= (j ? 0.16 : 0.3) * Math.sqrt(w); gk = Math.max(gk, w); }
+      else if (a < 1.3) k += 0.04 * Math.sin(((a - 1) / 0.3) * Math.PI) * (1 + crag);
+    });
+    gw[i] = gk;
     v.multiplyScalar(k);
-    for (const c of planes) { const over = v.dot(c.n) - c.d; if (over > 0) v.addScaledVector(c.n, -over * 0.94); }
+    for (const c of breaks) {
+      // past the plane the stone is cut back in steps: each ledge a sloping tread and a sharp riser, its edge ragged
+      const over = v.dot(c.n) - c.d + mid * 0.05;
+      if (over <= 0) continue;
+      const t = over / c.step, q = Math.floor(t), f = t - q;
+      const kept = (q + Math.min(1, Math.max(0, (f - 0.72) / 0.28)) ** 2) * c.step * 0.45;
+      v.addScaledVector(c.n, -(over - kept) * 0.9);
+    }
     for (const f of faults) {
       const side = v.dot(f.n) - f.d;
       // a soft shoulder over a few hundredths of a unit keeps the sheared face from tearing the mesh
@@ -301,33 +356,39 @@ export function rockGeometry(seed: number, detail: number, craters: number, roug
       if (w > 0) v.addScaledVector(f.t, f.slide * w).addScaledVector(f.n, f.lift * w);
     }
     v.multiply(st);
-    v.y *= 0.84;
+    v.y *= 0.86;
     p.setXYZ(i, v.x, v.y, v.z);
   }
   // the slid halves reach past the old outline: bring the farthest point back to where the hit radius expects it
   let far = 0;
-  for (let i = 0; i < p.count; i++) far = Math.max(far, Math.hypot(p.getX(i), p.getY(i), p.getZ(i)));
+  for (let i = 0; i < p.count; i++) far = Math.max(far, u.fromBufferAttribute(p, i).length());
   if (far > 1.2) g.scale(1.2 / far, 1.2 / far, 1.2 / far);
   g.computeVertexNormals();
-  bakeOcclusion(g);
+  bakeOcclusion(g, detail);
+  g.setAttribute('aGeode', new Float32BufferAttribute(gw, 1));
+  if (geodes.length) g.userData.geode = geodes[0];
   return g;
 }
 
 /**
  * Ambient occlusion baked into vertex colours: a vertex sitting below the average of its neighbours (a crease, a
- * crater floor, the foot of a ledge) gets darker. The rock material multiplies the colour in. Costs nothing at run time.
+ * crater floor, the foot of a ledge) gets darker, judged near and wide. A finer mesh smooths more times, so the
+ * measure covers the same share of the rock at any detail. The rock material multiplies the colour in, and reads
+ * the same value to keep magma and crystal down in the crevices. Costs nothing at run time.
  */
-function bakeOcclusion(g: BufferGeometry): void {
+function bakeOcclusion(g: BufferGeometry, detail = 4): void {
   const p = g.attributes.position!, idx = g.index!, n = p.count;
   const near: number[][] = Array.from({ length: n }, () => []);
   for (let i = 0; i < idx.count; i += 3) {
     const a = idx.getX(i), b = idx.getX(i + 1), c = idx.getX(i + 2);
     near[a]!.push(b, c); near[b]!.push(a, c); near[c]!.push(a, b);
   }
-  let r = new Float32Array(n);
-  for (let i = 0; i < n; i++) r[i] = Math.hypot(p.getX(i), p.getY(i), p.getZ(i));
+  const r0 = new Float32Array(n);
+  for (let i = 0; i < n; i++) r0[i] = Math.hypot(p.getX(i), p.getY(i), p.getZ(i));
+  let r = r0;
   const ao = new Float32Array(n);
-  for (let pass = 0; pass < 3; pass++) {
+  const passes = Math.max(3, Math.round(detail * 0.9)), fine = Math.max(1, Math.round(passes / 4));
+  for (let pass = 1; pass <= passes; pass++) {
     const sm = new Float32Array(n);
     for (let i = 0; i < n; i++) {
       const ns = near[i]!;
@@ -335,11 +396,13 @@ function bakeOcclusion(g: BufferGeometry): void {
       for (const j of ns) sum += r[j]!;
       sm[i] = ns.length ? sum / ns.length : r[i]!;
     }
-    for (let i = 0; i < n; i++) ao[i] = ao[i]! + Math.max(0, sm[i]! - r[i]!) * (pass ? 5 : 9);
     r = sm;
+    // a crease (near) and a basin or the foot of a ledge (wide)
+    if (pass === fine) for (let i = 0; i < n; i++) ao[i] = ao[i]! + Math.max(0, sm[i]! - r0[i]!) * 9;
+    if (pass === passes) for (let i = 0; i < n; i++) ao[i] = ao[i]! + Math.max(0, sm[i]! - r0[i]!) * 4;
   }
   const col = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) col.fill(0.35 + 0.65 / (1 + ao[i]! * 1.6), i * 3, i * 3 + 3);
+  for (let i = 0; i < n; i++) col.fill(0.3 + 0.7 / (1 + ao[i]! * 1.8), i * 3, i * 3 + 3);
   g.setAttribute('color', new Float32BufferAttribute(col, 3));
 }
 
@@ -359,31 +422,36 @@ function shardGeometry(): BufferGeometry {
   return g;
 }
 
-const SEATS = 4, CLUSTER = 3;
+const SEATS = 6, CLUSTER = 3;
 const MAX_SHARDS = 640;
 
-/** Where crystals sit on a rock shape: in its hollows, spread apart, each leaning out along the surface. */
+/** Where crystals sit on a rock shape: down in its geode (or, with none, its hollows), spread apart, each leaning out along the surface. */
 function shardSeats(g: BufferGeometry, seed: number): Matrix4[] {
-  const p = g.attributes.position!, nrm = g.attributes.normal!, rnd = seeded(seed);
-  const order = Array.from({ length: p.count }, (_, i) => i).sort((a, b) => Math.hypot(p.getX(a), p.getY(a), p.getZ(a)) - Math.hypot(p.getX(b), p.getY(b), p.getZ(b)));
-  const hollow = order.slice(0, Math.floor(p.count * 0.45));
+  const p = g.attributes.position!, nrm = g.attributes.normal!, gw = g.attributes.aGeode, rnd = seeded(seed);
+  const depth = (i: number) => (gw && gw.getX(i) > 0.15 ? -gw.getX(i) * 10 : 0) + Math.hypot(p.getX(i), p.getY(i), p.getZ(i));
+  const order = Array.from({ length: p.count }, (_, i) => i).sort((a, b) => depth(a) - depth(b));
+  const lined = gw ? order.filter((i) => gw.getX(i) > 0.3).length : 0;
+  const hollow = order.slice(0, lined > 12 ? lined : Math.floor(p.count * 0.45));
   const seats: Matrix4[] = [], dirs: Vector3[] = [];
   const up = new Vector3(0, 1, 0), n = new Vector3(), v = new Vector3(), q = new Quaternion(), tw = new Quaternion();
-  for (let tries = 0; tries < 400 && dirs.length < SEATS; tries++) {
+  // in a geode the crystals crowd together; on open stone they keep apart
+  const apart = lined > 12 ? 0.985 : 0.7;
+  for (let tries = 0; tries < 600 && dirs.length < SEATS; tries++) {
     const i = hollow[Math.floor(rnd() * hollow.length)]!;
     n.fromBufferAttribute(nrm, i).normalize();
-    if (dirs.some((d) => d.dot(n) > 0.7)) continue;
-    dirs.push(n.clone());
-    v.fromBufferAttribute(p, i).addScaledVector(n, -0.06);
+    v.fromBufferAttribute(p, i);
+    if (dirs.some((d) => d.distanceTo(v) < (lined > 12 ? 0.09 : 0) || d.clone().normalize().dot(v.clone().normalize()) > apart)) continue;
+    dirs.push(v.clone());
+    v.addScaledVector(n, -0.04);
     q.setFromUnitVectors(up, n);
     // a little off the normal, and twisted: no two crystals lean alike
-    q.premultiply(tw.setFromAxisAngle(new Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).normalize(), (rnd() - 0.5) * 0.7));
+    q.premultiply(tw.setFromAxisAngle(new Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).normalize(), (rnd() - 0.5) * 0.8));
     // a cluster: a main crystal and two smaller ones beside it, leaning away
-    const w = 0.05 + rnd() * 0.04, len = 0.1 + rnd() * 0.12;
+    const w = 0.045 + rnd() * 0.04, len = 0.1 + rnd() * 0.13;
     for (let c = 0; c < CLUSTER; c++) {
-      const k = c ? 0.5 + rnd() * 0.3 : 1, qc = q.clone();
-      if (c) qc.premultiply(tw.setFromAxisAngle(new Vector3(rnd() - 0.5, 0, rnd() - 0.5).normalize().cross(n).normalize(), 0.25 + rnd() * 0.5));
-      const at = v.clone().addScaledVector(new Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).cross(n).normalize(), c ? 0.04 + rnd() * 0.04 : 0);
+      const k = c ? 0.45 + rnd() * 0.35 : 1, qc = q.clone();
+      if (c) qc.premultiply(tw.setFromAxisAngle(new Vector3(rnd() - 0.5, 0, rnd() - 0.5).normalize().cross(n).normalize(), 0.25 + rnd() * 0.55));
+      const at = v.clone().addScaledVector(new Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).cross(n).normalize(), c ? 0.035 + rnd() * 0.04 : 0);
       seats.push(new Matrix4().compose(at, qc, new Vector3(w * k, len * k, w * k * (0.7 + rnd() * 0.6))));
     }
   }
@@ -392,7 +460,7 @@ function shardSeats(g: BufferGeometry, seed: number): Matrix4[] {
 
 const MAX_CHUNKS = 84;
 const CHUNK_TINT: Record<string, [number, number, number]> = {
-  basalt: [1.1, 0.95, 0.8], iron: [0.8, 0.82, 0.88], rich: [0.78, 0.68, 1.15], volatile: [0.72, 0.86, 1.2],
+  basalt: [1, 0.9, 0.8], iron: [0.78, 0.82, 0.9], rich: [0.85, 0.75, 1], volatile: [0.8, 0.9, 1.02],
 };
 
 /** The pieces thrown off a breaking rock: a pool of low stone shards that tumble, drift with the parent and crumble away. Visual only. */
@@ -501,23 +569,31 @@ export class RockView {
       { craters: 3, rough: 0.3, cuts: 3, stretch: [1, 1, 1.05] },
       { craters: 2, rough: 0.44, cuts: 9, stretch: [1.18, 0.64, 1.1] },
     ];
+    // a field rock carries enough mesh for its basins, ledges and small craters to hold their shape on screen
     const shapes = Array.from({ length: ROCK_VARIANTS }, (_, k) => {
       const c = SHAPES[k % SHAPES.length]!;
-      return rockGeometry(k * 3.7 + 1, 4, c.craters, c.rough, c.cuts, c.stretch);
+      return rockGeometry(k * 3.7 + 1, FIELD_DETAIL, c.craters, c.rough, c.cuts, c.stretch);
+    });
+    // rich rock is the same stone broken open on a geode: its own copy of each shape with the cavity cut in
+    const geodes = Array.from({ length: ROCK_VARIANTS }, (_, k) => {
+      const c = SHAPES[k % SHAPES.length]!;
+      return rockGeometry(k * 3.7 + 1, FIELD_DETAIL, c.craters, c.rough, c.cuts, c.stretch, 0.62);
     });
     this.chunks = new Chunks(scene);
-    this.seats = shapes.map((g, k) => shardSeats(g, 40 + k));
-    // the crystals of the rich rock: one shared mesh, seated in each shape's hollows, and a few loose ones drifting near
-    const crystal = new MeshStandardMaterial({ color: new Color(0.1, 0.045, 0.2), emissive: new Color(0.16, 0.05, 0.3), emissiveIntensity: 0.4, roughness: 0.22, metalness: 0.2, flatShading: true, envMapIntensity: 0.9 });
+    this.seats = geodes.map((g, k) => shardSeats(g, 40 + k));
+    // the crystals of the rich rock: one shared mesh, seated in each geode, and a few loose ones drifting near.
+    // Glassy violet that throws hard highlights; the light it gives of its own stays faint
+    const crystal = new MeshStandardMaterial({ color: new Color(0.22, 0.07, 0.42), emissive: new Color(0.2, 0.05, 0.4), emissiveIntensity: 0.45, roughness: 0.1, metalness: 0.45, flatShading: true, envMapIntensity: 1.4 });
     this.shards = new InstancedMesh(shardGeometry(), crystal, MAX_SHARDS);
     this.shards.count = 0;
     this.shards.frustumCulled = false;
+    this.shards.castShadow = true;
     scene.add(this.shards);
     for (const kind of KINDS) {
       const mat = lavaRock(1.35, 1, 0.15, LOOKS[kind]);
       for (let k = 0; k < ROCK_VARIANTS; k++) {
         // each kind has its own copy of the shape: the hit light is a per-instance attribute on the geometry
-        const geo = shapes[k]!.clone();
+        const geo = (kind === 'rich' ? geodes : shapes)[k]!.clone();
         const hit = new InstancedBufferAttribute(new Float32Array(PER_VARIANT), 1);
         geo.setAttribute('aHit', hit);
         this.hits.push(hit);
@@ -531,7 +607,7 @@ export class RockView {
       }
     }
     this.counts = this.meshes.map(() => 0);
-    for (let k = 0; k < BULWARK_VARIANTS; k++) this.bulwarkGeo.push(rockGeometry(k * 5.3 + 20, 5, 3 + k, 0.36, 7 + k));
+    for (let k = 0; k < BULWARK_VARIANTS; k++) this.bulwarkGeo.push(rockGeometry(k * 5.3 + 20, BULWARK_DETAIL, 3 + k, 0.36, 7 + k, BULWARK_STRETCH[k]));
     // a bulwark is a plain mesh, not an instance: hidden here so the warm-up compiles its program too
     const proxy = new Mesh(this.bulwarkGeo[0]!, this.bulwarkMat);
     proxy.visible = false;

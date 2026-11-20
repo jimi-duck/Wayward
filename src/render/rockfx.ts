@@ -13,7 +13,8 @@ import type { RockView } from './rocks';
 // its own way, and a torpedo lands heavier than a laser, never as a fireball.
 
 /** Dim, so a puff of dust never blooms. */
-const STONE_DUST: Record<string, RGB> = { basalt: [0.34, 0.3, 0.27], iron: [0.3, 0.3, 0.32], rich: [0.3, 0.26, 0.36], volatile: [0.3, 0.33, 0.38] };
+/** Regolith: dark grey-brown, a touch of each kind's colour, so a break throws dust and not smoke. */
+const STONE_DUST: Record<string, RGB> = { basalt: [0.27, 0.24, 0.21], iron: [0.24, 0.25, 0.27], rich: [0.25, 0.22, 0.28], volatile: [0.24, 0.27, 0.3] };
 const EMBER: RGB = [2.4, 0.8, 0.2];
 const GLINT: RGB = [1.6, 0.8, 2.6];
 const COLD: RGB = [1.4, 2.2, 3.2];
