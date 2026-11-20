@@ -3,12 +3,13 @@
 Code: `src/render/fx.ts` (the pools and the blast recipes), `src/render/sector.ts` (which event does what), `src/render/weapons.ts` (torpedo smoke). Bench: `tools/enemies.html?view=boom&at=0.4&size=2.8` freezes a kill at `at` seconds (`&calm=1` for the calm path).
 
 ## A kill
-1. A short white flash and a smaller tinted one (the faction's colour, dimmed).
+1. A short white flash and a tighter, dimmer one in the faction's colour, so the fireball shows through.
 2. A fireball of puffs that swell and cool from yellow-white to dull red; smoke that starts warm (lit by the fire) and goes to soot.
 3. Hot streak sparks (`HotSparks`, drawn through the shot streaks, so no new draw call) next to the round embers.
-4. Torn plating that burns while it is new: an ember trail and a wisp of smoke.
+4. Torn plating in the dead ship's colours (`Debris.paint`) that burns while it is new: an ember trail, a wisp of smoke, and torn sides that glow white-hot to orange to dull red over about two seconds (`hotEdges`, an `aHeat` per piece on the kit metal).
 5. Hulls of radius 1.2 and up cook off: 1 to 5 small blasts (`pop`) 0.1 to 0.6 s later inside the hull, plus 2 to 4 larger pieces.
-6. A faint ring (thin, dim, fading fast).
+6. A shockwave: a thin feathered front of lit gas with a faint wake behind it, thinning as it spreads (one plane, its own shader).
+7. Hulls of radius 2.4 and up vent: burning gas jets from two breaches for most of a second (`jet`).
 
 ## Hurt hulls
 An enemy under a third of its hit points smokes and sheds embers (`Effects.burning`), worse as it gets lower; a flame lick past 55 % gone. Hulls with 2 hp or less stay clean.
