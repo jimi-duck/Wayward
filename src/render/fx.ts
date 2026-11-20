@@ -569,6 +569,32 @@ export class Effects {
     if (k > 0.55 && !this.calm && Math.random() < 0.18) this.fire1(x, y, z, 0.7 + k * 0.5);
   }
 
+  /**
+   * A gun's muzzle: a short tongue of flame out along (dx, dz) and a white pinpoint at the barrel, both gone in a few
+   * hundredths of a second. The flame is a flipbook puff, so it is never the same shape twice.
+   */
+  muzzle(x: number, y: number, z: number, dx: number, dz: number, rgb: RGB): void {
+    this.flash(x, y, z, 0.7, [4 * 0.6 + rgb[0] * 0.4, 3.6 * 0.6 + rgb[1] * 0.4, 3.2 * 0.6 + rgb[2] * 0.4], 0.05);
+    if (this.calm) return;
+    const p = this.fires.find((q) => q.life <= 0);
+    if (!p) return;
+    this.place(p, x + dx * 0.35, y, z + dz * 0.35, 0.55, 1.2, 0.07, 0);
+    p.vx = dx * 18; p.vy = 0; p.vz = dz * 18;
+  }
+
+  /**
+   * A lance burning into plate: sparks skipping off it back toward (dx, dz), a molten spot that cools from white to
+   * red, and a thin wisp of metal vapour.
+   */
+  scorch(x: number, y: number, z: number, dx: number, dz: number): void {
+    this.flash(x, y, z, 0.6, [4, 3.4, 2.6], 0.05);
+    this.flash(x, y, z, 0.9, [2.6, 1, 0.25], 0.18);
+    this.flash(x, y, z, 0.75, [1.3, 0.25, 0.06], 0.5);
+    this.streakSpray(x, y, z, dx, dz, 5, 15, 0.7, 0.32);
+    this.spray(x, y, z, dx, dz, 8, [3.4, 1.8, 0.6], 11, 0.16, 0.35, 0.8);
+    if (!this.calm) this.dust(x, y + 0.1, z, 0.5, [0.16, 0.15, 0.14], 1, 0.5, 0.8, 0.18);
+  }
+
   /** A tongue of burning gas from a breach, thrown along (dx, dz). */
   private jet(x: number, y: number, z: number, dx: number, dz: number, size: number): void {
     const p = this.fires.find((q) => q.life <= 0) ?? this.fires[0]!;
