@@ -514,18 +514,18 @@ export class Effects {
 
   /** A fireball: puffs of flame that swell and cool, then smoke that hangs on after them. */
   fireball(x: number, y: number, z: number, size: number, smoke = 1): void {
-    const n = Math.round(4 + size * 1.5);
+    const n = Math.round(3 + size);
     for (let i = 0; i < n; i++) {
       const p = this.fires.find((q) => q.life <= 0) ?? this.fires[0]!;
       const o = size * 0.35;
       this.place(p, x + (Math.random() - 0.5) * o, y + (Math.random() - 0.5) * o, z + (Math.random() - 0.5) * o,
-        size * (0.5 + Math.random() * 0.5), 1.6 + Math.random() * 0.8, 0.45 + Math.random() * 0.35, size * 0.9);
+        size * (0.4 + Math.random() * 0.4), 1.3 + Math.random() * 0.6, 0.35 + Math.random() * 0.25, size * 0.8);
     }
     for (let i = 0; i < Math.round(n * 0.8 * smoke); i++) {
       const p = this.smokes.find((q) => q.life <= 0) ?? this.smokes[0]!;
       const o = size * 0.5;
       this.place(p, x + (Math.random() - 0.5) * o, y + (Math.random() - 0.5) * o, z + (Math.random() - 0.5) * o,
-        size * (0.6 + Math.random() * 0.5), 2.2, 1.6 + Math.random() * 1.2, size * 0.5);
+        size * (0.5 + Math.random() * 0.4), 1.8, 1.3 + Math.random() * 1.0, size * 0.5);
       p.col.copy(SMOKE_WARM);
       p.warm = 1;
     }
@@ -612,12 +612,11 @@ export class Effects {
 
   /** A secondary blast inside a dying hull: smaller than the kill, no ring, a different pitch of fire. */
   pop(x: number, y: number, z: number, size: number, tint: RGB): void {
-    this.flash(x, y, z, size * 2.6, [3.6, 2.8, 2], 0.09);
-    this.flash(x, y, z, size * 3.2, [tint[0] * 0.35, tint[1] * 0.3, tint[2] * 0.25], 0.16);
-    this.light(x, y, z, [1, 0.58, 0.28], 130 * size, 0.3);
-    this.fireball(x, y, z, size * 1.2, 1);
-    this.streakBurst(x, y, z, Math.round(5 + size * 3), 9 + size * 4, 0.6);
-    this.burst(x, y, z, Math.round(6 + size * 3), [3.4, 1.7, 0.6], 6 + size * 3, 0.28, 0.6);
+    this.flash(x, y, z, size * 1.6, [2.2, 1.8, 1.4], 0.07);
+    this.light(x, y, z, [1, 0.58, 0.28], 80 * size, 0.25);
+    this.fireball(x, y, z, size * 0.9, 0.8);
+    this.streakBurst(x, y, z, Math.round(3 + size * 2), 8 + size * 3, 0.5);
+    this.burst(x, y, z, Math.round(3 + size * 2), [2.4, 1.3, 0.5], 6 + size * 3, 0.24, 0.5);
     this.rubble('metal', x, y, z, Math.round(2 + size * 1.5), 0.2 + size * 0.1, 5 + size * 2);
   }
 
@@ -628,28 +627,30 @@ export class Effects {
   explode(x: number, y: number, z: number, size: number, tint: RGB, kind: 'rock' | 'metal'): void {
     const k = this.calm ? 0.5 : 1;
     // a short white core, then a dimmer, tighter glow in the faction's colour: light, not a disc over the fireball
-    this.flash(x, y, z, size * 2.6 * k, [4, 3.4, 2.6], 0.08);
-    this.flash(x, y, z, size * 3.2 * k, [tint[0] * 0.45, tint[1] * 0.45, tint[2] * 0.45], 0.26);
-    this.light(x, y, z, [1, 0.62, 0.32], 260 * size * k, 0.45);
-    this.fireball(x, y, z, size * 1.6, kind === 'metal' ? 1 : 0.7);
-    this.ring(x, y, z, size * 4.5, [2.6, 1.3, 0.5], 0.55);
-    this.burst(x, y, z, Math.round((16 + size * 8) * (this.calm ? 0.6 : 1)), [3.6, 1.9, 0.7], 10 + size * 6, 0.32, 0.9);
-    this.burst(x, y, z, Math.round(12 + size * 6), tint, 8 + size * 4, 0.4, 0.7);
+    // (toned down 2026-11-20, owner: "a little over the top"): one short white-yellow flash, a small faction-coloured
+    // after-glow, a compact fireball, a faint ring, and fewer sparks; most of the kill is pieces and smoke
+    this.flash(x, y, z, size * 1.8 * k, [2.6, 2.2, 1.7], 0.06);
+    this.flash(x, y, z, size * 2.2 * k, [tint[0] * 0.22, tint[1] * 0.22, tint[2] * 0.22], 0.2);
+    this.light(x, y, z, [1, 0.62, 0.32], 150 * size * k, 0.35);
+    this.fireball(x, y, z, size * 1.2, kind === 'metal' ? 1 : 0.7);
+    this.ring(x, y, z, size * 3.4, [1.1, 0.6, 0.28], 0.45);
+    this.burst(x, y, z, Math.round((9 + size * 4) * (this.calm ? 0.6 : 1)), [2.6, 1.4, 0.55], 9 + size * 5, 0.28, 0.8);
+    this.burst(x, y, z, Math.round(5 + size * 3), [tint[0] * 0.7, tint[1] * 0.7, tint[2] * 0.7], 7 + size * 4, 0.34, 0.6);
     if (kind === 'metal') this.plating.paint(tint);
     this.rubble(kind, x, y, z, Math.round(5 + size * 5), 0.22 + size * 0.14, 6 + size * 3);
     if (this.calm) { this.plating.paint(null); return; }
-    this.streakBurst(x, y, z, Math.round(10 + size * 5), 12 + size * 6, 0.8, 1.8);
+    this.streakBurst(x, y, z, Math.round(5 + size * 3), 11 + size * 5, 0.7, 1.5);
     if (kind !== 'metal' || size < 1.2) return;
     // a hull does not die in one frame: pieces tear off burning, and what is left cooks off
     const hulk = size < 2.5 ? 2 : size < 4.5 ? 3 : 4;
     this.rubble('metal', x, y, z, hulk, 0.55 + size * 0.12, 3 + size * 1.2, true);
     this.plating.paint(null);
     // a big hull vents: burning gas jets from two breaches for most of a second before the last of it goes
-    if (size >= 2.4) for (let b = 0; b < 2; b++) {
+    if (size >= 3) for (let b = 0; b < 2; b++) {
       const a = Math.random() * Math.PI * 2, dx = Math.cos(a), dz = Math.sin(a), o = size * 0.45;
-      for (let j = 0; j < 6; j++) this.after(0.05 + j * 0.12, () => this.jet(x + dx * o, y, z + dz * o, dx, dz, size));
+      for (let j = 0; j < 4; j++) this.after(0.05 + j * 0.12, () => this.jet(x + dx * o, y, z + dz * o, dx, dz, size));
     }
-    const pops = size < 2.5 ? 1 : size < 4.5 ? 3 : 5;
+    const pops = size < 2.5 ? 0 : size < 4.5 ? 2 : 3;
     for (let i = 0; i < pops; i++) {
       const o = size * 0.8, px = x + (Math.random() - 0.5) * o, py = y + (Math.random() - 0.5) * o * 0.4, pz = z + (Math.random() - 0.5) * o;
       this.after(0.1 + Math.random() * 0.45 + i * 0.05, () => this.pop(px, py, pz, size * (0.3 + Math.random() * 0.2), tint));

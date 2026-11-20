@@ -81,3 +81,10 @@ Left out of the plan's last step, on purpose: auto-exposure (it needs a read of 
 phones, and the sky is dark enough that it would mostly do nothing) and screen-space AO on High (a second full scene pass
 for little gain in open space; the sun's shadow map already grounds the hull's parts). Jump and shield distortion stay out
 (owner: no shimmer).
+
+## Kills toned down (2026-11-20, owner: "a little over the top")
+
+The kill flash is smaller and shorter (1.8x size, 0.06 s), the faction after-glow is faint, the fireball is about three
+quarters of its old size and burns out sooner, the ring is dim, sparks are roughly halved, smoke spreads less, and the
+follow-up blasts are fewer (none under size 2.5, two or three on big hulls; venting only from size 3). Most of a kill is
+now pieces and smoke rather than light.
