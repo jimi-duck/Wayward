@@ -86,6 +86,8 @@ export class Environment {
   private readonly fog: FogExp2;
   private readonly parallax = new Parallax();
   private far: FarBodies | null = null;
+  private sky: Sky | null = null;
+  private heroAim = typeof location !== 'undefined' && new URLSearchParams(location.search).has('hero');
   private baked: WebGLRenderTarget | null = null;
   private readonly dome: ShaderMaterial;
   /** The phone readout's switches (ui/perf.ts): the nebula dome; the stars, far worlds, sun, deep and dust. */
@@ -227,6 +229,7 @@ export class Environment {
 
   /** A new sky: repaint the backdrop and put up its far bodies. */
   setSky(sky: Sky): void {
+    this.sky = sky;
     const old = this.baked;
     this.baked = bakeSky(this.renderer, sky);
     this.dome.uniforms.uMap!.value = this.baked.texture;
@@ -321,6 +324,17 @@ export class Environment {
     this.far?.group.position.set(-WORLD_SLIDE * 2000 * Math.sin(cx / SLIDE), 0, -WORLD_SLIDE * 2000 * Math.sin(cz / SLIDE));
     this.phenomena.group.position.set(-WORLD_SLIDE * 1500 * Math.sin(cx / SLIDE), 0, -WORLD_SLIDE * 1500 * Math.sin(cz / SLIDE));
     if (dt > 0) this.phenomena.look(camera.getWorldDirection(this.fwd));
+    // ?hero=…: the great nebula is painted where the camera first looks (a screenshot rig, like ?phenom)
+    if (dt > 0 && this.heroAim && this.sky?.hero) {
+      this.heroAim = false;
+      const f = camera.getWorldDirection(this.fwd), h = this.sky.hero;
+      h.az = (Math.atan2(f.z, f.x) * 180) / Math.PI + 30;
+      h.el = Math.min(-2, (Math.asin(f.y) * 180) / Math.PI + 4);
+      const old = this.baked;
+      this.baked = bakeSky(this.renderer, this.sky);
+      this.dome.uniforms.uMap!.value = this.baked.texture;
+      old?.dispose();
+    }
     this.far?.face(camera.getWorldDirection(this.fwd));
     this.phenomena.update(dt, this.motion);
     // the key light keeps its angle, wherever the ship goes

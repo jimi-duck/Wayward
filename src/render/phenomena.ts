@@ -95,7 +95,7 @@ const RIFT_F = /* glsl */ `
     vec2 cell = vec2(p.x * 14.0, p.y * 9.0 + uTime * 0.25);
     vec2 ci = floor(cell), cf = fract(cell);
     float mote = hash(ci) > 0.88 ? exp(-dot(cf - 0.5, cf - 0.5) * 140.0) * exp(-out1 * 5.0) : 0.0;
-    vec3 col = rim * 0.7 + deep + uA * bleed * 0.6 + uB * wisps * 0.5 + mix(uA, vec3(1.0), 0.5) * mote * 0.7;
+    vec3 col = rim * 0.4 + deep + uA * bleed * 0.75 + uB * wisps * 0.6 + mix(uA, vec3(1.0), 0.5) * mote * 0.7;
     float edge = smoothstep(1.0, 0.7, length(p * vec2(1.2, 1.0)));
     gl_FragColor = vec4(col * edge, 1.0);
   }`;
@@ -227,7 +227,8 @@ export class Phenomena {
     // at most one great thing in most skies: a hole, else a rift
     if (r() < lean.hole) {
       const tint = sky.accent.clone().lerp(sky.neb[2], 0.3).multiplyScalar(1.2);
-      const hole = singularity(36 + r() * 20, tint, 0.18 + r() * 0.2);
+      // big enough to be the sky's landmark, as the great nebulae are
+      const hole = singularity(62 + r() * 34, tint, 0.18 + r() * 0.2);
       hole.position.copy(dirOf(away(0), -10 - r() * 16).multiplyScalar(D));
       hole.renderOrder = -3;
       this.kept3.add(hole);
@@ -237,7 +238,7 @@ export class Phenomena {
       const a = sky.accent.clone().lerp(new Color(0.35, 0.75, 1), 0.55), b = sky.neb[1].clone().multiplyScalar(1.4);
       this.rift = new ShaderMaterial({
         vertexShader: QUAD_V, fragmentShader: RIFT_F,
-        uniforms: { uSize: { value: 180 + r() * 80 }, uAspect: { value: 0.75 }, uTime: { value: 0 }, uA: { value: a }, uB: { value: b } },
+        uniforms: { uSize: { value: 240 + r() * 110 }, uAspect: { value: 0.75 }, uTime: { value: 0 }, uA: { value: a }, uB: { value: b } },
         transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false, side: DoubleSide,
       });
       const m = new Mesh(QUAD, this.rift);
