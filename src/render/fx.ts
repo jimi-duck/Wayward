@@ -1,7 +1,7 @@
 import {
   AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, InstancedMesh, Matrix4, Mesh,
-  MeshBasicMaterial, MeshStandardMaterial, PointLight, Points, Quaternion, RingGeometry, ShaderMaterial,
-  Sprite, SpriteMaterial, TetrahedronGeometry, Vector3, type Material, type Scene, type Texture, type WebGLRenderer,
+  MeshStandardMaterial, PointLight, Points, Quaternion, PlaneGeometry, ShaderMaterial,
+  Sprite, SpriteMaterial, TetrahedronGeometry, DynamicDrawUsage, InstancedBufferAttribute, Vector3, type Material, type Scene, type Texture, type WebGLRenderer,
 } from 'three';
 import { metal } from './kit';
 import { bakeAtlas, PuffLayer } from './puffs';
@@ -180,14 +180,34 @@ class Debris {
   private readonly pv = new Vector3();
   private readonly sv = new Vector3();
 
-  constructor(geo: BufferGeometry, mat: Material) {
+  /** Torn plating only: how hot each piece's broken edges still are (1 white-hot, 0 cold), read by its shader. */
+  readonly heat: InstancedBufferAttribute | null;
+  private readonly tint = new Color();
+
+  constructor(geo: BufferGeometry, mat: Material, hot = false) {
     this.mesh = new InstancedMesh(geo, mat, MAX_DEBRIS);
     this.mesh.frustumCulled = false;
     for (let i = 0; i < MAX_DEBRIS; i++) this.mesh.setMatrixAt(i, this.m.makeScale(0, 0, 0));
+    this.heat = hot ? new InstancedBufferAttribute(new Float32Array(MAX_DEBRIS), 1).setUsage(DynamicDrawUsage) : null;
+    if (this.heat) {
+      geo.setAttribute('aHeat', this.heat);
+      for (let i = 0; i < MAX_DEBRIS; i++) this.mesh.setColorAt(i, this.tint.setRGB(1, 1, 1));
+    }
+  }
+
+  /** The colour the next pieces take (multiplied over the plating): the livery of what they came off. */
+  paint(rgb: RGB | null): void {
+    if (!rgb) { this.tint.setRGB(1, 1, 1); return; }
+    const m = Math.max(rgb[0], rgb[1], rgb[2], 1e-3);
+    this.tint.setRGB(0.55 + 0.6 * rgb[0] / m, 0.55 + 0.6 * rgb[1] / m, 0.55 + 0.6 * rgb[2] / m);
   }
 
   emit(x: number, y: number, z: number, vx: number, vy: number, vz: number, size: number, drift = false): void {
     const i = this.next;
+    if (this.heat) {
+      this.mesh.setColorAt(i, this.tint);
+      this.mesh.instanceColor!.needsUpdate = true;
+    }
     this.fade[i] = drift ? 0.22 : 0.45;
     this.drag[i] = drift ? 0.997 : 0.985;
     this.next = (this.next + 1) % MAX_DEBRIS;
@@ -211,6 +231,8 @@ class Debris {
       if (this.life[i]! <= 0) continue;
       const l = (this.life[i] = this.life[i]! - dt * this.fade[i]!);
       if (l <= 0) { this.mesh.setMatrixAt(i, this.m.makeScale(0, 0, 0)); continue; }
+      // torn edges cool from white-hot to dark in about the first two seconds
+      if (this.heat) { const h = Math.max(0, (l - 0.25) / 0.75); (this.heat.array as Float32Array)[i] = h * h * h; }
       const d = Math.pow(this.drag[i]!, dt * 60);
       for (let k = 0; k < 3; k++) { this.v[i * 3 + k]! *= d; this.p[i * 3 + k] = this.p[i * 3 + k]! + this.v[i * 3 + k]! * dt; }
       this.a[i * 4 + 3] = this.a[i * 4 + 3]! + this.s[i * 2 + 1]! * dt;
@@ -220,7 +242,30 @@ class Debris {
       this.mesh.setMatrixAt(i, this.m);
     }
     this.mesh.instanceMatrix.needsUpdate = true;
+    if (this.heat) this.heat.needsUpdate = true;
   }
+}
+
+/**
+ * Torn plating glows along its broken edges while it is hot: the box's thin sides (normal off its own y) burn orange
+ * to dull red as `aHeat` falls, its faces only faintly. Chained onto the kit metal's own shader.
+ */
+function hotEdges(m: MeshStandardMaterial): MeshStandardMaterial {
+  const prev = m.onBeforeCompile.bind(m), key = m.customProgramCacheKey.bind(m);
+  m.onBeforeCompile = (shader, r) => {
+    prev(shader, r);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute float aHeat; varying float vHeat; varying float vEdge;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvHeat = aHeat; vEdge = 1.0 - abs(normal.y);');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying float vHeat; varying float vEdge;')
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        // hot metal: white-yellow, then orange, then a dull red as it cools; mostly on the torn sides
+        vec3 hotC = mix(vec3(0.9, 0.12, 0.02), mix(vec3(2.6, 0.9, 0.18), vec3(3.2, 2.4, 1.3), smoothstep(0.7, 1.0, vHeat)), smoothstep(0.15, 0.7, vHeat));
+        totalEmissiveRadiance += hotC * vHeat * (0.12 + 0.88 * vEdge);`);
+  };
+  m.customProgramCacheKey = () => `${key()}-hot`;
+  return m;
 }
 
 /** A puff of flame or smoke: a slot in a puff layer (puffs.ts), stepped here and written each frame. */
@@ -261,7 +306,7 @@ export class Effects {
     if (renderer) bakeAtlas(renderer, atlas);
     this.rock = new Debris(new TetrahedronGeometry(1, 0),
       new MeshStandardMaterial({ color: 0x2c2724, roughness: 0.9, flatShading: true, emissive: new Color(0.07, 0.025, 0.012) }));
-    this.plating = new Debris(new BoxGeometry(1, 0.18, 0.7), metal({ tint: 0x6b6560, roughness: 0.55, metalness: 0.7, scale: 2 }));
+    this.plating = new Debris(new BoxGeometry(1, 0.18, 0.7), hotEdges(metal({ tint: 0x6b6560, roughness: 0.55, metalness: 0.7, scale: 2 })), true);
     scene.add(this.sparks.points, this.rock.mesh, this.plating.mesh);
     for (let i = 0; i < 28; i++) {
       const sprite = new Sprite(new SpriteMaterial({ map: glow, blending: AdditiveBlending, depthWrite: false, transparent: true }));
@@ -269,9 +314,31 @@ export class Effects {
       scene.add(sprite);
       this.flashes.push({ sprite, life: 0, decay: 1, max: 1 });
     }
-    const ringGeo = new RingGeometry(0.95, 1, 64).rotateX(-Math.PI / 2);
+    // a shockwave is a thin, feathered front of lit gas: brightest at its leading edge, a faint wash behind it, and
+    // thinner as it spreads, so it reads as a pressure front and not as a hoop lying on the plane
+    const ringGeo = new PlaneGeometry(2, 2).rotateX(-Math.PI / 2);
+    const ringMat = new ShaderMaterial({
+      uniforms: { uColor: { value: new Color() }, uOpacity: { value: 0 }, uThin: { value: 0.05 } },
+      vertexShader: /* glsl */ `varying vec2 vP; void main() { vP = position.xz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: /* glsl */ `
+        uniform vec3 uColor; uniform float uOpacity, uThin; varying vec2 vP;
+        void main() {
+          float r = length(vP);
+          if (r > 1.0) discard;
+          float d = (r - 0.93) / uThin;
+          float front = exp(-d * d);
+          // the wake behind the front: a little gas still lit, thinning toward the middle
+          float wake = smoothstep(0.35, 0.93, r) * (1.0 - smoothstep(0.93, 1.0, r)) * 0.18;
+          float a = (front + wake) * uOpacity;
+          if (a < 0.002) discard;
+          gl_FragColor = vec4(uColor, a);
+          #include <tonemapping_fragment>
+          #include <colorspace_fragment>
+        }`,
+      transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide,
+    });
     for (let i = 0; i < 14; i++) {
-      const mesh = new Mesh(ringGeo, new MeshBasicMaterial({ transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide }));
+      const mesh = new Mesh(ringGeo, ringMat.clone());
       mesh.visible = false;
       scene.add(mesh);
       this.rings.push({ mesh, life: 0, decay: 1, max: 1 });
@@ -320,7 +387,7 @@ export class Effects {
   ring(x: number, y: number, z: number, radius: number, rgb: RGB, life = 0.45): void {
     const r = this.rings.find((q) => q.life <= 0) ?? this.rings[0]!;
     r.mesh.position.set(x, y, z);
-    (r.mesh.material as MeshBasicMaterial).color.setRGB(...rgb);
+    ((r.mesh.material as ShaderMaterial).uniforms.uColor!.value as Color).setRGB(...rgb);
     r.life = 1; r.decay = 1 / life; r.max = radius;
     r.mesh.visible = true;
   }
@@ -502,6 +569,15 @@ export class Effects {
     if (k > 0.55 && !this.calm && Math.random() < 0.18) this.fire1(x, y, z, 0.7 + k * 0.5);
   }
 
+  /** A tongue of burning gas from a breach, thrown along (dx, dz). */
+  private jet(x: number, y: number, z: number, dx: number, dz: number, size: number): void {
+    const p = this.fires.find((q) => q.life <= 0) ?? this.fires[0]!;
+    this.place(p, x, y, z, size * 0.35, 2.2, 0.35 + Math.random() * 0.2, 0.6);
+    const sp = 6 + size * 2.5;
+    p.vx += dx * sp; p.vz += dz * sp; p.vy += (Math.random() - 0.5) * 2;
+    this.mote(x, y, z, dx * sp * 1.4, (Math.random() - 0.3) * 3, dz * sp * 1.4, [3.4, 1.5, 0.4], 0.24, 0.5);
+  }
+
   /** One small flame puff. */
   private fire1(x: number, y: number, z: number, size: number): void {
     const p = this.fires.find((q) => q.life <= 0) ?? this.fires[0]!;
@@ -525,20 +601,28 @@ export class Effects {
    */
   explode(x: number, y: number, z: number, size: number, tint: RGB, kind: 'rock' | 'metal'): void {
     const k = this.calm ? 0.5 : 1;
-    this.flash(x, y, z, size * 3.4 * k, [4, 3.4, 2.6], 0.1);
-    this.flash(x, y, z, size * 4.6 * k, [tint[0] * 0.7, tint[1] * 0.7, tint[2] * 0.7], 0.34);
+    // a short white core, then a dimmer, tighter glow in the faction's colour: light, not a disc over the fireball
+    this.flash(x, y, z, size * 2.6 * k, [4, 3.4, 2.6], 0.08);
+    this.flash(x, y, z, size * 3.2 * k, [tint[0] * 0.45, tint[1] * 0.45, tint[2] * 0.45], 0.26);
     this.light(x, y, z, [1, 0.62, 0.32], 260 * size * k, 0.45);
     this.fireball(x, y, z, size * 1.6, kind === 'metal' ? 1 : 0.7);
     this.ring(x, y, z, size * 4.5, [2.6, 1.3, 0.5], 0.55);
     this.burst(x, y, z, Math.round((16 + size * 8) * (this.calm ? 0.6 : 1)), [3.6, 1.9, 0.7], 10 + size * 6, 0.32, 0.9);
     this.burst(x, y, z, Math.round(12 + size * 6), tint, 8 + size * 4, 0.4, 0.7);
+    if (kind === 'metal') this.plating.paint(tint);
     this.rubble(kind, x, y, z, Math.round(5 + size * 5), 0.22 + size * 0.14, 6 + size * 3);
-    if (this.calm) return;
+    if (this.calm) { this.plating.paint(null); return; }
     this.streakBurst(x, y, z, Math.round(10 + size * 5), 12 + size * 6, 0.8, 1.8);
     if (kind !== 'metal' || size < 1.2) return;
     // a hull does not die in one frame: pieces tear off burning, and what is left cooks off
     const hulk = size < 2.5 ? 2 : size < 4.5 ? 3 : 4;
     this.rubble('metal', x, y, z, hulk, 0.55 + size * 0.12, 3 + size * 1.2, true);
+    this.plating.paint(null);
+    // a big hull vents: burning gas jets from two breaches for most of a second before the last of it goes
+    if (size >= 2.4) for (let b = 0; b < 2; b++) {
+      const a = Math.random() * Math.PI * 2, dx = Math.cos(a), dz = Math.sin(a), o = size * 0.45;
+      for (let j = 0; j < 6; j++) this.after(0.05 + j * 0.12, () => this.jet(x + dx * o, y, z + dz * o, dx, dz, size));
+    }
     const pops = size < 2.5 ? 1 : size < 4.5 ? 3 : 5;
     for (let i = 0; i < pops; i++) {
       const o = size * 0.8, px = x + (Math.random() - 0.5) * o, py = y + (Math.random() - 0.5) * o * 0.4, pz = z + (Math.random() - 0.5) * o;
@@ -582,7 +666,9 @@ export class Effects {
       if (r.life <= 0) { r.mesh.visible = false; continue; }
       const t = 1 - r.life;
       r.mesh.scale.setScalar(r.max * (0.15 + 0.85 * (1 - (1 - t) * (1 - t))));
-      (r.mesh.material as MeshBasicMaterial).opacity = r.life * r.life * 0.6;
+      const u = (r.mesh.material as ShaderMaterial).uniforms;
+      u.uOpacity!.value = r.life * r.life * 0.42;
+      u.uThin!.value = 0.07 - 0.045 * t;
     }
     for (const p of this.fires) this.stepPuff(p, dt, this.fireLayer);
     for (const p of this.smokes) this.stepPuff(p, dt, this.smokeLayer);
