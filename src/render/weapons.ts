@@ -22,6 +22,8 @@ const TORP_FLAME = new Color(3.2, 1.7, 0.4);
 const LANCE_CORE = new Color(3.6, 2.6, 2.3);
 /** A torpedo lays its smoke in segments, one puff each this far along its path, with a glowing ember at each. */
 const SEGMENT = 0.9;
+/** Scratch colour for the shock diamonds. */
+const DIAMOND = new Color();
 
 export class WeaponView {
   private readonly d = new Vector3();
@@ -56,6 +58,15 @@ export class WeaponView {
       // the motor's exhaust, then the warhead's glow over its head
       this.streaks.push(x, y, z, this.d.x, this.d.y, this.d.z, (2.6 + burn * 3.6) * k, (1.0 + burn * 0.5) * k, STREAK.torp, TORP_FLAME, 0.6, flick);
       this.streaks.push(x, y, z, this.d.x, this.d.y, this.d.z, wid, wid, STREAK.orb, TORP, 1, flick * 2.1);
+      // at full burn the exhaust stands in faint shock diamonds behind the motor, each smaller and dimmer than the last
+      if (burn > 0.8) {
+        const n = this.d.length(), ux = this.d.x / n, uy = this.d.y / n, uz = this.d.z / n, dk = (burn - 0.8) * 5;
+        for (let j = 1; j <= 3; j++) {
+          const o = (0.55 + j * 0.42) * k, w = (0.5 - j * 0.1) * k;
+          DIAMOND.copy(TORP_FLAME).multiplyScalar(0.5 * dk / j);
+          this.streaks.push(x - ux * o, y - uy * o, z - uz * o, this.d.x, this.d.y, this.d.z, w, w, STREAK.orb, DIAMOND, 1, flick + j);
+        }
+      }
       if (dt > 0) {
         for (let n = 0; n < 2; n++) {
           fx.mote(x, y, z, -t.vx * 0.12 + (Math.random() - 0.5) * 3, -t.vy * 0.12 + (Math.random() - 0.5) * 2, -t.vz * 0.12 + (Math.random() - 0.5) * 3,

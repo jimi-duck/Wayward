@@ -95,7 +95,8 @@ function plumeMaterial(inner: boolean): ShaderMaterial {
         float heat = (0.35 + 0.65 * uHeat) * (1.0 - 0.85 * pow(vAxial, 1.3));
         if (uInner > 0.5) {
           // the hot core: shock diamonds standing in the first third, fading out fast
-          float diamonds = 0.72 + 0.28 * cos(along * 30.0 - uTime * 2.0 + sin(uTime * 9.0));
+          // the diamonds only stand out under a hard burn: at idle the core is a smooth, short blue-white
+          float diamonds = mix(1.0, 0.55 + 0.45 * cos(along * 30.0 - uTime * 2.0 + sin(uTime * 9.0)), smoothstep(0.35, 1.0, uHeat));
           float a = pow(max(1.0 - along, 0.0), 2.4) * mix(0.38, 1.0, pow(face, 1.3)) * diamonds * flick * heat * 0.6;
           gl_FragColor = vec4(uCore * a, a);
           return;

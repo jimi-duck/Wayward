@@ -416,9 +416,10 @@ export class Sector {
     for (const e of events) {
       switch (e.type) {
         case 'bolt': {
-          this.fx.flash(e.x, 0.15, e.z, 1.6, OURS, 0.08);
-          // a short hot flare thrown down the barrel, and a breath of light on the hull
           const hx = Math.cos(e.heading), hz = -Math.sin(e.heading);
+          // a pinpoint and a tongue of flame at the barrel, a short hot flare down it, and a breath of light on the hull
+          this.fx.flash(e.x, 0.15, e.z, 1.1, OURS, 0.06);
+          this.fx.muzzle(e.x + hx * 0.4, 0.15, e.z + hz * 0.4, hx, hz, [3.6, 1.1, 0.5]);
           this.fx.streakSpray(e.x + hx * 0.6, 0.15, e.z + hz * 0.6, hx, hz, 2, 26, 0.18, 0.12);
           this.fx.light(e.x, 0.4, e.z, [1, 0.2, 0.15], 24, 0.07);
           this.rig.kick(0.05);
@@ -490,15 +491,16 @@ export class Sector {
         case 'enemyFire':
           this.fx.flash(e.x, e.y, e.z, 1.4, rgb(e.faction), 0.08);
           break;
-        case 'alienHit':
-          this.fx.flash(e.x, e.y, e.z, 1.1, FIRE, 0.07);
-          this.fx.burst(e.x, e.y, e.z, 10, FIRE, 10, 0.26, 0.4);
-          this.fx.burst(e.x, e.y, e.z, 6, LANCE_SPARK, 16, 0.14, 0.25);
-          this.fx.streakBurst(e.x, e.y, e.z, 4, 14, 0.4, 1.2);
-          this.fx.flash(e.x, e.y, e.z, 0.8, [1.6, 0.5, 0.12], 0.3);
+        case 'alienHit': {
+          // the plate burns where the shot lands and throws its sparks back the way it came (toward the eye: our lances)
+          const cam = this.rig.camera.position, bx = cam.x - e.x, bz = cam.z - e.z, bl = Math.hypot(bx, bz) || 1;
+          this.fx.scorch(e.x, e.y, e.z, bx / bl, bz / bl);
+          this.fx.burst(e.x, e.y, e.z, 6, FIRE, 10, 0.24, 0.4);
+          this.fx.burst(e.x, e.y, e.z, 5, LANCE_SPARK, 16, 0.14, 0.25);
           this.fx.rubble('metal', e.x, e.y, e.z, 1, 0.12, 6);
           this.rig.shake(0.1);
           break;
+        }
         case 'alienDestroyed':
           this.fx.explode(e.x, e.y, e.z, e.r * (e.elite ? 1.4 : 1), rgb(e.faction), 'metal');
           this.rig.shake(0.22 + e.r * 0.06);
