@@ -182,11 +182,33 @@ function platingTextures(): { map: Texture; bump: Texture; paint: Texture } {
     a.lineWidth = 0.6 + r() * 1.2;
     a.beginPath(); a.moveTo(x, y); a.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len); a.stroke();
   }
-  // fine grain on the height map, so flat plates are not glass
-  const img = b.getImageData(0, 0, SIZE, SIZE), d = img.data;
+  // roughness, its own map (packed into the height map's green): each plate its own finish, satin, matt or rubbed bright,
+  // with the seams dull, the rivet heads polished and long wiped streaks where hands and hoses rub. Under hard light
+  // this is what makes metal read as metal: some plates catch the sun and their neighbours do not
+  const [, g] = make();
+  const rr = rand(2741);
+  g.fillStyle = '#9a9a9a';
+  g.fillRect(0, 0, SIZE, SIZE);
+  for (const [x, y, w, h] of panels) {
+    const k = rr(), v = k < 0.3 ? 70 + rr() * 30 : k < 0.8 ? 130 + rr() * 50 : 190 + rr() * 40;
+    g.fillStyle = `rgb(${v},${v},${v})`;
+    g.fillRect(x + 2, y + 2, w - 4, h - 4);
+    g.strokeStyle = '#e6e6e6'; g.lineWidth = 4; g.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
+    // a rubbed patch or a wiped streak: polished back toward bare steel
+    if (rr() < 0.45) {
+      const sx = x + rr() * w, sy = y + rr() * h, rad = 10 + rr() * 40;
+      const grad = g.createRadialGradient(sx, sy, 0, sx, sy, rad);
+      grad.addColorStop(0, 'rgba(40,40,40,.7)'); grad.addColorStop(1, 'rgba(40,40,40,0)');
+      g.fillStyle = grad; g.fillRect(sx - rad, sy - rad, rad * 2, rad * 2);
+    }
+  }
+  // fine grain on the height map, so flat plates are not glass; the roughness goes in its green
+  const img = b.getImageData(0, 0, SIZE, SIZE), d = img.data, gr = g.getImageData(0, 0, SIZE, SIZE).data;
   for (let i = 0; i < d.length; i += 4) {
     const n = (r() - 0.5) * 14;
-    d[i] = d[i]! + n; d[i + 1] = d[i + 1]! + n; d[i + 2] = d[i + 2]! + n;
+    // rivet heads (the height map's brightest) are polished
+    const rv = d[i]! > 200 ? 60 : gr[i]! + (r() - 0.5) * 22;
+    d[i] = d[i]! + n; d[i + 1] = rv; d[i + 2] = d[i + 2]! + n;
   }
   b.putImageData(img, 0, 0);
 
@@ -299,14 +321,19 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
                          mix(fract(sin(dot(kitI + vec2(0.0, 1.0), vec2(12.9898, 78.233))) * 43758.5453), fract(sin(dot(kitI + vec2(1.0, 1.0), vec2(12.9898, 78.233))) * 43758.5453), kitF.x), kitF.y);
         diffuseColor.rgb *= 1.0 - 0.22 * smoothstep(0.5, 0.95, kitN);`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-        roughnessFactor = clamp(roughnessFactor + (0.5 - kitC.g) * 0.5, 0.2, 1.0);`)
+        float kitR = texture2D(uKitBump, vKitP.zy).g * kitW.x + texture2D(uKitBump, vKitP.xz).g * kitW.y + texture2D(uKitBump, vKitP.xy).g * kitW.z;
+        roughnessFactor = clamp(roughnessFactor + (kitR - 0.58) * 1.0 + (0.5 - kitC.g) * 0.2, 0.14, 1.0);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
-        normal = kitPerturb(-vViewPosition, normal, kitH * uKitStrength, faceDirection);`);
+        // close up, a finer relief from the same map at seven times the scale, faded out by screen size before it shimmers
+        vec3 kitD = vKitP * 7.0;
+        float kitHD = texture2D(uKitBump, kitD.zy).r * kitW.x + texture2D(uKitBump, kitD.xz).r * kitW.y + texture2D(uKitBump, kitD.xy).r * kitW.z;
+        float kitNear = 1.0 - smoothstep(0.08, 0.35, length(fwidth(kitD)));
+        normal = kitPerturb(-vViewPosition, normal, (kitH + (kitHD - 0.5) * 0.18 * kitNear) * uKitStrength, faceDirection);`);
     if (worn > 0) wearShader(shader, painted, !!o.shade);
   };
   // the scale and the bump strength are uniforms, not part of the shader text, so they stay out of the key: every hull size then shares
   // one program, and none of them is first linked on the frame it comes into view
-  m.customProgramCacheKey = () => `kit-metal7-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}-${o.shade ? 1 : 0}`;
+  m.customProgramCacheKey = () => `kit-metal8-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}-${o.shade ? 1 : 0}`;
   return m;
 }
 
