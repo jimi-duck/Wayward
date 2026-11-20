@@ -236,45 +236,52 @@ const gutterRaptor: Draw = (s) => {
 // of hardpoints, sensor housings, a numbered hull. Symmetric and heavy, and
 // the colour sits on plates that are all the same size.
 
-/** The Patrol fighter and the Interdictor/Enforcer share the Gutter's archetypes, built to regulation. */
+/**
+ * The Patrol fighter, the Interdictor and the Enforcer: built to regulation as a twin-boom delta. An armoured cockpit
+ * pod with a braced canopy and twin cyan optics, intake cowlings either side of it, a delta wing with orange chevrons
+ * on navy plate, two booms carrying the drives and a tailplane between them, a gun pod under each wing root.
+ */
 const custodyBird = (fwd: boolean): Draw => (s) => {
-  const k = s.k, f = fwd ? 0.38 : -0.3;
-  k.loft('hull', [[-0.72, 0.12, 0.13, 0.13], [-0.6, 0.26, 0.16, 0.15, 0.35], [0.1, 0.25, 0.16, 0.15, 0.3], [0.55, 0.22, 0.14, 0.13, 0.4], [0.85, 0.1, 0.08, 0.08], [1.0, 0.03, 0.04, 0.04]]);
-  s.chine(-0.5, 0.6, 0.23);
+  const k = s.k, f = fwd ? 0.25 : -0.05;
+  // primary: the pod, and a delta wing sweeping from it
+  k.loft('hull', [[-0.35, 0.14, 0.16, 0.14, 0.5], [0.1, 0.2, 0.2, 0.15, 0.5], [0.6, 0.15, 0.14, 0.1, 0.6], [0.9, 0.06, 0.07, 0.06, 0.8], [1.02, 0.03, 0.04, 0.04]]);
   for (const sd of [-1, 1]) {
-    k.wedge('hull', [[0.2, 0.2 * sd], [f, 0.95 * sd], [f - 0.34, 0.95 * sd], [-0.5, 0.22 * sd]], 0.08, [0, -0.05, 0], [sd * 0.12, 0, 0]);
-    // regulation armour: three identical plates along each wing
-    for (let i = 0; i < 3; i++) s.plate('paint', f - 0.02 - i * 0.12 + 0.12, sd * (0.45 + i * 0.16), 0.1, 0.12, -0.0, 0.035);
-    // a hardpoint with a pair of guns, standard fit
-    s.gun(f + 0.12, -0.03, sd * 0.93, 0.5, 0.028, 0.045);
-    k.box('trim', [0.05, 0.015, 0.2], [f - 0.2, 0.025, sd * 0.88]);
+    k.wedge('hull', [[0.45, 0.16 * sd], [f - 0.1, 0.98 * sd], [f - 0.3, 0.98 * sd], [-0.5, 0.3 * sd]], 0.07, [0, -0.04, 0], [sd * 0.1, 0, 0]);
+    // navy plate on the wing with an orange chevron band (a shallow V), a thin trim lip on the edge
+    k.wedge('paint', [[0.38, 0.2 * sd], [f - 0.12, 0.86 * sd], [f - 0.28, 0.86 * sd], [-0.4, 0.3 * sd]], 0.03, [0, 0.0, 0], [sd * 0.1, 0, 0]);
+    for (let i = 0; i < 2; i++) s.beam('trim', [0.08 - i * 0.2, 0.04, sd * 0.28], [-0.12 - i * 0.2, 0.04, sd * 0.7], 0.012, 0.08);
+    k.box('trim', [0.34, 0.012, 0.03], [f - 0.2, 0.0, sd * 0.97], [0, -0.12 * sd, 0]);
+    // intake cowlings flanking the pod: a dark mouth, a lip, a duct running back
+    k.cyl('dark', 0.11, 0.12, 0.62, [0.2, -0.03, sd * 0.3], 'x', 10);
+    k.cyl('hull', 0.125, 0.125, 0.04, [0.51, -0.03, sd * 0.3], 'x', 10);
+    k.cyl('glow', 0.07, 0.07, 0.01, [0.5, -0.03, sd * 0.3], 'x', 8);
+    // twin underslung autocannons at the wing root: a recoil cowling, a barrel and a vented brake
+    k.box('paint', [0.42, 0.1, 0.12], [0.35, -0.16, sd * 0.5]);
+    k.cyl('dark', 0.03, 0.03, 0.62, [0.62, -0.16, sd * 0.5 + 0.03], 'x', 7);
+    k.cyl('dark', 0.03, 0.03, 0.62, [0.62, -0.16, sd * 0.5 - 0.03], 'x', 7);
+    k.cyl('hull', 0.05, 0.05, 0.08, [0.95, -0.16, sd * 0.5], 'x', 7);
+    for (const o of [-0.03, 0.03]) k.box('dark', [0.04, 0.012, 0.012], [0.95, -0.115, sd * 0.5 + o]);
+    s.lamp(0.97, -0.16, sd * 0.5, 0.05);
+    // a boom from the wing back to a drive, a fin, a bolted row
+    k.box('hull', [0.95, 0.1, 0.1], [-0.55, 0.0, sd * 0.5]);
+    k.box('paint', [0.3, 0.3, 0.035], [-0.78, 0.2, sd * 0.5], [0, 0, -0.35]);
+    k.box('trim', [0.1, 0.02, 0.04], [-0.84, 0.32, sd * 0.5], [0, 0, -0.35]);
+    s.bell(-1.0, 0, sd * 0.5, 0.1);
+    s.bolts(-0.9, -0.2, sd * 0.5, 0.055, 6);
     s.lamp(f - 0.2, 0.03, sd * 0.97);
   }
-  // spine: a ridge of identical armour modules and a sensor housing
-  for (let i = 0; i < 4; i++) { s.plate('paint', 0.4 - i * 0.23, 0, 0.19, 0.3, 0.17, 0.045); k.box('dark', [0.04, 0.02, 0.32], [0.3 - i * 0.23, 0.205, 0]); }
-  k.box('trim', [0.9, 0.012, 0.03], [0, 0.18, 0]);
-  k.box('dark', [0.36, 0.1, 0.24], [0.3, 0.21, 0]);
-  k.wedge('dark', [[0.52, 0], [0.38, 0.1], [0.1, 0.11], [0.1, -0.11], [0.38, -0.1]], 0.05, [0, 0.27, 0]);
-  s.slit(0.33, 0.3, 0, 0.18, 0.1);
-  s.lamp(0.36, 0.31, 0, 0.18, 0.06);
-  // side armour modules, vents, a stencilled band
-  for (const sd of [-1, 1]) {
-    s.plate('paint', -0.2, sd * 0.2, 0.5, 0.1, 0.0, 0.3);
-    s.vents(-0.5, sd * 0.1, 0.16, 3, 0.18, 0.12);
-    k.box('trim', [0.12, 0.012, 0.05], [0.1, 0.152, sd * 0.19]);
-    s.bolts(-0.45, 0.2, sd * 0.26, 0.15, 6);
-  }
-  k.cyl('dark', 0.05, 0.065, 0.45, [1.0, -0.02, 0], 'x', 8);
-  k.cyl('hull', 0.07, 0.07, 0.05, [1.2, -0.02, 0], 'x', 8);
-  s.mast(-0.15, 0.17, 0, 0.3, 'dish');
-  // two engines in housings with a manifold between them
-  s.bell(-0.8, 0, -0.17, 0.115);
-  s.bell(-0.8, 0, 0.17, 0.115);
-  k.box('dark', [0.2, 0.1, 0.34], [-0.62, 0, 0]);
-  s.pipe(-0.6, 0.0, 0.15, 0.1, 0.014);
-  // a chamfered mantlet over the prow, a railgun on the spine
-  mantlet(s, 0.55, 0.98, 0.1, 0.075);
-  spinal(s, -0.52, 0.2, 0.34);
+  // the tailplane between the booms, a sensor housing and a dish
+  k.box('hull', [0.22, 0.04, 1.0], [-0.84, 0.05, 0]);
+  k.box('dark', [0.2, 0.12, 0.3], [-0.6, 0.03, 0]);
+  // the armoured pilot cell: a faceted canopy, braced by ribs, two cyan optics in the brow
+  k.loft('dark', [[-0.1, 0.1, 0.2, 0.18, 0.4], [0.2, 0.13, 0.3, 0.2, 0.5], [0.56, 0.08, 0.25, 0.2, 0.6], [0.7, 0.03, 0.2, 0.2]], [0, 0, 0]);
+  for (const x of [0.0, 0.18, 0.36]) k.box('hull', [0.025, 0.04, 0.3], [x, 0.3 - x * 0.1, 0], [0, 0, -0.05]);
+  for (const sd of [-1, 1]) { k.box('glow', [0.05, 0.02, 0.03], [0.6, 0.23, sd * 0.045]); s.lamp(0.62, 0.23, sd * 0.045, 0.05, 0.03); }
+  s.slit(0.3, 0.3, 0, 0.2, 0.05);
+  // regulation armour down the spine in identical modules, and a mantlet over the nose
+  for (let i = 0; i < 3; i++) s.plate('paint', 0.0 - i * 0.2, 0, 0.17, 0.2, 0.2, 0.03);
+  mantlet(s, 0.55, 0.98, 0.1, 0.07);
+  s.mast(-0.3, 0.2, 0, 0.3, 'dish');
 };
 
 /** The Heavy cruiser: a long arrowhead, a spine, a bridge tower, two side hulls of batteries, three engines. */
@@ -368,6 +375,31 @@ const custodyFreighter: Draw = (s) => {
 // sensors sit in recessed housings, the lights are thin lines let into the
 // hull, the engines are narrow. Everything is swept.
 
+
+/**
+ * Gives a flat swept wing a section: a blended lifting body at the root, a cambered upper skin that stops short of the
+ * knife-edge trailing line, a lower skin, flush panel seams, and an emitter let into a recessed conduit at the root.
+ * `outline` is the wing's top-view outline for one side (z positive), `y` its height, `roll` its dihedral.
+ */
+function airfoil(s: Ship, outline: Array<[number, number]>, y: number, roll: number, rootX: number, tailX: number, bodyW: number): void {
+  const k = s.k;
+  // blended body: the fuselage swells into the root with sharp chines running out to the wing
+  k.loft('hull', [[tailX, bodyW * 0.55, 0.1, 0.09, 0.9], [tailX * 0.4, bodyW * 0.95, 0.13, 0.11, 0.85], [rootX * 0.4, bodyW, 0.13, 0.1, 0.85], [rootX, bodyW * 0.3, 0.07, 0.06, 0.9], [rootX + 0.15, 0.02, 0.03, 0.03]]);
+  for (const sd of [-1, 1]) {
+    const o = (m: number) => outline.map(([x, z]): [number, number] => [x, z * sd * m]);
+    // upper skin: a smaller, thicker plate over the middle of the wing, the edges left thin
+    k.wedge('paint', outline.map(([x, z]): [number, number] => [x * 0.9 - 0.03, z * 0.8 * sd]), 0.05, [0, y + 0.035, 0], [sd * roll, 0, 0]);
+    // lower skin and a keel line
+    k.wedge('hull', outline.map(([x, z]): [number, number] => [x * 0.85, z * 0.75 * sd]), 0.04, [0, y - 0.035, 0], [sd * roll, 0, 0]);
+    // flush panel seams along the wing: dark lines, and one lit
+    k.wedge('dark', o(0.55).map(([x, z]): [number, number] => [x * 0.9, z]), 0.006, [0, y + 0.062, 0], [sd * roll, 0, 0]);
+    // emitter: a weapon port set into a recessed conduit at the wing root, flush, with a cold lens
+    k.box('dark', [0.34, 0.03, 0.06], [rootX * 0.5, y + 0.03, sd * (bodyW + 0.06)]);
+    k.box('glow', [0.1, 0.012, 0.02], [rootX * 0.5 + 0.1, y + 0.034, sd * (bodyW + 0.06)]);
+    s.lamp(rootX * 0.5 + 0.1, y + 0.04, sd * (bodyW + 0.06), 0.1, 0.02);
+  }
+}
+
 /** The Plasma cruiser: a double crescent round a slim central hull. */
 const officeWarbird: Draw = (s) => {
   const k = s.k;
@@ -403,6 +435,7 @@ const officeWarbird: Draw = (s) => {
   // the main drive: one big engine on the axis
   s.bell(-0.8, 0.0, 0, 0.13);
   k.box('hull', [0.2, 0.2, 0.34], [-0.56, 0, 0]);
+  airfoil(s, [[0.35, 0.12], [0.05, 0.55], [-0.3, 0.93], [-0.5, 1.05], [-0.56, 0.92], [-0.42, 0.55], [-0.55, 0.12]], 0.01, 0.1, 0.7, -0.55, 0.32);
 };
 
 /** The Ambush fighter (Whisper): a narrow dagger with crescent fins and lit edges. */
@@ -422,66 +455,70 @@ const officeScout: Draw = (s) => {
   k.cyl('glow', 0.03, 0.03, 0.01, [1.17, 0, 0], 'x', 8);
   s.lamp(0.55, 0.11, 0, 0.14, 0.03);
   s.vents(-0.3, 0, 0.145, 3, 0.15, 0.1);
+  airfoil(s, [[0.3, 0.1], [-0.05, 0.62], [-0.45, 0.95], [-0.52, 0.8], [-0.4, 0.4], [-0.5, 0.12]], 0.0, 0.2, 0.6, -0.5, 0.22);
 };
 
 // ═════════════════════════ THE VOICE ═════════════════════════
 // Machinery that builds itself: repeating modules, vents, pipes, no windows,
 // no crew. Lit slits where something is working.
 
-/** The Grinder: a foundry cube crusted with machinery, a cutter at the front, one engine behind. */
+/**
+ * The Grinder: a crucible. A beveled octagonal furnace body, its flanks opened to show a lit core behind slotted bars,
+ * gimbal rings of brass and iron round it, a spire and radiator rings on top, and at the front a drill collar with
+ * claw brackets and focus coils. One engine behind.
+ */
 const voiceDrone: Draw = (s) => {
   const k = s.k, rnd = s.rnd;
-  // primary: a cube frame with a cut-away core, fixed corner posts
-  k.box('dark', [1.3, 1.3, 1.3], [0, 0, 0]);
-  for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) k.box('hull', [0.22, 0.22, 0.22], [sx * 0.66, sy * 0.66, sz * 0.66]);
-  // secondary: a module on every face, a grid of plates with lit seams
-  for (const [ax, sgn] of [[0, 1], [0, -1], [1, 1], [1, -1], [2, 1], [2, -1]] as const) {
-    const o1 = (ax + 1) % 3, o2 = (ax + 2) % 3;
-    for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
-      const pos: V3 = [0, 0, 0], size: V3 = [0.5, 0.5, 0.5];
-      pos[ax] = sgn * 0.68; size[ax] = 0.1;
-      pos[o1] = (i - 0.5) * 0.52; pos[o2] = (j - 0.5) * 0.52; size[o1] = 0.46; size[o2] = 0.46;
-      k.box((i + j) % 2 ? 'paint' : 'hull', size, pos);
-      // a lit seam between
-      const lp: V3 = [0, 0, 0], ls: V3 = [0.4, 0.4, 0.4];
-      lp[ax] = sgn * 0.735; ls[ax] = 0.012; lp[o1] = pos[o1]; lp[o2] = pos[o2]; ls[o2] = 0.014;
-      if ((i + j) % 2 === 0) k.box('glow', ls, lp);
-    }
-    // machinery on top of the plates: stacks, pipes, a vent grille
-    for (let n = 0; n < 7; n++) {
-      const pos: V3 = [0, 0, 0], size: V3 = [0.09, 0.09, 0.09];
-      const h = 0.05 + rnd() * 0.14;
-      pos[ax] = sgn * (0.73 + h / 2); size[ax] = h;
-      pos[o1] = (rnd() - 0.5) * 0.9; pos[o2] = (rnd() - 0.5) * 0.9;
-      size[o1] = 0.06 + rnd() * 0.12; size[o2] = 0.06 + rnd() * 0.12;
-      k.box('dark', size, pos);
-    }
-    for (let n = 0; n < 3; n++) {
-      const pos: V3 = [0, 0, 0], size: V3 = [0.02, 0.02, 0.02];
-      pos[ax] = sgn * 0.8; pos[o1] = (n - 1) * 0.3; pos[o2] = 0; size[o2] = 0.9; size[ax] = 0.025;
-      k.box('hull', size, pos);
-    }
+  // primary: an octagonal drum along the axis, bevelled at both ends (a truncated rhombic mass, not a box)
+  k.loft('dark', [[-0.7, 0.36, 0.36, 0.36, 0.9], [-0.55, 0.58, 0.58, 0.58, 0.7], [0.5, 0.62, 0.62, 0.62, 0.7], [0.68, 0.4, 0.4, 0.4, 0.9]]);
+  // secondary: iron ribs round the drum, brass bands between them
+  for (let i = 0; i < 5; i++) k.ring(i % 2 ? 'paint' : 'hull', 0.64, 0.035, [-0.45 + i * 0.28, 0, 0], 'x', 8, Math.PI * 2, [Math.PI / 8, 0, 0]);
+  // the flanks and the deck opened: a dark bay, the core burning in it, slotted bars across
+  for (const [y, z, w, h] of [[0, 0.6, 0.78, 0.5], [0, -0.6, 0.78, 0.5]] as const) {
+    k.box('dark', [w, h, 0.05], [0.0, y, z]);
+    k.box('glow', [w * 0.86, h * 0.86, 0.012], [0.0, y, z - Math.sign(z) * 0.028]);
+    for (let i = 0; i < 7; i++) k.box('hull', [0.03, h, 0.03], [-w * 0.42 + i * (w * 0.84 / 6), y, z + Math.sign(z) * 0.03]);
+    k.box('hull', [w + 0.06, 0.03, 0.05], [0.0, y + h / 2, z]);
+    k.box('hull', [w + 0.06, 0.03, 0.05], [0.0, y - h / 2, z]);
+    s.lamp(0.0, y, z + Math.sign(z) * 0.05, w * 0.8, 0.02);
   }
-  // a boom with the cutter on the front face: a ring and a blade
-  k.cyl('dark', 0.1, 0.12, 0.3, [0.9, 0, 0], 'x', 8);
-  k.ring('hull', 0.22, 0.03, [1.0, 0, 0], 'x', 12);
-  k.box('glow', [0.01, 0.4, 0.015], [1.05, 0, 0]);
-  s.lamp(1.06, 0, 0, 0.08, 0.02);
-  s.lamp(0.7, 0.35, 0.36, 0.2, 0.03);
-  s.lamp(0.7, -0.35, -0.36, 0.2, 0.03);
-  k.cyl('dark', 0.16, 0.2, 0.3, [-0.82, 0, 0], 'x', 10);
-  s.engines.push([-0.86, 0, 0]);
-  k.cyl('glow', 0.12, 0.12, 0.01, [-0.7, 0, 0], 'x', 10);
-  gothic(s, 1.0, 0.8, 0.5, 1.0);
+  // heat louvres under the belly, a vent grille either side of the spine
+  s.vents(-0.1, 0, -0.62, 6, 0.5, 0.6);
+  for (const sd of [-1, 1]) s.vents(-0.25, sd * 0.26, 0.63, 4, 0.3, 0.22);
+  // gimbal rings: three, each turned on a different axis, brass and iron, held off the body on struts
+  k.ring('paint', 0.86, 0.03, [0.05, 0, 0], 'x', 16);
+  k.ring('hull', 0.9, 0.025, [0.05, 0, 0], 'y', 16);
+  k.ring('trim', 0.82, 0.015, [-0.05, 0, 0], 'z', 16);
+  for (const sd of [-1, 1]) { s.beam('dark', [0.05, 0, sd * 0.6], [0.05, 0, sd * 0.86], 0.04, 0.04); s.beam('dark', [0.05, sd * 0.6, 0], [0.05, sd * 0.9, 0], 0.04, 0.04); }
+  // radiator rings stepping up the stern, a pyramidal sensor mast on the shoulder
+  for (let i = 0; i < 3; i++) k.ring('hull', 0.4 - i * 0.04, 0.02, [-0.62 - i * 0.06, 0, 0], 'x', 10);
+  for (let i = 0; i < 3; i++) k.box(i % 2 ? 'hull' : 'dark', [0.2 - i * 0.06, 0.07, 0.2 - i * 0.06], [-0.25, 0.64 + i * 0.07, 0.3]);
+  s.mast(-0.25, 0.85, 0.3, 0.2, 'none');
+  // the cutter: a collar, a drill cone with cutting rings, four claw brackets and capacitor focus coils
+  k.cyl('dark', 0.24, 0.3, 0.16, [0.74, 0, 0], 'x', 10);
+  k.cyl('hull', 0.02, 0.2, 0.42, [1.0, 0, 0], 'x', 8);
+  for (let i = 0; i < 3; i++) k.ring('paint', 0.17 - i * 0.05, 0.012, [0.9 + i * 0.12, 0, 0], 'x', 8);
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2 + Math.PI / 4, c = Math.cos(a), sn = Math.sin(a);
+    s.beam('hull', [0.74, sn * 0.27, c * 0.27], [1.08, sn * 0.2, c * 0.2], 0.04, 0.03);
+    k.cyl('glow', 0.025, 0.025, 0.05, [1.0, sn * 0.16, c * 0.16], 'x', 6);
+  }
+  s.lamp(1.2, 0, 0, 0.08, 0.02);
+  for (const [lx, ly, lz] of [[0.5, 0.45, 0.45], [0.5, -0.45, -0.45]] as const) s.lamp(lx, ly, lz, 0.2, 0.03);
+  // stern: one engine in a bell housing
+  k.cyl('dark', 0.16, 0.2, 0.3, [-0.88, 0, 0], 'x', 10);
+  s.engines.push([-0.92, 0, 0]);
+  k.cyl('glow', 0.12, 0.12, 0.01, [-0.76, 0, 0], 'x', 10);
+  for (let i = 0; i < 6; i++) k.box('dark', [0.1, 0.08, 0.1], [0.4 - rnd() * 0.8, 0.62, (rnd() - 0.5) * 0.7]);
+  gothic(s, 1.0, 0.62, 0.45, 0.9, false);
 };
-
 
 /**
  * The Voice's cathedral: a spire rising from the deck on buttress ribs, a row of serrated teeth round the prow, and an
  * exposed furnace core in an open frame (a lit disc, a ring of ribs round it). `nose` is the prow's x, `deck` the top
  * face's y, `span` the half-width the buttresses spread to.
  */
-function gothic(s: Ship, nose: number, deck: number, span: number, spire = 0.9): void {
+function gothic(s: Ship, nose: number, deck: number, span: number, spire = 0.9, full = true): void {
   const k = s.k;
   // the spire: three stacked tapering drums and a needle, ribs leaning in from the shoulders
   k.cyl('paint', 0.1, 0.16, 0.22, [-0.1, deck + 0.11, 0], 'y', 8);
@@ -491,6 +528,7 @@ function gothic(s: Ship, nose: number, deck: number, span: number, spire = 0.9):
   for (const sd of [-1, 1]) for (const dx of [-0.32, 0.12]) {
     s.beam('hull', [-0.1 + dx, deck, sd * span], [-0.1, deck + 0.3, sd * 0.05], 0.045, 0.04);
   }
+  if (!full) return;
   // serrated prow: a comb of teeth, long at the middle and short at the corners, each a lit-edged blade
   for (let i = 0; i < 7; i++) {
     const t = (i - 3) / 3, h = 0.2 - Math.abs(t) * 0.08;
@@ -555,31 +593,54 @@ const shard = (s: Ship, key: string, r: number, len: number, pos: V3, rot: V3, t
 function carapace(s: Ship, stations: Array<[number, number, number]>): void {
   // each station: x along the body, radius, and the roll its arc starts at
   for (const [x, r, roll] of stations) {
-    s.k.ring('crystal', r, 0.03, [x, 0, 0], 'x', 14, Math.PI * 1.15, [roll, 0, 0]);
+    s.k.ring('hull', r, 0.04, [x, 0, 0], 'x', 14, Math.PI * 1.15, [roll, 0, 0]);
     s.k.ring('violet', r * 0.985, 0.01, [x, 0, 0], 'x', 14, Math.PI * 1.15, [roll, 0, 0]);
     s.k.ring('crystal', r * 1.1, 0.02, [x - 0.08, 0, 0], 'x', 14, Math.PI * 0.7, [roll + Math.PI * 1.3, 0, 0]);
   }
 }
 
+
+/**
+ * A grown crystal cluster along the axis: one long prism, and smaller ones sprouting from its spine in a spiral, each
+ * leaning forward and shrinking toward the tip, the way a geode throws its spears. Every third is a vein of 'violet'.
+ */
+function cluster(s: Ship, x0: number, x1: number, off: number, n: number, r: number, len: number, flip = 1): void {
+  for (let i = 0; i < n; i++) {
+    const t = i / Math.max(1, n - 1), a = i * 2.4 + (flip > 0 ? 0 : 1.1);
+    const x = x0 + (x1 - x0) * t, o = off * (1 - 0.3 * t), rr = r * (1 - 0.55 * t) + 0.03, ll = len * (1 - 0.5 * t) + 0.15;
+    shard(s, i % 3 === 2 ? 'violet' : 'crystal', rr, ll, [x, Math.cos(a) * o, Math.sin(a) * o], [a, 0, -Math.PI / 2 - 0.5], 0.5);
+  }
+}
+
+/** A curving prong: a chain of shards that bows out from the hull and closes toward a focal point ahead of it. */
+function tendril(s: Ship, sd: number, x0: number, z0: number, focus: number, bow: number, n = 6): void {
+  let px = x0, pz = z0 * sd;
+  for (let i = 1; i <= n; i++) {
+    const t = i / n, x = x0 + (focus - x0) * Math.pow(t, 1.1), z = sd * ((z0 + bow * Math.sin(Math.PI * t)) * (1 - 0.85 * t));
+    const ang = Math.atan2(z - pz, x - px), segLen = Math.hypot(x - px, z - pz);
+    shard(s, i % 2 ? 'crystal' : 'violet', 0.055 * (1 - 0.7 * t) + 0.015, segLen * 1.25, [(x + px) / 2, 0.02 * Math.sin(t * 3), (z + pz) / 2], [0, -ang, Math.PI / 2], 0.5);
+    px = x; pz = z;
+  }
+  s.lamp(focus, 0, 0, 0.06);
+}
+
 /** The Web layer: a crystal body with blade wings and a violet core. */
 const threnWeaver: Draw = (s) => {
   const k = s.k;
-  // primary: a central long crystal, a counter-crystal, two swept blades of different length
-  shard(s, 'crystal', 0.42, 1.9, [0.0, 0, 0], [0, 0, Math.PI / 2], 0.5);
-  shard(s, 'violet', 0.2, 0.9, [0.1, 0.0, 0], [0, 0, Math.PI / 2]);
-  shard(s, 'crystal', 0.22, 1.0, [0.55, 0.1, 0.18], [0.3, 0.1, Math.PI / 2 - 0.2]);
-  shard(s, 'crystal', 0.16, 0.8, [-0.2, -0.16, -0.3], [-0.4, -0.2, Math.PI / 2 + 0.25]);
+  // primary: a long central prism with a lit violet vein through it, and a spiral of spears grown from its spine
+  shard(s, 'crystal', 0.34, 1.8, [0.0, 0, 0], [0, 0, Math.PI / 2], 0.5);
+  shard(s, 'violet', 0.16, 1.2, [0.05, 0.0, 0], [0, 0, Math.PI / 2]);
+  cluster(s, 0.6, -0.55, 0.2, 10, 0.12, 0.75);
+  cluster(s, 0.35, -0.7, 0.26, 6, 0.09, 0.5, -1);
+  // two broad crystal fins swept back, thin, with a vein each
   for (const sd of [-1, 1]) {
     const L = sd === 1 ? 1.0 : 0.82;
-    k.wedge('crystal', [[0.35, 0.12 * sd], [-0.35, L * sd], [-0.75, 0.88 * L * sd], [-0.55, 0.12 * sd]], 0.07, [0, 0, 0], [sd * 0.12, 0, 0]);
-    k.wedge('violet', [[0.1, 0.14 * sd], [-0.3, 0.8 * L * sd], [-0.34, 0.8 * L * sd], [0.05, 0.14 * sd]], 0.03, [0, 0.045, 0], [sd * 0.12, 0, 0]);
-    shard(s, 'crystal', 0.07, 0.5, [-0.45, 0.0, sd * 0.86 * L], [0, 0, Math.PI / 2 + sd * 0.2]);
+    k.wedge('crystal', [[0.3, 0.12 * sd], [-0.35, L * sd], [-0.75, 0.88 * L * sd], [-0.55, 0.12 * sd]], 0.06, [0, 0, 0], [sd * 0.12, 0, 0]);
+    k.wedge('violet', [[0.1, 0.14 * sd], [-0.3, 0.8 * L * sd], [-0.34, 0.8 * L * sd], [0.05, 0.14 * sd]], 0.025, [0, 0.04, 0], [sd * 0.12, 0, 0]);
   }
-  // a ring of small facets round the core, like fruit on a vine
-  for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * Math.PI * 2;
-    shard(s, 'violet', 0.05, 0.22, [-0.35, Math.sin(a) * 0.3, Math.cos(a) * 0.3], [a, 0, Math.PI / 2]);
-  }
+  // the web-caster: two arcs of resonator prongs curving forward to one focal point
+  for (const sd of [-1, 1]) tendril(s, sd, 0.3, 0.3, 1.5, 0.55, 7);
+  shard(s, 'violet', 0.07, 0.3, [1.5, 0, 0], [0, 0, Math.PI / 2]);
   s.lamp(0.6, 0.12, 0.15, 0.08, 0.03);
   s.lamp(-0.1, -0.15, -0.3, 0.06);
   s.engines.push([-0.9, 0, 0]);
@@ -592,12 +653,10 @@ const threnLancer: Draw = (s) => {
   const k = s.k;
   shard(s, 'crystal', 0.34, 2.4, [0.0, 0, 0], [0, 0, Math.PI / 2], 0.6);
   shard(s, 'violet', 0.16, 1.3, [0.0, 0.02, 0], [0, 0, Math.PI / 2]);
-  // spurs off a keel: three long blades each side, uneven
-  for (const sd of [-1, 1]) for (let i = 0; i < 3; i++) {
-    const x = 0.6 - i * 0.55, L = 0.8 - i * 0.12 + (sd > 0 ? 0.1 : 0);
-    shard(s, i % 2 ? 'crystal' : 'violet', 0.09 + (2 - i) * 0.02, L, [x, 0.03 * i, sd * (0.34 + L * 0.28)], [0, 0, Math.PI / 2], 0.5);
-    k.box('hull', [0.1, 0.05, 0.4], [x, 0, sd * 0.2]);
-  }
+  // spears grown from the keel in two spirals, and the dark struts they grip
+  cluster(s, 0.8, -0.8, 0.3, 11, 0.13, 0.85);
+  cluster(s, 0.6, -0.9, 0.38, 7, 0.1, 0.6, -1);
+  for (const sd of [-1, 1]) for (let i = 0; i < 3; i++) k.box('hull', [0.1, 0.05, 0.4], [0.6 - i * 0.55, 0, sd * 0.2]);
   shard(s, 'crystal', 0.2, 1.3, [0.95, 0, 0], [0, 0, Math.PI / 2], 0.3);
   // hull ribs underneath: dark struts holding the grown mass
   for (let i = 0; i < 4; i++) { k.box('hull', [0.05, 0.26, 0.1], [0.6 - i * 0.45, -0.22, 0]); }
@@ -627,47 +686,74 @@ const threnScout: Draw = (s) => {
 };
 
 
-/** The Mining barge: a kitbashed hauler. Mismatched containers on one side, a cradle and a fuel tank on the other, a cockpit pod hung off to port, an outrigger engine. */
+/** A latticed boom from a to b: two chords `d` apart and a zigzag of braces between, so it reads as steel truss, not a stick. */
+function truss(s: Ship, a: V3, b: V3, d: number, n: number, key = 'patch'): void {
+  const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2], len = Math.hypot(dx, dy, dz);
+  // a side vector square to the boom, as near vertical as it can be
+  let ux = -dy * dx, uy = dx * dx + dz * dz, uz = -dy * dz;
+  const ul = Math.hypot(ux, uy, uz) || 1;
+  ux = ux / ul * d / 2; uy = uy / ul * d / 2; uz = uz / ul * d / 2;
+  const up = (p: V3, k: number): V3 => [p[0] + ux * k, p[1] + uy * k, p[2] + uz * k];
+  s.beam(key, up(a, 1), up(b, 1), 0.03, 0.03);
+  s.beam(key, up(a, -1), up(b, -1), 0.03, 0.03);
+  for (let i = 0; i < n; i++) {
+    const t0 = i / n, t1 = (i + 1) / n, p0: V3 = [a[0] + dx * t0, a[1] + dy * t0, a[2] + dz * t0], p1: V3 = [a[0] + dx * t1, a[1] + dy * t1, a[2] + dz * t1];
+    s.beam('dark', up(p0, i % 2 ? 1 : -1), up(p1, i % 2 ? -1 : 1), 0.018, 0.018);
+  }
+  void len;
+}
+
+/** The Mining barge: a kitbashed hauler. An ironclad hull with chined skirts, staggered patch plates and bare girders, clamped manifold pipes, a cargo cradle, an off-centre pod, an outrigger engine. */
 const gutterBarge: Draw = (s) => {
   const k = s.k, rnd = s.rnd;
-  // spine: a girder frame, bare in places
-  k.box('hull', [2.0, 0.12, 0.16], [-0.05, 0, 0.04]);
-  k.box('dark', [1.7, 0.05, 0.05], [-0.05, 0.09, -0.06]);
-  for (let i = 0; i < 6; i++) k.box('hull', [0.04, 0.3, 0.04], [0.75 - i * 0.3, 0.02, -0.03], [0.2 * (i % 2 ? 1 : -1), 0, 0]);
-  // port: three containers of three coats, one skewed, one lashed by a strap
-  const coats = ['paint', 'patch', 'hull'] as const;
-  for (let i = 0; i < 3; i++) {
-    const x = 0.5 - i * 0.55, h = 0.26 + (i % 2) * 0.1, len = 0.46 + rnd() * 0.12;
-    k.box(coats[i]!, [len, h, 0.28], [x, 0.0, -0.26], [i === 1 ? 0.06 : 0, i === 2 ? 0.07 : 0, 0]);
-    s.plate('patch', x + 0.05, -0.26, len * 0.5, 0.22, h / 2 + 0.01, 0.03);
-    k.box('trim', [len, 0.03, 0.012], [x, h / 2 - 0.03, -0.405]);
-    s.bolts(x - len * 0.4, x + len * 0.4, -0.41, 0.0, 4);
-    k.box('dark', [0.03, h + 0.04, 0.3], [x + len * 0.2, 0, -0.26]);
+  // primary: a chamfered hull, wide at the shoulder, tumbling home to a narrow deck, a blunt prow
+  k.loft('hull', [[-1.0, 0.26, 0.2, 0.18, 0.6], [-0.5, 0.42, 0.3, 0.2, 0.7], [0.45, 0.4, 0.28, 0.2, 0.7], [0.9, 0.14, 0.12, 0.1, 0.8], [1.02, 0.03, 0.04, 0.04]], [0, 0, 0.06]);
+  // heavy skirts along the shoulders, canted out, with a dark gap
+  for (const sd of [-1, 1]) {
+    k.box('dark', [1.3, 0.1, 0.06], [-0.05, -0.02, 0.06 + sd * 0.45], [sd * 0.5, 0, 0]);
+    k.box(sd < 0 ? 'paint' : 'patch', [1.2, 0.09, 0.05], [-0.05, 0.03, 0.06 + sd * 0.47], [sd * 0.5, 0, 0]);
   }
-  // starboard: an open cargo cradle holding a fuel tank, and a spare plate leaning on it
-  for (let i = 0; i < 3; i++) k.box('dark', [0.04, 0.32, 0.04], [0.45 - i * 0.45, 0, 0.24]);
-  s.beam('dark', [0.45, 0.16, 0.24], [-0.45, 0.16, 0.24], 0.04);
-  s.beam('dark', [0.45, -0.16, 0.24], [-0.45, -0.16, 0.24], 0.04);
-  s.tank(0.0, 0.0, 0.24, 0.8, 0.12, 'patch');
-  s.tank(0.62, -0.18, 0.46, 0.4, 0.07, 'paint');
-  k.box('paint', [0.5, 0.03, 0.3], [-0.5, 0.2, 0.42], [0.5, 0, 0.25]);
-  // a cockpit pod hung off to port at the bow, with its own boom
-  k.loft('hull', [[0.5, 0.15, 0.14, 0.14, 0.4], [0.9, 0.17, 0.15, 0.13, 0.4], [1.12, 0.05, 0.05, 0.05]], [0, 0.02, -0.34]);
-  k.wedge('dark', [[1.0, 0], [0.85, 0.12], [0.6, 0.12], [0.6, -0.12], [0.85, -0.12]], 0.04, [0, 0.19, -0.34]);
-  s.slit(0.95, 0.215, -0.34, 0.16, 0.09);
-  s.lamp(1.0, 0.22, -0.34, 0.16, 0.06);
-  s.beam('hull', [0.4, 0.0, -0.3], [0.7, 0.0, -0.08], 0.07, 0.05);
-  k.cyl('dark', 0.04, 0.05, 0.4, [1.2, 0.0, -0.34], 'x', 6);
-  // halogen floods on stalks, sputtering
-  s.mast(0.9, 0.2, -0.5, 0.16, 'none'); s.lamp(0.9, 0.38, -0.5, 0.07);
-  s.mast(-0.2, 0.2, 0.46, 0.2, 'none'); s.lamp(-0.2, 0.42, 0.46, 0.06);
-  // engines: a big bell aft, a small one on an outrigger boom to starboard that does not match
-  k.box('dark', [0.34, 0.3, 0.46], [-1.0, 0, 0]);
-  s.bell(-1.2, 0, -0.1, 0.13, 'patch');
-  s.beam('hull', [-0.9, 0.0, 0.1], [-1.05, 0.0, 0.62], 0.06, 0.05);
-  s.bell(-1.25, 0, 0.62, 0.075, 'dark');
-  s.pipe(-0.9, 0.5, 0.15, -0.06, 0.018);
-  s.vents(-0.6, 0.1, 0.16, 3, 0.2, 0.1);
+  // overlapping plates, never the same size, never square to the hull
+  const plates: Array<[string, number, number, number, number, number]> = [['paint', 0.4, -0.12, 0.5, 0.3, 0.07], ['patch', 0.1, -0.2, 0.42, 0.26, 0.09], ['paint', -0.3, -0.1, 0.5, 0.34, 0.1], ['patch', 0.35, 0.3, 0.3, 0.24, 0.08], ['paint', -0.15, 0.32, 0.5, 0.3, 0.09]];
+  for (const [coat, x, z, len, wid, y] of plates) { s.plate(coat, x, z + 0.06, len, wid, y + 0.18, 0.045); s.bolts(x - len * 0.4, x + len * 0.4, z + 0.06 + wid * 0.4, y + 0.205, 5); }
+  // bare girders where the skin was stripped aft on the port side: an I-beam frame, flanges and webs
+  for (let i = 0; i < 4; i++) {
+    const x = -0.9 + i * 0.16;
+    k.box('hull', [0.03, 0.3, 0.03], [x, 0.05, -0.36]);
+    k.box('hull', [0.03, 0.03, 0.14], [x, 0.2, -0.3]);
+    k.box('hull', [0.03, 0.03, 0.14], [x, -0.1, -0.3]);
+  }
+  s.beam('hull', [-0.95, 0.2, -0.36], [-0.3, 0.2, -0.36], 0.03, 0.03);
+  k.box('trim', [0.2, 0.012, 0.3], [0.62, 0.215, 0.06], [0, 0.25, 0]);
+  // power plant: manifold pipes rising from the engine housing and bending forward, banded with clamps, scorched at the collars
+  for (const [z, hh] of [[-0.14, 0.3], [0.2, 0.22]] as const) {
+    const a: V3 = [-0.86, 0.12, z], m: V3 = [-0.62, hh + 0.12, z + (z < 0 ? -0.04 : 0.04)], e: V3 = [-0.18, hh + 0.14, z + (z < 0 ? -0.06 : 0.06)];
+    k.pipeTo('dark', a, m, 0.042, 7);
+    k.pipeTo('dark', m, e, 0.038, 7, 0.05);
+    for (const t of [0.3, 0.7]) { const q: V3 = [m[0] + (e[0] - m[0]) * t, m[1] + (e[1] - m[1]) * t, m[2] + (e[2] - m[2]) * t]; k.cyl('trim', 0.06, 0.06, 0.04, q, 'x', 7); }
+    k.cyl('dark', 0.065, 0.06, 0.08, e, 'x', 7);
+    k.cyl('glow', 0.04, 0.04, 0.01, [e[0] + 0.045, e[1], e[2]], 'x', 6);
+  }
+  s.vents(-0.5, 0.0, 0.3, 4, 0.22, 0.2);
+  // starboard: a cargo cradle in a steel frame holding a fuel tank, a second tank strapped outboard
+  for (let i = 0; i < 3; i++) { k.box('dark', [0.04, 0.34, 0.04], [0.45 - i * 0.45, 0, 0.52]); k.box('dark', [0.04, 0.04, 0.26], [0.45 - i * 0.45, 0.17, 0.4]); }
+  s.beam('dark', [0.45, -0.17, 0.52], [-0.45, -0.17, 0.52], 0.04, 0.04);
+  s.tank(0.0, 0.0, 0.5, 0.8, 0.14, 'patch');
+  s.tank(0.62, -0.1, 0.72, 0.36, 0.07, 'paint');
+  // a cockpit pod hung off to port at the bow on its own boom, a halogen flood on a stalk
+  k.loft('hull', [[0.5, 0.15, 0.14, 0.14, 0.4], [0.9, 0.17, 0.15, 0.13, 0.4], [1.12, 0.05, 0.05, 0.05]], [0, 0.04, -0.4]);
+  k.wedge('dark', [[1.0, 0], [0.85, 0.12], [0.6, 0.12], [0.6, -0.12], [0.85, -0.12]], 0.04, [0, 0.21, -0.4]);
+  s.slit(0.95, 0.235, -0.4, 0.16, 0.09);
+  s.lamp(1.0, 0.24, -0.4, 0.16, 0.06);
+  s.beam('hull', [0.4, 0.05, -0.34], [0.7, 0.05, -0.1], 0.07, 0.05);
+  k.cyl('dark', 0.04, 0.05, 0.4, [1.2, 0.04, -0.4], 'x', 6);
+  s.mast(0.9, 0.22, -0.55, 0.16, 'none'); s.lamp(0.9, 0.4, -0.55, 0.07);
+  // engines: a big bell aft, a small mismatched one on an outrigger spar to starboard
+  k.box('dark', [0.34, 0.3, 0.5], [-1.04, 0, 0.06]);
+  s.bell(-1.24, 0, -0.08, 0.13, 'patch');
+  s.beam('hull', [-0.95, 0.0, 0.18], [-1.05, 0.0, 0.72], 0.06, 0.05);
+  s.bell(-1.28, 0, 0.72, 0.075, 'dark');
+  for (let i = 0; i < 3; i++) k.box('hull', [0.06, 0.02, 0.03], [-0.5 + rnd() * 0.6, 0.2, 0.2 + rnd() * 0.2]);
 };
 
 /** The Freight liner: a monolith. One unbroken faceted prism with a knife edge, a trench for an eye, nothing on its skin. */
@@ -697,15 +783,19 @@ const officeLiner: Draw = (s) => {
 // builds, at the scale of the primary silhouette, so a scout and a fighter of
 // the same faction share it. Drawn after the hull (and so on a capital's too).
 
-/** A crane far too big for the hull, on the starboard side only: a base, a long boom, a cable and a hook. */
+/** A crane far too big for the hull, on the starboard side only: a slewing base, a lattice truss boom in two lengths, a hydraulic ram, a cable and a hook block. */
 const gutterMark: Draw = (s) => {
   const k = s.k;
   k.cyl('dark', 0.13, 0.16, 0.24, [0.0, 0.14, 0.35], 'y', 8);
-  s.beam('patch', [0.0, 0.22, 0.35], [0.55, 0.8, 0.95], 0.1);
-  s.beam('patch', [0.55, 0.8, 0.95], [1.05, 0.45, 1.5], 0.08);
-  s.beam('trim', [0.05, 0.28, 0.4], [0.5, 0.74, 0.92], 0.025, 0.12);
+  k.cyl('hull', 0.17, 0.17, 0.05, [0.0, 0.27, 0.35], 'y', 10);
+  truss(s, [0.0, 0.3, 0.35], [0.55, 0.8, 0.95], 0.14, 6);
+  truss(s, [0.55, 0.8, 0.95], [1.05, 0.45, 1.5], 0.1, 5);
+  // the ram: a trim-coloured cylinder and a bright piston from the base to a third of the way up the boom
+  k.pipeTo('trim', [0.12, 0.17, 0.4], [0.3, 0.62, 0.7], 0.035, 7);
+  k.pipeTo('hull', [0.3, 0.62, 0.7], [0.4, 0.74, 0.82], 0.02, 6);
   s.beam('dark', [1.05, 0.45, 1.5], [1.07, -0.1, 1.52], 0.025);
   k.box('dark', [0.14, 0.1, 0.16], [1.07, -0.15, 1.52]);
+  k.cyl('hull', 0.05, 0.05, 0.05, [1.07, -0.08, 1.52], 'y', 8);
   s.lamp(1.07, -0.15, 1.52, 0.07);
   s.lamp(0.55, 0.8, 0.95, 0.06);
 };
@@ -890,13 +980,9 @@ const CAPITAL: Record<string, Dress> = {
   // a foundry cube: frame ribs on every edge, chimney stacks and a heavy blast shield at the cutter
   'drone:voice': (s) => {
     const k = s.k;
-    for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
-      k.box('hull', [1.3, 0.05, 0.05], [0, sy * 0.66, sz * 0.66]);
-      k.box('hull', [0.05, 0.05, 1.3], [sz * 0.66, sy * 0.66, 0]);
-      k.box('hull', [0.05, 1.3, 0.05], [sy * 0.66, 0, sz * 0.66]);
-    }
+    for (const sy of [-1, 1]) for (const sz of [-1, 1]) k.box('hull', [1.3, 0.05, 0.05], [0, sy * 0.46, sz * 0.46], [0, 0, 0]);
     for (let i = 0; i < 5; i++) {
-      const a = (i / 5) * Math.PI * 2, y = 0.74 + (i % 2) * 0.08;
+      const a = (i / 5) * Math.PI * 2, y = 0.62 + (i % 2) * 0.08;
       k.cyl('dark', 0.035, 0.05, 0.22 + (i % 3) * 0.08, [-0.2 + Math.cos(a) * 0.3, y + 0.1, Math.sin(a) * 0.3], 'y', 6);
       k.ring('hull', 0.05, 0.01, [-0.2 + Math.cos(a) * 0.3, y + 0.2 + (i % 3) * 0.04, Math.sin(a) * 0.3], 'y', 8);
     }
@@ -966,7 +1052,7 @@ const BREACH: Record<string, [number, number, number, number, number]> = {
   'lancer:custody': [0.3, 0.27, 0, 0.7, 0.3],
   'raptor:gutter': [-0.55, 0.23, 0, 0.75, 0.8],
   'warbird:office': [0.1, 0.15, 0, 0.6, 0.22],
-  'drone:voice': [0, 0.74, 0, 0.8, 0.8],
+  'drone:voice': [0, 0.62, 0, 0.7, 0.7],
   'freighter:custody': [0.0, 0.16, 0, 0.7, 0.24],
 };
 

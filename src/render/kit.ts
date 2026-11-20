@@ -495,6 +495,15 @@ export class Kit {
     this.add(key, along(new CylinderGeometry(rTop, rBot, len, seg, 1, open), axis), pos);
   }
 
+  /** A round pipe (or a taper, `rTop` at `b`) from point a to point b, at any angle. */
+  pipeTo(key: string, a: V3, b: V3, r: number, seg = 7, rTop = r): void {
+    const dir = new Vector3(b[0] - a[0], b[1] - a[1], b[2] - a[2]), len = dir.length();
+    if (len < 1e-4) return;
+    dir.divideScalar(len);
+    M.compose(P.set((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2), Q.setFromUnitVectors(new Vector3(0, 1, 0), dir), S.set(1, 1, 1));
+    this.addMatrix(key, new CylinderGeometry(rTop, r, len, seg), M.clone());
+  }
+
   /** A ring around an axis, all of it or an `arc` of it (a floating carapace segment), turned by `rot` afterwards. */
   ring(key: string, r: number, tube: number, pos: V3, axis: Axis = 'x', seg = 24, arc = Math.PI * 2, rot: V3 = [0, 0, 0]): void {
     const g = new TorusGeometry(r, tube, 6, seg, arc);
