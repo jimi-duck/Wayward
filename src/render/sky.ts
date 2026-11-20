@@ -508,7 +508,9 @@ const BAKE = /* glsl */ `
     }
     // a little dither so the dark gradients never band
     col += (hash(vec3(gl_FragCoord.xy, uSeed)) - 0.5) * 0.0015;
-    gl_FragColor = vec4(max(col, 0.0), 1.0);
+    // alpha: how much starlight gets through here (dust lanes and the great nebula's dust hide what lies behind);
+    // the star layers read it (starfield.ts), the dome and the reflections use only the colour
+    gl_FragColor = vec4(max(col, 0.0), 1.0 - clamp(shade, 0.0, 1.0) * 0.92);
   }
 `;
 
@@ -620,40 +622,72 @@ const PLANET_V = /* glsl */ `
 
 const PLANET_F = /* glsl */ `
   varying vec3 vN; varying vec3 vP; varying vec3 vV; varying vec3 vW;
-  uniform vec3 uA, uB, uAtmo, uL, uNight, uCentre, uRingN; uniform float uKind, uSeed, uDim, uAir, uRingIn, uRingOut;
+  uniform vec3 uA, uB, uAtmo, uL, uLo, uNight, uCentre, uRingN; uniform float uKind, uSeed, uDim, uAir, uRingIn, uRingOut, uTime;
   ${NOISE}
+  // the weather layer: streaked cloud that drifts (west to east, faster near the equator), 0 to 1
+  float cloud(vec3 p, vec3 s, int oct) {
+    float spin = uTime * (0.004 + 0.003 * (1.0 - p.y * p.y));
+    vec3 q = vec3(p.x * cos(spin) - p.z * sin(spin), p.y, p.x * sin(spin) + p.z * cos(spin));
+    float warp = fbm(q * 2.0 + s, 3);
+    return smoothstep(0.5, 0.9, fbm(q * vec3(2.4, 11.0, 2.4) + vec3(warp * 1.6) + s * 1.7 + 4.0, oct)) * smoothstep(0.32, 0.68, fbm(q * 1.6 + s * 0.6, 3));
+  }
   void main() {
     vec3 p = normalize(vP), n = normalize(vN);
     vec3 s = vec3(uSeed * 0.31, uSeed * 0.17, uSeed * 0.53);
     vec3 col;
+    float spec = 0.0;
     if (uKind < 0.5) {
-      // a gas giant: bands stirred into storms
-      float w = fbm(p * vec3(2.0, 7.0, 2.0) + s, 5);
-      float t = p.y * 7.0 + w * 2.6;
+      // a gas giant: bands that slide past each other (alternate belts run opposite ways), sheared into eddies at their edges,
+      // and one or two long-lived storms
+      float lat = p.y;
+      float flow = uTime * 0.006 * sin(lat * 21.0);
+      vec3 q = vec3(p.x * cos(flow) - p.z * sin(flow), lat, p.x * sin(flow) + p.z * cos(flow));
+      float w = fbm(q * vec3(2.0, 7.0, 2.0) + s, 5);
+      float t = lat * 7.0 + w * 2.6;
+      // eddies where the bands shear: a finer warp only near the band edges
+      float edge = abs(cos(t * 2.0));
+      t += (fbm(q * vec3(6.0, 18.0, 6.0) + s * 2.0, 3) - 0.5) * 0.9 * edge;
       float bands = 0.5 + 0.5 * sin(t * 2.0) * (0.6 + 0.4 * sin(t * 0.7 + 1.0));
       col = mix(uA, uB, bands);
-      col *= 0.8 + 0.4 * fbm(p * vec3(4.0, 22.0, 4.0) + s, 4);
+      col *= 0.8 + 0.4 * fbm(q * vec3(4.0, 22.0, 4.0) + s, 4);
+      // a storm: an oval eye with a pale ring, stirred inside, on a band
+      vec3 eye = normalize(vec3(cos(uSeed), 0.28 * sin(uSeed * 3.0) - 0.12, sin(uSeed)));
+      vec3 d = p - eye;
+      float r = length(vec2(length(d.xz) * 0.55, d.y * 1.6)) / 0.13;
+      float swirl = fbm(vec3(d.xz * 14.0, d.y * 30.0 + r * 2.0) + s, 3);
+      float storm = smoothstep(1.0, 0.55, r + swirl * 0.25);
+      col = mix(col, mix(uB, uA, 0.35) * (0.75 + 0.5 * swirl), storm * 0.85);
+      col *= 1.0 + smoothstep(0.75, 0.95, r) * smoothstep(1.2, 0.95, r) * 0.25;
     } else if (uKind < 1.5) {
-      // rock: plains and highlands, old craters as mottling
+      // rock: lowland basins and highland ranges (ridged), old craters, frost at the poles
       float h = fbm(p * 2.6 + s, 6);
+      float ridge = 1.0 - abs(fbm(p * 7.0 + s * 1.3, 4) * 2.0 - 1.0);
       col = mix(uA, uB, smoothstep(0.4, 0.6, h));
-      col *= 0.6 + 0.7 * fbm(p * 10.0 + s, 4);
-      // old craters: pale rims round dark floors
+      col *= 0.62 + 0.6 * fbm(p * 10.0 + s, 4);
+      col *= 0.85 + 0.35 * ridge * ridge * smoothstep(0.45, 0.6, h);
       float cr = fbm(p * 18.0 + s * 2.0, 2);
       col *= 1.0 - smoothstep(0.62, 0.7, cr) * 0.35 + smoothstep(0.56, 0.6, cr) * smoothstep(0.64, 0.6, cr) * 0.3;
+      float cap = smoothstep(0.82, 0.9, abs(p.y) + (fbm(p * 8.0 + s, 3) - 0.5) * 0.12);
+      col = mix(col, vec3(0.72, 0.74, 0.78), cap * 0.7);
     } else {
-      // ice: pale, cracked
+      // ice: pale plains, darker cracks with a faint blue in them, and a sheen where the sun catches it
       float h = fbm(p * 3.0 + s, 5);
       col = mix(uB, uA, smoothstep(0.45, 0.7, h) * 0.6);
-      col *= 0.85 + 0.3 * smoothstep(0.48, 0.5, fbm(p * 9.0 + s, 3));
-    }
-    // weather: thin cloud over rock and ice worlds that hold some air, torn into streaks and lit white
-    if (uKind > 0.5) {
-      float warp = fbm(p * 2.0 + s, 3);
-      float cl = smoothstep(0.5, 0.95, fbm(p * vec3(2.4, 11.0, 2.4) + vec3(warp * 1.4) + s * 1.7 + 4.0, 5)) * smoothstep(0.35, 0.7, fbm(p * 1.6 + s * 0.6, 3));
-      col = mix(col, vec3(0.78, 0.8, 0.84), cl * (0.12 + 0.3 * uAir));
+      float crack = smoothstep(0.03, 0.0, abs(fbm(p * 9.0 + s, 3) - 0.5));
+      col *= 0.9 + 0.2 * smoothstep(0.48, 0.5, fbm(p * 9.0 + s, 3));
+      col = mix(col, col * vec3(0.55, 0.7, 0.95), crack * 0.6);
+      spec = 0.25;
     }
     float l = dot(n, uL);
+    // weather over rock and ice worlds that hold some air: drifting cloud, lit white, with its shadow on the ground beside it
+    if (uKind > 0.5) {
+      float cl = cloud(p, s, 5);
+      float sh = cloud(normalize(p - uLo * 0.04), s, 3);
+      float k = (0.18 + 0.5 * uAir) * step(0.01, uAir);
+      col *= 1.0 - sh * k * 0.55 * smoothstep(0.0, 0.3, l);
+      col = mix(col, vec3(0.8, 0.82, 0.86), cl * k);
+      spec *= 1.0 - cl;
+    }
     // a soft terminator: day fades into night over a wide band, not a cut
     float day = smoothstep(-0.28, 0.62, l);
     // the ring's shadow on the day side: follow the sunlight back from this point to the ring's plane
@@ -664,15 +698,25 @@ const PLANET_F = /* glsl */ `
       float inRing = t > 0.0 ? smoothstep(uRingIn, uRingIn * 1.04, rr) * smoothstep(uRingOut, uRingOut * 0.96, rr) : 0.0;
       day *= 1.0 - inRing * (0.4 + 0.25 * sin(rr / uRingOut * 90.0));
     }
-    float fres = pow(1.0 - max(dot(n, vV), 0.0), 2.5);
+    float mu = max(dot(n, vV), 0.0);
+    float fres = pow(max(1.0 - mu, 0.0), 2.5);
+    // the air: looking through more of it toward the limb, the ground fades into a sunlit haze of the air's colour, and the
+    // disc darkens a little toward its edge (no air on a moon, so its edge stays hard)
+    float depth = uAir * (1.0 / max(mu, 0.08) - 1.0) * 0.12;
+    float haze = 1.0 - exp(-depth);
+    float limb = mix(1.0, 0.6 + 0.4 * sqrt(mu), uAir);
+    // the sun's glint on ice and still air
+    vec3 hv = normalize(uL + vV);
+    float glint = spec * pow(max(dot(n, hv), 0.0), 240.0) * day;
     // twilight: a warm band where day becomes night, and a faint glow of the dark side, with a few city lights on a rock world
     float dusk = smoothstep(-0.18, 0.0, l) * smoothstep(0.34, 0.04, l);
     float city = uKind > 0.5 && uKind < 1.5 ? smoothstep(0.78, 0.84, fbm(p * 38.0 + s, 3)) * smoothstep(0.6, 0.35, fbm(p * 2.6 + s, 4)) * (1.0 - day) : 0.0;
     // the night side is never pure black: the nebula's light lies on it faintly, and a thin rim of air glows all round
-    float rim = pow(1.0 - max(dot(n, vV), 0.0), 7.0);
-    vec3 c = col * day * 0.95 + col * 0.018 + uNight * (1.0 - day) * (0.6 + 0.4 * fres) + uAtmo * rim * uAir * (0.18 + 0.5 * smoothstep(-0.5, 0.4, l))
-      + uAtmo * fres * smoothstep(-0.35, 0.45, l) * uAir * 0.6
-      + vec3(0.55, 0.26, 0.12) * dusk * fres * uAir * 0.5 + vec3(0.7, 0.5, 0.25) * city * 0.22;
+    float rim = pow(max(1.0 - mu, 0.0), 7.0);
+    vec3 ground = col * day * 0.95 * limb + col * 0.018;
+    vec3 c = mix(ground, uAtmo * 0.55 * smoothstep(-0.2, 0.5, l), haze * 0.85) + uNight * (1.0 - day) * (0.6 + 0.4 * fres)
+      + uAtmo * rim * uAir * (0.12 + 0.5 * smoothstep(-0.4, 0.4, l))
+      + vec3(0.55, 0.26, 0.12) * dusk * fres * uAir * 0.5 + vec3(0.7, 0.5, 0.25) * city * 0.22 + vec3(1.0, 0.97, 0.92) * glint;
     gl_FragColor = vec4(c * uDim, 1.0);
   }`;
 
@@ -680,11 +724,14 @@ const HALO_F = /* glsl */ `
   varying vec3 vN; varying vec3 vP; varying vec3 vV;
   uniform vec3 uAtmo, uL; uniform float uDim, uAir;
   void main() {
-    vec3 n = normalize(vN);
-    float edge = -dot(n, normalize(vV));
-    float a = pow(smoothstep(0.0, 0.46, edge), 2.0);
-    float lit = smoothstep(-0.45, 0.55, dot(n, uL));
-    gl_FragColor = vec4(uAtmo * a * lit * 0.55 * uAir * uDim, 1.0);
+    vec3 n = normalize(vN), v = normalize(vV);
+    // a thin shell of lit air: thickest just off the limb and gone a few percent out, lit on the sun's side; with the sun
+    // behind the world it scatters forward and brightens into a ring round the dark side
+    float edge = -dot(n, v);
+    float a = pow(smoothstep(0.0, 0.5, edge), 4.0);
+    float lit = smoothstep(-0.25, 0.5, dot(n, uL));
+    float fwd = pow(max(dot(-v, uL), 0.0), 6.0);
+    gl_FragColor = vec4(uAtmo * a * (lit * 0.5 + fwd * 0.6) * uAir * uDim, 1.0);
   }`;
 
 const RING_V = /* glsl */ `
@@ -698,7 +745,7 @@ const RING_V = /* glsl */ `
 
 const RING_F = /* glsl */ `
   varying vec2 vR; varying vec3 vW;
-  uniform vec3 uA, uB, uCentre, uL; uniform float uIn, uOut, uSeed, uDim, uRad;
+  uniform vec3 uA, uB, uCentre, uL, uRingN; uniform float uIn, uOut, uSeed, uDim, uRad;
   float h(float x) { return fract(sin(x * 127.1 + uSeed) * 43758.5453); }
   void main() {
     float r = (length(vR) - uIn) / (uOut - uIn);
@@ -714,11 +761,16 @@ const RING_F = /* glsl */ `
     float along = dot(rel, uL);
     float off = length(rel - uL * along);
     float shadow = along < 0.0 ? smoothstep(uRad * 0.92, uRad * 1.02, off) : 1.0;
-    vec3 c = mix(uA, uB, band) * 0.5 * shadow;
+    // seen from the sunlit face the ring is lit; seen from its dark face only the thin parts glow, the sun shining through
+    float sl = dot(uL, uRingN), sv = dot(normalize(cameraPosition - vW), uRingN);
+    float face = sl * sv > 0.0 ? 0.55 + 0.45 * sqrt(abs(sl)) : 0.15 + 0.5 * (1.0 - band);
+    vec3 c = mix(uA, uB, band) * 0.5 * shadow * face;
     gl_FragColor = vec4(c * a * uDim, a);
   }`;
 
 const UP = new Vector3(0, 1, 0);
+/** The far worlds' clock: clouds drift, a giant's bands slide (FarBodies.tick; reduced motion holds it). */
+const PLANET_CLOCK = { value: 0 };
 /** The flare's ghosts: how far along to the sun's mirror (0 the sun, 1 the mirror), size (of D), strength. */
 const GHOSTS: readonly [number, number, number][] = [[0.45, 0.035, 0.3], [0.75, 0.06, 0.16], [1.15, 0.02, 0.36], [1.5, 0.09, 0.1]];
 
@@ -776,6 +828,7 @@ export class FarBodies {
   tick(t: number): void {
     if (this.rays) this.rays.uniforms.uTime!.value = t;
     BEACON_CLOCK.value = t;
+    PLANET_CLOCK.value = t;
   }
 
   constructor(sky: Sky, sun: Vector3) {
@@ -797,7 +850,10 @@ export class FarBodies {
       const lit = this.sun.clone().applyAxisAngle(UP, turn * (r() < 0.5 ? -1 : 1));
       // the nebula's light on the night side: the sky's two colours, faint
       const night = sky.neb[0].clone().lerp(sky.neb[1], 0.4).multiplyScalar(0.07);
-      const common = { uL: { value: lit }, uDim: { value: 1 }, uAir: { value: pl.kind === 1 ? 0.35 : 1 }, uNight: { value: night }, uCentre: { value: at }, uRingN: { value: new Vector3(0, 1, 0) }, uRingIn: { value: 0 }, uRingOut: { value: 0 } };
+      // the sun in the body's own frame, for the cloud shadows
+      body.updateMatrix();
+      const litLocal = lit.clone().applyQuaternion(body.quaternion.clone().invert());
+      const common = { uL: { value: lit }, uLo: { value: litLocal }, uTime: PLANET_CLOCK, uDim: { value: 1 }, uAir: { value: pl.kind === 1 ? 0.35 : 1 }, uNight: { value: night }, uCentre: { value: at }, uRingN: { value: new Vector3(0, 1, 0) }, uRingIn: { value: 0 }, uRingOut: { value: 0 } };
       const planetMat = new ShaderMaterial({
         vertexShader: PLANET_V, fragmentShader: PLANET_F,
         uniforms: { ...common, uA: { value: pl.colA }, uB: { value: pl.colB }, uAtmo: { value: pl.atmo }, uKind: { value: pl.kind }, uSeed: { value: sky.seed % 50 } },
@@ -807,7 +863,7 @@ export class FarBodies {
         uniforms: { ...common, uAtmo: { value: pl.atmo } },
       });
       const sphere = new Mesh(new SphereGeometry(rad, 64, 32), planetMat);
-      const shell = new Mesh(new SphereGeometry(rad * 1.16, 64, 32), halo);
+      const shell = new Mesh(new SphereGeometry(rad * 1.1, 64, 32), halo);
       body.add(sphere, shell);
       this.mats.push(planetMat, halo);
       if (pl.ring) {

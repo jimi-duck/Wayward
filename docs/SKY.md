@@ -150,3 +150,16 @@ red (hydrogen), the game uses the region's own pair. The bake is now 4096 wide (
 
 Also: more warm stars (amber and orange, as in the Hubble fields), the black hole about 1.7 times larger, the rift wider
 and softer at the rim. Not measured: real-GPU bake time and memory (one 4096 x 2048 target).
+
+## Dust in front of the stars, and closer worlds (2026-11-20, effects plan step 7)
+
+- **Dust hides stars.** The sky bake's alpha says how much starlight gets through (dark lanes and the great nebula's dust
+  stop most of it). The star layers read it (`starfield.ts` `setSkyMap`), so stars no longer shine through a lane.
+- **Gas giants.** Belts slide past each other slowly (alternate belts run opposite ways), shear into eddies at their edges,
+  and carry one oval storm with a pale rim.
+- **Rock and ice.** Ridged highlands, frost at the poles, blue-tinged cracks in ice and a small sun glint on it. Cloud drifts
+  (faster at the equator) and throws its shadow on the ground beside it. Moons have no air, so no cloud.
+- **Air.** Toward the limb the ground fades into a sunlit haze of the air's colour and the disc darkens a little. The halo
+  is a thin shell (1.1 radii, was 1.16), lit on the sun's side, and brightens into a ring when the sun is behind the world.
+- **Rings** are lit on their sunlit face; from the dark face only the thin parts glow.
+- Drift runs on `FarBodies.tick`, so reduced motion holds it. GPU cost not measured (one more cloud lookup per planet pixel).
