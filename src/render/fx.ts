@@ -1,10 +1,10 @@
 import {
   AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, InstancedMesh, Matrix4, Mesh,
-  MeshBasicMaterial, MeshStandardMaterial, NormalBlending, PointLight, Points, Quaternion, RingGeometry, ShaderMaterial,
-  Sprite, SpriteMaterial, TetrahedronGeometry, Vector3, type Material, type Scene, type Texture,
+  MeshBasicMaterial, MeshStandardMaterial, PointLight, Points, Quaternion, RingGeometry, ShaderMaterial,
+  Sprite, SpriteMaterial, TetrahedronGeometry, Vector3, type Material, type Scene, type Texture, type WebGLRenderer,
 } from 'three';
 import { metal } from './kit';
-import { fireTexture, smokeTexture } from './textures';
+import { bakeAtlas, PuffLayer } from './puffs';
 import { STREAK, type Streaks } from './streaks';
 
 // ── effects ───────────────────────────────────────────────────────────────
@@ -19,6 +19,8 @@ import { STREAK, type Streaks } from './streaks';
 export type RGB = [number, number, number];
 
 const MAX_SPARKS = 1800;
+/** Flame puffs, and smoke puffs: one draw each (puffs.ts). */
+const PUFFS = 96;
 
 /** Sparks and embers: one Points draw, additive, sized in world units. */
 class Sparks {
@@ -221,7 +223,8 @@ class Debris {
   }
 }
 
-interface Puff { sprite: Sprite; alpha: number; life: number; decay: number; size: number; grow: number; vx: number; vy: number; vz: number; hot: boolean; warm: number; }
+/** A puff of flame or smoke: a slot in a puff layer (puffs.ts), stepped here and written each frame. */
+interface Puff { slot: number; x: number; y: number; z: number; scale: number; turn: number; seed: number; col: Color; opacity: number; alpha: number; life: number; decay: number; size: number; grow: number; vx: number; vy: number; vz: number; hot: boolean; warm: number; }
 interface Flash { sprite: Sprite; life: number; decay: number; max: number; }
 interface Ring { mesh: Mesh; life: number; decay: number; max: number; }
 interface Glow { light: PointLight; life: number; decay: number; peak: number; }
@@ -250,7 +253,12 @@ export class Effects {
   private lampOn = false;
   private readonly c = new Color();
 
-  constructor(private readonly scene: Scene, glow: Texture) {
+  private readonly fireLayer = new PuffLayer(PUFFS, false);
+  private readonly smokeLayer = new PuffLayer(PUFFS, true);
+
+  /** `renderer` bakes the fire and smoke flipbook (once per page); `atlas` its size, 512 on Phone and Low. */
+  constructor(private readonly scene: Scene, glow: Texture, renderer?: WebGLRenderer, atlas = 1024) {
+    if (renderer) bakeAtlas(renderer, atlas);
     this.rock = new Debris(new TetrahedronGeometry(1, 0),
       new MeshStandardMaterial({ color: 0x2c2724, roughness: 0.9, flatShading: true, emissive: new Color(0.07, 0.025, 0.012) }));
     this.plating = new Debris(new BoxGeometry(1, 0.18, 0.7), metal({ tint: 0x6b6560, roughness: 0.55, metalness: 0.7, scale: 2 }));
@@ -268,18 +276,14 @@ export class Effects {
       scene.add(mesh);
       this.rings.push({ mesh, life: 0, decay: 1, max: 1 });
     }
-    const puff = (tex: Texture, additive: boolean, list: Puff[], n: number) => {
-      for (let i = 0; i < n; i++) {
-        const sprite = new Sprite(new SpriteMaterial({
-          map: tex, transparent: true, depthWrite: false, blending: additive ? AdditiveBlending : NormalBlending,
-        }));
-        sprite.visible = false;
-        scene.add(sprite);
-        list.push({ sprite, alpha: 0.85, life: 0, decay: 1, size: 1, grow: 1, vx: 0, vy: 0, vz: 0, hot: additive, warm: 0 });
+    const puff = (additive: boolean, list: Puff[]) => {
+      for (let i = 0; i < PUFFS; i++) {
+        list.push({ slot: i, x: 0, y: 0, z: 0, scale: 0, turn: 0, seed: Math.random(), col: new Color(), opacity: 0, alpha: 0.85, life: 0, decay: 1, size: 1, grow: 1, vx: 0, vy: 0, vz: 0, hot: additive, warm: 0 });
       }
     };
-    puff(fireTexture(), true, this.fires, 64);
-    puff(smokeTexture(), false, this.smokes, 64);
+    puff(true, this.fires);
+    puff(false, this.smokes);
+    scene.add(this.fireLayer.mesh, this.smokeLayer.mesh);
     for (let i = 0; i < 4; i++) {
       const light = new PointLight(0xffa060, 0, 46, 2);
       scene.add(light);
@@ -353,7 +357,7 @@ export class Effects {
     if (!p) return;
     this.place(p, x, y, z, size, 2.4, 1.6 + Math.random() * 0.8, 0.2);
     p.vx += vx; p.vz += vz;
-    (p.sprite.material as SpriteMaterial).color.setRGB(...rgb);
+    p.col.setRGB(...rgb);
     p.alpha = alpha;
   }
 
@@ -436,7 +440,7 @@ export class Effects {
       const p = this.smokes.find((q) => q.life <= 0) ?? this.smokes[0]!;
       const o = size * 0.3;
       this.place(p, x + (Math.random() - 0.5) * o, y + (Math.random() - 0.5) * o, z + (Math.random() - 0.5) * o, size * (0.7 + Math.random() * 0.5), 1.6, life * (0.7 + Math.random() * 0.6), speed);
-      (p.sprite.material as SpriteMaterial).color.setRGB(...rgb);
+      p.col.setRGB(...rgb);
       p.alpha = alpha;
     }
   }
@@ -455,7 +459,7 @@ export class Effects {
       const o = size * 0.5;
       this.place(p, x + (Math.random() - 0.5) * o, y + (Math.random() - 0.5) * o, z + (Math.random() - 0.5) * o,
         size * (0.6 + Math.random() * 0.5), 2.2, 1.6 + Math.random() * 1.2, size * 0.5);
-      (p.sprite.material as SpriteMaterial).color.copy(SMOKE_WARM);
+      p.col.copy(SMOKE_WARM);
       p.warm = 1;
     }
   }
@@ -580,8 +584,10 @@ export class Effects {
       r.mesh.scale.setScalar(r.max * (0.15 + 0.85 * (1 - (1 - t) * (1 - t))));
       (r.mesh.material as MeshBasicMaterial).opacity = r.life * r.life * 0.6;
     }
-    for (const p of this.fires) this.stepPuff(p, dt);
-    for (const p of this.smokes) this.stepPuff(p, dt);
+    for (const p of this.fires) this.stepPuff(p, dt, this.fireLayer);
+    for (const p of this.smokes) this.stepPuff(p, dt, this.smokeLayer);
+    this.fireLayer.commit();
+    this.smokeLayer.commit();
     for (let i = 0; i < this.glows.length; i++) {
       const g = this.glows[i]!;
       if (this.lampOn && i === this.glows.length - 1) continue;
@@ -592,32 +598,37 @@ export class Effects {
   }
 
   private place(p: Puff, x: number, y: number, z: number, size: number, grow: number, life: number, speed: number): void {
-    p.sprite.position.set(x, y, z);
+    p.x = x; p.y = y; p.z = z;
     p.size = size; p.grow = grow; p.life = 1; p.decay = 1 / life; p.alpha = 0.85; p.warm = 0;
     const a = Math.random() * Math.PI * 2, u = Math.random() * 2 - 1, r = Math.sqrt(1 - u * u);
     p.vx = Math.cos(a) * r * speed; p.vy = u * speed * 0.6 + speed * 0.15; p.vz = Math.sin(a) * r * speed;
-    (p.sprite.material as SpriteMaterial).rotation = Math.random() * Math.PI * 2;
-    p.sprite.visible = true;
+    p.turn = Math.random() * Math.PI * 2;
+    p.seed = Math.random();
+    p.scale = size * 0.4;
   }
 
-  private stepPuff(p: Puff, dt: number): void {
+  private stepPuff(p: Puff, dt: number, layer: PuffLayer): void {
     if (p.life <= 0) return;
     p.life -= p.decay * dt;
-    if (p.life <= 0) { p.sprite.visible = false; return; }
+    if (p.life <= 0) { layer.hide(p.slot); return; }
     const t = 1 - p.life, d = Math.pow(0.95, dt * 60);
     p.vx *= d; p.vy *= d; p.vz *= d;
-    p.sprite.position.x += p.vx * dt; p.sprite.position.y += p.vy * dt; p.sprite.position.z += p.vz * dt;
-    p.sprite.scale.setScalar(p.size * (0.4 + p.grow * (1 - (1 - t) * (1 - t))));
-    const mat = p.sprite.material as SpriteMaterial;
-    mat.rotation += dt * 0.4;
+    p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
+    p.scale = p.size * (0.4 + p.grow * (1 - (1 - t) * (1 - t)));
+    p.turn += dt * 0.4;
+    let warm = 0;
     if (p.hot) {
       // yellow-white to dull red, then out
-      mat.color.copy(FIRE_HOT).lerp(FIRE_COOL, Math.min(1, t * 1.6));
-      mat.opacity = p.life * p.life;
+      p.col.copy(FIRE_HOT).lerp(FIRE_COOL, Math.min(1, t * 1.6));
+      p.opacity = p.life * p.life;
     } else {
-      mat.opacity = Math.min(1, t * 6) * p.life * p.alpha;
-      // smoke the fire is still lighting starts warm and goes to soot
-      if (p.warm > 0) mat.color.copy(SMOKE_WARM).lerp(SMOKE_SOOT, Math.min(1, t * 2.4));
+      p.opacity = Math.min(1, t * 6) * p.life * p.alpha;
+      // smoke the fire is still lighting starts warm and goes to soot, glowing from inside while it is new
+      if (p.warm > 0) {
+        p.col.copy(SMOKE_WARM).lerp(SMOKE_SOOT, Math.min(1, t * 2.4));
+        warm = Math.max(0, 1 - t * 3);
+      }
     }
+    layer.set(p.slot, p.x, p.y, p.z, p.scale, p.col, p.opacity, p.turn, t, p.seed, warm);
   }
 }

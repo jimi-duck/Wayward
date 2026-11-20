@@ -49,7 +49,7 @@ if (view === 'bulwark') {
   const r = Number(params.get('r') ?? '10');
   bulwarks.push({ id: 5, x: 14 + r, z: 0, vx: 0, vz: 0, r, variant: Number(params.get('v') ?? '0'), ax: 0.2, ay: 1, az: 0.1, spin: 0.03, age: 9, hp: 99, maxHp: 99 });
 }
-const fx = new Effects(scene, glow);
+const fx = new Effects(scene, glow, renderer);
 fx.setLights(true);
 const rockfx = new RockFx(fx, rocks);
 
