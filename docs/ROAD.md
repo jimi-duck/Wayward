@@ -131,6 +131,10 @@ On a road journey the menu's resume lines read Current journey, Previously (the 
 
 The pause card's Objective gives a little more than the HUD (18 November 2026). Each stop's `brief` in `content/road.ts`, and each gate's in `GATES`, is one or two short sentences (30 words at most) on who, why and what is at stake. It does not repeat the goal, Here, Next or Behind you. Without one the card shows the stop's `purpose`. Phones show its first sentence only. The German twins are in `src/i18n/de/briefs.ts`; `tests/briefs.test.ts` checks every stop and gate has one. A brief states the stop, not the player's choices so far, so it reads the same whichever way she played.
 
+## Story jumps follow the chart
+
+The first jump out of the audit dock's system goes to Northfold, the quiet lane; Halden's Reach is the one after. The archive's answer reads "Set course: Northfold" (the letter still says to start at Halden's Reach, which is the lead), and the first system's way-out line is "Jump to Northfold · then Halden's Reach". From there every stop's "Next:" and "Jump to" line names the system the chart's one lane leads to. `tests/storyjumps.test.ts` walks the whole road on three seeds and checks each of them, the Course's next stop and the plotted lane.
+
 ## Add a stop
 
 1. Add a row to its leg (`ROAD`, `MARCHES` … `LAST`) with a `script` key.
