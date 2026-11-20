@@ -272,8 +272,8 @@ export function windowRow(k: Kit, rnd: () => number, from: V3, to: V3, n: number
 }
 
 /** A pressure tank: a sphere in a ring cradle on four legs, a band round its waist, a manifold on top. */
-export function tank(k: Kit, x: number, z: number, r: number, a: number): void {
-  k.add('paint', new SphereGeometry(r, 18, 12), [x, r + 0.9, z]);
+export function tank(k: Kit, x: number, z: number, r: number, a: number, key = 'paint'): void {
+  k.add(key, new SphereGeometry(r, 18, 12), [x, r + 0.9, z]);
   k.ring('dark', r * 1.01, 0.09, [x, r + 0.9, z], 'y', 20);
   k.ring('dark', r * 0.8, 0.07, [x, r + 0.9 + r * 0.6, z], 'y', 16);
   k.cyl('dark', 0.32, 0.4, 0.7, [x, r * 2 + 1.2, z], 'y', 8);
