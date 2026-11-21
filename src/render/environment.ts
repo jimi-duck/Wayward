@@ -4,6 +4,7 @@ import {
   Scene, ShaderMaterial, SphereGeometry, Vector2, Vector3, type Camera, type Object3D, type Texture, type WebGLRenderer, type WebGLRenderTarget,
 } from 'three';
 import { setGasLight } from './gas';
+import { MidGas } from './midgas';
 import { bakeSky, detailTile, dirOf, FarBodies, Parallax, skyFor, SUN_AZ, SUN_EL, type Sky } from './sky';
 import { Starfield } from './starfield';
 import { Phenomena } from './phenomena';
@@ -97,8 +98,12 @@ export class Environment {
   /** The phone readout's switches (ui/perf.ts): the nebula dome; the stars, far worlds, sun, deep and dust. */
   readonly probe: { sky: Object3D[]; far: Object3D[] };
 
+  /** Banks of gas and dust in the middle distance (midgas.ts). */
+  private readonly mid = new MidGas();
+
   constructor(scene: Scene, private readonly renderer: WebGLRenderer) {
     this.scene = scene;
+    scene.add(this.mid.group);
     // The sky is drawn on a dome with one material for the page's life. As scene.background three
     // would turn each new sky into a cube map through a throwaway program, linked again every system.
     this.dome = new ShaderMaterial({
@@ -265,6 +270,7 @@ export class Environment {
     // gas banks: the sun's side warm, the far side in the sky's second colour
     GAS_SKY.copy(this.rimCol).lerp(sky.neb[0], 0.5).multiplyScalar(0.6);
     setGasLight(this.sunCol, GAS_SKY);
+    this.mid.setSky(sky);
   }
 
   /**
@@ -310,6 +316,7 @@ export class Environment {
     this.field.setThin(low);
     this.parallax.setThin(low);
     this.depth.setThin(low);
+    this.mid.setLean(low || !detail);
     const mat = this.dome;
     if (mat.defines.DETAIL === (detail ? '' : undefined)) return;
     if (!detail) delete mat.defines.DETAIL; else { mat.defines.DETAIL = ''; mat.uniforms.uDetail!.value = detailTile(this.renderer); }
@@ -322,6 +329,7 @@ export class Environment {
     if (dt > 0) this.t = (this.t + (this.motion ? dt : 0)) % 4000;
     this.field.update(cx, cz, dt, this.motion);
     this.depth.update(camera, cx, cz, dt, this.motion);
+    this.mid.update(camera, cx, cz, dt, this.motion);
     // the cloud and the far worlds slide against the ship's travel, each a sine of the distance so they never run off
     this.dome.uniforms.uTime!.value = this.t;
     // where the ship is on screen, for the calm in the middle of the cloud

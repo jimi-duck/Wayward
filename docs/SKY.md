@@ -187,3 +187,11 @@ second and thin away close to the camera, so flying in, the gas parts round the 
 1.5 to 7.5 s that lights the gas round it (`gasFlash`). Curtains are strip meshes with drifting rays and a bright hem.
 Gas is held well under white and its tint pushed away from grey: a bank that blows out reads as the pale wash the owner
 does not want. Phone and Low build 55% of the lumps. GPU cost not measured (cloud has software WebGL only).
+
+## The middle distance (space plan step 2, 2026-11-21)
+
+`render/midgas.ts`: nine banks of gas and dust (five on Phone and Low) a few hundred metres to two kilometres out, high
+or low, never in the ship's plane. Two in three are gas lit in the sky's own colours, one in three a dark dust lane.
+They sit on a 3.6 km repeating tile anchored in the world, so they slide past at their own pace as the ship travels, and
+fade in past 320 m and out before 1.8 km, so none pops at the tile's edge or comes close. One gas draw each (gas.ts);
+rebuilt per sky from its seed. GPU cost not measured.
