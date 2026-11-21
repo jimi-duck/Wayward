@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { paintHull, toBreach } from './paint';
-import { ID_AT } from '../src/sim/tow';
 import { BEATS, BREACH_BEAT, SAM_BEAT, CERRO_BEATS, FRAGMENTS, FRAGMENTS_ALL, STORY_AT, STORY_CARDS, WAKE_BEAT } from '../src/content/story';
 import type { SortieResult } from '../src/sim/breakout';
 import { jumps, viewOf } from '../src/sim/chart';
@@ -114,7 +113,7 @@ describe('the story beats', () => {
     expect(w.result().carry.seen).toContain('story_warden');
   });
 
-  it('open the chain beyond the gate on what she can see: the read, the tugs, the breach on the line, Sam’s offer, then the archive', () => {
+  it('open the chain a moment after arrival beyond the gate: the notice, Sam’s offer, then the archive', () => {
     // the first system past Cerro: the level that has Ned's yard
     const j = newJourney(7);
     const r0 = newRun(1); r0.escaped = true;
@@ -125,21 +124,15 @@ describe('the story beats', () => {
     w.bk!.nextPursuit = Infinity;
     w.field.rocks = [];
     const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
-    // the gate reads her ID a moment after arrival, and two tugs come out of the audit dock for her (sim/tow.ts)
-    run(ID_AT + 0.5);
+    run(3);
     expect(w.phase).toBe('play');
-    expect(w.tow?.phase).toBe('out');
-    expect(w.tow?.tugs).toHaveLength(2);
-    // the breach is served when the lead has her, not on a clock
     toBreach(w);
     expect(w.comms?.def.id).toBe(BREACH_BEAT);
     // Lane Control's notice offers no way out: one action, on towards the audit dock
     expect(w.comms?.choices.map((c) => c.id)).toEqual(['proceed']);
     expect(w.comms?.ledger?.find((r) => r.k === 'Outstanding')?.cr).toBe(800);
     w.answer('proceed');
-    // the tug tows her in; Sam calls 2 km out from the dock
-    run(1);
-    expect(w.tow?.phase).toBe('tow');
+    // Lane Control flies her in; Sam calls 2 km out from the dock
     run(95);
     // then Sam, privately, with the override
     expect(w.comms?.def.id).toBe(SAM_BEAT);
@@ -150,8 +143,6 @@ describe('the story beats', () => {
     // the code sets the call sign only; the archive waits for the paint at the depot (owner 2026-11-05)
     run(60);
     expect(w.comms).toBeNull();
-    // the code snaps the line, and the tugs turn for home
-    expect(w.tow?.phase ?? 'loose').toBe('loose');
     paintHull(w);
     // no card says what the yard did: Ned does, on the radio, and finds the partition; it opens on a tank that holds a jump
     run(60);

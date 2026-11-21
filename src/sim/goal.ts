@@ -1,7 +1,6 @@
 import { ENCOUNTERS } from './encounters';
 import { lessonOf } from './tutor';
 import { lockLifted, paintAt, refuelAt } from './postjump';
-import { recovering } from './recovery';
 import type { World } from './world';
 
 // ── the one line the pause card shows ─────────────────────────────────────
@@ -25,7 +24,7 @@ export function goalOf(w: World): Goal {
   const story = w.storyGoal().main;
   // the HUD's rule: an empty tank comes before the stop's line
   if (story && (!w.bk || w.fuel >= w.jumpCost)) return { goal: story, jobs, scope };
-  if (w.bk && !lockLifted(w.flags) && w.seenPlaces().some((p) => p.kind === 'audit')) return { goal: recovering(w.flags) ? 'Under tow to the audit dock' : w.tow?.phase === 'out' ? 'Kellern tugs inbound' : 'Dock at the company port', jobs, scope };
+  if (w.bk && !lockLifted(w.flags) && w.seenPlaces().some((p) => p.kind === 'audit')) return { goal: 'Dock at the company port', jobs, scope };
   if (refuelAt(w)) return { goal: 'Fill the tank: buy fluid at the depot or mine Cyrite', jobs, scope };
   if (w.bk) return { goal: w.fuel >= w.jumpCost ? 'Head for the Jump Gate and jump' : 'Mine Cyrite to fill the jump tank', jobs, scope };
   if (e && !e.done && !e.dormant) return { goal: ENCOUNTERS[e.id].name, jobs };

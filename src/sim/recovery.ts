@@ -6,9 +6,8 @@ import type { Hull } from '../content/hulls';
 
 // ── the forced recovery ───────────────────────────────────────────────────
 // The opening handover (2026-10-23, F → G). The breach notice is answered and
-// Lane Control takes the ship: the recovery flag is set, and a Kellern tug tows
-// her toward the company's audit dock on a line (sim/tow.ts, owner 2026-11-21).
-// She can pull and swing against it; the course is the tug's.
+// Lane Control takes the ship: the recovery flag is set, the player's flight
+// controls lock, and an autopilot flies her toward the company's audit dock.
 // When she is 2 km from the dock (the owner, 23 October 2026: "so it always comes
 // just in time, no matter what happens") Sam's private channel opens, once; from
 // the breach that is about half a minute of play. His code lifts the owner lock: the
@@ -99,7 +98,7 @@ const TURN = 1.6;
  * thrust physics; a stop short of the dock. Rock that still touches her is shoved aside (world.ts), and nothing hurts
  * her while Lane Control has her.
  */
-export function recoveryStep(s: ShipState, to: { x: number; z: number } | null, hull: Hull, obs: readonly Obstacle[], dt: number, holdR = HOLD_R, bias = 0): void {
+export function recoveryStep(s: ShipState, to: { x: number; z: number } | null, hull: Hull, obs: readonly Obstacle[], dt: number, holdR = HOLD_R): void {
   const before = s.heading;
   let want = 0;
   if (to) {
@@ -107,8 +106,7 @@ export function recoveryStep(s: ShipState, to: { x: number; z: number } | null, 
     const ux = dx / d, uz = dz / d;
     const path = d > holdR ? clearCourse(s, ux, uz, obs) : { x: ux, z: uz, danger: 0 };
     const line = Math.atan2(-uz, ux);
-    // `bias`: her own pull against the tow line (sim/tow.ts), a swing the line allows and then takes back
-    const course = line + Math.max(-SWING, Math.min(SWING, wrap(Math.atan2(-path.z, path.x) - line) + bias));
+    const course = line + Math.max(-SWING, Math.min(SWING, wrap(Math.atan2(-path.z, path.x) - line)));
     const err = wrap(course - s.heading);
     s.heading += Math.max(-TURN * dt, Math.min(TURN * dt, err));
     // slow to turn and with something close ahead, and none at the hold
