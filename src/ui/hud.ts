@@ -312,7 +312,7 @@ export class Hud {
           if (e.id === 'tp_bay') this.hint(world, `${t('Torpedo launcher online')} · ${t(deviceHint('torpedo'))}`, 20);
           break;
         case 'gunsCold': {
-          const reason = e.at === 'lane' ? 'Jump Gate generating a jamming field' : 'Supply hub generating a jamming field';
+          const reason = e.at === 'lane' ? 'Jump Gate generating a jamming field' : e.at === 'place' ? 'A civilian beacon holds every gun cold' : 'Supply hub generating a jamming field';
           this.note(world, `${t('Guns cold')} · ${t(reason)}`, 'hit');
           this.notify(world, { type: 'denied', headline: 'Guns cold', reason, key: 'guns' });
           break;
@@ -882,7 +882,7 @@ export class Hud {
     const held = world.alive && world.dockHeld;
     const word = !world.alive ? 'Hull breach' : held ? 'Docking denied' : safe ? 'Safe here' : calm ? 'Capital ship spotted' : a === 'red' ? 'Red alert' : 'Yellow alert';
     const engaged = held ? world.engaged() : 0;
-    const note = held ? (engaged > 0 ? plural(engaged, '{n} hostile engaged', '{n} hostiles engaged') : t('Until the fight is over')) : safe ? t(safe === 'lane' ? 'The gate’s field holds every gun cold' : 'The depot’s field holds every gun cold') : sub;
+    const note = held ? (engaged > 0 ? plural(engaged, '{n} hostile engaged', '{n} hostiles engaged') : t('Until the fight is over')) : safe ? t(safe === 'lane' ? 'The gate’s field holds every gun cold' : safe === 'place' ? 'A civilian beacon holds every gun cold' : 'The depot’s field holds every gun cold') : sub;
     // a capital ship's choice, in the player's first runs: the two ways it goes, and what each costs
     const teach = !!sighted && !safe && !held && this.capitalHelp && a !== 'red';
     const key = `${a}${word}${note}${safe ?? ''}${held}${teach}`;
