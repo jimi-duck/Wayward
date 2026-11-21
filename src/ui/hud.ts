@@ -777,6 +777,12 @@ export class Hud {
           text($('obj-t'), t(world.yardPhase > 0 ? 'Autopilot · Ned is working' : 'Reach Ned’s yard'));
           text($('obj-left'), world.yardPhase > 0 ? '' : range(dpt));
           ticks($('obj-p'), Math.max(0, 1 - dpt / (bk.def.lane * 0.65)), 30);
+        } else if (world.storyPlace && !bk.chase) {
+          // the stop's story place (sim/places.ts): what to do there, and how far, or how much of the hold is done
+          const sp = world.storyPlace, dsp = Math.hypot(sp.x - s.x, sp.z - s.z), hold = 'hold' in sp.def.act ? sp.def.act.hold : 0;
+          text($('obj-t'), t(sp.def.verb));
+          text($('obj-left'), hold && dsp <= sp.def.r ? `${Math.ceil(hold * (1 - sp.held))} s` : range(dsp));
+          ticks($('obj-p'), hold && dsp <= sp.def.r ? sp.held : Math.max(0, 1 - dsp / bk.def.lane), 30);
         } else if (refuelAt(world)) {
           // the first system past Cerro with a short tank: fill it first (buy at the depot or mine), the gate comes after
           text($('obj-t'), t('Fill the tank'));

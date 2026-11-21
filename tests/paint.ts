@@ -36,3 +36,11 @@ export function toBreach(w: World, input: Parameters<World['step']>[1] = IDLE, m
   for (let i = 0; i < Math.round(max / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input); }
   return w.runTime - t0;
 }
+
+/** Fly to the stop's story place, if one waits (sim/places.ts): put her at its centre, still, as a player holding there would be. */
+export function atPlace(w: World): boolean {
+  const p = w.storyPlace;
+  if (!p) return false;
+  w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
+  return true;
+}

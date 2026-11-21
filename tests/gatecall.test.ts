@@ -1,3 +1,4 @@
+import { atPlace } from './paint';
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import { newJourney, sortieDef } from '../src/sim/journey';
@@ -37,6 +38,8 @@ describe('a shut Jump Gate', () => {
     for (let i = 0; i < Math.round(300 / STEP); i++) {
       w.ship.invuln = 99;
       if (i === Math.round(40 / STEP)) { w.ship.x = w.bk!.lane.x - 300; w.ship.z = w.bk!.lane.z; }
+      // a gate that names a story place: she goes there, as a player would (sim/places.ts)
+      if (w.gateWhy === '{who} first') atPlace(w);
       w.step(STEP, NO_INPUT);
       w.events.length = 0;
       if (w.gateWhy) { whys.add(w.gateWhy); shut = true; }

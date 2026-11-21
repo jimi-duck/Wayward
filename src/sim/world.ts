@@ -82,6 +82,8 @@ import { voiceId, voiceText } from './voice';
 import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
 import { discounted, effects, type Effects } from './modules';
 import { Pack } from './tactics';
+import { livePlace, placeAt, placeDone, PLACE_CLEAR, stepPlace, stopPlaces, type StoryPlaceDef } from './places';
+import { STORY_PLACES } from '../content/script/places';
 import {
   acquire, fireWeapons, launchTorpedo, moveBolts, moveTorpedoes, newArms, type Arms, type Bolt, type FireMods, type Targets, type Torpedo,
 } from './weapons';
@@ -371,6 +373,9 @@ export class World implements EncounterHost {
   recoverT = 0;
   /** Lane Control's tugs in the first system past Cerro (sim/tow.ts): coming out, on the line, or going home. */
   tow: Tow | null = null;
+  /** Seconds held at the live story place (sim/places.ts); and which place they count for. */
+  placeHold = 0;
+  private placeHoldOf = '';
   /** The Jump Gate's beacon has read her ID (the first system past Cerro). */
   private idRead = false;
   /** Her pull against the tow line this step, 0 to 1 (the tow's strain follows it). */
@@ -482,6 +487,7 @@ export class World implements EncounterHost {
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
     this.tow = null; this.idRead = false; this.pull = 0;
+    this.placeHold = 0; this.placeHoldOf = '';
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false;
@@ -759,6 +765,9 @@ export class World implements EncounterHost {
     // a Warden relay not yet answered (and the Narrows' mast): a place on the scope and the HUD, so it is clear where to go
     const rl = relayOf(b);
     if (rl && !this.flags.has(relayFlag(b.def.script ?? ''))) all.push({ kind: 'relay', name: b.def.script === 'narrows' ? 'Relay mast' : 'Warden relay', x: rl.x, z: rl.z, r: RELAY_MARK_R });
+    // the stop's story place, while it waits for her (sim/places.ts)
+    const sp = this.storyPlace;
+    if (sp) all.push({ kind: 'story', name: sp.def.name, x: sp.x, z: sp.z, r: sp.def.r });
     if (this.navNoise <= 0) return all;
     const t = this.runTime, n = this.navNoise * 60;
     return all.map((w) => (w.kind === 'lane' ? { ...w, x: w.x + Math.sin(t * 1.3) * n, z: w.z + Math.cos(t * 0.9) * n } : w));
@@ -820,6 +829,7 @@ export class World implements EncounterHost {
     }
     if (held) this.recoverT += dt;
     if (this.bk?.def.first && this.alive) this.stepTow(dt);
+    if (this.bk && this.alive) this.stepStoryPlace(dt);
     this.flushRadio();
     if (this.space) this.stepSpace(dt, s);
     const rolling = s.rollT >= 0;
@@ -1963,7 +1973,10 @@ export class World implements EncounterHost {
     // (the Narrows' reboot has its own notice, as the gate goes down)
     // (a call's changing blocker, a hostile then calm, is the HUD line's to follow, not a new notice each time)
     const kind = /^(wait for the call|clear the hostiles|hold still)/.test(h.why) ? 'a call is due' : h.why;
-    if (this.holdNoted !== kind && h.why !== 'the gate is rebooting') {
+    // a gate that waits on a story place says so once she makes for it, not while she is at the place itself (the HUD shows it from afar)
+    const b = this.bk!, dl = Math.hypot(b.lane.x - this.ship.x, b.lane.z - this.ship.z);
+    const early = h.why === '{who} first' && dl > APPROACH * 1.5;
+    if (this.holdNoted !== kind && h.why !== 'the gate is rebooting' && !early) {
       this.holdNoted = kind;
       // with the Warden key in, the gate is resetting: say so, so a gate that will not take her yet is never a mystery (the owner, 31 October 2026)
       this.events.push(h.resetting
@@ -1999,6 +2012,10 @@ export class World implements EncounterHost {
     const resetting = lit && !o.handshake && !slow;
     const call = !o.handshake && !slow && !lit ? this.callHold() : null;
     this.gateWho = call?.who ?? '';
+    // a beat that waits on a story place: the gate names the place (sim/places.ts)
+    const at = o.handshake ? sc.owedPlace(this.flags, this.tankCap ? this.fuel / this.tankCap : 0) : null;
+    const place = at ? STORY_PLACES.find((p) => p.id === at) : undefined;
+    if (place) { this.gateWho = tr(place.name); return { why: '{who} first', paint: false, handshake: true, slow: false, resetting: false }; }
     return { why: o.handshake ? 'reach the relay mast' : slow ? 'the gate is opening' : lit ? 'resetting after the key' : call!.why, paint: false, handshake: o.handshake, slow, resetting };
   }
 
@@ -2033,6 +2050,41 @@ export class World implements EncounterHost {
   get gateTimer(): { left: number; total: number } | null {
     if (this.gateWhy !== 'the gate is rebooting' && this.gateWhy !== 'the gate is opening') return null;
     return { left: this.gateEta, total: this.bk?.def.script === 'narrows' ? REBOOT : SLOW_DOOR };
+  }
+
+  /** The stop's story place waiting for her now, where it stands, and how far through its hold she is (0 to 1). Null where none waits. */
+  get storyPlace(): { def: StoryPlaceDef; x: number; z: number; held: number } | null {
+    const b = this.bk;
+    if (!b || !this.script) return null;
+    const sc = this.script;
+    const def = livePlace(STORY_PLACES, b.def.script, this.flags, (row) => sc.played(row));
+    if (!def) return null;
+    const at = placeAt(def, b);
+    const held = 'hold' in def.act && this.placeHoldOf === def.id ? Math.min(1, this.placeHold / def.act.hold) : 0;
+    return { def, ...at, held };
+  }
+
+  /** The live story place: hold at it or take it aboard; done, its flag is set and the stop's script goes on (sim/places.ts). */
+  private stepStoryPlace(dt: number): void {
+    const sp = this.storyPlace;
+    if (!sp || this.phase !== 'play') return;
+    if (this.placeHoldOf !== sp.def.id) { this.placeHoldOf = sp.def.id; this.placeHold = 0; }
+    // room to hold there: no rock or bulwark in the ring
+    const clear = sp.def.r + PLACE_CLEAR;
+    for (const o of [...this.field.rocks, ...this.field.bulwarks]) {
+      const dx = o.x - sp.x, dz = o.z - sp.z, d = Math.hypot(dx, dz) || 1, min = clear + o.r;
+      if (d < min) { o.x = sp.x + (dx / d) * min; o.z = sp.z + (dz / d) * min; }
+    }
+    // the hold counts once the arrival is over, and not in a fight
+    const free = this.busy() !== 'fight' && !this.floor.hush;
+    const r = stepPlace(sp.def, sp, this.ship, this.placeHold, dt, free);
+    this.placeHold = r.hold;
+    if (!r.done) return;
+    this.flags.add(sp.def.done);
+    this.placeHold = 0; this.placeHoldOf = '';
+    const pickup = 'pickup' in sp.def.act;
+    this.events.push({ type: 'placeDone', x: sp.x, z: sp.z, look: sp.def.look, pickup });
+    if (pickup) this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Taken aboard', reason: sp.def.name });
   }
 
   /** Where the relay mast stands that the gate waits on, while it waits on it (the HUD names its range). */
@@ -2151,12 +2203,14 @@ export class World implements EncounterHost {
   private scriptCtx(busy: Busy, t: number) {
     const b = this.bk!, s = this.ship;
     const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit, relay: relayOf(b) };
+    for (const p of stopPlaces(STORY_PLACES, b.def.script, this.flags)) sites[p.id] = placeAt(p, b);
     return {
       t, arrived: this.desk.arrived, busy, free: this.scriptFree(busy, t), slow: this.stageSlow(), tank: this.tankCap ? this.fuel / this.tankCap : 0, flags: this.flags,
       // the first system past Cerro has its own word on the pursuit (stolen): the days count from the next stop
       pursuit: b.def.first ? Infinity : Math.max(0, halfDays((this.sortie.calloway ?? Infinity) / DAY_SECONDS - t / DAY_SECONDS)),
       dist: (site: string) => { const p = sites[site]; return p ? Math.hypot(p.x - s.x, p.z - s.z) : Infinity; },
       cardDone: (id: string) => this.cardsSeen.has(id) && !this.comms && !this.call,
+      placeDone: (id: string) => { const p = STORY_PLACES.find((x) => x.id === id); return !!p && placeDone(p, this.flags); },
     };
   }
 
