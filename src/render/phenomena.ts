@@ -1,5 +1,5 @@
 import {
-  AdditiveBlending, Color, DoubleSide, Group, Mesh, Object3D, PlaneGeometry, ShaderMaterial, Sprite, SpriteMaterial, Vector3,
+  AdditiveBlending, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, Group, Mesh, Object3D, PlaneGeometry, Points, ShaderMaterial, Sprite, SpriteMaterial, Vector3,
 } from 'three';
 import { dirOf, skyLayout, type Sky } from './sky';
 import { singularity } from './singularity';
@@ -26,22 +26,24 @@ interface Lean {
   /** Shooting stars and showers, and far flashes: each a mean gap in seconds (0 never). */
   meteors: number;
   flashes: number;
-  /** Far lights crossing the sky. */
+  /** Far lights crossing the sky, each on a lane of marker lights. */
   movers: number;
+  /** A far skirmish (sparks and tracers, white-gold, never red): mean gap in seconds (0 never). */
+  skirmish: number;
 }
 
 // by palette (render/sky.ts PALETTES)
 const PHENOM: Lean[] = [
-  { hole: 0.06, rift: 0.04, storm: 0.25, meteors: 40, flashes: 150, movers: 2 }, // the Reach: tidy, lit lanes
-  { hole: 0.08, rift: 0.08, storm: 0.35, meteors: 35, flashes: 90, movers: 1 }, // the Marches
-  { hole: 0.1, rift: 0.45, storm: 0.2, meteors: 90, flashes: 0, movers: 0 }, // the Hollows: nothing human
-  { hole: 0.15, rift: 0.15, storm: 0.4, meteors: 30, flashes: 80, movers: 1 },
-  { hole: 0.25, rift: 0.1, storm: 0.25, meteors: 30, flashes: 140, movers: 1 },
-  { hole: 0.05, rift: 0.04, storm: 0.15, meteors: 14, flashes: 45, movers: 2 }, // the Salvage Belt: mining charges, showers
-  { hole: 0.45, rift: 0.1, storm: 0.1, meteors: 60, flashes: 0, movers: 0 }, // the Drift Deep: the quiet, and what lives in it
-  { hole: 0.06, rift: 0.04, storm: 0.3, meteors: 25, flashes: 30, movers: 1 }, // the Breaker Yards: things still going up
-  { hole: 0.04, rift: 0.04, storm: 0.15, meteors: 40, flashes: 120, movers: 4 }, // the Free Ports: traffic
-  { hole: 0.35, rift: 0.4, storm: 0.25, meteors: 90, flashes: 0, movers: 0 }, // the Last Lanes
+  { hole: 0.06, rift: 0.04, storm: 0.25, meteors: 40, flashes: 150, movers: 2, skirmish: 200 }, // the Reach: tidy, lit lanes
+  { hole: 0.08, rift: 0.08, storm: 0.35, meteors: 35, flashes: 90, movers: 1, skirmish: 110 }, // the Marches
+  { hole: 0.1, rift: 0.45, storm: 0.2, meteors: 90, flashes: 0, movers: 0, skirmish: 0 }, // the Hollows: nothing human
+  { hole: 0.15, rift: 0.15, storm: 0.4, meteors: 30, flashes: 80, movers: 1, skirmish: 150 },
+  { hole: 0.25, rift: 0.1, storm: 0.25, meteors: 30, flashes: 140, movers: 1, skirmish: 130 },
+  { hole: 0.05, rift: 0.04, storm: 0.15, meteors: 14, flashes: 45, movers: 2, skirmish: 160 }, // the Salvage Belt: mining charges, showers
+  { hole: 0.45, rift: 0.1, storm: 0.1, meteors: 60, flashes: 0, movers: 0, skirmish: 0 }, // the Drift Deep: the quiet, and what lives in it
+  { hole: 0.06, rift: 0.04, storm: 0.3, meteors: 25, flashes: 30, movers: 1, skirmish: 70 }, // the Breaker Yards: things still going up
+  { hole: 0.04, rift: 0.04, storm: 0.15, meteors: 40, flashes: 120, movers: 4, skirmish: 240 }, // the Free Ports: traffic
+  { hole: 0.35, rift: 0.4, storm: 0.25, meteors: 90, flashes: 0, movers: 0, skirmish: 0 }, // the Last Lanes
 ];
 
 const D = 1500;
@@ -134,6 +136,28 @@ const STREAK_F = /* glsl */ `
 interface Streak { m: Mesh; mat: ShaderMaterial; t: number; dur: number }
 interface Flash { s: Sprite; t: number; dur: number; peak: number }
 interface Mover { s: Sprite; from: Vector3; to: Vector3; t: number; dur: number; ph: number }
+interface Spark { s: Sprite; t: number; dur: number; peak: number }
+
+/** Lane markers per lane, and how far past the mover's path the lane runs each way (fraction of the path). */
+const LANE_N = 12, LANE_RUN = 0.4;
+const LANE_V = /* glsl */ `
+  attribute float aI;
+  uniform float uTime;
+  varying float vA;
+  void main() {
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    // a slow chase along the lane, like approach lights: each marker steady and dim, a bright beat running down the line
+    vA = 0.3 + 0.7 * pow(max(sin(uTime * 1.3 - aI * 0.55), 0.0), 16.0);
+    gl_PointSize = 3.0;
+  }`;
+const LANE_F = /* glsl */ `
+  uniform vec3 uC; uniform float uOn;
+  varying float vA;
+  void main() {
+    float a = vA * uOn * smoothstep(0.5, 0.1, length(gl_PointCoord - 0.5));
+    if (a < 0.003) discard;
+    gl_FragColor = vec4(uC * a, 1.0);
+  }`;
 
 function rand(seed: number) {
   let s = (Math.abs(Math.floor(seed)) % 2147483646) + 1;
@@ -155,6 +179,19 @@ export class Phenomena {
   private readonly streaks: Streak[] = [];
   private readonly flashes: Flash[] = [];
   private readonly movers: Mover[] = [];
+  /** The lanes the far lights run on: rows of small marker lights. */
+  private readonly lanes: Points;
+  private readonly laneMat: ShaderMaterial;
+  /** A far skirmish: small white-gold sparks and short tracers round one point of the sky for a few seconds. */
+  private readonly sparks: Spark[] = [];
+  private readonly tracers: Streak[] = [];
+  private readonly fight = new Vector3();
+  private fightT = 0;
+  private fightNext = 0;
+  /** With ?phenom=busy, skirmishes go off where the camera looks (the screenshot rig). */
+  private lookBusy = false;
+  private lookAz: number | null = null;
+  private sparkNext = 0;
   private meteorNext = 0;
   private flashNext = 0;
   private shower = 0;
@@ -197,6 +234,39 @@ export class Phenomena {
       this.flashes.push({ s, t: 0, dur: 0, peak: 0 });
       this.group.add(s);
     }
+    // lane markers: one draw for every lane
+    const lg = new BufferGeometry();
+    lg.setAttribute('position', new Float32BufferAttribute(new Float32Array(4 * LANE_N * 3), 3));
+    lg.setAttribute('aI', new Float32BufferAttribute(Float32Array.from({ length: 4 * LANE_N }, (_, i) => i % LANE_N), 1));
+    this.laneMat = new ShaderMaterial({
+      vertexShader: LANE_V, fragmentShader: LANE_F, uniforms: { uTime: { value: 0 }, uC: { value: new Color(1.0, 0.86, 0.62) }, uOn: { value: 1 } },
+      transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false,
+    });
+    this.lanes = new Points(lg, this.laneMat);
+    this.lanes.frustumCulled = false;
+    this.lanes.renderOrder = -3;
+    this.group.add(this.lanes);
+    // a skirmish's sparks and tracers
+    for (let i = 0; i < 6; i++) {
+      const s = new Sprite(new SpriteMaterial({ map: glowTexture(), color: new Color(1.3, 1.12, 0.85), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: 0 }));
+      s.visible = false;
+      s.renderOrder = -3;
+      this.sparks.push({ s, t: 0, dur: 0, peak: 0 });
+      this.group.add(s);
+    }
+    for (let i = 0; i < 4; i++) {
+      const mat = new ShaderMaterial({
+        vertexShader: /* glsl */ `varying vec2 vUv; void main() { vUv = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader: STREAK_F, uniforms: { uK: { value: 0 }, uC: { value: new Color(1.2, 1.0, 0.7) } },
+        transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false, side: DoubleSide,
+      });
+      const m = new Mesh(QUAD, mat);
+      m.visible = false;
+      m.frustumCulled = false;
+      m.renderOrder = -3;
+      this.tracers.push({ m, mat, t: 0, dur: 0 });
+      this.group.add(m);
+    }
     for (let i = 0; i < 4; i++) {
       const s = new Sprite(new SpriteMaterial({ map: glowTexture(), color: new Color(0.9, 0.95, 1.1), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: 0.8 }));
       s.scale.setScalar(5);
@@ -219,7 +289,8 @@ export class Phenomena {
     let lean = (this.lean = PHENOM[sky.palette ?? 0] ?? PHENOM[0]!);
     // ?phenom=hole|rift|storm|busy puts that thing in every sky (a screenshot rig, like ?near)
     const force = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('phenom');
-    if (force) lean = this.lean = { ...lean, hole: force === 'hole' ? 1 : 0, rift: force === 'rift' ? 1 : 0, storm: force === 'storm' ? 1 : lean.storm, meteors: force === 'busy' ? 3 : lean.meteors, flashes: force === 'busy' ? 4 : lean.flashes, movers: force === 'busy' ? 4 : lean.movers };
+    this.lookBusy = force === 'busy';
+    if (force) lean = this.lean = { ...lean, hole: force === 'hole' ? 1 : 0, rift: force === 'rift' ? 1 : 0, storm: force === 'storm' ? 1 : lean.storm, meteors: force === 'busy' ? 3 : lean.meteors, flashes: force === 'busy' ? 4 : lean.flashes, movers: force === 'busy' ? 4 : lean.movers, skirmish: force === 'busy' ? 5 : lean.skirmish };
     const lay = skyLayout(sky);
     // the planet's quarter is kept clear
     const pAz = sky.planet?.az ?? r() * 360;
@@ -277,12 +348,27 @@ export class Phenomena {
       mv.t = r() * mv.dur;
       mv.ph = r() * 6;
     });
+    // each far light's lane: markers strung along its path and a little past each end
+    const lp = this.lanes.geometry.getAttribute('position') as Float32BufferAttribute;
+    this.movers.forEach((mv, i) => {
+      for (let j = 0; j < LANE_N; j++) {
+        const u = -LANE_RUN + (j / (LANE_N - 1)) * (1 + LANE_RUN * 2);
+        const v = this.tmp.lerpVectors(mv.from, mv.to, u).normalize().multiplyScalar(D * 1.01);
+        // a lane with no light on it is put out of sight below the world
+        lp.setXYZ(i * LANE_N + j, v.x, mv.s.visible ? v.y : -1e5, v.z);
+      }
+    });
+    lp.needsUpdate = true;
+    this.fightNext = lean.skirmish ? lean.skirmish * (0.3 + r()) : Infinity;
+    if (this.lookBusy) this.fightNext = 0.2;
+    this.fightT = 0;
     this.meteorNext = lean.meteors ? lean.meteors * (0.3 + r()) : Infinity;
     this.flashNext = lean.flashes ? lean.flashes * (0.3 + r()) : Infinity;
   }
 
   /** Where the camera looks, for the screenshot rig (see `aim`). */
   look(forward: Vector3): void {
+    if (this.lookBusy) this.lookAz = Math.atan2(forward.z, forward.x) * 57.3;
     if (!this.aim) return;
     const az = Math.atan2(forward.z, forward.x) * 57.3 + 14;
     this.aim.position.copy(dirOf(az, -12)).multiplyScalar(D);
@@ -300,7 +386,10 @@ export class Phenomena {
       // a slow beacon: steady with a brief bright beat
       mv.s.material.opacity = 0.35 + (motion ? 0.6 * Math.max(0, Math.sin(this.t * 1.6 + mv.ph)) ** 8 : 0.2);
     }
+    this.laneMat.uniforms.uTime!.value = motion ? this.t : 0;
     if (!motion) {
+      for (const sp of this.sparks) sp.s.visible = false;
+      for (const tr of this.tracers) tr.m.visible = false;
       if (this.storm) this.storm.uniforms.uFlash!.value = 0;
       for (const s of this.streaks) s.m.visible = false;
       for (const f of this.flashes) f.s.visible = false;
@@ -344,6 +433,7 @@ export class Phenomena {
       }
       this.flashNext = this.lean.flashes * (0.5 + Math.random());
     }
+    this.skirmish(dt);
     for (const f of this.flashes) {
       if (!f.s.visible) continue;
       f.t += dt;
@@ -351,6 +441,52 @@ export class Phenomena {
       f.s.scale.setScalar(f.peak * (0.3 + 0.7 * Math.sqrt(k)));
       f.s.material.opacity = (k < 0.06 ? k / 0.06 : (1 - k) ** 2) * 0.9;
       if (k >= 1) f.s.visible = false;
+    }
+  }
+
+  /** A far skirmish: for a few seconds, small sparks pop and short tracers cross round one point low in the sky. */
+  private skirmish(dt: number): void {
+    if ((this.fightNext -= dt) <= 0) {
+      dirOf(this.lookAz !== null ? this.lookAz + (Math.random() - 0.5) * 30 : Math.random() * 360, this.lookAz !== null ? -14 : -5 - Math.random() * 18, this.fight).multiplyScalar(D);
+      this.fightT = 4 + Math.random() * 5;
+      this.sparkNext = 0;
+      this.fightNext = this.lean.skirmish * (0.5 + Math.random());
+    }
+    if (this.fightT > 0) {
+      this.fightT -= dt;
+      if ((this.sparkNext -= dt) <= 0) {
+        const near = (v: Vector3) => v.set(this.fight.x + (Math.random() - 0.5) * 120, this.fight.y + (Math.random() - 0.5) * 50, this.fight.z + (Math.random() - 0.5) * 120);
+        if (Math.random() < 0.6) {
+          const sp = this.sparks.find((x) => !x.s.visible);
+          if (sp) { near(sp.s.position); sp.t = 0; sp.dur = 0.25 + Math.random() * 0.5; sp.peak = 12 + Math.random() * 10; sp.s.visible = true; }
+        } else {
+          const tr = this.tracers.find((x) => !x.m.visible);
+          if (tr) {
+            near(tr.m.position);
+            tr.m.lookAt(this.group.getWorldPosition(this.eye));
+            tr.m.rotateZ((Math.random() - 0.5) * 3);
+            tr.m.scale.set(30 + Math.random() * 28, 0.8, 1);
+            tr.t = 0; tr.dur = 0.25 + Math.random() * 0.3;
+            tr.m.visible = true;
+          }
+        }
+        this.sparkNext = 0.12 + Math.random() * 0.5;
+      }
+    }
+    for (const sp of this.sparks) {
+      if (!sp.s.visible) continue;
+      sp.t += dt;
+      const k = sp.t / sp.dur;
+      sp.s.scale.setScalar(sp.peak * (0.4 + 0.6 * Math.sqrt(Math.min(k, 1))));
+      sp.s.material.opacity = (k < 0.1 ? k / 0.1 : (1 - k) ** 2) * 0.85;
+      if (k >= 1) sp.s.visible = false;
+    }
+    for (const tr of this.tracers) {
+      if (!tr.m.visible) continue;
+      tr.t += dt;
+      const k = tr.t / tr.dur;
+      tr.mat.uniforms.uK!.value = k * 1.4;
+      if (k >= 1) tr.m.visible = false;
     }
   }
 
