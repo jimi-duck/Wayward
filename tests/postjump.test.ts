@@ -5,8 +5,9 @@ import type { SortieResult } from '../src/sim/breakout';
 import { World } from '../src/sim/world';
 import { guideTarget, sidePlaces } from '../src/sim/guide';
 import { places } from '../src/sim/breakout';
-import { paintHull } from './paint';
-import { lockLifted, painted, paintAt, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK, YARD_ZAP, YARD_AUTO_END } from '../src/sim/postjump';
+import { paintHull, toBreach } from './paint';
+import { lockLifted, painted, paintAt, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK, YARD_ZAP, YARD_AUTO_END, PARTITION } from '../src/sim/postjump';
+import { WAKE_BEAT } from '../src/content/story';
 import { FIRST_SECURITY_MAX, SECURITY_FROM, SECURITY_TO, SECURITY_GAP, SECURITY_DELAY, TRAFFIC_CLEAR, TRAFFIC_N } from '../src/sim/traffic';
 import { goalOf } from '../src/sim/goal';
 import { CARD_BY_ID } from '../src/sim/comms';
@@ -93,7 +94,7 @@ describe('the objective follows the owner lock', () => {
     const w = level();
     expect(guideTarget(w)!.kind).toBe('audit');
     // the breach notice is not the code: the course is still the dock
-    for (let i = 0; i < 600 && w.phase !== 'comms'; i++) { w.ship.invuln = 1; w.step(STEP, input()); }
+    toBreach(w, input());
     expect(w.phase).toBe('comms');
     expect(guideTarget(w)!.kind).toBe('audit');
     expect(w.flags.has('ship_stolen')).toBe(false);
@@ -156,7 +157,8 @@ describe('after Sam’s code', () => {
       w.events.length = 0;
       if (firstHull === Infinity && custody(w).length) firstHull = w.runTime - t0;
     }
-    expect(said).toEqual([`sam@${STOLEN.sam}`, `notice@${STOLEN.notice}`]);
+    // the report itself comes at Sam's code, from the tug she broke away from (sim/tow.ts); here the lock was lifted without one
+    expect(said).toEqual([`sam@${STOLEN.sam}`]);
     expect(firstHull).toBeGreaterThanOrEqual(STOLEN.pursuit - 0.1);
     expect(STOLEN_SAM).toMatch(/depot/);
   });
@@ -334,10 +336,12 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(w.yardGlitch).toBe(0);
     expect((w.ship.x - p.x) * front.x + (w.ship.z - p.z) * front.z).toBeGreaterThan(8);
     expect(w.phase).toBe('play');
-    let seen = '';
-    for (let i = 0; i < Math.round(15 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); w.events.length = 0; }
-    if (w.comms) seen = w.comms.def.id;
-    expect(seen).toBe('story_yard_done');
+    // no card says what the yard did (owner 2026-11-21): Ned does, on the radio
+    const heard: string[] = [];
+    for (let i = 0; i < Math.round(15 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); for (const e of w.events) if (e.type === 'ping') heard.push(e.id ?? ''); w.events.length = 0; }
+    expect(w.comms).toBeNull();
+    expect(heard).toContain('ned_done');
+    expect(CARD_BY_ID.story_yard_done).toBeUndefined();
     expect(CARD_BY_ID.story_sam!.text).toContain('Ned’s yard');
   });
 
@@ -387,26 +391,35 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(w.stage?.rangAt ?? null).toBeNull();
   });
 
-  it('the archive is found first, then the paint card says what happened, and the archive message follows that card closely (owner 2026-11-06)', () => {
-    const w = afterCode();
-    const p = w.bk!.yard!;
-    w.ship.x = p.x - p.r * 0.8; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
+  it('Ned finds a sealed partition after the work, and it opens with the stored message once the tank holds a jump (owner 2026-11-21)', () => {
+    const w = level();
+    w.flags.add('ship_stolen'); w.flags.add('paint_due');
+    paintHull(w);
+    w.fuel = 0;
+    // no Custody in this one: the message waits out a fight, as every story card does
+    w.bk!.nextPursuit = Infinity;
     const log: string[] = [];
-    let yardClosed = -1, wakeAt = -1;
-    for (let i = 0; i < Math.round(90 / STEP) && wakeAt < 0; i++) {
-      w.ship.invuln = 1;
-      if (w.phase === 'comms') {
-        const id = w.comms!.def.id;
-        if (id === 'story_yard_done') { log.push('paint card'); w.answer(0); yardClosed = w.runTime; continue; }
-        if (id === 'story_wake') { log.push('archive'); wakeAt = w.runTime; continue; }
-        w.answer(0); continue;
+    const watch = (secs: number) => {
+      for (let i = 0; i < Math.round(secs / STEP); i++) {
+        w.ship.invuln = 1;
+        if (w.phase === 'comms') { if (w.comms!.def.id === WAKE_BEAT) { log.push('archive'); return; } w.answer(0); continue; }
+        w.step(STEP, input());
+        for (const e of w.events) {
+          if (e.type === 'ping' && e.id === 'ned_partition') log.push('partition');
+          if (e.type === 'storyNotice' && e.headline === 'Partition open') log.push('open');
+        }
+        w.events.length = 0;
       }
-      w.step(STEP, input());
-      for (const e of w.events) if (e.type === 'storyNotice' && e.headline === 'Hidden archive unlocked') log.push('found');
-      w.events.length = 0;
-    }
-    expect(log).toEqual(['found', 'paint card', 'archive']);
-    expect(wakeAt - yardClosed).toBeLessThanOrEqual(8);
+    };
+    // an empty tank: Ned finds it, and it stays shut
+    watch(60);
+    expect(log).toEqual(['partition']);
+    expect(w.flags.has(PARTITION)).toBe(true);
+    expect(w.comms).toBeNull();
+    // fuelled to leave: it opens, and the message follows its notice
+    w.fuel = w.jumpCost;
+    watch(30);
+    expect(log).toEqual(['partition', 'open', 'archive']);
   });
 
   it('the pursuit clock starts at the paint, not at the code', () => {

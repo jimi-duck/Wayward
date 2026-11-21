@@ -152,7 +152,6 @@ const GIST: Record<string, string> = {
   "story_breach": "Contract in breach · recovery ordered",
   "story_sam": "Sam has a code for the owner lock",
   "story_wake": "A stored message · Krail reserves 94%",
-  "story_yard_done": "Reprogrammed, repainted, renamed",
   "story_registry": "Lane checkpoint · your registry decides",
   "story_warden": "A retired Warden heard the shutdown order",
   "story_ledger": "A Kellern clerk sells the real books",
@@ -307,44 +306,34 @@ export const STORY_CARDS: CardDef[] = [
     doc: { kind: 'invoice', open: 'View breach invoice', kick: 'Document · breach invoice', title: 'Contract 08-441 · Outstanding charges', sub: 'Delivery not received.', note: 'Vessel recovery initiated.' },
     cargo: 'Contract 08-441 · short delivery',
     choices: [
-      // the recovery (sim/recovery.ts): Lane Control flies her in and says so in an alert (ui/hud.ts), then Sam on the
-      // radio, whose channel opens 2 km out from the dock. One plain acknowledgement (the owner, 23 October 2026).
+      // served by the tug that has her on its line (sim/tow.ts): the tug tows her in, Sam is on the radio, and his channel
+      // opens 2 km out from the dock. One plain acknowledgement (the owner, 23 October 2026).
       { id: 'proceed', label: 'Acknowledge', tone: 'run', hint: '',
-        win: { text: 'Controls locked · recovery autopilot active', flag: RECOVERY_FLAG,
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 2.5, gap: 10, text: ['“They’re calling it a breach. They want the hauler back, and you with it. Let the autopilot fly for now.”', '“Hang in there, Juno. I’m not letting them have you. Give me a minute.”'] } } },
+        win: { text: 'Under tow · the line holds', flag: RECOVERY_FLAG,
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 2.5, gap: 10, text: ['“They’re calling it a breach. They want the hauler back, and you with it. Don’t fight the tow.”', '“Hang in there, Juno. I’m not letting them have you. Give me a minute.”'] } } },
     ],
   }),
   story({
     id: 'story_sam', kind: 'warning', caller: 'miners', glass: 'ochre', status: 'Private', rx: SAM_BEARING, quote: true,
     from: 'Sam Okoro · private channel', title: 'A way out',
-    text: 'Juno, it’s me. Keep this off the open channel.\nThis code overrides the autopilot. The debt’s still there, and they’ll be looking for you, but this is your chance to get out.\nHead to Ned’s yard, he owes me one. He’ll reprogram her and mask your code, at least for now. It isn’t much, but it’s a start.',
+    text: 'Juno, it’s me. Keep this off the open channel.\nThis code cuts Lane Control out and drops the tow. The debt’s still there, and they’ll be looking for you, but it’s your chance.\nHead to Ned’s yard, he owes me one. He’ll reprogram her and mask your code, at least for now.',
     cargo: 'Ned’s yard · off the lane',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
         // the code overrides the autopilot and nothing more (owner 2026-11-05): she is still the company's grey hull; Ned's yard makes her hers (sim/postjump.ts PAINT_DUE)
-        win: { text: 'Autopilot overridden · the helm is yours', flag: ['ship_stolen', 'paint_due', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
-          signal: { tone: 'teal', headline: 'Autopilot overridden', reason: 'Lane Control shut out' },
+        win: { text: 'Tow line cut · the helm is yours', flag: ['ship_stolen', 'paint_due', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
+          signal: { tone: 'teal', headline: 'Drive unlocked', reason: 'the helm is yours' },
           radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“At least you’ll have your freedom. Don’t dock. Ned’s yard first. Go, Juno.”' } } },
     ],
   }),
   story({
-    // what Ned's yard did, in plain words (owner 2026-11-05): a simple text box after the work, one tap
-    id: 'story_yard_done', handover: true, kind: 'warning', caller: 'miners', glass: 'cyan', status: 'Work done',
-    from: 'Ned’s yard', title: 'She’s the Wayward now',
-    text: 'Reprogrammed: her owner lock is gone.\nRepainted: company grey is now yellow.\nRenamed: OB-7731-A struck out. She’s the WAYWARD.\nPaint won’t pass a scan.',
-    cargo: 'The Wayward · call sign WAYWARD',
-    choices: [
-      { id: 'on', label: 'Fly on', tone: 'run', hint: '', win: { text: 'Reprogrammed · repainted · renamed' } },
-    ],
-  }),
-  story({
-    // a message someone left in the ship's database (owner, 23 October 2026): no headline figure, no record to open
+    // a message someone left in a sealed partition of her core (owner, 23 October 2026; found by Ned, opened on drive power: owner 2026-11-21)
     id: 'story_wake', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Unsent', quote: true, notitle: true,
-    herald: { headline: 'Hidden archive unlocked', reason: 'Found in the ship database' },
-    from: 'Ship database · stored message', title: 'For whoever flies her next',
+    herald: { headline: 'Partition open', reason: 'it woke on drive power' },
+    from: 'Sealed partition · stored message', title: 'For whoever flies her next',
     letter: { head: [], sign: '' },
-    text: 'If you’re reading this, the lock’s off and she’s yours now. I hid this where the company’s auditors never bother looking.\nSeventy years ago the gates to the outer worlds went dark. They said the Krail had run out, and everyone left outside became the Scatter.\nBut the reserve log for that day says Krail reserves: 94%. The same day someone signed the order to shut the gates.\nI don’t know the whole story. I know it’s not the one they told us.\nStart at Halden’s Reach. The old Warden families retire there. Someone will remember.',
-    cargo: 'The Wayward · a stored message in the hull’s archive',
+    text: 'If you’re reading this, the lock’s off and you’ve fuelled her to leave. I hid this where the company’s auditors never bother looking.\nSeventy years ago the gates to the outer worlds went dark. They said the Krail had run out, and everyone left outside became the Scatter.\nBut the reserve log for that day says Krail reserves: 94%. The same day someone signed the order to shut the gates.\nI don’t know the whole story. I know it’s not the one they told us.\nTake the quiet lane through Northfold to Halden’s Reach. The old Warden families retire there. Someone will remember.',
+    cargo: 'The Wayward · a sealed partition in her core',
     choices: [
       { id: 'lead', label: 'Set course: Northfold', tone: 'help', hint: '',
         win: { text: 'The record is on the Wall · next lead: Halden’s Reach', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'],

@@ -73,7 +73,7 @@ export const EMBLEMS = ['custody', 'office', 'kellern', 'guild', 'frontier', 'mi
  * (the same person calling again).
  */
 export const CONTACTS: Record<string, string | null> = {
-  story_sam: null, story_yard_done: null, story_warden: null, story_ledger: null, story_moot: null, story_drift: null, story_broker: null,
+  story_sam: null, story_warden: null, story_ledger: null, story_moot: null, story_drift: null, story_broker: null,
   story_salvor: null, story_charts: null, story_ferry: null, story_workorder: null, story_crew: null, story_harbour: null,
   story_kesh: null, story_vell_betray: 'story_broker', story_ada: null, story_ferry_agent: 'story_ferry', story_tam_brother: 'story_sam', story_ines_offer: 'story_harbour', story_vell_reckoning: 'story_broker', story_tollgate: null, story_echo_sable: null, story_implant: null, story_draper: 'foreman', story_oren_who: 'story_toll', story_oren_cost: 'story_toll', story_oren_why: 'story_toll', story_calloway_narrows: null, story_witnesses: null, story_brook_arrest: 'story_ledger', story_order: 'story_warden', story_handwriting: 'story_warden', ilse_recording: 'story_warden', story_brook_road: 'story_ledger', story_brook_declined: 'story_ledger', story_oduya_rigs: 'story_moot', story_aide: null, story_toll: null,
   foreman: null, foreman_again: 'foreman', krail_seller: null, fuel_runner: null,
@@ -115,7 +115,7 @@ export const FLEET = [
  * the depot, the audit dock, the Dust Market raft and Ned's yard.
  */
 export const PLACE_SCENES: Record<string, string> = {
-  depot_hail: 'sc_depot', audit_hail: 'sc_audit', market_stall: 'sc_market', story_yard_done: 'sc_yard',
+  depot_hail: 'sc_depot', audit_hail: 'sc_audit', market_stall: 'sc_market',
   // story beats: the Narrows checkpoint, the Last Toll, the Voice's foundry, the Thren, the helm, the Long Walk, Kessel Hold, the damping field
   narrows_checkpoint: 'sc_narrows', story_toll: 'sc_lasttoll', story_voice: 'sc_foundry', story_thren: 'sc_followers', story_implant: 'sc_helm',
   story_drift: 'sc_longwalk', story_oduya_rigs: 'sc_kessel', story_tollgate: 'sc_dampfield',
