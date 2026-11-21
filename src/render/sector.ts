@@ -16,6 +16,7 @@ import { ArsenalView } from './arsenal';
 import { BreakoutView } from './breakout';
 import { SiteView } from './site';
 import { YardView } from './yard';
+import { TowView } from './tow';
 import { CameraRig, type CameraSubject } from './camera';
 import { DebrisField } from './debris';
 import { Environment } from './environment';
@@ -103,6 +104,7 @@ export class Sector {
   private readonly breakout: BreakoutView;
   private readonly site: SiteView;
   private readonly yard: YardView;
+  private readonly tow: TowView;
   private readonly warp: WarpView;
   /** The jump's path, latched when the drive lets go, and the run it belongs to. */
   private launch: Launch | null = null;
@@ -172,6 +174,7 @@ export class Sector {
     this.breakout = new BreakoutView(this.scene, glow);
     this.site = new SiteView(this.scene);
     this.yard = new YardView(this.scene);
+    this.tow = new TowView(this.scene);
     this.space = new SpaceView(this.scene, glow);
     this.warp = new WarpView(this.scene, glow, tier.name === 'low' ? 56 : tier.name === 'high' ? 170 : 110);
     this.scene.add(this.ship.root);
@@ -427,6 +430,10 @@ export class Sector {
         }
         case 'cargoLost':
           hold = Math.max(hold, this.holdBlast(e));
+          break;
+        case 'towSnap':
+          this.tow.snap(e.x, e.z, this.fx);
+          this.rig.shake(0.25);
           break;
         case 'break':
           this.fx.ring(e.x, 0.2, e.z, 5, OURS, 0.4);
@@ -718,6 +725,8 @@ export class Sector {
     this.rig.update(subject, dt, this.reduceMotion);
     // Ned's yard, built into its rock (render/yard.ts)
     this.yard.update(world, dt, this.fx);
+    // Lane Control's tugs and their line (render/tow.ts)
+    this.tow.update(world, dt);
     if (this.dyingT > 0) this.dyingT = Math.max(0, this.dyingT - dt);
     if (!world.alive) this.deathAge += dt; else this.hullGone = false;
     this.ship.root.visible = (world.alive || (!this.hullGone && this.deathAge < DEATH_HOLD + 0.3)) && (wt < 0 || whiteout(wt) < 0.97) && !this.rig.inCockpit;

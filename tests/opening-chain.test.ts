@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { OPENING_AT } from '../src/content/story';
-import { paintHull } from './paint';
+import { paintHull, toBreach } from './paint';
 import { readFileSync } from 'node:fs';
 import { WALL } from '../src/content/wall';
 import { CARD_BY_ID, choiceView, type Ctx } from '../src/sim/comms';
@@ -70,14 +69,15 @@ describe('the opening chain beyond the gate', () => {
     w.field.rocks = [];
     const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
     const seen: string[] = [];
-    run(OPENING_AT + 2);
+    // the gate reads her ID, the tugs come out, and the lead serves the breach (sim/tow.ts)
+    toBreach(w);
     for (const answer of ['proceed', 'code', 'lead']) {
       seen.push(w.comms!.def.id);
       // one action each: the notice offers no way out, Sam's card is the override, and the archive is one card
       expect(w.comms!.choices).toHaveLength(1);
       w.answer(answer);
-      // Sam's card comes 2 km out from the dock; the archive only once Ned has painted her at the depot (owner 2026-11-05)
-      if (answer === 'code') { w.bk!.nextPursuit = Infinity; run(40); expect(w.comms).toBeNull(); paintHull(w); run(120); expect(w.comms?.def.id).toBe('story_yard_done'); w.answer(0); run(120); } else run(95);
+      // Sam's card comes 2 km out from the dock; the archive once Ned has painted her and found the partition, and the tank holds a jump
+      if (answer === 'code') { w.bk!.nextPursuit = Infinity; run(40); expect(w.comms).toBeNull(); paintHull(w); w.fuel = Math.max(w.fuel, w.jumpCost); run(90); } else run(95);
     }
     expect(seen).toEqual(['story_breach', 'story_sam', 'story_wake']);
     expect(w.phase).toBe('play');

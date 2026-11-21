@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { BREACH_BEAT, OPENING_AT, SAM_BEAT, WAKE_BEAT } from '../src/content/story';
+import { BREACH_BEAT, SAM_BEAT, WAKE_BEAT } from '../src/content/story';
+import { LOCK_LATEST, STRAIN_TURN } from '../src/sim/tow';
 import { CARD_BY_ID, PORT_CALL } from '../src/sim/comms';
 import { owed, ledgerFor } from '../src/sim/contract';
 import type { SortieResult } from '../src/sim/breakout';
 import { autoCourse, bankAnswer, endSortie, newJourney, sortieDef, type Journey } from '../src/sim/journey';
 import { newRun } from '../src/sim/run';
 import { lockLifted, painted, paintDue } from '../src/sim/postjump';
-import { paintHull } from './paint';
+import { paintHull, toBreach } from './paint';
 import { HOLD_R, RECOVERY_FLAG, RECOVERY_T, SAM_CALL_R, clearCourse, recovering } from '../src/sim/recovery';
 import { postJump } from '../src/sim/postjump';
 import { WEATHER, calmWeights, pickEncounter } from '../src/sim/encounters';
@@ -56,7 +57,7 @@ function answer(j: Journey, w: World, id: string): void {
 /** To the breach notice, and its answer. */
 function breach(j: Journey): World {
   const w = arrive(j);
-  run(w, OPENING_AT + 0.5);
+  toBreach(w, FULL);
   expect(w.comms?.def.id).toBe(BREACH_BEAT);
   answer(j, w, 'proceed');
   return w;
@@ -94,9 +95,9 @@ describe('the forced recovery', () => {
     expect(w.comms).toBeNull();
     const d1 = Math.hypot(dock.x - w.ship.x, dock.z - w.ship.z);
     expect(d1).toBeLessThan(d0);
-    // nose on the dock
+    // nose on the dock, give or take her pull against the line (sim/tow.ts STRAIN_TURN: the full right turn held all the way)
     const bearing = Math.atan2(-(dock.z - w.ship.z), dock.x - w.ship.x);
-    expect(Math.abs(Math.atan2(Math.sin(bearing - w.ship.heading), Math.cos(bearing - w.ship.heading)))).toBeLessThan(0.5);
+    expect(Math.abs(Math.atan2(Math.sin(bearing - w.ship.heading), Math.cos(bearing - w.ship.heading)))).toBeLessThan(STRAIN_TURN + 0.15);
     expect(bolts).toBe(0);
     expect(w.docked).toBe(false);
     expect(w.auditCalled).toBe(false);
@@ -113,7 +114,7 @@ describe('the forced recovery', () => {
       w.events.length = 0;
     });
     expect(w.comms?.def.id).toBe(SAM_BEAT);
-    expect(heard.map(([, x]) => x)).toEqual(['“They’re calling it a breach. They want the hauler back, and you with it. Let the autopilot fly for now.”', '“Hang in there, Juno. I’m not letting them have you. Give me a minute.”']);
+    expect(heard.map(([, x]) => x)).toEqual(['“They’re calling it a breach. They want the hauler back, and you with it. Don’t fight the tow.”', '“Hang in there, Juno. I’m not letting them have you. Give me a minute.”']);
     // spread over the run in, the last a few seconds before his channel opens
     expect(heard[1]![0] - heard[0]![0]).toBeGreaterThanOrEqual(10);
     expect(heard[1]![0]).toBeLessThan(t - 3);
@@ -198,9 +199,8 @@ describe('the forced recovery', () => {
     paintHull(w);
     expect(painted(w.flags)).toBe(true);
     // the hands off the controls: shooting the yard's neighbours would start the hunt and keep the archive waiting
-    run(w, 60, { ...FULL, turn: 0, thrust: 0, fire: false });
-    expect(w.comms?.def.id).toBe('story_yard_done');
-    w.answer(0);
+    // Ned says what he did and finds the partition; it opens once the tank holds a jump (owner 2026-11-21)
+    w.fuel = w.jumpCost;
     run(w, 60, { ...FULL, turn: 0, thrust: 0, fire: false });
     expect(w.comms?.def.id).toBe(WAKE_BEAT);
     answer(j, w, 'lead');
@@ -246,12 +246,13 @@ describe('the autopilot keeps clear (owner, 23 October 2026)', () => {
 });
 
 describe('arrival sweep and autopilot hold (owner, 2 November 2026)', () => {
-  it('the breach notice waits for the arrival sweep (8 s)', () => {
+  it('the breach notice waits for the arrival sweep (8 s) and for the tug that serves it', () => {
     const w = arrive(beyond());
     run(w, 7.5);
     expect(w.comms).toBeNull();
-    run(w, OPENING_AT - 7.5 + 0.5);
+    const t = toBreach(w);
     expect(w.comms?.def.id).toBe(BREACH_BEAT);
+    expect(t).toBeLessThan(LOCK_LATEST);
   });
   it('the autopilot keeps flying while Sam is held back and waits only within 1 km of the dock', () => {
     const j = beyond();
@@ -278,7 +279,7 @@ describe('the autopilot just works for the story (owner, 23 October 2026)', () =
       const w = new World(seed, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
       w.cardNext = Infinity;
       w.skipTraining();
-      for (let t = 0; t < (OPENING_AT + 0.5) * 60 && w.phase === 'play'; t++) w.step(1 / 60, FULL);
+      toBreach(w, FULL);
       expect(w.comms?.def.id).toBe(BREACH_BEAT);
       answer(j, w, 'proceed');
       // a pack of hostiles on her, and rock thick along the line
@@ -369,8 +370,9 @@ describe('the forced recovery across a reload', () => {
     run(w0, 5);
     const w = arrive(j);
     expect(recovering(w.flags)).toBe(true);
-    run(w, OPENING_AT + 0.5);
-    // not dealt as the system's story beat: the recovery deals it
+    run(w, 10);
+    // back on the line at once (sim/tow.ts onTheLine), and Sam's card is not dealt as the system's story beat: the recovery deals it
+    expect(w.tow?.phase).toBe('tow');
     expect(w.comms).toBeNull();
     until(w);
     expect(w.comms?.def.id).toBe(SAM_BEAT);
@@ -398,15 +400,15 @@ describe('the forced recovery across a reload', () => {
     // loaded before the paint: the helm is free, the hull is grey, and the archive waits for the depot
     const w2 = arrive(j);
     expect(recovering(w2.flags)).toBe(false);
-    run(w2, OPENING_AT + 0.5);
+    run(w2, 10);
     expect(w2.comms).toBeNull();
+    // no tugs and no second report on a load past the code
+    expect(w2.tow).toBeNull();
     expect(paintDue(w2.flags)).toBe(true);
     // a save made after the code plays the archive as soon as the paint is on (its own beat); leave the card up
     paintHull(w2, () => undefined);
-    run(w2, 60);
-    expect(w2.comms?.def.id).toBe('story_yard_done');
-    w2.answer(0);
-    run(w2, 60);
+    w2.fuel = w2.jumpCost;
+    run(w2, 60, { ...FULL, turn: 0, thrust: 0, fire: false });
     expect(w2.comms?.def.id).toBe(WAKE_BEAT);
     answer(j, w2, 'lead');
     const w3 = arrive(j);

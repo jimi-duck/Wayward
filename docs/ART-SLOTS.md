@@ -192,7 +192,7 @@ Three more slots are ready, with prompts, for a second run
 | Slot | Folder | Count | Size | For |
 | --- | --- | --- | --- | --- |
 | Fleet | `fleet/` | 27 | 960×480 on black | the nine capital ships (`capital-<captain>`), eight neutral hulls (tanker, hauler, courier, gunship, barge, salvager, drifter, ferry), the Wayward as fitted (`wayward-stock`, `-guns`, `-rig`, `-signals`), and six hulls in their real owner's colours (`<hull>-<caller>`, such as `freighter-miners`), which the comms call already uses in place of the plain hull |
-| Jobs | `jobs/` | 29 | 960×1440 (2:3, the 25 in the game are still 1280×720 and are cropped to fit until redrawn: `docs/art/JOBS-BRIEF.md`) | one scene per job card (`sc_*`), drawn full height down the right side of the job offer card. all 25 are in, plus four place scenes (`sc_depot`, `sc_audit`, `sc_market`, `sc_yard`) that the cards `depot_hail`, `audit_hail`, `market_stall` and `story_yard_done` show beside them (`PLACE_SCENES`; not on phones) |
+| Jobs | `jobs/` | 29 | 960×1440 (2:3, the 25 in the game are still 1280×720 and are cropped to fit until redrawn: `docs/art/JOBS-BRIEF.md`) | one scene per job card (`sc_*`), drawn full height down the right side of the job offer card. all 25 are in, plus three place scenes (`sc_depot`, `sc_audit`, `sc_market`) that the cards `depot_hail`, `audit_hail` and `market_stall` show beside them (`PLACE_SCENES`; not on phones) |
 | Phenomena | `phenomena/` | 14 | 800×600 | the places on the chart (`veil` … `carrier`) |
 
 Left out on purpose, listed at the end of the brief: wrecks of each hull, damage

@@ -42,8 +42,6 @@ export const paintDue = (flags: ReadonlySet<string> | readonly string[]): boolea
 export const PAINTER = 'Ned Varga';
 /** Ned on the radio when the ship comes up on his yard: hold her in the ring and he does the rest. */
 export const PAINT_LINE = '“You must be Juno. Ned here. Sam said you’d come, and I owe him one. Ease her into the ring and I’ll do the rest. No charge.”';
-/** The pop-up card once the work is done (content/story.ts `story_yard_done`). */
-export const YARD_DONE = 'story_yard_done';
 export const PAINT_NOTICE = ['Reprogrammed', 'Owner lock stripped'] as const;
 /** The special moment after the work (owner 2026-11-06): a second notice, then the title card, with the camera's pan as she flies out of the front. Seconds since she left the ring. */
 export const YARD_REPAINT_AT = 2.8;
@@ -62,9 +60,17 @@ export const YARD_DARK = 0.3;
 export const YARD_BOOT = 1.2;
 /** After the zaps the ship shuts down: a dark screen with a rebooting loader (ui/hud.ts reboot) for this long, then the new colours and name. */
 export const YARD_REBOOT = 2.8;
-/** The explanation card comes this long after the work (the reveal has played by then), and the archive's message this long after the work. */
-export const PAINT_CARD = 10.5;
-export const PAINT_WAKE = 8.4;
+/**
+ * After the work, Ned says what he did (owner 2026-11-21: his words in place of the card that explained it), and a little later what he
+ * found: a sealed partition in her core. The archive's message is in it, and it opens once the tank holds a jump (the partition wakes on
+ * drive power), so the lead comes just before the jump it points to. Seconds after the work.
+ */
+export const NED_DONE_AT = 8;
+export const NED_PARTITION_AT = 17;
+export const NED_DONE = '“Done. She’s yours. The paint won’t pass a close scan, so keep Custody at a distance.”';
+export const NED_PARTITION = '“Something else. A sealed partition in her core, wired to the jump drive. Fill the tank, it might wake.”';
+/** Set when Ned has found the partition: the stores list it until the archive is open. */
+export const PARTITION = 'partition_found';
 
 /** The straight run from the arrival to the Jump Gate, in units: 10 km, about 25 s flat out. */
 const POSTJUMP_LANE = 1000;
@@ -103,10 +109,23 @@ export function postJump(def: SortieDef): SortieDef {
 }
 
 /**
- * After Sam's code, in seconds of play: Sam names the depot (only if the tank is short), the company reports the
- * hull stolen, a few seconds on the Wanted note explains it (once a profile, main.ts), and the first Custody hull comes. Nothing hunts her before the lock lifts (sim/world.ts `stolen`).
+ * After the paint, in seconds of play: Sam names the depot (only if the tank is short) and the first Custody hull comes. Nothing hunts
+ * her before the paint (owner, 5 November 2026; sim/world.ts `stolen`). The report itself comes at the code, from the tug she broke
+ * away from (REPORT); `explain` is how long after the report's notice the Wanted note waits (once a profile, main.ts).
  */
-export const STOLEN = { sam: 20, notice: 38, explain: 4, pursuit: 70 } as const;
+export const STOLEN = { sam: 20, explain: 4, pursuit: 70 } as const;
+/** After the code, seconds: the tug reports her stolen on the open channel, then the notice says it. */
+export const REPORT = { tug: 3, notice: 9 } as const;
+/** Who speaks for the company before the code, and the tug she breaks away from. */
+export const LANE_CONTROL = 'Lane Control';
+export const TUG_NAME = 'Kellern tug four';
+/** Lane Control as the gate reads her ID: the drive is limited and the tugs are on their way. */
+export const LANE_LINE = '“OB-7731-A, Lane Control. Contract 08-441 is in breach. Your drive is limited. Hold position for recovery.”';
+export const ID_NOTICE = ['ID read', 'drive limited, guns safed'] as const;
+/** The tug, as the line snaps and she flies: the report that sets Custody on her. */
+export const TUG_REPORT = '“Tug four to Custody. OB-7731-A has broken tow. Reporting her stolen.”';
+/** The line snapping at Sam's code. */
+export const SNAP_NOTICE = ['Drive unlocked', 'the helm is yours'] as const;
 /** Sam's line once the registry card is closed: the short tank and where to fill it (the depot, or the rock when she cannot pay). */
 export const STOLEN_SAM = '“One more thing, your tank’s nearly dry. Buy fluid at the Frontier depot or mine some Cyrite on the way. Fill up, then the gate.”';
 export const STOLEN_SAM_POOR = '“One more thing, your tank’s nearly dry and you can’t pay for fluid. Mine the veined rock on the way. The refinery fills the tank first.”';

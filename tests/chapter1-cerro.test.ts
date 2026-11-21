@@ -145,6 +145,8 @@ describe('chapter one: from the gate through the story chain', () => {
       if ((next as unknown as { call: unknown }).call) { next.answer(0, true); }
       // the code leaves the hull grey: the archive waits until the ship has been to the depot (owner 2026-11-05)
       if (next.flags.has('ship_stolen') && !next.flags.has('hull_repainted')) paintHull(next, (x) => { seen.push(x.comms!.def.id); x.answer(0); });
+      // the partition opens on a tank that holds a jump: the depot's fluid, as a player would buy it
+      if (next.flags.has('hull_repainted') && next.fuel < next.jumpCost) next.fuel = next.jumpCost;
       next.ship.invuln = 1; next.step(STEP, input());
     }
     const at = (id: string) => seen.indexOf(id);
