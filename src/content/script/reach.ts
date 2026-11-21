@@ -37,10 +37,13 @@ export const REACH: Row[] = [
   // ── Stop 2 · Halden's Reach (hub) ──
   notice('hr_notice', 'halden', { on: 'arrive' }, 'teal', 'Halden’s Reach', 'Kellern port, hospice ring'),
   objective('hr_objective', 'halden', { on: 'arrive' }, 'Halden’s Reach · find the Warden’s record', 'Frontier port · refit bay open'),
-  sam('hr_sam', 'halden', { on: 'free' }, '“Halden’s Reach. Old Warden families retire here. If anyone remembers, it’s them.”'),
-  // an old skiff hails from the hospice ring: Ilse sends the order itself, with her account beside it (no choice: the owner,
-  // 31 October 2026), then the name. Both hold any job's call; the name follows the order wherever it is taken (it can be carried on)
-  card('hr_warden', 'halden', { on: 'after', row: 'hr_sam', delay: 4 }, 'story_order', { holdsJob: true, main: true }),
+  sam('hr_sam', 'halden', { on: 'free' }, '“Halden’s Reach. Old Warden families retire here. That skiff off the hospice ring is calling you.”'),
+  // Ilse's skiff off the hospice ring (content/script/places.ts): she reads the order once Juno holds alongside (no choice: the owner,
+  // 31 October 2026), then puts the paper out in a canister to be taken aboard. The gate waits for both, and names the place.
+  // The name follows the order wherever it is taken (it can be carried on)
+  card('hr_warden', 'halden', { on: 'place', place: 'hr_skiff' }, 'story_order', { holdsJob: true, main: true }),
+  { id: 'hr_canister', stop: 'halden', on: { on: 'flag', flag: 'frag_order' }, do: { radio: { from: 'Ilse Marrow', caller: 'miners', text: '“It’s in the canister off my bow. Paper can’t be wiped.”' } } },
+  sam('hr_paper', 'halden', { on: 'place', place: 'hr_paper' }, '“Paper. Nobody’s held any in years. Keep it dry, Juno.”', { main: true }),
   card('hr_order', '*', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] }, holdsJob: true }),
   card('hr_hand', '*', { on: 'flag', flag: 'clue_order_sig' }, 'story_handwriting', { if: { not: ['ada_named'] }, holdsJob: true }),
   objective('hr_gate', 'halden', { on: 'leave' }, 'Jump to Hollis'),
@@ -61,9 +64,10 @@ export const REACH: Row[] = [
   // ── Stop 4 · Marlow (turn) ──
   notice('ml_notice', 'marlow', { on: 'arrive', delay: 2 }, 'teal', 'Marlow', 'Kellern accounts station'),
   objective('ml_objective', 'marlow', { on: 'arrive', delay: 2 }, 'Marlow · someone here keeps the real books'),
-  card('ml_ledger', 'marlow', { on: 'free', after: 6 }, 'story_ledger', { main: true }),
-  { id: 'ml_brook', stop: 'marlow', on: { on: 'flag', flag: 'frag_ledger' }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“If anyone asks, I was never here. They’ll ask.”' } } },
-  notice('ml_wall', 'marlow', { on: 'after', row: 'ml_brook' }, 'teal', 'The Wall', 'same initials on the transfers'),
+  // Brook's shuttle idles off the station (content/script/places.ts): alongside, he offers the books; the spike he leaves is taken aboard
+  card('ml_ledger', 'marlow', { on: 'place', place: 'ml_shuttle' }, 'story_ledger', { main: true }),
+  { id: 'ml_brook', stop: 'marlow', on: { on: 'flag', flag: 'frag_ledger' }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“The spike’s off my stern. If anyone asks, I was never here. They’ll ask.”' } } },
+  notice('ml_wall', 'marlow', { on: 'place', place: 'ml_spike' }, 'teal', 'The Wall', 'same initials on the transfers', { main: true }),
   sam('ml_sam_1', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. again. On the order, and on the money.”', { if: { has: ['clue_order_sig'] } }),
   sam('ml_sam_2', 'marlow', { on: 'after', row: 'ml_sam_1' }, '“Whoever that is, they signed both.”'),
   sam('ml_sam_alt', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. means nothing to me. Remember it anyway.”', { if: { not: ['clue_order_sig'] } }),
@@ -73,8 +77,8 @@ export const REACH: Row[] = [
   notice('ve_notice', 'vesta', { on: 'arrive' }, 'teal', 'Vesta', 'quiet crossing · no pursuit'),
   objective('ve_objective', 'vesta', { on: 'arrive' }, 'Rest here, or keep moving', 'The Narrows · 3 jumps'),
   notice('ve_ghost', 'vesta', { on: 'settle' }, 'teal', 'The Wall', 'unknown contact logged', { if: { has: ['clue_ghost'] } }),
-  // Juno cut Ilse off: her recording carries the order, and Ada's name, here
-  card('ve_ilse', 'vesta', { on: 'settle' }, 'ilse_recording', { if: { not: ['frag_order'] }, main: true }),
+  // Juno never heard Ilse at Halden: her recording waits on a message buoy here, with the order and Ada's name
+  card('ve_ilse', 'vesta', { on: 'place', place: 've_buoy' }, 'ilse_recording', { if: { not: ['frag_order'] }, main: true }),
   // Hester's opener remembers what Juno did for her prospector at Hollis (helped, robbed, or never met)
   { id: 've_hester', stop: 'vesta', if: { has: ['job_follow_cyrite_won'], not: ['job_follow_cyrite_rob'] }, on: { on: 'settle' }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. My prospector says you’re decent. There’s a toll on our lane at Branford we can’t pay.”' } } },
   { id: 've_hester_rob', stop: 'vesta', if: { has: ['job_follow_cyrite_rob'] }, on: { on: 'settle' }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. My prospector says you robbed her. I still need a ship. Branford’s toll, we can’t pay.”' } } },

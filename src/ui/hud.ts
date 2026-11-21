@@ -312,7 +312,7 @@ export class Hud {
           if (e.id === 'tp_bay') this.hint(world, `${t('Torpedo launcher online')} · ${t(deviceHint('torpedo'))}`, 20);
           break;
         case 'gunsCold': {
-          const reason = e.at === 'lc' ? 'Weapons safed by Lane Control' : e.at === 'lane' ? 'Jump Gate generating a jamming field' : 'Supply hub generating a jamming field';
+          const reason = e.at === 'lane' ? 'Jump Gate generating a jamming field' : 'Supply hub generating a jamming field';
           this.note(world, `${t('Guns cold')} · ${t(reason)}`, 'hit');
           this.notify(world, { type: 'denied', headline: 'Guns cold', reason, key: 'guns' });
           break;
@@ -765,10 +765,9 @@ export class Hud {
         const aud = lockLifted(world.flags) ? undefined : world.seenPlaces().find((p) => p.kind === 'audit');
         const da = aud ? Math.hypot(aud.x - s.x, aud.z - s.z) : 0;
         if (aud) {
-          // Lane Control's tugs (sim/tow.ts): coming out for her, then towing her in; the objective says so, instead of a notice
-          const tug = world.tow?.phase === 'out' ? world.tow.tugs.find((g) => g.slot === 0) : undefined;
-          text($('obj-t'), t(recovering(world.flags) ? 'Under tow to the audit dock' : tug ? 'Kellern tugs inbound' : 'Dock at the company port'));
-          text($('obj-left'), range(tug ? Math.hypot(tug.x - s.x, tug.z - s.z) : da));
+          // Lane Control has the helm (sim/recovery.ts): the objective says so, instead of a notice
+          text($('obj-t'), t(recovering(world.flags) ? 'Vessel flagged for recovery' : 'Dock at the company port'));
+          text($('obj-left'), range(da));
           ticks($('obj-p'), Math.max(0, 1 - da / (bk.def.lane * 0.65)), 30);
         } else if (paintAt(world)) {
           // the autopilot is overridden and the hull is still the company's: Ned's yard, free, is the course
@@ -777,6 +776,12 @@ export class Hud {
           text($('obj-t'), t(world.yardPhase > 0 ? 'Autopilot · Ned is working' : 'Reach Ned’s yard'));
           text($('obj-left'), world.yardPhase > 0 ? '' : range(dpt));
           ticks($('obj-p'), Math.max(0, 1 - dpt / (bk.def.lane * 0.65)), 30);
+        } else if (world.storyPlace && !bk.chase) {
+          // the stop's story place (sim/places.ts): what to do there, and how far, or how much of the hold is done
+          const sp = world.storyPlace, dsp = Math.hypot(sp.x - s.x, sp.z - s.z), hold = 'hold' in sp.def.act ? sp.def.act.hold : 0;
+          text($('obj-t'), t(sp.def.verb));
+          text($('obj-left'), hold && dsp <= sp.def.r ? `${Math.ceil(hold * (1 - sp.held))} s` : range(dsp));
+          ticks($('obj-p'), hold && dsp <= sp.def.r ? sp.held : Math.max(0, 1 - dsp / bk.def.lane), 30);
         } else if (refuelAt(world)) {
           // the first system past Cerro with a short tank: fill it first (buy at the depot or mine), the gate comes after
           text($('obj-t'), t('Fill the tank'));
@@ -793,7 +798,7 @@ export class Hud {
           text($('obj-left'), gt ? clock(gt.left) : mast ? range(Math.hypot(mast.x - s.x, mast.z - s.z)) : ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
           ticks($('obj-p'), gt ? 1 - gt.left / gt.total : 1 - dl / bk.def.lane, 30);
         }
-        text($('obj-s'), recovering(world.flags) ? t((world.tow?.strain ?? 0) > 0.25 ? 'Tow line straining · it holds' : 'Under tow · the line holds') : world.laneHeld ? t('Lane Control · drive limited, guns safed') : bk.chase && ready ? t('Reinforcements inbound · break contact')
+        text($('obj-s'), recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact')
           : world.gateWhy === 'resetting after the key' ? t('Jump Gate resetting')
           : world.gateWhy === 'the gate is rebooting' ? `${t('Jump Gate rebooting')} · ${t('opens in {t}', { t: clock(world.gateEta) })} · ${range(dl)}`
           : world.gateWhy === 'the gate is opening' ? `${t('Jump Gate opens')} · ${t('opens in {t}', { t: clock(world.gateEta) })} · ${range(dl)}`

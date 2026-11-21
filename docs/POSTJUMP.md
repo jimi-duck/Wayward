@@ -40,29 +40,9 @@ the audit dock; after it, Ned's yard (below); once she is
 repainted, the Jump Gate. Nothing else holds state: `guideTarget`,
 `goal.ts`, the HUD's objective, the edge pointers and the arrival note all read
 `lockLifted(world.flags)`. The flag is banked with the card, so a save, reload or
-restart of the sortie lands on the right objective. The audit dock stays on the scope as a place after the code (nothing
+restart of the sortie lands on the right objective. The story timing is untouched: the chain starts two seconds in and Sam's code comes after the breach
+notice, as before. The audit dock stays on the scope as a place after the code (nothing
 leads to it), and the depot stays on the strip throughout.
-
-## Lane Control's tow (owner, 21 November 2026)
-
-The story here is told by things she can see, not by a clock (`sim/tow.ts`, the "story in places" plan):
-
-1. **The read.** `ID_AT` (3 s) after arrival the Jump Gate's beacon reads her ID. An amber notice ("ID read · drive limited, guns
-   safed") and Lane Control on the radio. From now until Sam's code her drive is capped at 40% of top speed (`DRIVE_CAP`) and her
-   guns are cold (`World.laneHeld`, HUD reason "Weapons safed by Lane Control").
-2. **The tugs.** Two Kellern recovery tugs undock from the audit dock and come for her at 62% of her top speed (`TUG_SPEED`), faster
-   than a capped drive, so running only delays them. The objective is "Kellern tugs inbound" with the lead's range.
-3. **The breach.** When the lead is within `LOCK_R` (12 units) of its place at her bow, or `LOCK_LATEST` (45 s) after the read at the
-   latest, the breach card opens. Its answer puts her on the line.
-4. **The tow.** The lead holds `TOW_LEN` (16 units) off her bow on a dull gold line from its winch to her bow (`render/tow.ts`); the
-   wing tug holds out ahead and to starboard. The tow runs on the old recovery's rails (`recoveryStep`), but her helm swings its
-   course by up to `STRAIN_TURN` (0.42 rad) and her throttle and helm pull the line taut: it brightens and the objective's sub-line
-   reads "Tow line straining · it holds". The recovery cannot fail (owner, 23 October 2026). Sam's card opens 2 km out, as before.
-5. **The code.** The line snaps (sparks and a flash at her bow, `towSnap`), the drive and guns are hers, and the tugs turn back for
-   the dock. 3 s later the tug she broke from reports her stolen on the radio; 9 s later the amber "Hull reported stolen" notice.
-
-Nothing here is saved: the phase follows from the flags, so a reload mid-tow puts the tugs back on the line, and a reload after the
-code has no tugs.
 
 ## Ned's yard (owner, 5 November 2026)
 
@@ -112,7 +92,8 @@ One thing at a time, in seconds of play after the paint is on (`STOLEN`):
 1. The rename reveal, then Ned on the radio (the work, then the partition).
 2. **+20 s:** Sam names the short tank: the depot if she can pay, the veined rock if not
    (`STOLEN_SAM`, `STOLEN_SAM_POOR`). Only when the tank is short.
-3. The archive, once the tank holds a jump. (The "Hull reported stolen" notice came at the code, from the tug.)
+3. **+38 s:** an amber notice, "Hull reported stolen · Kellern has called in Custody".
+   The archive opens once the tank holds a jump, at a free moment.
 4. **+70 s:** the first Custody hull, from behind.
 
 The depot's call is a radio line, not a card: flying into its ring docks. No lane toll is dealt at this

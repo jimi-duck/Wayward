@@ -1,3 +1,4 @@
+import { atPlace } from './paint';
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import { CARD_BY_ID } from '../src/sim/comms';
@@ -34,6 +35,8 @@ function fly(j: Journey, answers: Record<string, string> = {}, secs = 240): Play
   const w = new World(j.seed * 31 + 7, { mode: 'breakout', sortie: s, carry: j.carry });
   const out: Played = { cards: [], says: [], notices: [], pings: [] };
   for (let i = 0; i < Math.round(secs / STEP); i++) {
+    // she flies to the stop's story place, where its beat is (sim/places.ts)
+    atPlace(w);
     w.step(STEP, NO_INPUT);
     for (const e of w.events) {
       if (e.type === 'comms') out.cards.push(e.id);

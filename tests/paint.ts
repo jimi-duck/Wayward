@@ -1,6 +1,6 @@
 import type { World } from '../src/sim/world';
 import { PAINTED } from '../src/sim/postjump';
-import { ID_AT, LOCK_LATEST } from '../src/sim/tow';
+import { OPENING_AT } from '../src/content/story';
 
 const STEP = 1 / 60;
 const IDLE = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' } as const;
@@ -27,12 +27,17 @@ export function paintHull(w: World, answer: (w: World) => void = (x) => { x.answ
   return w.runTime - t0;
 }
 
-/**
- * The first system past Cerro, from arrival to the breach (owner 2026-11-21, sim/tow.ts): the gate reads her ID, Kellern's tugs come out of
- * the audit dock, and the breach card opens when the lead has her (or at the latest, LOCK_LATEST after the read). Flies `input` until then.
- */
-export function toBreach(w: World, input: Parameters<World['step']>[1] = IDLE, max = ID_AT + LOCK_LATEST + 5): number {
+/** The first system past Cerro, from arrival to the breach card (OPENING_AT in). Flies `input` until then. */
+export function toBreach(w: World, input: Parameters<World['step']>[1] = IDLE, max = OPENING_AT + 5): number {
   const t0 = w.runTime;
   for (let i = 0; i < Math.round(max / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input); }
   return w.runTime - t0;
+}
+
+/** Fly to the stop's story place, if one waits (sim/places.ts): put her at its centre, still, as a player holding there would be. */
+export function atPlace(w: World): boolean {
+  const p = w.storyPlace;
+  if (!p) return false;
+  w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
+  return true;
 }

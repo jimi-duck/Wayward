@@ -306,23 +306,23 @@ export const STORY_CARDS: CardDef[] = [
     doc: { kind: 'invoice', open: 'View breach invoice', kick: 'Document · breach invoice', title: 'Contract 08-441 · Outstanding charges', sub: 'Delivery not received.', note: 'Vessel recovery initiated.' },
     cargo: 'Contract 08-441 · short delivery',
     choices: [
-      // served by the tug that has her on its line (sim/tow.ts): the tug tows her in, Sam is on the radio, and his channel
-      // opens 2 km out from the dock. One plain acknowledgement (the owner, 23 October 2026).
+      // the recovery (sim/recovery.ts): Lane Control flies her in and says so in an alert (ui/hud.ts), then Sam on the
+      // radio, whose channel opens 2 km out from the dock. One plain acknowledgement (the owner, 23 October 2026).
       { id: 'proceed', label: 'Acknowledge', tone: 'run', hint: '',
-        win: { text: 'Under tow · the line holds', flag: RECOVERY_FLAG,
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 2.5, gap: 10, text: ['“They’re calling it a breach. They want the hauler back, and you with it. Don’t fight the tow.”', '“Hang in there, Juno. I’m not letting them have you. Give me a minute.”'] } } },
+        win: { text: 'Controls locked · recovery autopilot active', flag: RECOVERY_FLAG,
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 2.5, gap: 10, text: ['“They’re calling it a breach. They want the hauler back, and you with it. Let the autopilot fly for now.”', '“Hang in there, Juno. I’m not letting them have you. Give me a minute.”'] } } },
     ],
   }),
   story({
     id: 'story_sam', kind: 'warning', caller: 'miners', glass: 'ochre', status: 'Private', rx: SAM_BEARING, quote: true,
     from: 'Sam Okoro · private channel', title: 'A way out',
-    text: 'Juno, it’s me. Keep this off the open channel.\nThis code cuts Lane Control out and drops the tow. The debt’s still there, and they’ll be looking for you, but it’s your chance.\nHead to Ned’s yard, he owes me one. He’ll reprogram her and mask your code, at least for now.',
+    text: 'Juno, it’s me. Keep this off the open channel.\nThis code overrides the autopilot. The debt’s still there, and they’ll be looking for you, but this is your chance to get out.\nHead to Ned’s yard, he owes me one. He’ll reprogram her and mask your code, at least for now. It isn’t much, but it’s a start.',
     cargo: 'Ned’s yard · off the lane',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
         // the code overrides the autopilot and nothing more (owner 2026-11-05): she is still the company's grey hull; Ned's yard makes her hers (sim/postjump.ts PAINT_DUE)
-        win: { text: 'Tow line cut · the helm is yours', flag: ['ship_stolen', 'paint_due', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
-          signal: { tone: 'teal', headline: 'Drive unlocked', reason: 'the helm is yours' },
+        win: { text: 'Autopilot overridden · the helm is yours', flag: ['ship_stolen', 'paint_due', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
+          signal: { tone: 'teal', headline: 'Autopilot overridden', reason: 'Lane Control shut out' },
           radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“At least you’ll have your freedom. Don’t dock. Ned’s yard first. Go, Juno.”' } } },
     ],
   }),

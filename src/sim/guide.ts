@@ -24,7 +24,7 @@ export const BEHIND = (135 * Math.PI) / 180;
 export const FIGHT_RANGE = FIRE_RANGE * 1.25;
 
 export interface Guide {
-  kind: 'lane' | 'port' | 'audit' | 'event' | 'yard' | 'relay';
+  kind: 'lane' | 'port' | 'audit' | 'event' | 'yard' | 'relay' | 'story';
   /** English; the strip runs it through t(). */
   name: string;
   x: number;
@@ -34,7 +34,7 @@ export interface Guide {
 }
 
 export interface Place {
-  kind: 'lane' | 'port' | 'audit' | 'yard' | 'relay';
+  kind: 'lane' | 'port' | 'audit' | 'yard' | 'relay' | 'story';
   name: string;
   x: number;
   z: number;
@@ -79,6 +79,9 @@ export function guideTarget(world: World): Guide | null {
     // a gate that waits on its relay mast: the mast is the course until it answers
     const relay = places.find((p) => p.kind === 'relay');
     if (relay && world.gateRelay) return { kind: 'relay', name: relay.name, x: relay.x, z: relay.z, r: relay.r };
+    // the stop's story place: the beat is there, so it is the course until it is done (sim/places.ts)
+    const story = places.find((p) => p.kind === 'story');
+    if (story && !bk.chase) return { kind: 'story', name: story.name, x: story.x, z: story.z, r: story.r };
     if (lane) return { kind: 'lane', name: lane.name, x: lane.x, z: lane.z, r: lane.r };
   }
   return null;

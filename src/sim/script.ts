@@ -39,7 +39,9 @@ export type Trigger =
   /** The pursuit has closed to this many days or fewer (sim/hunt.ts PURSUIT); never at a breather. */
   | { on: 'pursuit'; days: number }
   /** Near the Jump Gate. */
-  | { on: 'leave' };
+  | { on: 'leave' }
+  /** A story place of this stop is done: held at, or taken aboard (sim/places.ts). The gate waits on it, and names it. */
+  | { on: 'place'; place: string };
 
 export type Output =
   | { radio: { from: string; caller: string; text: string } }
@@ -88,6 +90,8 @@ export interface Ctx {
   flags: ReadonlySet<string>;
   /** A card has been answered (or none is open and it was seen). */
   cardDone(id: string): boolean;
+  /** A story place is done (sim/places.ts). */
+  placeDone?(id: string): boolean;
 }
 
 /** Seconds between two lines, and how near the gate "leave" is. */
@@ -157,7 +161,7 @@ export class Script {
 
   /**
    * The main beats still owed here: those that have triggered and not yet played, and those whose trigger is due. `handshake`: one
-   * of them waits on the player reaching a site (a relay mast), which no clock should let go of.
+   * of them waits on the player reaching a site (a relay mast, a story place), which no clock should let go of.
    */
   owed(flags: ReadonlySet<string>, tank = 0): { any: boolean; handshake: boolean } {
     let any = false, handshake = false;
@@ -167,7 +171,7 @@ export class Script {
       const waiting = this.fired.has(r.id);
       if (!waiting && !(this.cond(r, flags, tank) && this.due(r, flags, tank))) continue;
       any = true;
-      if (!waiting && r.on.on === 'near') handshake = true;
+      if (!waiting && (r.on.on === 'near' || r.on.on === 'place')) handshake = true;
     }
     return { any, handshake };
   }
@@ -178,6 +182,15 @@ export class Script {
     for (const r of this.mine) {
       if (!r.main || this.seen.has(r.id) || this.playedAt.has(r.id) || this.released.includes(r.id)) continue;
       if (this.fired.has(r.id) || (this.cond(r, flags, tank) && this.due(r, flags, tank))) return r;
+    }
+    return null;
+  }
+
+  /** The story place the gate waits on (a main beat not yet triggered that waits on one), else null. */
+  owedPlace(flags: ReadonlySet<string>, tank = 0): string | null {
+    for (const r of this.mine) {
+      if (!r.main || r.on.on !== 'place' || this.fired.has(r.id) || this.seen.has(r.id) || this.released.includes(r.id)) continue;
+      if (this.cond(r, flags, tank) && this.due(r, flags, tank)) return r.on.place;
     }
     return null;
   }
@@ -234,6 +247,7 @@ export class Script {
       case 'flag': return c.flags.has(o.flag);
       case 'pursuit': return c.pursuit <= o.days;
       case 'leave': return c.dist('gate') <= LEAVE_R;
+      case 'place': return !!c.placeDone?.(o.place);
     }
   }
 

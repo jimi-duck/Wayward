@@ -32,9 +32,9 @@ export type GameEvent =
   | { type: 'mended'; plates: number }
   | { type: 'breach'; x: number; z: number; score: number }
   | { type: 'bankEmpty' }
-  | { type: 'gunsCold'; at: 'lane' | 'port' | 'lc' | null }
-  /** Lane Control's tow line snapped at Sam's code (sim/tow.ts): where, for the sparks. */
-  | { type: 'towSnap'; x: number; z: number }
+  | { type: 'gunsCold'; at: 'lane' | 'port' | null }
+  /** A story place is done (sim/places.ts): held at, or taken aboard. */
+  | { type: 'placeDone'; x: number; z: number; look: string; pickup: boolean }
   /** The port will not take the ship while a fight is on. */
   | { type: 'dockDenied' }
   /** The fight is over and the clamps take the ship. */
