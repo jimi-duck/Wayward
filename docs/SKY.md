@@ -227,3 +227,20 @@ rebuilt per sky from its seed. GPU cost not measured.
   point (never red: red is threat only). Mean gap per region (`skirmish`): often in the Breaker Yards and the Marches,
   never in the Hollows, the Drift Deep or the Last Lanes. `?phenom=busy` puts one where the camera looks.
 - mining rigs and convoys were already there (farworks `mine`, the `convoy` feature).
+
+## Each region its own look (space plan step 6, 2026-11-21)
+
+`render/signature.ts` holds one row per palette, read by the belt, the middle distance and the lane lights (the far
+works and the sky's events already lean by palette in `farworks.ts` LEAN and `phenomena.ts` PHENOM):
+
+- the Reach: clean ice that glitters most, fewer loose streams, cool lane lights blinking in step;
+- the Marches: more smoke among the banks, warm convoy lights chasing down their lanes;
+- the Hollows: gas lit faintly from within, little ice, no lights;
+- the Salvage Belt: warm metal flakes instead of ice, more rubble;
+- the Drift Deep: thin dust, fewer banks and streams, little ice;
+- the Breaker Yards: the most smoke, loose plate glinting;
+- the Free Ports: thicker banks, lane lamps teal and amber in turn;
+- the Last Lanes: rubble pulled one way in long, quick streams, faint inner glow.
+
+Not built from the plan's ideas: holdfast greenhouses, searchlights, salvage cutters, Thren scars. They would be new
+far works rather than tuning; ask if they are wanted.

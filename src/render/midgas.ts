@@ -1,6 +1,7 @@
 import { Color, Group, type Camera } from 'three';
 import { Gas, type GasLump } from './gas';
 import { seeded } from './kit';
+import { signatureOf } from './signature';
 import type { Sky } from './sky';
 
 // ── the middle distance ───────────────────────────────────────────────────
@@ -37,10 +38,13 @@ export class MidGas {
     for (const b of this.banks) { b.gas.mesh.removeFromParent(); b.gas.dispose(); }
     this.banks = [];
     const r = seeded(sky.seed * 13 + 7);
-    const n = this.lean ? 5 : 9;
+    // the region's signature: how thick, how much of it is dark dust or smoke, and whether the gas glows from within
+    const sig = signatureOf(sky.palette);
+    const n = Math.max(2, Math.round((this.lean ? 5 : 9) * Math.min(1, sig.banks)));
+    const thick = 0.7 + 0.3 * sig.banks;
     for (let i = 0; i < n; i++) {
-      // a third are dark dust lanes, the rest gas lit in one of the sky's colours
-      const dark = i % 3 === 2;
+      // some are dark dust lanes (about a third, by region), the rest gas lit in one of the sky's colours
+      const dark = (i * 0.618 + 0.3) % 1 < sig.dark;
       const base = sky.neb[i % 2]!.clone();
       const lum = base.r * 0.3 + base.g * 0.5 + base.b * 0.2;
       const hue = new Color(Math.max(0, lum + (base.r - lum) * 1.6), Math.max(0, lum + (base.g - lum) * 1.6), Math.max(0, lum + (base.b - lum) * 1.6));
@@ -53,8 +57,8 @@ export class MidGas {
           x: Math.cos(a) * d, y: (r() - 0.5) * spread * 0.45, z: Math.sin(a) * d * 0.6,
           size: 170 + r() * 220,
           colour: colour.clone().multiplyScalar(0.8 + r() * 0.4),
-          alpha: (dark ? 0.75 : 0.5) * (0.6 + r() * 0.4) * (1 - edge * 0.45),
-          glow: dark ? 0 : 0.05, stretch: dark ? 1.8 + r() : 1 + r() * 0.6, family: dark ? 1 : r() < 0.7 ? 0 : 2,
+          alpha: (dark ? 0.75 : 0.5) * (0.6 + r() * 0.4) * (1 - edge * 0.45) * thick,
+          glow: dark ? 0 : 0.05 + sig.inner * (1 - edge), stretch: dark ? 1.8 + r() : 1 + r() * 0.6, family: dark ? 1 : r() < 0.7 ? 0 : 2,
         });
       }
       const gas = new Gas(lumps, sky.seed + i * 31);

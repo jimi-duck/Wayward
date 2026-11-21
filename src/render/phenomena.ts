@@ -2,6 +2,7 @@ import {
   AdditiveBlending, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, Group, Mesh, Object3D, PlaneGeometry, Points, ShaderMaterial, Sprite, SpriteMaterial, Vector3,
 } from 'three';
 import { dirOf, skyLayout, type Sky } from './sky';
+import { signatureOf } from './signature';
 import { singularity } from './singularity';
 import { glowTexture } from './textures';
 
@@ -142,21 +143,25 @@ interface Spark { s: Sprite; t: number; dur: number; peak: number }
 const LANE_N = 12, LANE_RUN = 0.4;
 const LANE_V = /* glsl */ `
   attribute float aI;
-  uniform float uTime;
-  varying float vA;
+  uniform float uTime, uStep;
+  varying float vA, vI;
   void main() {
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    // a slow chase along the lane, like approach lights: each marker steady and dim, a bright beat running down the line
-    vA = 0.3 + 0.7 * pow(max(sin(uTime * 1.3 - aI * 0.55), 0.0), 16.0);
+    // a slow chase along the lane, like approach lights: each marker steady and dim, a bright beat running down the line;
+    // in ordered space (uStep) every marker blinks at once instead
+    vA = 0.3 + 0.7 * pow(max(sin(uTime * 1.3 - aI * 0.55 * (1.0 - uStep)), 0.0), 16.0);
+    vI = aI;
     gl_PointSize = 3.0;
   }`;
 const LANE_F = /* glsl */ `
-  uniform vec3 uC; uniform float uOn;
-  varying float vA;
+  uniform vec3 uC; uniform float uOn, uAlt;
+  varying float vA, vI;
   void main() {
     float a = vA * uOn * smoothstep(0.5, 0.1, length(gl_PointCoord - 0.5));
     if (a < 0.003) discard;
-    gl_FragColor = vec4(uC * a, 1.0);
+    // port lamps (uAlt): every other marker teal
+    vec3 c = mix(uC, vec3(0.45, 1.0, 0.95), uAlt * step(0.5, mod(vI, 2.0)));
+    gl_FragColor = vec4(c * a, 1.0);
   }`;
 
 function rand(seed: number) {
@@ -239,7 +244,7 @@ export class Phenomena {
     lg.setAttribute('position', new Float32BufferAttribute(new Float32Array(4 * LANE_N * 3), 3));
     lg.setAttribute('aI', new Float32BufferAttribute(Float32Array.from({ length: 4 * LANE_N }, (_, i) => i % LANE_N), 1));
     this.laneMat = new ShaderMaterial({
-      vertexShader: LANE_V, fragmentShader: LANE_F, uniforms: { uTime: { value: 0 }, uC: { value: new Color(1.0, 0.86, 0.62) }, uOn: { value: 1 } },
+      vertexShader: LANE_V, fragmentShader: LANE_F, uniforms: { uTime: { value: 0 }, uC: { value: new Color(1.0, 0.86, 0.62) }, uOn: { value: 1 }, uStep: { value: 0 }, uAlt: { value: 0 } },
       transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false,
     });
     this.lanes = new Points(lg, this.laneMat);
@@ -287,6 +292,12 @@ export class Phenomena {
     this.kept = [];
     const r = rand(sky.seed * 17 + 23);
     let lean = (this.lean = PHENOM[sky.palette ?? 0] ?? PHENOM[0]!);
+    // the region's lane lights (signature.ts): in step or a chase, plain or port lamps in turn
+    const sig = signatureOf(sky.palette);
+    const lu = this.laneMat.uniforms;
+    (lu.uC!.value as Color).fromArray(sig.lane);
+    lu.uStep!.value = sig.laneStep ? 1 : 0;
+    lu.uAlt!.value = sig.laneAlt ? 1 : 0;
     // ?phenom=hole|rift|storm|busy puts that thing in every sky (a screenshot rig, like ?near)
     const force = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('phenom');
     this.lookBusy = force === 'busy';

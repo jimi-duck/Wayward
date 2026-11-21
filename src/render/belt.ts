@@ -4,6 +4,7 @@ import {
 import { Gas, type GasLump } from './gas';
 import { seeded } from './kit';
 import { rockGeometry } from './rocks';
+import { signatureOf } from './signature';
 import type { Sky } from './sky';
 
 // ── fuller belts (space plan step 4) ──────────────────────────────────────
@@ -60,6 +61,8 @@ export class Belt {
   private sky: Sky | null = null;
   private t = 0;
   private k = 0;
+  /** The region's glitter strength (signature.ts). */
+  private gk = 1;
 
   constructor() {
     const n = 420, pos = new Float32Array(n * 3), tw = new Float32Array(n * 2), r = seeded(4242), box = 360;
@@ -91,11 +94,15 @@ export class Belt {
     this.streams = [];
     // the rock takes a breath of the sky's main colour, the ice its star
     this.rockMat.color.setHex(0x2c2826).lerp(sky.neb[0], 0.08);
-    (this.glitterMat.uniforms.uColour!.value as Color).copy(sky.star).lerp(new Color(0.75, 0.9, 1.1), 0.5).multiplyScalar(1.3);
+    // the region's signature: clean ice or warm metal flakes, more or fewer streams, and in torn space all pulled one way
+    const sig = signatureOf(sky.palette);
+    this.gk = sig.glitter;
+    (this.glitterMat.uniforms.uColour!.value as Color).copy(sky.star).lerp(new Color(0.75, 0.9, 1.1), 0.5).lerp(new Color(1.15, 0.92, 0.66), sig.flakes).multiplyScalar(1.3);
     const r = seeded(sky.seed * 17 + 3);
-    const count = this.lean ? 2 : 3, per = this.lean ? 140 : 320;
+    const count = Math.max(1, Math.min(4, Math.round((this.lean ? 2 : 3) * sig.streams))), per = this.lean ? 140 : 320;
+    const pullAng = r() * Math.PI;
     for (let i = 0; i < count; i++) {
-      const len = 1300 + r() * 900, base = new Float32Array(per * 5);
+      const len = (1300 + r() * 900) * (sig.pull ? 1.4 : 1), base = new Float32Array(per * 5);
       for (let j = 0; j < per; j++) {
         // along the stream (0..1), across, height, size, turn
         const across = (r() + r() + r() - 1.5) * 60;
@@ -110,7 +117,7 @@ export class Belt {
       }
       const dust = new Gas(lumps, sky.seed + i * 7);
       this.group.add(mesh, dust.mesh);
-      this.streams.push({ mesh, dust, x: r() * TILE, y: (r() < 0.5 ? -1 : 1) * (60 + r() * 160), z: r() * TILE, ang: r() * Math.PI, len, speed: (4 + r() * 6) / len, base });
+      this.streams.push({ mesh, dust, x: r() * TILE, y: (r() < 0.5 ? -1 : 1) * (60 + r() * 160), z: r() * TILE, ang: sig.pull ? pullAng + (r() - 0.5) * 0.15 : r() * Math.PI, len, speed: ((4 + r() * 6) * (sig.pull ? 2.5 : 1)) / len, base });
     }
   }
 
@@ -122,10 +129,10 @@ export class Belt {
     this.k += (want - this.k) * Math.min(1, dt * 0.8);
     const k = this.k, u = this.glitterMat.uniforms;
     u.uTime!.value = this.t;
-    u.uK!.value = k;
+    u.uK!.value = k * this.gk;
     const c = u.uCentre!.value as { x: number; y: number; z: number };
     c.x = cx; c.z = cz;
-    this.glitter.visible = k > 0.01;
+    this.glitter.visible = k * this.gk > 0.01;
     const e = this.m.elements;
     for (const s of this.streams) {
       const on = k > 0.01;
