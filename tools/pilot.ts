@@ -547,6 +547,15 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
       if (d < 30 && v > 0.25) f.brk = true;
     }
   }
+  // a story place (sim/places.ts): a person flies to it before the gate, sits still inside a hold's ring, or flies over a pickup
+  const sp = !job && bk && !bk.chase && !paint ? w.storyPlace : null;
+  if (sp && !targets.boss && !targets.ships.some((a) => Math.hypot(a.x - s.x, a.z - s.z) < 60)) {
+    const dx = sp.x - s.x, dz = sp.z - s.z, d = Math.hypot(dx, dz) || 1;
+    const pickup = 'pickup' in sp.def.act, stop = pickup ? 0 : sp.def.r * 0.5;
+    want = Math.atan2(-dz, dx);
+    thrust = d > stop + 4 ? (v < Math.min(0.6, d / 160) ? 1 : 0) : 0;
+    if (!pickup && d < sp.def.r + 30 && v > 0.08) f.brk = true;
+  }
   // a hold at the site (a wreck's log, a drop): come in and sit still
   if (job && kind !== 'follow' && kind !== 'sneak' && kind !== 'survey' && kind !== 'recover' && kind !== 'race' && (w.stage!.def.goal.hold ?? 0) > 0) {
     const dx = job.x - s.x, dz = job.z - s.z, d = Math.hypot(dx, dz) || 1;

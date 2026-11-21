@@ -402,8 +402,8 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 
 A story beat happens somewhere she can see, and she does something there (the "story in places" plan). A place is a row in
 `content/script/places.ts`: its stop, a name, a look (skiff, ferry, wreck, canister, buoy; `render/places.ts`), where it stands (a share of
-the way to the gate and units off the line, port side), and one act: **hold** inside its ring, slow and out of a fight, for a few
-seconds, or **pickup** (fly over it). Done, it sets its flag and leaves the scope. `sim/places.ts` has the rules; the world shows one
+the way to the gate and units off the line, port side), and one act: **hold** inside its ring, slow (a fight does not stop it, so a hunted
+pilot can still hold), for a few seconds, or **pickup** (fly over it). Done, it sets its flag and leaves the scope. `sim/places.ts` has the rules; the world shows one
 place at a time (`World.storyPlace`): on the scope, as an edge pointer, as the guide's course and as the HUD objective (its verb, the
 range, then the seconds left as the ring fills). `show` and `after` hold a place back until a flag or a line that points to it;
 `skip` retires it when the beat came another way.
