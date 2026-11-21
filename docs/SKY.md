@@ -206,3 +206,13 @@ rebuilt per sky from its seed. GPU cost not measured.
 - Aerial haze held back (`aerial.ts`): a rock between the ship and the star took nearly all of a brightened haze and read
   as a flat pale lilac cut-out (the owner's washed-out complaint). The haze now takes at most 60% (lit faces 40%), and
   brightens only a little toward the star.
+
+## Fuller belts (space plan step 4, 2026-11-21)
+
+`render/belt.ts`, driven by how many rocks the system holds (none below 4, full at 30, eased in over a few seconds):
+
+- rubble streams: three long rivers of rock (two on Phone and Low), 2.5 to 16 m stones, 60 to 220 m above or below the
+  ship's plane, flowing slowly along their length and thinning at the ends, each with a thin band of dust (gas.ts sheets).
+  A thin field shows fewer stones, never smaller ones. On a 3 km tile anchored in the world, so they slide past.
+- ice glitter: 420 motes round the ship that catch the sun for an instant as they turn (additive, sun-tinted, small).
+- the close chips (debris.ts) are darker, never a pale grey.
