@@ -2011,8 +2011,8 @@ export class World implements EncounterHost {
       const dx = o.x - sp.x, dz = o.z - sp.z, d = Math.hypot(dx, dz) || 1, min = clear + o.r;
       if (d < min) { o.x = sp.x + (dx / d) * min; o.z = sp.z + (dz / d) * min; }
     }
-    // the hold counts once the arrival is over, and not in a fight
-    const free = this.busy() !== 'fight' && !this.floor.hush;
+    // the hold counts once the arrival is over; a fight does not stop it (a hunted pilot must still be able to hold, slow, under fire)
+    const free = !this.floor.hush;
     const r = stepPlace(sp.def, sp, this.ship, this.placeHold, dt, free);
     this.placeHold = r.hold;
     if (!r.done) return;
