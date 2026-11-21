@@ -14,8 +14,8 @@ import {
 
 /** Where the key light comes from (environment.ts puts it at -44, 22, -10 from the ship). */
 const KEY_DIR = new Vector3(-44, 22, -10).normalize();
-/** The baked sky's brightness in the reflection: a touch over the dome's, so dark plating still shows the gas. */
-const SKY_GAIN = 2.6;
+/** The baked sky's brightness in the reflection: about the dome's own, so plating shows the gas without going pale (owner 2026-11-21: no washed-out greys; was 2.6). */
+const SKY_GAIN = 1.2;
 
 export class SkyReflections {
   private readonly pmrem: PMREMGenerator;

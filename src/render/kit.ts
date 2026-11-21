@@ -378,7 +378,8 @@ function wearShader(shader: { vertexShader: string; fragmentShader: string }, pa
       ${shade && painted ? '// the hero hull: the paint chipped back from every pressed edge, more the harder the run\n      wBare = max(wBare, wEdge * smoothstep(0.46, 0.56, wFbm(wp * 30.0) + (wLow - 0.5) * 0.3) * (0.35 + 0.65 * uRun) * uWorn);' : ''}
       // rust and dirt run down from the seams in streaks
       float wStreak = smoothstep(0.5, 0.85, wFbm(wp * vec3(7.0, 0.7, 7.0) + 2.3)) * smoothstep(0.35, 0.6, wLow);
-      vec3 wSteel = vec3(0.45, 0.44, 0.42) * (0.7 + 0.5 * wN);
+      // bare steel where the paint is gone: worked dark, never a pale grey that washes a hull out at range (owner 2026-11-21)
+      vec3 wSteel = vec3(0.27, 0.265, 0.255) * (0.7 + 0.5 * wN);
       // each plate its own shade; a few sun-faded
       diffuseColor.rgb *= ${shade ? (painted ? '0.66 + 0.62 * wTone' : '0.76 + 0.5 * wTone') : (painted ? '0.84 + 0.3 * wTone' : '0.88 + 0.24 * wTone')};
       ${shade ? (painted ? 'diffuseColor.rgb *= mix(vec3(1.0), vec3(1.12, 0.92, 0.66), smoothstep(0.5, 0.9, fract(wTone * 5.7)) * 0.8);' : 'diffuseColor.rgb *= mix(vec3(1.0), vec3(0.84, 0.96, 1.18), smoothstep(0.4, 0.8, fract(wTone * 3.1)) * 0.85);') : ''}

@@ -33,13 +33,14 @@ let mats: Record<string, Material> | null = null;
 // lights are not fogged: the gate's neon and the lamps stay readable through the haze
 export function materials(): Record<string, Material> {
   if (mats) return mats;
+  // dark worked steel, never a pale grey (owner 2026-11-21): under the hard key a mid grey reads as a washed-out cut-out
   mats = {
-    hull: metal({ tint: 0x7d8288, roughness: 0.7, metalness: 0.4 }),
+    hull: metal({ tint: 0x474c54, roughness: 0.66, metalness: 0.45 }),
     paint: metal({ tint: 0xf2b21f, roughness: 0.62, metalness: 0.06 }),
     dark: metal({ tint: 0x3e3c3a, roughness: 0.55, metalness: 0.6, scale: 1.4 }),
     lamp: new MeshBasicMaterial({ color: new Color(3.2, 2.4, 1.5), toneMapped: false, fog: false }),
     amber: new MeshBasicMaterial({ color: AMBER, toneMapped: false, fog: false }),
-    slate: metal({ tint: 0x868b92, roughness: 0.74, metalness: 0.5, scale: 0.7, bump: 0.006, worn: 0.4 }),
+    slate: metal({ tint: 0x45484d, roughness: 0.74, metalness: 0.5, scale: 0.7, bump: 0.006, worn: 0.4 }),
     strip: new MeshBasicMaterial({ color: STRIP.clone(), toneMapped: false, fog: false }),
     cyan: new MeshBasicMaterial({ color: CYAN, toneMapped: false, fog: false }),
   };
@@ -295,7 +296,7 @@ export function crate(k: Kit, key: string, x: number, y: number, z: number, rot:
 
 /** The stone of a Holdfast's rock, the den and the seed. */
 let stoneMat: Material | null = null;
-export const stoneOf = (): Material => (stoneMat ??= metal({ tint: 0x6f675c, roughness: 0.95, metalness: 0.04, scale: 1.6, bump: 0.02, worn: 0.5 }));
+export const stoneOf = (): Material => (stoneMat ??= metal({ tint: 0x4d473f, roughness: 0.95, metalness: 0.04, scale: 1.6, bump: 0.02, worn: 0.5 }));
 
 /** The Dust Market: a round raft deck with a ring of awnings and lantern posts round a mast hung with a banner, two moored skiffs. */
 export function buildMarket(lamp: Material): Group {

@@ -163,3 +163,16 @@ and softer at the rim. Not measured: real-GPU bake time and memory (one 4096 x 2
   is a thin shell (1.1 radii, was 1.16), lit on the sun's side, and brightens into a ring when the sun is behind the world.
 - **Rings** are lit on their sunlit face; from the dark face only the thin parts glow.
 - Drift runs on `FarBodies.tick`, so reduced motion holds it. GPU cost not measured (one more cloud lookup per planet pixel).
+
+## No washed-out greys (owner 2026-11-21)
+
+The owner dislikes the pale grey and lilac wash that rocks, props and hulls took on under the hard key. Under the key (6.2) and the
+neutral tone map, a mid-grey albedo lit face lands near the shoulder and reads as a flat, pale cut-out. So:
+
+- rock: tinted per kind, darker (`* 0.62`), less desaturated; iron is a blue-grey, not a pale steel;
+- the sky's reflection on hulls is weaker (`SKY_GAIN` 1.2, was 2.6);
+- bare steel where paint is chipped (`kit.ts` wear) is a worked dark steel, not a pale grey;
+- far works, hulks, monuments, the Breakout and site structures, the Kellern and Holdfast ports, the depot's bronze and the
+  stock (pre-rename) hull are all dark worked metal with a breath of colour.
+
+New props follow suit: keep structure albedo under about 0x50 per channel and put colour on the paint, not a light grey.

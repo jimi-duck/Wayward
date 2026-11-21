@@ -97,7 +97,7 @@ interface RockLook {
 
 const LOOKS: Record<RockKind, RockLook> = {
   basalt:   { id: 'basalt',   glow: [3.2, 0.45, 0.06], tint: [0.95, 0.82, 0.72], zone: -0.1,  pulse: 1.2, metal: 0.06, mineral: 0,    strata: 0.65, rim: 0 },
-  iron:     { id: 'iron',     glow: [1.2, 0.25, 0.06], tint: [0.65, 0.75, 0.92], zone: -0.25, pulse: 0.5, metal: 0.72, mineral: 0.2,  strata: 0.85, rim: 0 },
+  iron:     { id: 'iron',     glow: [1.2, 0.25, 0.06], tint: [0.58, 0.62, 0.7], zone: -0.25, pulse: 0.5, metal: 0.45, mineral: 0.2,  strata: 0.85, rim: 0 },
   rich:     { id: 'rich',     glow: [2.2, 0.7, 3.8],   tint: [0.82, 0.55, 1.25], zone: 0.15,  pulse: 1.8, metal: 0.15, mineral: 0.85, strata: 0.5,  rim: 0.2 },
   volatile: { id: 'volatile', glow: [0.8, 1.8, 3.2],   tint: [0.7, 0.95, 1.15],  zone: 0.25,  pulse: 6,   metal: 0.06, mineral: 0,    strata: 0.35, rim: 0.5 },
 };
@@ -193,11 +193,12 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         stone = mix(stone, vec3(0.3, 0.3, 0.3), incl * 0.5);
         // speckle: light and dark grains in the stone
         stone *= 0.8 + 0.4 * smoothstep(-0.4, 0.6, snoise(rp * 13.0 + 1.1)) * lodF + 0.2 * (1.0 - lodF);
-        stone = mix(vec3(dot(stone, vec3(0.3, 0.5, 0.2))), stone, 0.6);
+        stone = mix(vec3(dot(stone, vec3(0.3, 0.5, 0.2))), stone, 0.9);
         // crack lines and the crust beside a live seam go dark
         stone *= 1.0 - min(0.75, crackL * 0.35 * deep + smoothstep(0.9, 0.975, ridge) * zone * deep * 0.45);
-        // the kind tints the stone only lightly: outside, every rock is dusty charcoal; its colour lives in its seams
-        diffuseColor.rgb *= stone * mix(vec3(1.0), uTint, 0.3 - 0.15 * uViolet);
+        // the kind tints the stone: each mineral its own dark colour, never a pale grey (owner 2026-11-21: washed-out greys
+        // take away from the game), and the sun's hard key no longer bleaches a lit face to grey
+        diffuseColor.rgb *= stone * mix(vec3(1.0), uTint * uTint, 0.85 - 0.25 * uViolet) * 0.62;
         // stepped exfoliation: each layer a sloping tread with a sharp lip that catches grazing light
         float layer = fract(bedPos * 2.2 + fine * 0.15);
         float exfol = (layer - smoothstep(0.84, 1.0, layer)) * strataK;
@@ -272,7 +273,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         #endif
         #include <aomap_fragment>`);
   };
-  m.customProgramCacheKey = () => `stone-rock17-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
+  m.customProgramCacheKey = () => `stone-rock19-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 

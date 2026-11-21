@@ -68,7 +68,7 @@ const BOX = new BoxGeometry(1, 1, 1);
 const FRAGMENT = new OctahedronGeometry(1, 0);
 const FRAGMENT_MAT = new MeshStandardMaterial({ color: new Color(0.1, 0.06, 0.16), emissive: new Color(0.14, 0.05, 0.26), emissiveIntensity: 0.35, roughness: 0.3, metalness: 0.25, flatShading: true });
 const ROCK_MAT = lavaRock(2.6, 1, 0.07, undefined, false);
-const HULL_MAT = new MeshStandardMaterial({ color: 0x6a7480, roughness: 0.6, metalness: 0.3, flatShading: true, emissive: 0x0a1016, envMapIntensity: 1.3 });
+const HULL_MAT = new MeshStandardMaterial({ color: 0x3a4048, roughness: 0.6, metalness: 0.3, flatShading: true, emissive: 0x0a1016, envMapIntensity: 0.8 });
 const SLAB_MAT = new MeshStandardMaterial({ color: 0x34404e, roughness: 0.32, metalness: 0.55, emissive: 0x05090e, envMapIntensity: 1.3 });
 const SEAM_MAT = new MeshBasicMaterial({ color: new Color(0.35, 0.8, 1.1), toneMapped: false, fog: false });
 
@@ -80,8 +80,9 @@ function deadMaterials(): Record<string, Material> {
   const coat = { painted: true, worn: 0.55, roughness: 0.74, metalness: 0.35, emissive: new Color(0.014, 0.016, 0.022) }, grain = 3;
   const cold = new MeshBasicMaterial({ color: new Color(0.9, 0.22, 0.06), toneMapped: false });
   dead = {
-    hull: thinFog(metal({ ...coat, tint: 0x34353a, scale: 1.6 * grain }), 0.6), paint: thinFog(metal({ ...coat, tint: 0x5a5750, scale: 1.2 * grain }), 0.6), patch: thinFog(metal({ ...coat, tint: 0x6a6458, scale: 0.9 * grain }), 0.6),
-    dark: thinFog(metal({ ...coat, tint: 0x24262a, scale: 1.8 * grain }), 0.6), trim: thinFog(metal({ ...coat, tint: 0x4e403a, scale: 0.9 * grain }), 0.6), glow: new MeshBasicMaterial({ color: 0x050505 }),
+    // dark, burnt colours: under the hard key the old pale paint read as a washed-out grey-white shape (owner 2026-11-21)
+    hull: thinFog(metal({ ...coat, tint: 0x24252a, scale: 1.6 * grain }), 0.6), paint: thinFog(metal({ ...coat, tint: 0x3a332b, scale: 1.2 * grain }), 0.6), patch: thinFog(metal({ ...coat, tint: 0x45392c, scale: 0.9 * grain }), 0.6),
+    dark: thinFog(metal({ ...coat, tint: 0x1a1b1e, scale: 1.8 * grain }), 0.6), trim: thinFog(metal({ ...coat, tint: 0x3d2c24, scale: 0.9 * grain }), 0.6), glow: new MeshBasicMaterial({ color: 0x050505 }),
     lamp: cold, crystal: metal({ ...coat, tint: 0x3c3628, scale: 0.9 * grain }), violet: new MeshBasicMaterial({ color: 0x0a0610 }),
   };
   return dead;
