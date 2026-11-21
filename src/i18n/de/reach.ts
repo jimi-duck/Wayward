@@ -35,8 +35,8 @@ export const REACH_DE: Record<string, string> = {
   'Copperline · refit before the Narrows': 'Copperline · vor den Narrows aufrüsten',
   'unknown contact logged': 'unbekannter Kontakt vermerkt',
   // radio
-  '“Halden’s Reach. Old Warden families retire here. If anyone remembers, it’s them.”': '„Halden’s Reach. Alte Warden-Familien ziehen sich hierher zurück. Wenn sich jemand erinnert, dann die.“',
-  '“If anyone asks, I was never here. They’ll ask.”': '„Wenn jemand fragt: Ich war nie hier. Sie werden fragen.“',
+  '“Halden’s Reach. Old Warden families retire here. That skiff off the hospice ring is calling you.”': '„Halden’s Reach. Alte Warden-Familien ziehen sich hierher zurück. Das Skiff am Hospizring ruft dich.“',
+  '“The spike’s off my stern. If anyone asks, I was never here. They’ll ask.”': '„Der Spike treibt hinter meinem Heck. Wenn jemand fragt: Ich war nie hier. Sie werden fragen.“',
   '“L. C. again. On the order, and on the money.”': '„Schon wieder L. C. Auf dem Befehl und auf dem Geld.“',
   '“Whoever that is, they signed both.”': '„Wer das auch ist, hat beides unterschrieben.“',
   '“L. C. means nothing to me. Remember it anyway.”': '„L. C. sagt mir nichts. Merk es dir trotzdem.“',

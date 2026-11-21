@@ -157,8 +157,7 @@ describe('after Sam’s code', () => {
       w.events.length = 0;
       if (firstHull === Infinity && custody(w).length) firstHull = w.runTime - t0;
     }
-    // the report itself comes at Sam's code, from the tug she broke away from (sim/tow.ts); here the lock was lifted without one
-    expect(said).toEqual([`sam@${STOLEN.sam}`]);
+    expect(said).toEqual([`sam@${STOLEN.sam}`, `notice@${STOLEN.notice}`]);
     expect(firstHull).toBeGreaterThanOrEqual(STOLEN.pursuit - 0.1);
     expect(STOLEN_SAM).toMatch(/depot/);
   });

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { BREACH_BEAT, SAM_BEAT, WAKE_BEAT } from '../src/content/story';
-import { LOCK_LATEST, STRAIN_TURN } from '../src/sim/tow';
 import { CARD_BY_ID, PORT_CALL } from '../src/sim/comms';
 import { owed, ledgerFor } from '../src/sim/contract';
 import type { SortieResult } from '../src/sim/breakout';
@@ -95,9 +94,9 @@ describe('the forced recovery', () => {
     expect(w.comms).toBeNull();
     const d1 = Math.hypot(dock.x - w.ship.x, dock.z - w.ship.z);
     expect(d1).toBeLessThan(d0);
-    // nose on the dock, give or take her pull against the line (sim/tow.ts STRAIN_TURN: the full right turn held all the way)
+    // nose on the dock
     const bearing = Math.atan2(-(dock.z - w.ship.z), dock.x - w.ship.x);
-    expect(Math.abs(Math.atan2(Math.sin(bearing - w.ship.heading), Math.cos(bearing - w.ship.heading)))).toBeLessThan(STRAIN_TURN + 0.15);
+    expect(Math.abs(Math.atan2(Math.sin(bearing - w.ship.heading), Math.cos(bearing - w.ship.heading)))).toBeLessThan(0.5);
     expect(bolts).toBe(0);
     expect(w.docked).toBe(false);
     expect(w.auditCalled).toBe(false);
@@ -114,7 +113,7 @@ describe('the forced recovery', () => {
       w.events.length = 0;
     });
     expect(w.comms?.def.id).toBe(SAM_BEAT);
-    expect(heard.map(([, x]) => x)).toEqual(['“They’re calling it a breach. They want the hauler back, and you with it. Don’t fight the tow.”', '“Hang in there, Juno. I’m not letting them have you. Give me a minute.”']);
+    expect(heard.map(([, x]) => x)).toEqual(['“They’re calling it a breach. They want the hauler back, and you with it. Let the autopilot fly for now.”', '“Hang in there, Juno. I’m not letting them have you. Give me a minute.”']);
     // spread over the run in, the last a few seconds before his channel opens
     expect(heard[1]![0] - heard[0]![0]).toBeGreaterThanOrEqual(10);
     expect(heard[1]![0]).toBeLessThan(t - 3);
@@ -246,13 +245,12 @@ describe('the autopilot keeps clear (owner, 23 October 2026)', () => {
 });
 
 describe('arrival sweep and autopilot hold (owner, 2 November 2026)', () => {
-  it('the breach notice waits for the arrival sweep (8 s) and for the tug that serves it', () => {
+  it('the breach notice waits for the arrival sweep (8 s)', () => {
     const w = arrive(beyond());
     run(w, 7.5);
     expect(w.comms).toBeNull();
-    const t = toBreach(w);
+    toBreach(w);
     expect(w.comms?.def.id).toBe(BREACH_BEAT);
-    expect(t).toBeLessThan(LOCK_LATEST);
   });
   it('the autopilot keeps flying while Sam is held back and waits only within 1 km of the dock', () => {
     const j = beyond();
@@ -371,8 +369,7 @@ describe('the forced recovery across a reload', () => {
     const w = arrive(j);
     expect(recovering(w.flags)).toBe(true);
     run(w, 10);
-    // back on the line at once (sim/tow.ts onTheLine), and Sam's card is not dealt as the system's story beat: the recovery deals it
-    expect(w.tow?.phase).toBe('tow');
+    // not dealt as the system's story beat: the recovery deals it
     expect(w.comms).toBeNull();
     until(w);
     expect(w.comms?.def.id).toBe(SAM_BEAT);
@@ -402,8 +399,6 @@ describe('the forced recovery across a reload', () => {
     expect(recovering(w2.flags)).toBe(false);
     run(w2, 10);
     expect(w2.comms).toBeNull();
-    // no tugs and no second report on a load past the code
-    expect(w2.tow).toBeNull();
     expect(paintDue(w2.flags)).toBe(true);
     // a save made after the code plays the archive as soon as the paint is on (its own beat); leave the card up
     paintHull(w2, () => undefined);

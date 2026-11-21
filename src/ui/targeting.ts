@@ -405,7 +405,7 @@ export class Targeting {
     if (bk && !bk.port) $('ptr-port').classList.remove('on');
     for (const wp of world.seenPlaces()) {
       if (wp.kind === 'audit' && lockLifted(world.flags)) continue;
-      const id = wp.kind === 'lane' ? 'ptr-lane' : wp.kind === 'audit' ? 'ptr-audit' : wp.kind === 'yard' ? 'ptr-yard' : wp.kind === 'relay' ? 'ptr-relay' : 'ptr-port';
+      const id = wp.kind === 'lane' ? 'ptr-lane' : wp.kind === 'audit' ? 'ptr-audit' : wp.kind === 'yard' ? 'ptr-yard' : wp.kind === 'relay' ? 'ptr-relay' : wp.kind === 'story' ? 'ptr-story' : 'ptr-port';
       this.pointer($(id), $(`${id}-t`), sector, s.x, s.z, s.heading, live && !lesson ? { x: wp.x, y: 0.5, z: wp.z } : null,
         `${tr(wp.name)} · ${range(Math.hypot(wp.x - s.x, wp.z - s.z))}${gateClock(world, wp.kind)}`);
       $(id).classList.toggle('pri', isLead(wp.x, wp.z));
@@ -413,6 +413,7 @@ export class Targeting {
     if (bk && lockLifted(world.flags)) $('ptr-audit').classList.remove('on');
     if (!bk || !world.seenPlaces().some((p) => p.kind === 'yard')) $('ptr-yard').classList.remove('on');
     if (!bk || !world.seenPlaces().some((p) => p.kind === 'relay')) $('ptr-relay').classList.remove('on');
+    if (!bk || !world.seenPlaces().some((p) => p.kind === 'story')) $('ptr-story').classList.remove('on');
     if (!bk) { $('ptr-lane').classList.remove('on'); $('ptr-port').classList.remove('on'); $('ptr-audit').classList.remove('on'); }
     const boss = world.command.boss;
     const showBoss = live && !!boss && !boss.leaving && boss.cloak < 0.5;

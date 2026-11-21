@@ -1,3 +1,4 @@
+import { atPlace } from './paint';
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import { newJourney, sortieDef, type Journey } from '../src/sim/journey';
@@ -30,7 +31,9 @@ describe('the Reach, from the pilot flights', () => {
     const j = at(3);
     const w = new World(7, { mode: 'breakout', sortie: quiet(j), carry: j.carry });
     const cards: string[] = [];
-    for (let i = 0; i < 120 / STEP; i++) {
+    for (let i = 0; i < 180 / STEP; i++) {
+      atPlace(w);
+      w.ship.invuln = 1;
       w.step(STEP, NO);
       for (const e of w.events) if (e.type === 'comms') cards.push(e.id);
       w.events.length = 0;

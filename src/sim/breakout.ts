@@ -46,7 +46,7 @@ import type { Rng } from './rng';
 export type Mode = 'breakout' | 'arcade';
 
 export interface Waypoint {
-  kind: 'port' | 'lane' | 'audit' | 'yard' | 'relay';
+  kind: 'port' | 'lane' | 'audit' | 'yard' | 'relay' | 'story';
   name: string;
   x: number;
   z: number;

@@ -109,23 +109,11 @@ export function postJump(def: SortieDef): SortieDef {
 }
 
 /**
- * After the paint, in seconds of play: Sam names the depot (only if the tank is short) and the first Custody hull comes. Nothing hunts
- * her before the paint (owner, 5 November 2026; sim/world.ts `stolen`). The report itself comes at the code, from the tug she broke
- * away from (REPORT); `explain` is how long after the report's notice the Wanted note waits (once a profile, main.ts).
+ * After the paint, in seconds of play: Sam names the depot (only if the tank is short), the company reports the hull stolen, a few
+ * seconds on the Wanted note explains it (once a profile, main.ts), and the first Custody hull comes. Nothing hunts her before the
+ * paint (owner, 5 November 2026; sim/world.ts `stolen`).
  */
-export const STOLEN = { sam: 20, explain: 4, pursuit: 70 } as const;
-/** After the code, seconds: the tug reports her stolen on the open channel, then the notice says it. */
-export const REPORT = { tug: 3, notice: 9 } as const;
-/** Who speaks for the company before the code, and the tug she breaks away from. */
-export const LANE_CONTROL = 'Lane Control';
-export const TUG_NAME = 'Kellern tug four';
-/** Lane Control as the gate reads her ID: the drive is limited and the tugs are on their way. */
-export const LANE_LINE = '“OB-7731-A, Lane Control. Contract 08-441 is in breach. Your drive is limited. Hold position for recovery.”';
-export const ID_NOTICE = ['ID read', 'drive limited, guns safed'] as const;
-/** The tug, as the line snaps and she flies: the report that sets Custody on her. */
-export const TUG_REPORT = '“Tug four to Custody. OB-7731-A has broken tow. Reporting her stolen.”';
-/** The line snapping at Sam's code. */
-export const SNAP_NOTICE = ['Drive unlocked', 'the helm is yours'] as const;
+export const STOLEN = { sam: 20, notice: 38, explain: 4, pursuit: 70 } as const;
 /** Sam's line once the registry card is closed: the short tank and where to fill it (the depot, or the rock when she cannot pay). */
 export const STOLEN_SAM = '“One more thing, your tank’s nearly dry. Buy fluid at the Frontier depot or mine some Cyrite on the way. Fill up, then the gate.”';
 export const STOLEN_SAM_POOR = '“One more thing, your tank’s nearly dry and you can’t pay for fluid. Mine the veined rock on the way. The refinery fills the tank first.”';

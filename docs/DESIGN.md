@@ -398,6 +398,20 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 - **An unlock**: a row in `UNLOCKS` that grants upgrade, event, modifier or
   cosmetic ids; mark the granted content `locked: true`.
 
+## Story places (2026-11-21)
+
+A story beat happens somewhere she can see, and she does something there (the "story in places" plan). A place is a row in
+`content/script/places.ts`: its stop, a name, a look (skiff, wreck, canister, buoy; `render/places.ts`), where it stands (a share of
+the way to the gate and units off the line, port side), and one act: **hold** inside its ring, slow and out of a fight, for a few
+seconds, or **pickup** (fly over it). Done, it sets its flag and leaves the scope. `sim/places.ts` has the rules; the world shows one
+place at a time (`World.storyPlace`): on the scope, as an edge pointer, as the guide's course and as the HUD objective (its verb, the
+range, then the seconds left as the ring fills). `show` and `after` hold a place back until a flag or a line that points to it;
+`skip` retires it when the beat came another way.
+
+A script row waits on a place with `{ on: 'place', place: id }`. A main beat that does holds the Jump Gate for as long as it takes, and
+the gate names the place ("Jump Gate shut · Ilse's skiff first"; told as a notice only once she makes for the gate). Rock is kept
+clear of a live place. To add one: a row in `STORY_PLACES`, a script row on it, German twins for its name, verb and lines.
+
 ## The refit bay
 
 Both modes build the ship in the **refit bay** (`content/web.ts`, `sim/bay.ts`,

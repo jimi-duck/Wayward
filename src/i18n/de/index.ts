@@ -19,6 +19,7 @@ import { WORLD } from './world';
 import { OVERHAUL, OVERHAUL_KEEP } from './overhaul';
 import { REWORK, REWORK_KEEP } from './rework';
 import { DIRECTION } from './direction';
+import { PLACES_DE } from './places';
 
 // ── German ────────────────────────────────────────────────────────────────
 // English on the left, German on the right. Short and informal (du), like the
@@ -30,7 +31,7 @@ import { DIRECTION } from './direction';
 //   space  · the shared world's features and expanses (content/features.ts)
 //   scenes · situations: their calls, goals and the Archive's sightings (content/situations.ts)
 
-export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...BRIEFS, ...REACH_DE, ...OVERHAUL, ...SIGNALS, ...REWORK, ...ARMS, ...DIRECTION };
+export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...BRIEFS, ...REACH_DE, ...OVERHAUL, ...SIGNALS, ...REWORK, ...ARMS, ...DIRECTION, ...PLACES_DE };
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([

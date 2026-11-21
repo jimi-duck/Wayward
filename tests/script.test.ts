@@ -145,7 +145,7 @@ describe('Northfold plays from data', () => {
     expect(before.mainsLeft(new Set())).toBe(true);
     expect(before.hasMains()).toBe(true);
     expect(before.leaveLine()).toBe('Jump to Vesta');
-    const after = new Script(SCRIPT, 'marlow', new Set(['ml_ledger']));
+    const after = new Script(SCRIPT, 'marlow', new Set(['ml_ledger', 'ml_wall']));
     expect(after.mainsLeft(new Set())).toBe(false);
     expect(new Script(SCRIPT, 'hollis', new Set()).hasMains()).toBe(false);
   });

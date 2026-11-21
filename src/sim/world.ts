@@ -18,7 +18,7 @@ import { debtLeft } from './threads';
 import { GHOST_STOP, GHOST_TANK, spawnGhost, stepGhost, type Ghost } from './ghost';
 import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
-import { BREACH_BEAT, CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
+import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
 import { ledgerFor, type LedgerRow } from './contract';
 import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, SPOOL_KNOCK, JAM_SPOOL, SWARM_WEAVER, SWARM_DRAWN, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, RELAY_MARK_R, SAFE_R, SAFE_HOLD, HOLD_MAX, holdMax, ROLL_SECRET, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
 import {
@@ -29,8 +29,7 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { ARCADE_EDGE, STORY_EDGE, EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_LINE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR, NED_DONE, NED_DONE_AT, NED_PARTITION, NED_PARTITION_AT, PARTITION, REPORT, LANE_CONTROL, LANE_LINE, ID_NOTICE, TUG_NAME, TUG_REPORT, SNAP_NOTICE } from './postjump';
-import { DRIVE_CAP, ID_AT, LOCK_LATEST, STRAIN_TURN, launchTugs, letGo, onTheLine, stepHome, stepLine, stepOut, type Tow } from './tow';
+import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_LINE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR, NED_DONE, NED_DONE_AT, NED_PARTITION, NED_PARTITION_AT, PARTITION } from './postjump';
 import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
 import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_EVERY_ALERT, FLAK_R, SiteBrain, type Mood } from './site';
@@ -82,6 +81,8 @@ import { voiceId, voiceText } from './voice';
 import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
 import { discounted, effects, type Effects } from './modules';
 import { Pack } from './tactics';
+import { livePlace, placeAt, placeDone, PLACE_CLEAR, stepPlace, stopPlaces, type StoryPlaceDef } from './places';
+import { STORY_PLACES } from '../content/script/places';
 import {
   acquire, fireWeapons, launchTorpedo, moveBolts, moveTorpedoes, newArms, type Arms, type Bolt, type FireMods, type Targets, type Torpedo,
 } from './weapons';
@@ -369,12 +370,9 @@ export class World implements EncounterHost {
   auditCalled = false;
   /** Seconds of play since Lane Control took the ship (sim/recovery.ts); counts only while it has her. */
   recoverT = 0;
-  /** Lane Control's tugs in the first system past Cerro (sim/tow.ts): coming out, on the line, or going home. */
-  tow: Tow | null = null;
-  /** The Jump Gate's beacon has read her ID (the first system past Cerro). */
-  private idRead = false;
-  /** Her pull against the tow line this step, 0 to 1 (the tow's strain follows it). */
-  private pull = 0;
+  /** Seconds held at the live story place (sim/places.ts); and which place they count for. */
+  placeHold = 0;
+  private placeHoldOf = '';
   /** Radio lines waiting their turn, by run time: a voice's beats one after another (`radioLines`). */
   private radioQ: Array<{ at: number; id: string; from: string; caller: string; text: string }> = [];
   /** One voice at a time (sim/floor.ts): the radio lines and notices wait here for their turn. */
@@ -481,7 +479,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.tow = null; this.idRead = false; this.pull = 0;
+    this.placeHold = 0; this.placeHoldOf = '';
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false;
@@ -759,6 +757,9 @@ export class World implements EncounterHost {
     // a Warden relay not yet answered (and the Narrows' mast): a place on the scope and the HUD, so it is clear where to go
     const rl = relayOf(b);
     if (rl && !this.flags.has(relayFlag(b.def.script ?? ''))) all.push({ kind: 'relay', name: b.def.script === 'narrows' ? 'Relay mast' : 'Warden relay', x: rl.x, z: rl.z, r: RELAY_MARK_R });
+    // the stop's story place, while it waits for her (sim/places.ts)
+    const sp = this.storyPlace;
+    if (sp) all.push({ kind: 'story', name: sp.def.name, x: sp.x, z: sp.z, r: sp.def.r });
     if (this.navNoise <= 0) return all;
     const t = this.runTime, n = this.navNoise * 60;
     return all.map((w) => (w.kind === 'lane' ? { ...w, x: w.x + Math.sin(t * 1.3) * n, z: w.z + Math.cos(t * 0.9) * n } : w));
@@ -796,11 +797,7 @@ export class World implements EncounterHost {
       const yd = this.bk!.yard, front = this.yardFront();
       const yardTo = !yardAuto || !yd ? null : this.yardPhase === 1 ? yd : this.yardPhase === 4 && this.runTime - this.yardAt >= YARD_OUT_AT ? { x: yd.x + front.x * 70, z: yd.z + front.z * 70 } : null;
       if (yardAuto) s.invuln = Math.max(s.invuln, 0.5);
-      // on the tow line (sim/tow.ts) her own helm and throttle pull against it: the course swings while she pulls, and the line takes it back
-      const mine = held && !yardAuto ? flightControls(input) : null;
-      recoveryStep(s, yardAuto ? yardTo : this.bk!.audit, this.hull, yardAuto ? [] : this.field.bulwarks, dt, yardAuto ? (this.yardPhase === 1 ? 1.5 : 6) : HOLD_R, mine ? -mine.turn * STRAIN_TURN : 0);
-      if (mine) { s.thrust = Math.max(s.thrust, mine.thrust); s.helm = mine.turn; }
-      this.pull = mine ? Math.min(1, Math.abs(mine.turn) + Math.max(0, mine.thrust) * 0.7 + (mine.brk ? 0.5 : 0)) : 0;
+      recoveryStep(s, yardAuto ? yardTo : this.bk!.audit, this.hull, yardAuto ? [] : this.field.bulwarks, dt, yardAuto ? (this.yardPhase === 1 ? 1.5 : 6) : HOLD_R);
       const fx = Math.cos(s.heading), fz = -Math.sin(s.heading);
       for (const r of this.field.rocks) {
         const rx = r.x - s.x, rz = r.z - s.z, ahead = rx * fx + rz * fz, side = rx * -fz + rz * fx, clear = r.r + SHIP_R + 4;
@@ -810,21 +807,15 @@ export class World implements EncounterHost {
       }
       for (const al of this.aliens) if (!al.fleeing) leave(al);
       this.shots.length = 0;
-    } else {
-      stepShip(s, c, this.hull, dt);
-      // Lane Control limits her drive from the moment the gate reads her ID until Sam's code (sim/tow.ts)
-      if (this.laneHeld) {
-        const v = Math.hypot(s.vx, s.vz), cap = topSpeed(this.hull) * DRIVE_CAP;
-        if (v > cap) { const k = 1 - (1 - cap / v) * Math.min(1, 4 * dt); s.vx *= k; s.vz *= k; }
-      }
-    }
+    } else stepShip(s, c, this.hull, dt);
     if (held) this.recoverT += dt;
-    if (this.bk?.def.first && this.alive) this.stepTow(dt);
+    if (this.bk?.def.first && this.alive) this.stepFirst();
+    if (this.bk && this.alive) this.stepStoryPlace(dt);
     this.flushRadio();
     if (this.space) this.stepSpace(dt, s);
     const rolling = s.rollT >= 0;
     // the gate's and the depot's damping field holds every gun cold, ours as well as theirs
-    const cold = !!this.safe || this.laneHeld;
+    const cold = !!this.safe;
     if (rolling && !this.wasRolling && st.rollBurst && !cold) plasmaRing(this.sys, s, st);
     if (rolling && !this.wasRolling && st.rollFlush > 0 && this.alive) this.flush();
     if (rolling && !this.wasRolling && st.rollCloak > 0) { this.cloakT = st.rollCloak; this.events.push({ type: 'cloak', x: s.x, z: s.z }); }
@@ -843,7 +834,7 @@ export class World implements EncounterHost {
     if (this.alive) {
       if (cold) {
         this.coldT = Math.max(0, this.coldT - dt);
-        if ((c.fire || c.torpedo) && this.coldT === 0) { this.coldT = 2.5; this.events.push({ type: 'gunsCold', at: this.safe ?? (this.laneHeld ? 'lc' : null) }); }
+        if ((c.fire || c.torpedo) && this.coldT === 0) { this.coldT = 2.5; this.events.push({ type: 'gunsCold', at: this.safe }); }
       }
       const seen = this.events.length;
       fireWeapons(this.arms, s, cold ? { ...c, fire: false, torpedo: false } : c, targets, fireStats, fm, this.bolts, this.torps, this.events, dt);
@@ -1040,8 +1031,8 @@ export class World implements EncounterHost {
       this.events.push({ type: 'storyNotice', tone: 'teal', headline: SCAN_LINE, reason: this.sortie.name });
     }
 
-    // in the first system past Cerro the breach is served by the tug (stepTow) and the archive waits in the partition for a full tank
-    const placed = b.def.first && (beat === BREACH_BEAT || beat === WAKE_BEAT);
+    // in the first system past Cerro the archive waits in the partition for a full tank (stepFirst)
+    const placed = b.def.first && beat === WAKE_BEAT;
     if (beat && !this.storyMade && !placed && !(beat === WAKE_BEAT && paintDue(this.flags)) && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.storyMade = true;
       const def = CARD_BY_ID[beat];
@@ -1210,61 +1201,12 @@ export class World implements EncounterHost {
   /** When the paint was done in the first system past Cerro (Infinity: not yet): the pursuit counts from it. */
   private stolenAt = Infinity;
   private stolenSaid = 0;
-  /** When the tug reported her stolen, at Sam's code (Infinity: not yet; -Infinity: before this sortie, a load past it). */
-  private reportAt = Infinity;
-  private reportSaid = 0;
   /** Ned's words after the work: 1 what he did, 2 what he found. */
   private nedSaid = 0;
 
-  /** Lane Control holds her systems: the first system past Cerro, the gate has read her ID, and Sam's code is not in yet (sim/tow.ts). */
-  get laneHeld(): boolean {
-    const b = this.bk;
-    return !!b?.def.first && !!b.audit && !lockLifted(this.flags) && (this.idRead || recovering(this.flags));
-  }
-
-  /**
-   * The first system past Cerro, told by what she can see (sim/tow.ts, owner 2026-11-21). The gate reads her ID and Lane Control limits
-   * her drive; two tugs come out of the audit dock for her, and when the lead has her the breach is served. On the line she is towed in,
-   * and Sam's code (opened 2 km out, sim/world.ts stepComms) snaps it: the tugs turn for home and report her stolen.
-   */
-  private stepTow(dt: number): void {
-    const b = this.bk!, s = this.ship, t = this.runTime, top = topSpeed(this.hull), dock = b.audit;
-    if (!dock) return;
-    const lifted = lockLifted(this.flags);
-    if (this.tow?.phase === 'loose') {
-      if (!stepHome(this.tow, dock, top, dt)) this.tow = null;
-    } else if (lifted) {
-      if (this.tow) {
-        // the code: the line snaps and the tugs let go
-        letGo(this.tow, t);
-        this.events.push({ type: 'towSnap', x: s.x, z: s.z });
-        this.reportAt = t;
-      } else if (this.reportAt === Infinity) this.reportAt = -Infinity;
-    } else if (recovering(this.flags)) {
-      if (!this.tow) this.tow = onTheLine(s, t);
-      if (this.tow.phase !== 'tow') { this.tow.phase = 'tow'; this.tow.at = t; }
-      stepLine(this.tow, s, this.pull, dt);
-    } else if (t >= ID_AT && this.phase === 'play' && b.def.story === BREACH_BEAT && !this.cardsSeen.has(BREACH_BEAT)) {
-      // the read: Lane Control on the radio, and the tugs undock
-      if (!this.idRead) {
-        this.idRead = true;
-        this.events.push({ type: 'storyNotice', tone: 'amber', headline: ID_NOTICE[0], reason: ID_NOTICE[1] });
-        this.radioLines('lane_control', tr(LANE_CONTROL), 'office', [tr(LANE_LINE)], 1);
-      }
-      if (!this.tow) this.tow = launchTugs(dock, s, t);
-      const locked = stepOut(this.tow, s, top, dt);
-      // the lead tug has her (or she has run long enough): the breach is served, by the tug at her bow
-      if ((locked || t - this.tow.at >= LOCK_LATEST) && !this.comms && !this.call) {
-        const def = CARD_BY_ID[BREACH_BEAT];
-        if (def) this.openComms(def);
-      }
-    }
-    // the report, from the tug she broke away from, then the notice that says what it means
-    if (this.reportAt > -Infinity && this.reportAt < Infinity) {
-      const since = t - this.reportAt;
-      if (this.reportSaid === 0 && since >= REPORT.tug) { this.reportSaid = 1; this.radioLines('tug_report', tr(TUG_NAME), 'office', [tr(TUG_REPORT)]); }
-      if (this.reportSaid === 1 && since >= REPORT.notice) { this.reportSaid = 2; this.events.push({ type: 'storyNotice', tone: 'amber', headline: STOLEN_NOTICE[0], reason: STOLEN_NOTICE[1] }); }
-    }
+  /** The first system past Cerro, after the work: Ned says what he did and what he found, and the partition opens on a full tank. */
+  private stepFirst(): void {
+    const t = this.runTime;
     // Ned, after the work: what he did, then what he found (the partition, whose message waits on a full tank)
     if (this.yardAt !== Infinity && this.phase === 'play') {
       const e = t - this.yardAt;
@@ -1299,7 +1241,7 @@ export class World implements EncounterHost {
   }
   private yardBeat = 0;
   /** The first system past Cerro: the hull is not reported stolen yet, so nothing there explains Wanted yet (main.ts holds the note). */
-  get beforeReport(): boolean { return !!this.bk?.def.first && this.runTime < this.reportAt + REPORT.notice + STOLEN.explain; }
+  get beforeReport(): boolean { return !!this.bk?.def.first && this.runTime < this.stolenAt + STOLEN.notice + STOLEN.explain; }
 
   /**
    * The first system past Cerro (sim/postjump.ts): nobody hunts the Wayward while she is still the company's. Once
@@ -1314,6 +1256,10 @@ export class World implements EncounterHost {
     if (this.stolenSaid === 0 && since >= STOLEN.sam) {
       this.stolenSaid = 1;
       if (this.fuel < this.jumpCost) this.events.push({ type: 'ping', id: 'stolen_sam', from: tr('Sam Okoro'), caller: 'miners', text: tr(b.port && this.cyrite >= this.fluidPrice ? STOLEN_SAM : STOLEN_SAM_POOR), moment: 'calm', system: name });
+    }
+    if (this.stolenSaid === 1 && since >= STOLEN.notice) {
+      this.stolenSaid = 2;
+      this.events.push({ type: 'storyNotice', tone: 'amber', headline: STOLEN_NOTICE[0], reason: STOLEN_NOTICE[1] });
     }
     return t >= this.stolenAt + STOLEN.pursuit;
   }
@@ -1354,7 +1300,7 @@ export class World implements EncounterHost {
     this.flags.add(PAINTED);
     this.flags.add(RENAMED);
     this.events.push({ type: 'yardDone', n: 0 });
-    // Ned says what he did and what he found (stepTow); the archive waits in the partition for a tank that holds a jump
+    // Ned says what he did and what he found (stepFirst); the archive waits in the partition for a tank that holds a jump
   }
 
   /** The way out of Ned's yard: the unit vector from the yard toward the company's dock, which its open front faces. */
@@ -1963,7 +1909,10 @@ export class World implements EncounterHost {
     // (the Narrows' reboot has its own notice, as the gate goes down)
     // (a call's changing blocker, a hostile then calm, is the HUD line's to follow, not a new notice each time)
     const kind = /^(wait for the call|clear the hostiles|hold still)/.test(h.why) ? 'a call is due' : h.why;
-    if (this.holdNoted !== kind && h.why !== 'the gate is rebooting') {
+    // a gate that waits on a story place says so once she makes for it, not while she is at the place itself (the HUD shows it from afar)
+    const b = this.bk!, dl = Math.hypot(b.lane.x - this.ship.x, b.lane.z - this.ship.z);
+    const early = h.why === '{who} first' && dl > APPROACH * 1.5;
+    if (this.holdNoted !== kind && h.why !== 'the gate is rebooting' && !early) {
       this.holdNoted = kind;
       // with the Warden key in, the gate is resetting: say so, so a gate that will not take her yet is never a mystery (the owner, 31 October 2026)
       this.events.push(h.resetting
@@ -1999,6 +1948,10 @@ export class World implements EncounterHost {
     const resetting = lit && !o.handshake && !slow;
     const call = !o.handshake && !slow && !lit ? this.callHold() : null;
     this.gateWho = call?.who ?? '';
+    // a beat that waits on a story place: the gate names the place (sim/places.ts)
+    const at = o.handshake ? sc.owedPlace(this.flags, this.tankCap ? this.fuel / this.tankCap : 0) : null;
+    const place = at ? STORY_PLACES.find((p) => p.id === at) : undefined;
+    if (place) { this.gateWho = tr(place.name); return { why: '{who} first', paint: false, handshake: true, slow: false, resetting: false }; }
     return { why: o.handshake ? 'reach the relay mast' : slow ? 'the gate is opening' : lit ? 'resetting after the key' : call!.why, paint: false, handshake: o.handshake, slow, resetting };
   }
 
@@ -2033,6 +1986,41 @@ export class World implements EncounterHost {
   get gateTimer(): { left: number; total: number } | null {
     if (this.gateWhy !== 'the gate is rebooting' && this.gateWhy !== 'the gate is opening') return null;
     return { left: this.gateEta, total: this.bk?.def.script === 'narrows' ? REBOOT : SLOW_DOOR };
+  }
+
+  /** The stop's story place waiting for her now, where it stands, and how far through its hold she is (0 to 1). Null where none waits. */
+  get storyPlace(): { def: StoryPlaceDef; x: number; z: number; held: number } | null {
+    const b = this.bk;
+    if (!b || !this.script) return null;
+    const sc = this.script;
+    const def = livePlace(STORY_PLACES, b.def.script, this.flags, (row) => sc.played(row));
+    if (!def) return null;
+    const at = placeAt(def, b);
+    const held = 'hold' in def.act && this.placeHoldOf === def.id ? Math.min(1, this.placeHold / def.act.hold) : 0;
+    return { def, ...at, held };
+  }
+
+  /** The live story place: hold at it or take it aboard; done, its flag is set and the stop's script goes on (sim/places.ts). */
+  private stepStoryPlace(dt: number): void {
+    const sp = this.storyPlace;
+    if (!sp || this.phase !== 'play') return;
+    if (this.placeHoldOf !== sp.def.id) { this.placeHoldOf = sp.def.id; this.placeHold = 0; }
+    // room to hold there: no rock or bulwark in the ring
+    const clear = sp.def.r + PLACE_CLEAR;
+    for (const o of [...this.field.rocks, ...this.field.bulwarks]) {
+      const dx = o.x - sp.x, dz = o.z - sp.z, d = Math.hypot(dx, dz) || 1, min = clear + o.r;
+      if (d < min) { o.x = sp.x + (dx / d) * min; o.z = sp.z + (dz / d) * min; }
+    }
+    // the hold counts once the arrival is over, and not in a fight
+    const free = this.busy() !== 'fight' && !this.floor.hush;
+    const r = stepPlace(sp.def, sp, this.ship, this.placeHold, dt, free);
+    this.placeHold = r.hold;
+    if (!r.done) return;
+    this.flags.add(sp.def.done);
+    this.placeHold = 0; this.placeHoldOf = '';
+    const pickup = 'pickup' in sp.def.act;
+    this.events.push({ type: 'placeDone', x: sp.x, z: sp.z, look: sp.def.look, pickup });
+    if (pickup) this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Taken aboard', reason: sp.def.name });
   }
 
   /** Where the relay mast stands that the gate waits on, while it waits on it (the HUD names its range). */
@@ -2151,12 +2139,14 @@ export class World implements EncounterHost {
   private scriptCtx(busy: Busy, t: number) {
     const b = this.bk!, s = this.ship;
     const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit, relay: relayOf(b) };
+    for (const p of stopPlaces(STORY_PLACES, b.def.script, this.flags)) sites[p.id] = placeAt(p, b);
     return {
       t, arrived: this.desk.arrived, busy, free: this.scriptFree(busy, t), slow: this.stageSlow(), tank: this.tankCap ? this.fuel / this.tankCap : 0, flags: this.flags,
       // the first system past Cerro has its own word on the pursuit (stolen): the days count from the next stop
       pursuit: b.def.first ? Infinity : Math.max(0, halfDays((this.sortie.calloway ?? Infinity) / DAY_SECONDS - t / DAY_SECONDS)),
       dist: (site: string) => { const p = sites[site]; return p ? Math.hypot(p.x - s.x, p.z - s.z) : Infinity; },
       cardDone: (id: string) => this.cardsSeen.has(id) && !this.comms && !this.call,
+      placeDone: (id: string) => { const p = STORY_PLACES.find((x) => x.id === id); return !!p && placeDone(p, this.flags); },
     };
   }
 
