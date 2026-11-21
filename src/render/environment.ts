@@ -3,6 +3,7 @@ import {
   Group, HemisphereLight, LineBasicMaterial, LineSegments, Mesh,
   Scene, ShaderMaterial, SphereGeometry, Vector2, Vector3, type Camera, type Object3D, type Texture, type WebGLRenderer, type WebGLRenderTarget,
 } from 'three';
+import { setGasLight } from './gas';
 import { bakeSky, detailTile, dirOf, FarBodies, Parallax, skyFor, SUN_AZ, SUN_EL, type Sky } from './sky';
 import { Starfield } from './starfield';
 import { Phenomena } from './phenomena';
@@ -35,6 +36,7 @@ const DUST_BOX = 130;
 /** Speed (units/s) where the dust starts to streak; the hauler's top speed is about 39. */
 const DUST_FAST = 20;
 const KEY_TINT = new Color();
+const GAS_SKY = new Color();
 const RIM_COLOUR = new Color(0x7f9cc8), FIGHT_TINT = new Color();
 /** The sun's warmth on the key light, and the sky's cool second colour on the rim behind. */
 const SUN_WARM = new Color(1, 0.84, 0.66), COOL = new Color(0.45, 0.85, 0.95);
@@ -260,6 +262,9 @@ export class Environment {
     const s = this.sunCol, top = Math.max(s.r, s.g, s.b, 1e-3);
     this.mood.light.setRGB(s.r / top, s.g / top, s.b / top).lerp(WHITE_LIGHT, 0.82);
     WORLD_RIM.value.copy(this.skyRim);
+    // gas banks: the sun's side warm, the far side in the sky's second colour
+    GAS_SKY.copy(this.rimCol).lerp(sky.neb[0], 0.5).multiplyScalar(0.6);
+    setGasLight(this.sunCol, GAS_SKY);
   }
 
   /**

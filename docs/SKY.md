@@ -176,3 +176,14 @@ neutral tone map, a mid-grey albedo lit face lands near the shoulder and reads a
   stock (pre-rename) hull are all dark worked metal with a breath of colour.
 
 New props follow suit: keep structure albedo under about 0x50 per channel and put colour on the paint, not a light grey.
+
+## Gas you can fly into (space plan step 1, 2026-11-21)
+
+Veils, shrouds, storm cells and static fields (`render/gas.ts`) are a few dozen lumps of lit gas through the bank's height,
+above and below the ship's plane, one instanced draw per bank. A 4x4 atlas of cloud shapes is baked once on the GPU
+(1024, 512 on Phone and Low) with density, a normal and a depth glow per pixel, so the sun lights one side of each lump and
+the far side takes the sky's second colour (`setGasLight`, from `Environment.setSky`). Lumps sort far to near four times a
+second and thin away close to the camera, so flying in, the gas parts round the ship. A storm cell throws a stroke every
+1.5 to 7.5 s that lights the gas round it (`gasFlash`). Curtains are strip meshes with drifting rays and a bright hem.
+Gas is held well under white and its tint pushed away from grey: a bank that blows out reads as the pale wash the owner
+does not want. Phone and Low build 55% of the lumps. GPU cost not measured (cloud has software WebGL only).
