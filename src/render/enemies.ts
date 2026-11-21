@@ -389,12 +389,16 @@ class HullView {
     this.meshes.forEach((m, i) => { m.material = on ? FLASH : this.mats[i]!; });
   }
 
-  /** Fade toward invisible as the cloak comes up: a shimmer, never quite nothing. */
+  /**
+   * Fade out as the cloak comes up, and be gone by the time it is on: a cloaked hull (cloak above half) cannot be hit
+   * (sim/enemies.ts `cloaked`), so nothing of it is drawn, not a shimmer. The shimmer is the decloak's tell, below half.
+   */
   cloak(k: number, time: number): void {
     if (!this.own) return;
-    const vis = k <= 0 ? 1 : Math.max(0.04, 1 - k) + (k > 0.5 ? 0.04 * Math.sin(time * 9) : 0);
+    const vis = k <= 0 ? 1 : k >= 0.5 ? 0 : Math.max(0.12, 1 - k * 2) + 0.06 * Math.sin(time * 9) * k;
     if (Math.abs(vis - this.cloaked) < 0.005) return;
     this.cloaked = vis;
+    this.body.visible = vis > 0;
     for (const m of this.mats) { m.transparent = vis < 0.99; m.opacity = vis; m.depthWrite = vis >= 0.99; }
     this.flaring = k < 0.5;
   }
@@ -756,9 +760,11 @@ export class EnemyView {
       const pitch = boss.arriving ? Math.atan2(boss.vy, Math.max(6, Math.hypot(boss.vx, boss.vz))) * 0.5 : 0;
       bv.hull.body.rotation.set(Math.sin(this.time * 0.6) * 0.03, boss.face, pitch, 'YZX');
       if (boss.faction === 'voice') bv.hull.body.rotation.y = this.time * 0.15;
-      const vis = 1 - boss.cloak * 0.92;
+      // untargetable above half cloak (sim/bosses.ts), so unseen too
+      const vis = boss.cloak >= 0.5 ? 0 : 1 - boss.cloak * 1.6;
+      bv.hull.body.visible = vis > 0;
       for (const m of bv.mats) { m.opacity = vis; m.transparent = vis < 1; }
-      bv.hull.flaring = boss.cloak < 0.6;
+      bv.hull.flaring = boss.cloak < 0.5;
       bv.hull.flare(this.streaks, boss.r * 0.85, 0.5, this.time, boss.id, 1);
       bv.hull.flash(boss.hitT > 0);
     }
