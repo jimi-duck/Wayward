@@ -1,4 +1,4 @@
-import { OctahedronGeometry, AdditiveBlending, NormalBlending, BoxGeometry, Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, Sprite, SpriteMaterial, Vector3, type BufferGeometry, type Material, type Scene, type Texture } from 'three';
+import { OctahedronGeometry, AdditiveBlending, NormalBlending, BoxGeometry, Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, ShaderMaterial, Sprite, SpriteMaterial, Vector3, type BufferGeometry, type Material, type Scene, type Texture, type WebGLRenderer } from 'three';
 import { FEATURES, type FeatureDef } from '../content/features';
 import { clamp } from '../core/math';
 import type { Feature, Space } from '../sim/space';
@@ -8,6 +8,7 @@ import { metal } from './kit';
 import { cloudTexture, curtainTexture, streamTexture } from './textures';
 import { thinFog, buoyModel, haulerModel, relicModel, RELIC_TOP, slipwayModel } from './monuments';
 import { singularity } from './singularity';
+import { bakeGas, curtainFold, Gas, gasFlash, stepGas, type GasLump } from './gas';
 
 // ── the shared world, drawn ───────────────────────────────────────────────
 // Reads sim/space.ts and builds a look for each feature that is near enough
@@ -53,6 +54,12 @@ interface Look {
   /** The solid part, built when the ship is near: its meshes' spin, and the group they hang from. */
   solid?: { group: Group; spin: Array<{ m: Mesh; x: number; y: number; z: number }>; rings: Mesh[]; face: boolean; flow?: Array<{ m: Mesh; v: number; z0: number }> };
   near: boolean;
+  /** Gas you fly into (veils, shrouds, storms, static), and a curtain's folds. */
+  gas?: Gas;
+  folds?: Mesh[];
+  /** A storm cell's next lightning, in seconds, and the last one fading. */
+  bolt?: number;
+  flash?: number;
 }
 
 /** How close, from the rim, before the solid part is put up. */
@@ -136,14 +143,22 @@ export class SpaceView {
   private time = 0;
   private dt = 0;
 
-  constructor(scene: Scene, private readonly glow: Texture) {
+  private camera: { position: Vector3 } | null = null;
+  /** Fewer lumps of gas on Phone and Low. */
+  private lean = false;
+
+  constructor(scene: Scene, private readonly glow: Texture, renderer?: WebGLRenderer, lean = false) {
     scene.add(this.group);
+    this.lean = lean;
+    if (renderer) bakeGas(renderer, lean ? 512 : 1024);
   }
 
   /** Put up what has come into range, take down what has left, and place the lot. `cx`, `cz` is where the camera looks. */
-  update(space: Space | null, cx: number, cz: number, dt: number, still: boolean): void {
+  update(space: Space | null, cx: number, cz: number, dt: number, still: boolean, camera?: { position: Vector3 }): void {
     this.time += dt;
     this.dt = dt;
+    this.camera = camera ?? null;
+    stepGas(dt);
     this.group.visible = !!space;
     if (!space) return;
     const live = new Set<number>();
@@ -185,21 +200,31 @@ export class SpaceView {
       this.sprites++;
       pieces.push({ s, x, y, z, a, ph: r() * Math.PI * 2, w: 0.5 + r() });
     };
+    let gas: Gas | undefined, folds: Mesh[] | undefined, bolt: number | undefined;
     switch (def.look.shape) {
       case 'cloud': case 'haze': {
-        // a bank: blobs of dust at different heights, lit warmer toward the middle
-        const n = def.look.shape === 'cloud' ? 8 : 5, murk = def.id === 'shroud' ? 0.85 : def.id === 'storm' ? 0.6 : 0.4;
-        // the body of the cloud: dark, dense dust that eats the stars behind it, in layers of different height
-        for (let i = 0; i < n; i++) {
-          const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.6;
-          add(cloudTexture(), tint.clone().multiplyScalar(0.07), f.r * (0.7 + r() * 0.6), f.r * (0.4 + r() * 0.3), Math.cos(a) * k, 2 + r() * 12, Math.sin(a) * k, murk * (0.5 + r() * 0.4), r() * Math.PI * 2, true);
+        // the body: lumps of gas through the bank's whole height, above and below the ship's plane, so the camera flies
+        // in among them. Each kind its own make: a veil lit cold from within, a shroud dark and dense, a storm charged,
+        // a static field thin sheets and strands.
+        const id = def.id, lumps: GasLump[] = [];
+        // the gas carries its colour strongly: a feature's tint pushed away from grey, so a white sun cannot bleach it
+        const lum = tint.r * 0.3 + tint.g * 0.5 + tint.b * 0.2, hue = new Color(Math.max(0, lum + (tint.r - lum) * 2), Math.max(0, lum + (tint.g - lum) * 2), Math.max(0, lum + (tint.b - lum) * 2));
+        const count = Math.round((def.look.shape === 'cloud' ? 40 : 26) * (this.lean ? 0.55 : 1));
+        // held well under white: gas that blows out reads as a pale grey wash (owner 2026-11-21), so the colour stays in it
+        const make = id === 'shroud' ? { lit: 0.32, a: 0.7, glow: 0.02 } : id === 'storm' ? { lit: 0.55, a: 0.5, glow: 0.1 } : id === 'static' ? { lit: 0.75, a: 0.3, glow: 0.08 } : { lit: 0.65, a: 0.42, glow: 0.14 };
+        for (let i = 0; i < count; i++) {
+          const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.7, core = 1 - k / (f.r * 0.7);
+          const fam: 0 | 1 | 2 = def.look.shape === 'haze' ? (r() < 0.6 ? 2 : 1) : r() < 0.68 ? 0 : 1;
+          lumps.push({
+            x: Math.cos(a) * k, y: -25 + r() * 85, z: Math.sin(a) * k,
+            size: f.r * (0.22 + r() * 0.3) * (fam === 2 ? 1.3 : 1),
+            colour: hue.clone().multiplyScalar(make.lit * (0.75 + r() * 0.5 + core * 0.4)),
+            alpha: make.a * (0.55 + r() * 0.45) * (0.6 + core * 0.4), glow: make.glow * (0.5 + core), stretch: fam === 1 ? 1.6 + r() : 1 + r() * 0.4, family: fam,
+          });
         }
-        // lit from within and from the side: warm cores toward the middle, thin bright edges high up, each blob its own tilt
-        for (let i = 0; i < n; i++) {
-          const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.62, core = 1 - k / (f.r * 0.62);
-          const c = tint.clone().multiplyScalar(1.5 + r() * 0.8 + core * 1.1);
-          add(cloudTexture(), c, f.r * (0.55 + r() * 0.5), f.r * (0.3 + r() * 0.25), Math.cos(a) * k, 14 + r() * 40, Math.sin(a) * k, 0.38 + r() * 0.25, r() * Math.PI * 2);
-        }
+        gas = new Gas(lumps, f.seed);
+        root.add(gas.mesh);
+        if (id === 'storm') bolt = 1 + r() * 4;
         // a few small bright knots: the grain that shows scale and gives the light somewhere to live
         for (let i = 0; i < 4; i++) {
           const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.45;
@@ -218,18 +243,21 @@ export class SpaceView {
         break;
       }
       case 'ribbon': {
-        // an aurora: folds of curtain strung along a slow curve, in two layers so the near one crosses the far one
-        const along = r() * Math.PI * 2, n = 22;
-        for (let layer = 0; layer < 2; layer++) {
+        // an aurora: a few tall folds of charged gas hung along a slow curve, bright at the hem and fading up in fine rays,
+        // the near fold crossing the far one; the colour runs from the feature's own at the hem to a cool blue above
+        const along = r() * Math.PI * 2;
+        folds = [];
+        for (let layer = 0; layer < 3; layer++) {
+          const pts: number[] = [], n = 40, off = (layer - 1) * f.r * 0.18, bend = 0.25 + layer * 0.1 + r() * 0.1;
           for (let i = 0; i < n; i++) {
-            const u = (i / (n - 1) - 0.5) * 2, bow = (1 - u * u) * f.r * (0.25 + layer * 0.12);
-            const shade = layer ? new Color(0.1, 0.5, 0.75) : tint.clone().multiplyScalar(1);
-            const c = shade.multiplyScalar((layer ? 2.6 : 3.4 + r()) * (0.5 + 0.9 * Math.abs(Math.sin(i * 1.7 + layer * 2.1))));
-            const x = Math.cos(along) * u * f.r + Math.cos(along + Math.PI / 2) * bow, z = Math.sin(along) * u * f.r + Math.sin(along + Math.PI / 2) * bow;
-            const h = f.r * (0.9 + r() * 0.9);
-            add(curtainTexture(1 + ((i + layer) % 3)), c, f.r * (0.13 + r() * 0.08), h, x, f.r * (0.45 + r() * 0.2 + layer * 0.1), z, 0.3 + r() * 0.2);
-            pieces[pieces.length - 1]!.b = 0.12 + r() * 0.3;
+            const u = (i / (n - 1) - 0.5) * 2, bow = (1 - u * u) * f.r * bend + off;
+            pts.push(Math.cos(along) * u * f.r * (1 - layer * 0.12) + Math.cos(along + Math.PI / 2) * bow, Math.sin(along) * u * f.r * (1 - layer * 0.12) + Math.sin(along + Math.PI / 2) * bow);
           }
+          const low = tint.clone().multiplyScalar(layer === 1 ? 1.5 : 1.1), high = new Color(0.12, 0.3, 0.75).lerp(tint, 0.2).multiplyScalar(0.7);
+          const fold = curtainFold(pts, f.r * (0.25 + r() * 0.15), f.r * (1.1 + r() * 0.5), low, high, f.seed + layer * 13);
+          fold.userData.k = layer === 1 ? 1 : 0.6;
+          root.add(fold);
+          folds.push(fold);
         }
         break;
       }
@@ -299,9 +327,9 @@ export class SpaceView {
         break;
       }
     }
-    if (!pieces.length) return null;
+    if (!pieces.length && !gas && !folds) return null;
     this.group.add(root);
-    return { f, root, pieces, tint, near: false };
+    return { f, root, pieces, tint, near: false, gas, folds, bolt };
   }
 
   /** The solid part of matter: dark meshes, built once the ship is near. */
@@ -420,6 +448,8 @@ export class SpaceView {
       look.solid.group.removeFromParent();
     }
     for (const p of look.pieces) { p.s.material.dispose(); this.sprites--; }
+    look.gas?.dispose();
+    for (const m of look.folds ?? []) { m.geometry.dispose(); (m.material as ShaderMaterial).dispose(); }
     look.root.removeFromParent();
   }
 
@@ -456,6 +486,25 @@ export class SpaceView {
       so.rings.forEach((rg, i) => { rg.rotation.z += dt * (0.5 - i * 0.2) * (i % 2 ? -1 : 1); });
       if (so.face) so.group.rotation.y = Math.atan2(cx - f.x, cz - f.z);
     }
+    const level = fade * f.level;
+    if (look.gas && this.camera) look.gas.update(level, still ? 0 : t, this.dt, this.camera);
+    if (look.folds) for (const m of look.folds) {
+      const u = (m.material as ShaderMaterial).uniforms;
+      u.uTime!.value = still ? 0 : t;
+      u.uOpacity!.value = level * (m.userData.k as number) * 0.55;
+    }
+    // a storm cell: now and then a stroke somewhere inside it lights the gas round it, and the knots flare with it
+    let strike = 0;
+    if (look.bolt !== undefined && !still && level > 0.05) {
+      look.bolt -= this.dt;
+      if (look.bolt <= 0) {
+        const r = Math.random, a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.5;
+        gasFlash(ox + Math.cos(a) * k, 5 + r() * 40, oz + Math.sin(a) * k, level * (0.6 + r() * 0.6));
+        look.bolt = 1.5 + r() * 6;
+        look.flash = 1;
+      }
+    }
+    if (look.flash) { look.flash = Math.max(0, look.flash - this.dt * 5); strike = look.flash; }
     const sway = still ? 0 : 1;
     for (const p of look.pieces) {
       const swing = Math.sin(t * 0.12 * p.w + p.ph) * sway;
@@ -463,7 +512,7 @@ export class SpaceView {
       p.s.position.set(p.x + swing * 6, p.y + (def.look.shape === 'ribbon' ? Math.sin(t * 0.4 * p.w + p.ph) * sway * 8 : 0), drift);
       if (p.spin && p.rot0 !== undefined) p.s.material.rotation = p.rot0 + (still ? 0 : Math.sin(t * p.spin + p.ph) * 0.3);
       const blink = p.b ? 0.5 + 0.5 * Math.sin(t * p.b + p.ph) : 1;
-      p.s.material.opacity = p.a * fade * f.level * blink;
+      p.s.material.opacity = Math.min(1, p.a * fade * f.level * blink * (1 + strike * 1.5));
     }
   }
 }

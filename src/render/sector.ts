@@ -175,7 +175,7 @@ export class Sector {
     this.site = new SiteView(this.scene);
     this.yard = new YardView(this.scene);
     this.place = new PlaceView(this.scene);
-    this.space = new SpaceView(this.scene, glow);
+    this.space = new SpaceView(this.scene, glow, renderer, tier.name === 'low' || tier.name === 'phone');
     this.warp = new WarpView(this.scene, glow, tier.name === 'low' ? 56 : tier.name === 'high' ? 170 : 110);
     this.scene.add(this.ship.root);
   }
@@ -794,7 +794,7 @@ export class Sector {
     const there = world.space ? world.space.sample(world.ship.x, world.ship.z) : null, m = this.mood, k = Math.min(1, dt * 1.2);
     m.fog += ((there?.fog ?? 0) - m.fog) * k; m.dim += ((there?.dim ?? 0) - m.dim) * k;
     for (let i = 0; i < 3; i++) m.tint[i] = m.tint[i]! + ((there?.tint[i] ?? 0) - m.tint[i]!) * k;
-    this.space.update(world.space, this.rig.target.x, this.rig.target.z, dt, this.reduceMotion);
+    this.space.update(world.space, this.rig.target.x, this.rig.target.z, dt, this.reduceMotion, this.rig.camera);
     this.env.weather(this.nebula, this.reduceMotion ? 0 : this.flash, m);
     // a fight lifts the rim off the black and cools it toward the faction you face; it eases back out after
     if (inFight(world)) {
