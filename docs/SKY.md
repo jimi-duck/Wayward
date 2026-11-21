@@ -187,3 +187,43 @@ second and thin away close to the camera, so flying in, the gas parts round the 
 1.5 to 7.5 s that lights the gas round it (`gasFlash`). Curtains are strip meshes with drifting rays and a bright hem.
 Gas is held well under white and its tint pushed away from grey: a bank that blows out reads as the pale wash the owner
 does not want. Phone and Low build 55% of the lumps. GPU cost not measured (cloud has software WebGL only).
+
+## The middle distance (space plan step 2, 2026-11-21)
+
+`render/midgas.ts`: nine banks of gas and dust (five on Phone and Low) a few hundred metres to two kilometres out, high
+or low, never in the ship's plane. Two in three are gas lit in the sky's own colours, one in three a dark dust lane.
+They sit on a 3.6 km repeating tile anchored in the world, so they slide past at their own pace as the ship travels, and
+fade in past 320 m and out before 1.8 km, so none pops at the tile's edge or comes close. One gas draw each (gas.ts);
+rebuilt per sky from its seed. GPU cost not measured.
+
+## Light that travels (space plan step 3, 2026-11-21)
+
+- Sun shafts (`render/post.ts` ShaftsEffect, Medium and High): a 22-tap march from each pixel toward the sun's place on
+  screen gathers what is bright on the way; dark things between (rock, hulls) break it, so a rock against the sun throws
+  a shadow shaft. Added light in the sun's colour, at most 0.42, only on what is past a few hundred metres (by depth), and
+  fading as the sun leaves the view. Before the bloom.
+- Storm strokes light their own gas (step 1, `gasFlash`).
+- Aerial haze held back (`aerial.ts`): a rock between the ship and the star took nearly all of a brightened haze and read
+  as a flat pale lilac cut-out (the owner's washed-out complaint). The haze now takes at most 60% (lit faces 40%), and
+  brightens only a little toward the star.
+
+## Fuller belts (space plan step 4, 2026-11-21)
+
+`render/belt.ts`, driven by how many rocks the system holds (none below 4, full at 30, eased in over a few seconds):
+
+- rubble streams: three long rivers of rock (two on Phone and Low), 2.5 to 16 m stones, 60 to 220 m above or below the
+  ship's plane, flowing slowly along their length and thinning at the ends, each with a thin band of dust (gas.ts sheets).
+  A thin field shows fewer stones, never smaller ones. On a 3 km tile anchored in the world, so they slide past.
+- ice glitter: 420 motes round the ship that catch the sun for an instant as they turn (additive, sun-tinted, small).
+- the close chips (debris.ts) are darker, never a pale grey.
+
+## Signs of life (space plan step 5, 2026-11-21)
+
+`render/phenomena.ts`, leaning by region like the rest (PHENOM):
+
+- traffic lanes: each far light now runs on a lane of twelve small warm marker lights strung along its path and a
+  little past each end, with a slow bright beat running down the line like approach lights. One draw for every lane.
+- far skirmishes: now and then, low in the sky, a few seconds of small white-gold sparks and short tracers round one
+  point (never red: red is threat only). Mean gap per region (`skirmish`): often in the Breaker Yards and the Marches,
+  never in the Hollows, the Drift Deep or the Last Lanes. `?phenom=busy` puts one where the camera looks.
+- mining rigs and convoys were already there (farworks `mine`, the `convoy` feature).

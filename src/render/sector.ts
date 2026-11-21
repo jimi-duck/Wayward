@@ -759,6 +759,7 @@ export class Sector {
     this.rig.reveal = Math.max(rv.arc, this.sceneArc.update(this.storyScene !== null, uiDt, this.reduceMotion));
     this.ship.update(s, dt, this.reduceMotion);
     this.rocks.update(world.field.rocks, world.field.bulwarks, alpha, dt, this.rig.target.x, this.rig.target.z);
+    this.env.belt.update(this.rig.camera, this.rig.target.x, this.rig.target.z, dt, !this.reduceMotion, world.field.rocks.length);
     this.streaks.begin();
     this.weapons.update(world.bolts, world.torps, alpha, this.fx, dt, this.time);
     this.enemies.eye.copy(this.rig.camera.position);
