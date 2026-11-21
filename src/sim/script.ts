@@ -101,6 +101,8 @@ export const LEAVE_R = 900;
 export class Script {
   /** Rows by id, for any stop (a carried row may belong to the last one). */
   private readonly all: Map<string, Row>;
+  /** This stop's rows that wait on a place. */
+  private readonly atPlace: Row[];
   private readonly mine: Row[];
   /** Triggered, waiting their turn (row ids). */
   private queue: Array<{ id: string; at: number; carried: boolean }> = [];
@@ -120,6 +122,7 @@ export class Script {
    */
   constructor(rows: readonly Row[], private readonly stop: string, private readonly seen: Set<string>, pending: readonly string[] = []) {
     this.all = new Map(rows.map((r) => [r.id, r]));
+    this.atPlace = rows.filter((r) => r.on.on === 'place' && r.stop === stop);
     this.mine = rows.filter((r) => (r.stop === stop || r.stop === '*') && !seen.has(r.id));
     for (const id of pending) if (this.all.has(id) && !seen.has(id) && !this.fired.has(id)) { this.fired.add(id); this.queue.push({ id, at: -Infinity, carried: true }); }
   }
@@ -229,6 +232,11 @@ export class Script {
   }
 
   played(id: string): boolean { return this.playedAt.has(id) || this.seen.has(id); }
+  /** A place's beat has played, triggered or been let go: the place is not needed any more. */
+  placeSpent(place: string): boolean {
+    for (const r of this.atPlace) if (r.on.on === 'place' && r.on.place === place && (this.seen.has(r.id) || this.fired.has(r.id) || this.released.includes(r.id))) return true;
+    return false;
+  }
 
   private cond(r: Row, flags: ReadonlySet<string>, tank = 0): boolean {
     const full = r.if?.full;

@@ -15,7 +15,7 @@ import { Kit, metal, seeded } from './kit';
 const TEAL = new Color(0.25, 1.1, 1.25);
 /** The rings' width (units), and their radius round each look. */
 const RING_W = 0.14;
-const SNUG: Record<PlaceLook, number> = { skiff: 5, wreck: 6, canister: 2.2, buoy: 3 };
+const SNUG: Record<PlaceLook, number> = { skiff: 5, ferry: 8, wreck: 6, canister: 2.2, buoy: 3 };
 const BEACON = new Color(0.4, 1.6, 1.8);
 
 let placeMats: Record<string, Material> | null = null;
@@ -41,6 +41,25 @@ function skiff(): Group {
   windowRow(k, rnd, [-0.6, 0.12, -0.56], [0.9, 0.12, -0.56], 5, [0.14, 0.12, 0.04], [0, 0, 0], 0.2);
   k.box('dark', [0.06, 0.6, 0.06], [-0.6, 0.85, 0]);
   k.box('lamp', [0.07, 0.07, 0.07], [1.2, 0.3, 0.45]);
+  return scaled(k.build(mats(), 0.5), 1.8);
+}
+
+/** A slow passenger hull: a long body with two decks of lit ports, a docking collar, a pair of drives. Twice the skiff. */
+function ferry(): Group {
+  const k = new Kit(), rnd = seeded(23);
+  k.box('pale', [4.2, 0.9, 1.1], [0, 0, 0]);
+  k.cyl('pale', 0.55, 0.55, 1.1, [2.1, 0, 0], 'z', 14);
+  k.box('slate', [3.4, 0.4, 0.9], [-0.1, 0.62, 0]);
+  k.box('dark', [4.3, 0.12, 1.16], [0, -0.3, 0]);
+  for (const z of [0.56, -0.56]) {
+    windowRow(k, rnd, [-1.7, 0.18, z], [1.7, 0.18, z], 10, [0.14, 0.1, 0.04], [0, 0, 0], 0.15);
+    windowRow(k, rnd, [-1.4, 0.64, z * 0.82], [1.3, 0.64, z * 0.82], 7, [0.12, 0.09, 0.04], [0, 0, 0], 0.25);
+  }
+  k.ring('dark', 0.36, 0.06, [0.4, -0.05, 0.58], 'z', 12);
+  k.cyl('dark', 0.3, 0.36, 0.5, [-2.3, 0.15, 0.32], 'x', 12, true);
+  k.cyl('dark', 0.3, 0.36, 0.5, [-2.3, 0.15, -0.32], 'x', 12, true);
+  k.box('dark', [0.05, 0.7, 0.05], [1.2, 1.15, 0]);
+  k.box('lamp', [0.07, 0.07, 0.07], [2.4, 0.3, 0.4]);
   return scaled(k.build(mats(), 0.5), 1.8);
 }
 
@@ -78,7 +97,7 @@ function buoy(): Group {
 /** A look at its size in the world: the skiff about her length, the wreck a little more, a canister she could fit in her hold. */
 function scaled(g: Group, k: number): Group { g.scale.setScalar(k); return g; }
 
-const BUILD: Record<PlaceLook, () => Group> = { skiff, wreck, canister, buoy };
+const BUILD: Record<PlaceLook, () => Group> = { skiff, ferry, wreck, canister, buoy };
 
 export class PlaceView {
   private readonly root = new Group();
@@ -148,8 +167,8 @@ export class PlaceView {
       this.fill.geometry.dispose();
       this.fill.geometry = new RingGeometry(r - RING_W * 3, r - RING_W * 1.6, 96, 1, Math.PI / 2, held * Math.PI * 2);
     }
-    this.beacon.visible = pickup || sp.def.look === 'skiff';
-    this.beacon.position.set(0, pickup ? 1.1 : 2.0, 0);
+    this.beacon.visible = pickup || sp.def.look === 'skiff' || sp.def.look === 'ferry';
+    this.beacon.position.set(0, pickup ? 1.1 : sp.def.look === 'ferry' ? 2.6 : 2.0, 0);
     (this.beacon.material as MeshBasicMaterial).opacity = Math.sin(this.time * 3.1) > 0.4 ? 1 : 0.18;
   }
 

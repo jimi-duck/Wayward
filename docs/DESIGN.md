@@ -401,7 +401,7 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 ## Story places (2026-11-21)
 
 A story beat happens somewhere she can see, and she does something there (the "story in places" plan). A place is a row in
-`content/script/places.ts`: its stop, a name, a look (skiff, wreck, canister, buoy; `render/places.ts`), where it stands (a share of
+`content/script/places.ts`: its stop, a name, a look (skiff, ferry, wreck, canister, buoy; `render/places.ts`), where it stands (a share of
 the way to the gate and units off the line, port side), and one act: **hold** inside its ring, slow and out of a fight, for a few
 seconds, or **pickup** (fly over it). Done, it sets its flag and leaves the scope. `sim/places.ts` has the rules; the world shows one
 place at a time (`World.storyPlace`): on the scope, as an edge pointer, as the guide's course and as the HUD objective (its verb, the
@@ -410,7 +410,14 @@ range, then the seconds left as the ring fills). `show` and `after` hold a place
 
 A script row waits on a place with `{ on: 'place', place: id }`. A main beat that does holds the Jump Gate for as long as it takes, and
 the gate names the place ("Jump Gate shut · Ilse's skiff first"; told as a notice only once she makes for the gate). Rock is kept
-clear of a live place. To add one: a row in `STORY_PLACES`, a script row on it, German twins for its name, verb and lines.
+clear of a live place. A place whose beat has already played (a reload at the stop, or a beat the gate let go) is not shown again
+(`Script.placeSpent`). To add one: a row in `STORY_PLACES`, a script row on it, German twins for its name, verb and lines.
+
+On the road past the Narrows, each meeting that happens in person waits at its place: Ma Saffi's ship (the Long Walk), the Aster's
+wreck (Kessler's Wreck), Kesh's runabout (Kiln, once Val has been met), Tarik's lamp, the Quiet Ferry (twice), Ben Anand's tender
+(Yard Nine), Old Mirren's boat, the Palecairn hulk, and Oren's light at each of Thin Gap, Dimrim and Lone Step, one question at each.
+Calls from afar stay calls: Draper, the Voice, the Thren, Val's betrayal, Noor, Brook from the transport, Thane's hearing, and the
+stops whose meeting is the port itself (Kessel Hold, the Exchange, Duarte Harbour, the Last Toll).
 
 ## The refit bay
 
