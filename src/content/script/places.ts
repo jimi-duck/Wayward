@@ -15,4 +15,26 @@ export const STORY_PLACES: StoryPlaceDef[] = [
   { id: 'ml_spike', stop: 'marlow', name: 'Brook’s data spike', look: 'canister', along: 0.43, off: -160, act: { pickup: true }, r: 3, done: 'spike_aboard', show: 'frag_ledger', after: 'ml_brook', verb: 'Take the data spike aboard' },
   // Vesta: Ilse's message buoy, left where she knew Juno would rest (only if Juno never heard her at Halden)
   { id: 've_buoy', stop: 'vesta', name: 'Ilse’s message buoy', look: 'buoy', along: 0.3, off: -140, act: { hold: 5 }, r: 14, done: 'buoy_read', skip: ['frag_order'], verb: 'Hold by Ilse’s message buoy' },
+  // ── the road past the Narrows: each meeting happens at a hull she can see ──
+  // The Long Walk: Ma Saffi's ship, the fleet's last, keeping the manifests
+  { id: 'mw_saffi', stop: 'm_walk', name: 'Ma Saffi’s ship', look: 'ferry', along: 0.3, off: -170, act: { hold: 5 }, r: 18, done: 'saffi_alongside', skip: ['frag_manifests'], verb: 'Hold alongside Ma Saffi’s ship' },
+  // Kessler's Wreck: the Warden cutter Aster, the recorder still running
+  { id: 'bk_aster', stop: 'b_kessler', name: 'The Aster’s wreck', look: 'wreck', along: 0.32, off: -160, act: { hold: 6 }, r: 18, done: 'aster_reached', skip: ['frag_blackbox'], verb: 'Hold by the Aster’s wreck' },
+  // Kiln: Kesh, slipping away from Val's people to talk (only if Val has been met)
+  { id: 'bn_kesh', stop: 'b_kiln', name: 'Kesh’s runabout', look: 'skiff', along: 0.3, off: -170, act: { hold: 5 }, r: 16, done: 'kesh_alongside', show: 'broker', skip: ['kesh_trust'], verb: 'Hold alongside Kesh’s runabout' },
+  // Tarik's Lamps: the lamp he hangs where a burned chart bends
+  { id: 'bt_lamp', stop: 'b_tarik', name: 'Tarik’s lamp', look: 'buoy', along: 0.3, off: -150, act: { hold: 5 }, r: 14, done: 'lamp_reached', skip: ['frag_charts'], verb: 'Hold by Tarik’s lamp' },
+  // The Quiet Ferry, and again at Ninth Fold
+  { id: 'df_ferry', stop: 'd_ferry', name: 'The Quiet Ferry', look: 'ferry', along: 0.3, off: -170, act: { hold: 5 }, r: 18, done: 'ferry_alongside', skip: ['ferry_met'], verb: 'Hold alongside the Quiet Ferry' },
+  { id: 'dn_ferry', stop: 'd_fold', name: 'The Quiet Ferry', look: 'ferry', along: 0.32, off: -170, act: { hold: 5 }, r: 18, done: 'ferry_alongside_2', skip: ['agent_exposed', 'agent_shielded'], verb: 'Hold alongside the Quiet Ferry' },
+  // Yard Nine: Ben Anand's tender, off the claim office where nobody can listen
+  { id: 'yn_anand', stop: 'y_nine', name: 'Ben Anand’s tender', look: 'skiff', along: 0.32, off: -170, act: { hold: 5 }, r: 16, done: 'anand_alongside', skip: ['frag_workorder'], verb: 'Hold alongside Anand’s tender' },
+  // Mirren's Pier: the old pier boat where she keeps the box
+  { id: 'fm_mirren', stop: 'f_mirren', name: 'Old Mirren’s boat', look: 'skiff', along: 0.3, off: -160, act: { hold: 5 }, r: 16, done: 'mirren_alongside', skip: ['frag_witnesses'], verb: 'Hold alongside Old Mirren’s boat' },
+  // Palecairn: the hulk where Echo sleeps and Sable hides
+  { id: 'hc_hulk', stop: 'h_cairn', name: 'The Palecairn hulk', look: 'wreck', along: 0.32, off: -170, act: { hold: 6 }, r: 18, done: 'hulk_reached', skip: ['echo_trust', 'sable_trust'], verb: 'Hold by the Palecairn hulk' },
+  // Oren's three lights: one question at each
+  { id: 'lg_light', stop: 'l_gap', name: 'Oren’s light', look: 'buoy', along: 0.3, off: -150, act: { hold: 5 }, r: 14, done: 'light_1', verb: 'Hold by Oren’s light' },
+  { id: 'ld_light', stop: 'l_dimrim', name: 'Oren’s light', look: 'buoy', along: 0.3, off: -150, act: { hold: 5 }, r: 14, done: 'light_2', verb: 'Hold by Oren’s light' },
+  { id: 'ls_light', stop: 'l_step', name: 'Oren’s light', look: 'buoy', along: 0.3, off: -150, act: { hold: 5 }, r: 14, done: 'light_3', verb: 'Hold by Oren’s light' },
 ];

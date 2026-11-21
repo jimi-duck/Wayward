@@ -8,6 +8,8 @@ import { guideTarget } from '../src/sim/guide';
 import { goalOf } from '../src/sim/goal';
 import { World } from '../src/sim/world';
 import { t } from '../src/i18n';
+import { LEGS } from '../src/content/road';
+import { Script } from '../src/sim/script';
 
 // Story places (sim/places.ts, owner 2026-11-21): each beat happens somewhere she can see, and she does something there.
 
@@ -27,6 +29,21 @@ describe('a story place, as data', () => {
       if (p.after) expect(SCRIPT.some((r) => r.id === p.after), p.id).toBe(true);
       expect(t(p.name), p.id).not.toBe('');
     }
+  });
+
+  it('every one stands at a stop on the road, and a meeting there waits on it, not on a clock', () => {
+    const stops = new Set(LEGS.flat().map((s) => s.script));
+    for (const p of STORY_PLACES) expect(stops.has(p.stop) || ['halden', 'marlow', 'vesta'].includes(p.stop), p.id).toBe(true);
+    for (const id of ['walk_saffi', 'bk_kessler', 'bn_kesh', 'bt_tarik', 'df_ossie', 'dn_agent', 'yn_anand', 'fm_mirren', 'hc_two', 'lg_oren', 'ld_oren', 'ls_oren'])
+      expect(SCRIPT.find((r) => r.id === id)?.on.on, id).toBe('place');
+  });
+
+  it('is not shown again once its beat has played (a reload at the stop)', () => {
+    const p = STORY_PLACES.find((x) => x.id === 'bk_aster')!;
+    expect(livePlace(STORY_PLACES, 'b_kessler', new Set(), () => true, (id) => new Script(SCRIPT, 'b_kessler', new Set()).placeSpent(id))?.id).toBe(p.id);
+    const sc = new Script(SCRIPT, 'b_kessler', new Set(['bk_kessler']));
+    expect(sc.placeSpent('bk_aster')).toBe(true);
+    expect(livePlace(STORY_PLACES, 'b_kessler', new Set(), () => true, (id) => sc.placeSpent(id))).toBeNull();
   });
 
   it('shows one at a time: the first not done, once its flag and its line have come, and never one the beat came round', () => {
@@ -114,4 +131,30 @@ describe('Halden’s Reach, in its places', () => {
     run(60, () => { w.ship.x = b.lane.x - 200; w.ship.z = b.lane.z; w.ship.vx = w.ship.vz = 0; });
     expect(w.gateWhy).not.toBe('{who} first');
   });
+});
+
+describe('the road past the Narrows, in its places', () => {
+  // each meeting waits at its hull or light: held alongside, the stop's card comes
+  for (const [stop, card, flags] of [['b_kessler', 'story_salvor', []], ['d_ferry', 'story_ferry', []], ['b_kiln', 'story_kesh', ['broker']], ['l_gap', 'story_oren_who', []]] as const) {
+    it(`${stop}: nothing comes until she holds there, then ${card}`, () => {
+      const j = halden();
+      j.carry.flags.push(...flags);
+      const w = new World(7, { mode: 'breakout', sortie: { ...sortieDef(j), script: stop, pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, situation: null, place: null, thren: 0, calloway: Infinity }, carry: j.carry });
+      const sp = w.storyPlace!;
+      expect(sp.def.stop).toBe(stop);
+      const seen: string[] = [];
+      const step = (secs: number, at: { x: number; z: number }) => {
+        for (let i = 0; i < Math.round(secs / STEP); i++) {
+          w.ship.invuln = 1; w.ship.x = at.x; w.ship.z = at.z; w.ship.vx = w.ship.vz = 0;
+          w.step(STEP, NO); w.events.length = 0;
+          if (w.comms) { const c = w.comms.def.choices; seen.push(w.comms.def.id); w.answer(c[c.length - 1]!.id); }
+        }
+      };
+      step(40, { x: 0, z: 0 });
+      expect(seen).not.toContain(card);
+      step(30, { x: sp.x + 3, z: sp.z });
+      expect(seen).toContain(card);
+      expect(w.storyPlace?.def.id).not.toBe(sp.def.id);
+    });
+  }
 });

@@ -14,7 +14,7 @@ import type { Breakout } from './breakout';
 // holds the Jump Gate for as long as it takes, and the gate names the place.
 // Plain data: the flag is the only state that is saved.
 
-export type PlaceLook = 'skiff' | 'wreck' | 'canister' | 'buoy';
+export type PlaceLook = 'skiff' | 'ferry' | 'wreck' | 'canister' | 'buoy';
 
 export interface StoryPlaceDef {
   id: string;
@@ -55,10 +55,13 @@ export function placeAt(def: StoryPlaceDef, b: Pick<Breakout, 'lane'>): { x: num
   return { x: b.lane.x * def.along + rx * def.off, z: b.lane.z * def.along + rz * def.off };
 }
 
-/** The place this stop shows now: the first not yet done whose time has come (one at a time, so the course is never in doubt). */
-export function livePlace(defs: readonly StoryPlaceDef[], stop: string | undefined, flags: ReadonlySet<string>, played: (row: string) => boolean = () => true): StoryPlaceDef | null {
+/**
+ * The place this stop shows now: the first not yet done whose time has come (one at a time, so the course is never in doubt).
+ * `spent` says a place's beat has already played (a reload mid-stop, or the gate let it go): it is not shown again.
+ */
+export function livePlace(defs: readonly StoryPlaceDef[], stop: string | undefined, flags: ReadonlySet<string>, played: (row: string) => boolean = () => true, spent: (place: string) => boolean = () => false): StoryPlaceDef | null {
   if (!stop) return null;
-  return defs.find((p) => p.stop === stop && !placeDone(p, flags) && (!p.show || flags.has(p.show)) && (!p.after || played(p.after))) ?? null;
+  return defs.find((p) => p.stop === stop && !placeDone(p, flags) && !spent(p.id) && (!p.show || flags.has(p.show)) && (!p.after || played(p.after))) ?? null;
 }
 
 /** A place is done: its flag is set, or the beat came another way. */

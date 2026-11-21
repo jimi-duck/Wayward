@@ -53,7 +53,7 @@ const MARCHES_ROWS: Row[] = [
   // 4 · the Long Walk (turn): Ma Saffi and the manifests; Wren after any answer
   notice('walk_notice', 'm_walk', arrive(), 'teal', 'The Long Walk', 'Drift fleet · forty hulls, lashed together'),
   objective('walk_objective', 'm_walk', arrive(), 'The Long Walk · the Drift kept the names'),
-  main('walk_saffi', 'm_walk', free(6), 'story_drift'),
+  main('walk_saffi', 'm_walk', { on: 'place', place: 'mw_saffi' }, 'story_drift'),
   radio('walk_wren', 'm_walk', after('walk_saffi', 2), 'Wren Saffi', 'miners', '“Ninefold, line nine. My parents. Gran reads the list every year. I just fly.”'),
   // the lifeboat's echo
   radio('walk_boat', 'm_walk', after('walk_wren', 4), 'Ma Saffi', 'miners', '“Anka’s boat came through. Forty-one names. You kept them.”', { if: { has: ['lifeboat_saved'] } }),
@@ -114,7 +114,7 @@ const BELT_ROWS: Row[] = [
   // 4 · Kessler's Wreck (turn): the recorder, Ada's cutter; her voice if it is cut free; Quiet Line 3, the dead drop
   notice('bk_notice', 'b_kessler', arrive(), 'teal', 'Kessler’s Wreck', 'a salvor’s claim · one old cutter'),
   objective('bk_objective', 'b_kessler', arrive(), 'Kessler’s Wreck · a recorder that still runs'),
-  main('bk_kessler', 'b_kessler', free(6), 'story_salvor'),
+  main('bk_kessler', 'b_kessler', { on: 'place', place: 'bk_aster' }, 'story_salvor'),
   card('bk_box', 'b_kessler', flag('frag_blackbox'), 'story_ada', { holdsJob: true }),
   notice('bk_wall', 'b_kessler', after('bk_box'), 'teal', 'The Wall', 'Ada Aster · died 25 years ago', { wall: 'ada_died' }),
   radio('bk_after', 'b_kessler', after('bk_wall', 2), 'Dov Kessler', 'miners', '“Granddaughter. Hm. I’ll paint her name on the gate.”'),
@@ -130,7 +130,7 @@ const BELT_ROWS: Row[] = [
   // 6 · Kiln (pressure): Kesh, if Val is in it; Quiet Line 4, the witness, who names Val
   notice('bn_notice', 'b_kiln', arrive(), 'amber', 'Kiln', 'Gutter crossing'),
   objective('bn_objective', 'b_kiln', arrive(), 'Kiln · someone is selling routes'),
-  main('bn_kesh', 'b_kiln', free(6), 'story_kesh', { if: { has: ['broker'] } }),
+  main('bn_kesh', 'b_kiln', { on: 'place', place: 'bn_kesh' }, 'story_kesh', { if: { has: ['broker'] } }),
   pike('bn_pike', 'b_kiln', 'job_the_witness_won', '“The witness says Val. Val’s been selling our routes to Custody. Funny. She sells yours too.”', { wall: 'val_leak' }),
   pike('bn_pike_sold', 'b_kiln', 'witness_sold', '“You handed Orrin to Custody. The Line won’t call you again soon.”'),
   objective('bn_gate', 'b_kiln', leave(), 'Jump to Tarik’s Lamps'),
@@ -138,7 +138,7 @@ const BELT_ROWS: Row[] = [
   // 7 · Tarik's Lamps (reckoning): the burned charts; Val's sale, if she was taken up; Hester's hauler
   notice('bt_notice', 'b_tarik', arrive(), 'teal', 'Tarik’s Lamps', 'chart room adrift · before the Scrapgate'),
   objective('bt_objective', 'b_tarik', arrive(), 'Tarik’s Lamps · the charts they burned'),
-  main('bt_tarik', 'b_tarik', free(6), 'story_charts'),
+  main('bt_tarik', 'b_tarik', { on: 'place', place: 'bt_lamp' }, 'story_charts'),
   main('bt_val', 'b_tarik', after('bt_tarik', 6), 'story_vell_betray', { if: { has: ['broker'] } }),
   radio('bt_dunne_won', 'b_tarik', flag('job_long_walk_won'), 'Hauler Dunne', 'miners', '“Home on one drive. My crew will drink to you tonight.”'),
   hester('bt_hester_lost', 'b_tarik', 'job_long_walk_lost', '“Not your fault. The Belt eats slow ships.”'),
@@ -154,7 +154,7 @@ const DEEP_ROWS: Row[] = [
   // 2 · the Quiet Ferry (hub): Ossie Raine; Quiet Line 5, Quill's race
   notice('df_notice', 'd_ferry', arrive(), 'teal', 'The Quiet Ferry', 'forty-one passengers · stores, no questions'),
   objective('df_objective', 'd_ferry', arrive(), 'The Quiet Ferry · a lane ahead, no questions'),
-  main('df_ossie', 'd_ferry', free(6), 'story_ferry'),
+  main('df_ossie', 'd_ferry', { on: 'place', place: 'df_ferry' }, 'story_ferry'),
   quill('df_quill_lost', 'd_ferry', 'job_finders_keepers_lost', '“Nice hull. Slow, though. Next time I’ll wait for you at the finish.”'),
   quill('df_quill_won', 'd_ferry', 'job_finders_keepers_won', '“Who taught you to fly like that? Nobody? Figures.”'),
   objective('df_gate', 'd_ferry', leave(), 'Jump to Lantern Mile'),
@@ -168,7 +168,7 @@ const DEEP_ROWS: Row[] = [
   // 4 · Ninth Fold (turn): Corin Ashe aboard the ferry; the Account's payroll, which is Hester's crews' wages
   notice('dn_notice', 'd_fold', arrive(), 'teal', 'Ninth Fold', 'the ferry’s anchorage'),
   objective('dn_objective', 'd_fold', arrive(), 'Ninth Fold · someone aboard is watching'),
-  main('dn_agent', 'd_fold', free(6), 'story_ferry_agent'),
+  main('dn_agent', 'd_fold', { on: 'place', place: 'dn_ferry' }, 'story_ferry_agent'),
   hester('dn_hester', 'd_fold', 'job_missing_payroll_won', '“Somebody took our wages at the Deep. I know it was you. Your name’s in the other column now.”', { if: { not: ['job_missing_payroll_warn'] } }),
   hester('dn_hester_warn', 'd_fold', 'job_missing_payroll_warn', '“You warned the barges. That’s a month of wages home. I won’t forget it.”'),
   objective('dn_gate', 'd_fold', leave(), 'Jump to Hushlight'),
@@ -212,7 +212,7 @@ const YARDS_ROWS: Row[] = [
   // 2 · Yard Nine (hub): Ben Anand and the first work order; Quiet Line 6, the Needle, where Quill joins
   notice('yn_notice', 'y_nine', arrive(), 'teal', 'Yard Nine', 'Kellern yard · the breakers’ birthplace'),
   objective('yn_objective', 'y_nine', arrive(), 'Yard Nine · the first work order', 'Kellern yard · refit bay open'),
-  main('yn_anand', 'y_nine', free(6), 'story_workorder'),
+  main('yn_anand', 'y_nine', { on: 'place', place: 'yn_anand' }, 'story_workorder'),
   quill('yn_quill_won', 'y_nine', 'job_needle_won', '“You fly like you’ve got somewhere to be. Pike says you do. Fine. I’m in.”'),
   quill('yn_quill_lost', 'y_nine', 'job_needle_lost', '“You fly like you’ve got somewhere to be. Pike says you do. Fine. I’m in.”'),
   objective('yn_gate', 'y_nine', leave(), 'Jump to Anvil Slip'),
@@ -283,7 +283,7 @@ const PORTS_ROWS: Row[] = [
   // 4 · Mirren's Pier (turn): Old Mirren and the Forty; the Account, now Draper by name
   notice('fm_notice', 'f_mirren', arrive(), 'teal', 'Mirren’s Pier', 'a ledger-keeper’s skiff'),
   objective('fm_objective', 'f_mirren', arrive(), 'Mirren’s Pier · forty names in a box'),
-  main('fm_mirren', 'f_mirren', free(6), 'story_witnesses'),
+  main('fm_mirren', 'f_mirren', { on: 'place', place: 'fm_mirren' }, 'story_witnesses'),
   notice('fm_names', 'f_mirren', flag('forty_held'), 'teal', 'The Wall', 'the Forty · Ada Aster listed'),
   radio('fm_ines', 'f_mirren', after('fm_names', 3), 'Old Mirren', 'guild', '“Duarte, line twelve. Ask your harbour-master who her great-grandmother was.”', { if: { has: ['ines_berth'] } }),
   // drawing the pickets off (standalone): the Guild gunship answers
@@ -344,7 +344,7 @@ const HOLLOWS_ROWS: Row[] = [
   // 4 · Palecairn (turn): Echo or Sable
   notice('hc_notice', 'h_cairn', arrive(), 'teal', 'Palecairn', 'dead relay · one lone scout'),
   objective('hc_objective', 'h_cairn', arrive(), 'Palecairn · two voices want something'),
-  main('hc_two', 'h_cairn', free(6), 'story_echo_sable'),
+  main('hc_two', 'h_cairn', { on: 'place', place: 'hc_hulk' }, 'story_echo_sable'),
   notice('hc_home', 'h_cairn', flag('job_sables_crossing_won'), 'white', 'Sable', 'home, inside the swarm'),
   objective('hc_gate', 'h_cairn', leave(), 'Jump to Mute Hall'),
 
@@ -383,14 +383,14 @@ const LAST_ROWS: Row[] = [
   // 3, 4, 5 · Oren's three questions, one at each light
   notice('lg_notice', 'l_gap', arrive(), 'teal', 'Thin Gap', 'Oren’s first light'),
   objective('lg_objective', 'l_gap', arrive(), 'Thin Gap · the first question'),
-  main('lg_oren', 'l_gap', free(6), 'story_oren_who'),
+  main('lg_oren', 'l_gap', { on: 'place', place: 'lg_light' }, 'story_oren_who'),
   objective('lg_gate', 'l_gap', leave(), 'Jump to Dimrim'),
   notice('ld_notice', 'l_dimrim', arrive(), 'teal', 'Dimrim', 'Oren’s second light'),
   objective('ld_objective', 'l_dimrim', arrive(), 'Dimrim · the second question'),
-  main('ld_oren', 'l_dimrim', free(6), 'story_oren_cost'),
+  main('ld_oren', 'l_dimrim', { on: 'place', place: 'ld_light' }, 'story_oren_cost'),
   objective('ld_gate', 'l_dimrim', leave(), 'Jump to Lone Step'),
   ...rest('ls', 'l_step', 'Lone Step', 'The Threshold · 3 jumps'),
-  main('ls_oren', 'l_step', settle(), 'story_oren_why'),
+  main('ls_oren', 'l_step', { on: 'place', place: 'ls_light' }, 'story_oren_why'),
   main('ls_voice', 'l_step', after('ls_oren', 6), 'sc_voice_direct'),
   objective('ls_gate', 'l_step', leave(), 'Jump to Dusk Mark'),
 

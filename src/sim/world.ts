@@ -1993,7 +1993,7 @@ export class World implements EncounterHost {
     const b = this.bk;
     if (!b || !this.script) return null;
     const sc = this.script;
-    const def = livePlace(STORY_PLACES, b.def.script, this.flags, (row) => sc.played(row));
+    const def = livePlace(STORY_PLACES, b.def.script, this.flags, (row) => sc.played(row), (id) => sc.placeSpent(id));
     if (!def) return null;
     const at = placeAt(def, b);
     const held = 'hold' in def.act && this.placeHoldOf === def.id ? Math.min(1, this.placeHold / def.act.hold) : 0;
