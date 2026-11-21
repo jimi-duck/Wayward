@@ -419,6 +419,18 @@ wreck (Kessler's Wreck), Kesh's runabout (Kiln, once Val has been met), Tarik's 
 Calls from afar stay calls: Draper, the Voice, the Thren, Val's betrayal, Noor, Brook from the transport, Thane's hearing, and the
 stops whose meeting is the port itself (Kessel Hold, the Exchange, Duarte Harbour, the Last Toll).
 
+## The Severance, where she can see it (2026-11-21)
+
+The world tells its history without a card (`sim/scars.ts`, `render/scars.ts`; plan "A living world"). Every road system shows a
+**dead gate**: a second Jump Gate under the flight plane, dark, three plates blown out, a breaker hulk clamped across its throat.
+The first one she passes is named once in the journey ("Dead gate · shut on Severance night", flag `dead_gate_seen`). A Kellern-held
+system has its **work lane**: six Bonded haulers queued by the live gate. By every live gate hangs a **billboard** with the
+leg's Continuance slogan (`SLOGANS`); past the Narrows, once `relay_broadcast` is set, the Scatter has struck it out and written
+its own line across it in ochre (`OVERS`). None of it is saved or solid.
+
+A meeting's ring (a story place to hold at) is a damping field like the gate's: nobody fires inside it, and hostiles circle outside
+("A civilian beacon holds every gun cold"), so a hunted pilot can still hold alongside.
+
 ## The refit bay
 
 Both modes build the ship in the **refit bay** (`content/web.ts`, `sim/bay.ts`,

@@ -81,6 +81,7 @@ import { voiceId, voiceText } from './voice';
 import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
 import { discounted, effects, type Effects } from './modules';
 import { Pack } from './tactics';
+import { scarsOf, type Scars } from './scars';
 import { livePlace, placeAt, placeDone, PLACE_CLEAR, stepPlace, stopPlaces, type StoryPlaceDef } from './places';
 import { STORY_PLACES } from '../content/script/places';
 import {
@@ -134,6 +135,9 @@ export const ROLL_CHAIN_GAP = 2.5;
 export const ROLL_CHAIN_PAY = 999999;
 const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false };
 const BOSS_PLATES = 1;
+/** The first dead gate is named once she comes within this range (units), and the flag that says she has. */
+const DEAD_GATE_SEEN_R = 260;
+const DEAD_GATE_SEEN = 'dead_gate_seen';
 /** Seconds the HUD says a hit knocked the drive back. */
 const SPOOL_KNOCK_SHOW = 2.5;
 
@@ -810,7 +814,7 @@ export class World implements EncounterHost {
     } else stepShip(s, c, this.hull, dt);
     if (held) this.recoverT += dt;
     if (this.bk?.def.first && this.alive) this.stepFirst();
-    if (this.bk && this.alive) this.stepStoryPlace(dt);
+    if (this.bk && this.alive) { this.stepStoryPlace(dt); this.stepScars(); }
     this.flushRadio();
     if (this.space) this.stepSpace(dt, s);
     const rolling = s.rollT >= 0;
@@ -1696,12 +1700,15 @@ export class World implements EncounterHost {
   }
 
   /** Inside the Jump Gate's or the depot's safe ring: nothing hurts the ship here and hostile hulls keep out. */
-  get safe(): 'lane' | 'port' | null {
+  get safe(): 'lane' | 'port' | 'place' | null {
     const b = this.bk;
     if (!b || !this.alive) return null;
     const s = this.ship;
     if (!this.fieldDown && Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < SAFE_R) return 'lane';
     if (b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < SAFE_R) return 'port';
+    // a meeting: the civilian hull's beacon holds every gun cold inside its ring, so she can hold alongside while hunted
+    const sp = this.storyPlace;
+    if (sp && 'hold' in sp.def.act && Math.hypot(s.x - sp.x, s.z - sp.z) < sp.def.r) return 'place';
     return null;
   }
 
@@ -1998,6 +2005,21 @@ export class World implements EncounterHost {
     const at = placeAt(def, b);
     const held = 'hold' in def.act && this.placeHoldOf === def.id ? Math.min(1, this.placeHold / def.act.hold) : 0;
     return { def, ...at, held };
+  }
+
+  /** The Severance where she can see it (sim/scars.ts): the dead gate, the work lane, the billboard. */
+  get severance(): Scars {
+    const b = this.bk;
+    return b ? scarsOf(b, this.flags) : { dead: null, queue: null, board: null };
+  }
+
+  /** The first dead gate she passes is named, once in the journey; after that she knows one when she sees it. */
+  private stepScars(): void {
+    if (this.flags.has(DEAD_GATE_SEEN) || this.phase !== 'play') return;
+    const dead = this.severance.dead;
+    if (!dead || Math.hypot(this.ship.x - dead.x, this.ship.z - dead.z) > DEAD_GATE_SEEN_R) return;
+    this.flags.add(DEAD_GATE_SEEN);
+    this.events.push({ type: 'storyNotice', tone: 'white', headline: 'Dead gate', reason: 'shut on Severance night, seventy years ago' });
   }
 
   /** The live story place: hold at it or take it aboard; done, its flag is set and the stop's script goes on (sim/places.ts). */
@@ -2774,7 +2796,8 @@ export class World implements EncounterHost {
     const s = this.ship;
     const arena: Arena = { bulwarks: this.field.bulwarks, rocks: this.field.rocks, aliens: this.aliens, bolts: this.bolts, notice: this.stats.notice };
     const well = this.encounter?.id === 'anomaly' && live(this.encounter) && !this.encounter.anchored ? this.encounter : null;
-    const safe = !!this.safe, keep = this.bk ? [...(this.fieldDown ? [] : [this.bk.lane]), ...(this.bk.port ? [this.bk.port] : []), ...(this.bk.audit ? [this.bk.audit] : [])] : [];
+    const meet = this.storyPlace, held = meet && 'hold' in meet.def.act ? [{ x: meet.x, z: meet.z, r: meet.def.r }] : [];
+    const safe = !!this.safe, keep = this.bk ? [...(this.fieldDown ? [] : [this.bk.lane]), ...(this.bk.port ? [this.bk.port] : []), ...(this.bk.audit ? [this.bk.audit] : []), ...held] : [];
     // the pack calls its plays before anyone moves (sim/tactics.ts)
     if (this.alive && !safe) this.pack.step(dt, this.aliens, s, this.rng);
     for (let i = this.aliens.length - 1; i >= 0; i--) {
