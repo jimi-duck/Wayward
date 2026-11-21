@@ -24,8 +24,8 @@ export interface HullLook {
 // Each faction's hulls are dark structure with its coat on the armour: the
 // colour sits on plates, so a silhouette shows its construction.
 export const HULL_LOOK: Record<Faction, HullLook> = {
-  // Custody: navy enamel on gunmetal, white and orange warning decals
-  custody: { base: 0x232830, paint: 0x1f3a5f, patch: 0xb9b6ac, under: 0x1a1e25, trim: 0xd8672a, worn: 0.45 },
+  // Custody: navy enamel on gunmetal, lighter navy panels (was a pale grey-white that washed the hulls out, owner 2026-11-21), orange warning decals
+  custody: { base: 0x232830, paint: 0x1f3a5f, patch: 0x34506e, under: 0x1a1e25, trim: 0xd8672a, worn: 0.45 },
   // Gutter: oxidised iron, rust plate, scuffed industrial yellow, hazard stripes
   gutter: { base: 0x3a3532, paint: 0xa84b1b, patch: 0xc9941f, under: 0x2a2522, trim: 0xd99b26, worn: 1 },
   // Office: carbon composite and cold slate, a cold-white diagnostic line, nothing else

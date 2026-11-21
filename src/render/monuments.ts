@@ -51,7 +51,7 @@ export function relicModel(): Group {
   if (!relic) {
     const k = new Kit();
     const mats: Record<string, Material> = {
-      stone: thinFog(metal({ tint: 0x8794a4, roughness: 0.5, metalness: 0.2, scale: 0.28, worn: 0.4 }), 0.35),
+      stone: thinFog(metal({ tint: 0x2c3038, roughness: 0.5, metalness: 0.2, scale: 0.28, worn: 0.4 }), 0.35),
       dark: thinFog(metal({ tint: 0x262d36, roughness: 0.6, metalness: 0.3, scale: 0.4 }), 0.35),
       seam: lit(new Color(0.32, 0.74, 1.05)),
     };
@@ -106,7 +106,7 @@ export function haulerModel(): Group {
   if (!hauler) {
     const k = new Kit();
     const mats: Record<string, Material> = {
-      hull: metal({ tint: 0xa0a6ad, roughness: 0.55, metalness: 0.4, scale: 6 }),
+      hull: metal({ tint: 0x3e4650, roughness: 0.55, metalness: 0.4, scale: 6 }),
       dark: metal({ tint: 0x2c2f33, roughness: 0.6, metalness: 0.4, scale: 8 }),
       lit: lit(new Color(1.7, 1.15, 0.6)),
       eng: lit(new Color(0.6, 1.1, 1.5)),
@@ -143,9 +143,9 @@ export function slipwayModel(): Group {
   if (!slip) {
     const k = new Kit();
     const mats: Record<string, Material> = {
-      steel: thinFog(metal({ tint: 0x8a939d, roughness: 0.55, metalness: 0.45, scale: 0.45, worn: 0.35 }), 0.5),
+      steel: thinFog(metal({ tint: 0x3c4249, roughness: 0.55, metalness: 0.45, scale: 0.45, worn: 0.35 }), 0.5),
       dark: metal({ tint: 0x30353b, roughness: 0.6, metalness: 0.4, scale: 0.6 }),
-      hull: thinFog(metal({ tint: 0x8d8478, roughness: 0.6, metalness: 0.35, scale: 0.3, worn: 0.3 }), 0.5),
+      hull: thinFog(metal({ tint: 0x4a4238, roughness: 0.6, metalness: 0.35, scale: 0.3, worn: 0.3 }), 0.5),
       lamp: lit(new Color(2.4, 1.7, 0.9)),
     };
     const V = (x: number, y: number, z: number) => new Vector3(x, y, z);
@@ -255,7 +255,7 @@ export function buoyModel(): Group {
   if (!buoy) {
     const k = new Kit();
     const mats: Record<string, Material> = {
-      hull: thinFog(metal({ tint: 0x9aa4ae, roughness: 0.5, metalness: 0.45, scale: 1.2, worn: 0.3 }), 0.6),
+      hull: thinFog(metal({ tint: 0x3e444b, roughness: 0.5, metalness: 0.45, scale: 1.2, worn: 0.3 }), 0.6),
       dark: metal({ tint: 0x2a3036, roughness: 0.6, metalness: 0.4, scale: 1.6 }),
       lens: lit(new Color(0.5, 1.5, 1.7)),
     };

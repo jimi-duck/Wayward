@@ -204,7 +204,7 @@ export function woundPoints(): { points: V3[]; hard: boolean } {
 const LIVERY = {
   // the repaint: industrial yellow plate with a darker amber stripe (owner 2026-11-05: she still did not read as yellow, off-white was
   // too pale); the wear in metal() keeps it "repaired and stolen"
-  stock: [0x969ca2, 0x70767c, 0xb0b6ba], yellow: [0xf0bb1c, 0xcf7d0c, 0xf6d553],
+  stock: [0x5f6771, 0x474e57, 0x78828c], yellow: [0xf0bb1c, 0xcf7d0c, 0xf6d553],
   stockGlow: [0.02, 0.022, 0.026], yellowGlow: [0.07, 0.05, 0.008],
 } as const;
 const A = new Color(), B = new Color();
