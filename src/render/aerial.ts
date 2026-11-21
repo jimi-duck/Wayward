@@ -11,15 +11,17 @@ import { dirOf, SUN_AZ, SUN_EL } from './sky';
 //   - the haze takes contrast first and never quite all of a thing: a lit face
 //     keeps more of itself than a shadowed one, so far rock reads as lit stone
 //     in a coloured haze, not as a hole;
-//   - the near bubble stays as clear as before (the exp2 curve is unchanged).
+//   - the near bubble stays as clear as before (the exp2 curve is unchanged);
+//   - held back (owner 2026-11-21): a rock between the ship and the star took nearly all the bright haze and read as a
+//     flat pale lilac cut-out, so the haze takes at most 60% and brightens only a little toward the star.
 //
 // The sun's direction is fixed in the world, so it is baked into the chunk; the
 // view direction comes from mvPosition, which every shader with fog has.
 
 /** How much of a far thing the haze may take at most: the unlit side. */
-const AERIAL_MAX = 0.84;
+const AERIAL_MAX = 0.6;
 /** How much more a lit face keeps of itself through the haze. */
-const AERIAL_LIT = 0.3;
+const AERIAL_LIT = 0.2;
 
 let done = false;
 
@@ -65,7 +67,7 @@ export function installAerial(): void {
   float fogSun = max( dot( normalize( vFogView ), fogSunV ), 0.0 );
   float fogLum = dot( fogColor, vec3( 0.3, 0.5, 0.2 ) );
   // toward the star the haze is lit from behind: brighter and warm; away from it, the sky's own colour
-  vec3 fogTint = fogColor * ( 1.0 + 1.4 * pow( fogSun, 5.0 ) ) + vec3( 1.0, 0.8, 0.58 ) * ( fogLum * 2.4 + 0.01 ) * pow( fogSun, 14.0 );
+  vec3 fogTint = fogColor * ( 1.0 + 0.5 * pow( fogSun, 5.0 ) ) + vec3( 1.0, 0.8, 0.58 ) * ( fogLum * 1.0 + 0.006 ) * pow( fogSun, 14.0 );
   // the haze takes contrast first: a lit face keeps more of itself than a shadowed one
   float fogKeep = smoothstep( 0.02, 0.3, dot( gl_FragColor.rgb, vec3( 0.3, 0.5, 0.2 ) ) );
   fogFactor *= ${AERIAL_MAX.toFixed(2)} - ${AERIAL_LIT.toFixed(2)} * fogKeep;

@@ -195,3 +195,14 @@ or low, never in the ship's plane. Two in three are gas lit in the sky's own col
 They sit on a 3.6 km repeating tile anchored in the world, so they slide past at their own pace as the ship travels, and
 fade in past 320 m and out before 1.8 km, so none pops at the tile's edge or comes close. One gas draw each (gas.ts);
 rebuilt per sky from its seed. GPU cost not measured.
+
+## Light that travels (space plan step 3, 2026-11-21)
+
+- Sun shafts (`render/post.ts` ShaftsEffect, Medium and High): a 22-tap march from each pixel toward the sun's place on
+  screen gathers what is bright on the way; dark things between (rock, hulls) break it, so a rock against the sun throws
+  a shadow shaft. Added light in the sun's colour, at most 0.42, only on what is past a few hundred metres (by depth), and
+  fading as the sun leaves the view. Before the bloom.
+- Storm strokes light their own gas (step 1, `gasFlash`).
+- Aerial haze held back (`aerial.ts`): a rock between the ship and the star took nearly all of a brightened haze and read
+  as a flat pale lilac cut-out (the owner's washed-out complaint). The haze now takes at most 60% (lit faces 40%), and
+  brightens only a little toward the star.
