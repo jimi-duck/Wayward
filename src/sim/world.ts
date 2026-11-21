@@ -3544,6 +3544,8 @@ export class World implements EncounterHost {
   /** Returns true if the hull was destroyed. `quiet` skips the hit flash (damage over time). */
   private hurtAlien(al: Alien, dmg: number, src: Weapon, x: number, y: number, z: number, quiet = false): boolean {
     if (!this.aliens.includes(al)) return false;
+    // a cloaked hull is out of reach of everything: shots, blasts, mines, a ram, flak, a well
+    if (cloaked(al)) return false;
     // Voice hulls adapt: past a share of their hull soaked (the original's 6 of 16), half damage
     if (FACTION_TRAITS[al.faction].adapt && al.soaked >= al.maxHp * (BORG_ADAPT / 16)) dmg *= 0.5;
     if (src === 'torpedo' && al.mark > 0) dmg *= this.stats.markBonus;
@@ -3641,7 +3643,7 @@ export class World implements EncounterHost {
 
   private hurtBoss(dmg: number, src: Weapon, x: number, y: number, z: number, quiet = false): void {
     const b = this.command.boss;
-    if (!b || b.arriving) return;
+    if (!b || b.arriving || b.cloak > 0.5) return;
     if (!quiet || b.hitT <= 0) this.events.push({ type: 'bossHit', x, y, z });
     if (!this.command.hurt(dmg, this.aliens, this.ship, this.runTime, this.rng, this.events)) return;
     const bounty = this.command.killed(this.runTime);

@@ -618,6 +618,20 @@ describe('salvaged tech and the ship-wide stats', () => {
     expect(w.drain().some((e) => e.type === 'cloak')).toBe(true);
   });
 
+  it('a cloaked hull is untouchable: no ram, no blast, no flak takes its armour', () => {
+    const w = quiet();
+    const al = spawnAlien('scout', w.ship, 0, w.rng, { x: w.ship.x + 1, y: 0, z: w.ship.z });
+    w.aliens.push(al);
+    al.canCloak = true; al.cloak = 1; al.calm = 99;
+    const hp = al.hp;
+    run(w, 0.5, { thrust: 1 });
+    (w as unknown as { hurtAlien(a: typeof al, d: number, s: string, x: number, y: number, z: number): boolean }).hurtAlien(al, 50, 'torpedo', al.x, al.y, al.z);
+    expect(al.hp).toBe(hp);
+    al.cloak = 0.3;
+    (w as unknown as { hurtAlien(a: typeof al, d: number, s: string, x: number, y: number, z: number): boolean }).hurtAlien(al, 1, 'torpedo', al.x, al.y, al.z);
+    expect(al.hp).toBeLessThan(hp);
+  });
+
   it('the tactical computer multiplies every weapon; the economy upgrades move the drops', () => {
     const w = quiet();
     w.setLevels({ ut_tactical: 3, ut_prospector: 1 });
