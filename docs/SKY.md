@@ -216,3 +216,14 @@ rebuilt per sky from its seed. GPU cost not measured.
   A thin field shows fewer stones, never smaller ones. On a 3 km tile anchored in the world, so they slide past.
 - ice glitter: 420 motes round the ship that catch the sun for an instant as they turn (additive, sun-tinted, small).
 - the close chips (debris.ts) are darker, never a pale grey.
+
+## Signs of life (space plan step 5, 2026-11-21)
+
+`render/phenomena.ts`, leaning by region like the rest (PHENOM):
+
+- traffic lanes: each far light now runs on a lane of twelve small warm marker lights strung along its path and a
+  little past each end, with a slow bright beat running down the line like approach lights. One draw for every lane.
+- far skirmishes: now and then, low in the sky, a few seconds of small white-gold sparks and short tracers round one
+  point (never red: red is threat only). Mean gap per region (`skirmish`): often in the Breaker Yards and the Marches,
+  never in the Hollows, the Drift Deep or the Last Lanes. `?phenom=busy` puts one where the camera looks.
+- mining rigs and convoys were already there (farworks `mine`, the `convoy` feature).
