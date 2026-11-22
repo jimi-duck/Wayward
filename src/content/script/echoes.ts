@@ -38,7 +38,7 @@ export const ECHO_ROWS: Row[] = [
   // the Hollows: Ines, refused at Gilt Market
   radio('ec_ines', 'h_ashdeep', settle(), INES[0], INES[1], '“You turned down a very good price at Gilt. Few do. I remember them.”', { if: { has: ['ines_refused'] }, ...S }),
   // Mute Hall: Calloway, quietly, in a quiet place
-  radio('ec_mute', 'h_mute', free(40), CALLOWAY, 'calloway', '“Quiet out here. I could almost forget I’m meant to stop you.”', { if: { has: ['calloway_curious'] }, ...S }),
+  radio('ec_mute', 'h_cairn', free(40), CALLOWAY, 'calloway', '“Quiet out here. I could almost forget I’m meant to stop you.”', { if: { has: ['calloway_curious'] }, ...S }),
   // Ghostcinder: a dead foundry on the lane
   notice('ec_cinder', 'h_cinder', arrive(10), 'white', 'A dead foundry', 'its furnaces still warm'),
 

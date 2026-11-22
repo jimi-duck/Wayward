@@ -58,11 +58,11 @@ describe('the Course', () => {
   });
 
   it('hides the pursuit while Juno rests at the breather', () => {
-    // the Reach and the Marches have none since they were cut (five and six stops): the Belt's Saltmarsh is the first
-    const salt = at(18);
-    expect(sysById(salt.chart, salt.at).name).toBe('Saltmarsh');
-    expect(courseView(salt)!.pursuit.hidden).toBe(true);
-    expect(courseView(at(17))!.pursuit.hidden).toBe(false);
+    // two breathers are left on the road (22 November 2026): the Deep's Hushlight is the first
+    const hush = at(25);
+    expect(sysById(hush.chart, hush.at).name).toBe('Hushlight');
+    expect(courseView(hush)!.pursuit.hidden).toBe(true);
+    expect(courseView(at(24))!.pursuit.hidden).toBe(false);
   });
 
   it('counts the pursuit to the half day and reads amber at 1 and red at half a day', () => {

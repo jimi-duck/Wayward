@@ -144,6 +144,13 @@ the Long Walk's scene. Wake's way-out line counts six jumps to the Rift. A road 
 load (save v27, `shortMarches` in `meta/save.ts`, on the same `shortLeg` as v25): at Low Harrow it comes back at the Long Walk.
 `tests/roadnames.test.ts`.
 
+Four Thren breathers are cut too, each folded into the stop before it: Saltmarsh into Kessler's Wreck (the river of motes, and
+its scene `thren_swarm`), Cradle Gap into Keelberth (the breaker that still holds something), Lucky Haven into Mirren's Pier (Thren
+glass and the dock children) and Mute Hall into Palecairn (Sable's line and Calloway's echo; its scene `thren_watch` is off the road).
+Each of those legs counts six jumps from its landfall. Hushlight and Lone Step stay: each carries a main beat. Save v28
+(`shortBreathers`) moves a road save not yet past the Hollows onto the new chart. The road is 58 systems from Ringhold to the
+Threshold (was 64).
+
 On the road a stop has one card at most, its own: the port's approach card and the chance cards are off (`sim/world.ts`). Jobs,
 scenes and story cards still come as before.
 
