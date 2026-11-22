@@ -25,6 +25,13 @@ is one of four kinds.
   queued or on screen. A reply to the answer just given (a voice made within
   3 s of the card closing: the raiders to a refusal, Sam to a fitted
   launcher) skips the quiet and the gap and waits only for the line on screen.
+- A radio line stays on screen 3 s plus 0.35 s a word (`lineSecs`); a notice
+  5 s, one at a time. A story line queued before a fight waits it out (up to
+  30 s) so it is not missed under fire; a line the fight itself makes goes.
+- **The radio log**: the last twelve radio lines and story notices, newest
+  first, on the pause card's log face (`ui/heard.ts`). L in flight opens it;
+  touch has the log button on the card. Nothing lives only in a line that
+  flashed by (owner, 22 November 2026: messages were "super quick").
 - What lasts is Ambient: the pursuit in days, Wanted, the recovery's status.
   One-off explainers (Wanted, the launcher) are hint lines under the
   objective, never pop-ups.
@@ -236,8 +243,8 @@ Applies to every pop-up that asks the player something. Space Grotesk and Share 
   keys, so one press never answers two cards. The opening's sheets keep their own layout.
 - **Centre notices** (`#notice`, `ui/notify.ts`): compact dark plates, up to 360px wide, an
   accent bar (red denied, gold warning, teal arrival, green done: a job finished and paid, six seconds) and a sentence-case line plus one
-  quiet reason. Two at most at once; the rest wait in order (a denial goes first), and only
-  a backlog of eight sends the oldest to the corner log. Four seconds each, no input.
+  quiet reason. One at a time; the rest wait in order (a denial goes first), and only
+  a backlog of eight sends the oldest to the corner log. Five seconds each, no input.
   Low-centre like the zone notices before them; on a phone on its side they sit between the
   stick and the buttons. They do not touch the HUD or the alert corner.
 - **HUD is not a pop-up:** instruments, objectives and the low-centre notices

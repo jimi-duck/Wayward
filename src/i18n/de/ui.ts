@@ -604,6 +604,10 @@ export const UI: Record<string, string> = {
   'Shields took {n} hits.': 'Schilde fingen {n} Treffer ab.',
   // ── pause, covers ──
   'All stop': 'Alles stopp',
+  'Radio log': 'Funkprotokoll',
+  'Nothing on the radio yet.': 'Noch nichts im Funk.',
+  'Notice': 'Meldung',
+  'L or Backspace goes back': 'L oder Rücktaste geht zurück',
   'Further': 'Weiter weg',
   'Rotate your phone': 'Dreh dein Handy',
   'Wayward is designed for landscape play': 'Wayward ist fürs Querformat gemacht',

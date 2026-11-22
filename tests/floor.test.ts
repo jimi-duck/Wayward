@@ -3,7 +3,7 @@ import { BREACH_BEAT } from '../src/content/story';
 import { CHATTER } from '../src/content/chatter';
 import type { SortieResult } from '../src/sim/breakout';
 import type { GameEvent } from '../src/sim/events';
-import { FLOOR, Floor } from '../src/sim/floor';
+import { FLOOR, Floor, lineSecs } from '../src/sim/floor';
 import { autoCourse, endSortie, newJourney, sortieDef } from '../src/sim/journey';
 import { newRun } from '../src/sim/run';
 import { World } from '../src/sim/world';
@@ -12,6 +12,8 @@ import { World } from '../src/sim/world';
 // card, with room to read between them and a quiet spell after each card.
 
 const voice = (id: string): GameEvent => ({ type: 'ping', id, from: 'Sam Okoro', caller: 'miners', text: id, moment: 'calm', system: '' });
+/** How long a test line (one word) holds the floor: its time on screen, then FLOOR.hold. */
+const HOLD = lineSecs('x') + FLOOR.hold;
 const signal = (h: string): GameEvent => ({ type: 'storyNotice', tone: 'teal', headline: h });
 
 /** Step a floor for `secs` from `t0`, free unless `busy` says not; what went out, with times. */
@@ -75,7 +77,7 @@ describe('the floor', () => {
     play(f, 0, 1);
     expect(f.holding).toBe(false);
     expect(f.busy(1)).toBe(true);
-    expect(f.busy(FLOOR.hold + 0.1)).toBe(false);
+    expect(f.busy(HOLD + 0.1)).toBe(false);
   });
 });
 
@@ -141,7 +143,7 @@ describe('the opening answers at once (tuning, 2026-11-05)', () => {
     const voices = w.floor.log.filter((l) => l.kind === 'voice' && l.t > at);
     expect(voices.length).toBeGreaterThanOrEqual(2);
     expect(voices[0]!.t - at, 'the raiders').toBeLessThan(3);
-    expect(voices[1]!.t - at, 'Sam on the hold').toBeLessThan(FLOOR.hold + 3);
+    expect(voices[1]!.t - at, 'Sam on the hold').toBeLessThan(10);
   }, 30000);
 });
 
@@ -153,7 +155,7 @@ describe('lines tied to an event', () => {
     f.take([voice('story_2'), voice('patrol_1')], 2);
     const out = play(f, 2, 8);
     expect(out[0]![1]).toBe('patrol_1');
-    expect(out[0]![0]).toBeLessThanOrEqual(FLOOR.hold + 0.1);
+    expect(out[0]![0]).toBeLessThanOrEqual(HOLD + 0.1);
     const g = new Floor();
     g.opened(0, 'card');
     g.take([voice('warn_x')], 0);
@@ -172,5 +174,22 @@ describe('a job\u2019s call', () => {
     f.step(10, true);
     expect(f.busy(10.5, true)).toBe(true);
     expect(f.busy(10 + FLOOR.signal + 0.1, true)).toBe(false);
+  });
+});
+
+describe('a fight', () => {
+  it('holds a story line made before it, up to FLOOR.fight; a line made in it goes', () => {
+    const f = new Floor();
+    f.take([voice('story_calm')], 0);
+    f.fight = true;
+    f.take([voice('story_hot')], 0);
+    const out = play(f, 0, 40);
+    expect(out[0]![1]).toBe('story_hot');
+    expect(out[1]![1]).toBe('story_calm');
+    expect(out[1]![0]).toBeGreaterThanOrEqual(FLOOR.fight - 0.1);
+  });
+
+  it('keeps a radio line on screen 3 s and 0.35 s a word', () => {
+    expect(lineSecs('one two three four five six seven eight nine ten')).toBeCloseTo(6.5);
   });
 });

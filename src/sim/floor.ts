@@ -18,9 +18,11 @@ import type { GameEvent } from './events';
 export const FLOOR = {
   /** Seconds between two radio lines. */
   gap: 10,
-  /** Seconds a radio line holds the floor (it is on screen 7 s); a Signal holds it for `signal`. */
-  hold: 7.5,
-  signal: 3,
+  /** Seconds a radio line holds the floor past its time on screen (`lineSecs`); a Signal holds it for `signal`, its time on screen (ui/notify.ts SECS). */
+  hold: 0.5,
+  signal: 5,
+  /** Seconds a story line waits for a fight to end before it is said anyway (a long chase must not mute the story). */
+  fight: 30,
   /** Seconds of quiet after a Moment closes: no Voice, no new Moment. */
   quiet: 15,
   /** Seconds between two Moments, unless the second answers the first (a chained follow-up). */
@@ -38,9 +40,14 @@ export const FLOOR = {
 /** The one Signal the arrival lets through: it is the title card's last line while the camera sweeps (ui/hud.ts). */
 export const SCAN_LINE = 'Scanning for transmissions';
 
+/** Seconds a radio line is on screen: long enough to read at a glance in flight (owner, 22 November 2026: "super quick"). */
+export function lineSecs(text: string): number {
+  return 3 + 0.35 * text.split(/\s+/).filter(Boolean).length;
+}
+
 export type Kind = 'voice' | 'signal';
 type Held = Extract<GameEvent, { type: 'ping' }> | Extract<GameEvent, { type: 'storyNotice' }>;
-interface Line { ev: Held; kind: Kind; at: number; keep: boolean; reply: boolean; live: boolean; hot: boolean }
+interface Line { ev: Held; kind: Kind; at: number; keep: boolean; reply: boolean; live: boolean; hot: boolean; calm: boolean }
 
 /** Lines said because something just happened (sim/traffic, stage, mission, den, gantry, claim rules), not because the story reached them. */
 const REACTIVE = /^(relay_|patrol|traffic_|say_|warn_|mis_|gantry_|den_|claim_|seed_studied)/;
@@ -61,6 +68,8 @@ export class Floor {
   private momentOpen = false;
   /** The arrival's hush (FLOOR.arrival): set by the world each step while it lasts. No line but the scan, no Moment. */
   hush = false;
+  /** A fight is on: set by the world each step. A story line made before it waits it out; one made in it (an urgent script row) is part of it. */
+  fight = false;
   /** Lines already let out, so a later take does not hold them again. */
   private out = new WeakSet<object>();
   /** Every line let out, in order, with its time: what the budget test reads. */
@@ -73,7 +82,7 @@ export class Floor {
       if (!kind || this.out.has(e)) continue;
       const ev = e as Held;
       const reply = kind === 'voice' && !this.momentOpen && now - this.momentClosed < FLOOR.reply;
-      this.q.push({ ev, kind, at: now, keep: kind === 'signal' || !(ev.type === 'ping' && (CHATTER_IDS.has(ev.id) || reactive(ev))), reply, live: reactive(ev), hot: reactive(ev) || (ev.type === 'ping' && LESSON.test(ev.id)) });
+      this.q.push({ ev, kind, at: now, keep: kind === 'signal' || !(ev.type === 'ping' && (CHATTER_IDS.has(ev.id) || reactive(ev))), reply, live: reactive(ev), hot: reactive(ev) || (ev.type === 'ping' && LESSON.test(ev.id)), calm: !this.fight });
       events.splice(i--, 1);
     }
   }
@@ -84,11 +93,14 @@ export class Floor {
     if (!free || this.momentOpen || now < this.floorUntil || !this.q.length) return null;
     // a line tied to an event goes ahead of the queue, and ahead of the gap: it names what is happening now
     const hot = this.hush ? undefined : this.q.find((l) => l.hot && now >= this.quietUntil);
-    const pick = hot ?? (this.hush ? this.q.find((l) => l.ev.type === 'storyNotice' && l.ev.headline === SCAN_LINE) : this.q[0]!);
+    // a story line made in calm waits out a fight that began after it, so it is heard, not missed under fire (the script holds its
+    // own rows in a fight: sim/script.ts); the lines after it go on. A reply is said at once, and no line waits longer than FLOOR.fight
+    const waits = (l: Line) => this.fight && l.kind === 'voice' && l.keep && l.calm && !l.reply && now - l.at < FLOOR.fight;
+    const pick = hot ?? (this.hush ? this.q.find((l) => l.ev.type === 'storyNotice' && l.ev.headline === SCAN_LINE) : this.q.find((l) => !waits(l)));
     if (!pick) return null;
     if (pick.kind === 'voice' && !pick.reply && (now < this.quietUntil || (!pick.hot && now - this.lastVoice < FLOOR.gap))) return null;
     this.q.splice(this.q.indexOf(pick), 1);
-    if (pick.kind === 'voice') { this.lastVoice = now; this.floorUntil = now + FLOOR.hold; }
+    if (pick.kind === 'voice') { this.lastVoice = now; this.floorUntil = now + lineSecs((pick.ev as Extract<Held, { type: 'ping' }>).text) + FLOOR.hold; }
     else this.floorUntil = now + FLOOR.signal;
     this.log.push({ t: now, kind: pick.kind, id: pick.ev.type === 'ping' ? pick.ev.id : pick.ev.headline, ...(pick.reply ? { reply: true } : {}) });
     this.out.add(pick.ev);

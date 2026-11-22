@@ -5,7 +5,7 @@ import { t } from '../i18n';
 // crosshair and the ship (never the top: that is the way you are flying).
 // The alert plate's own style (a glass plate, right-aligned capitals, a coloured
 // headline over a white line), in a colour that says the kind. They never take input and fade on their
-// own. Two at most are on screen; the rest wait their turn in order (a denial
+// own. One is on screen at a time (owner, 22 November 2026: two at once were missed); the rest wait their turn in order (a denial
 // goes ahead of the others), and only a long backlog goes straight to the
 // corner log. The persistent fact then lives in the alert corner, which the
 // HUD derives from the world each frame; this only decides what the centre
@@ -38,12 +38,12 @@ export interface NoticeView {
 
 const RANK: Record<NoticeType, number> = { arrival: 0, warning: 1, done: 2, denied: 3 };
 /** Seconds on screen, and before the same message may come again. */
-export const SECS = 4;
+export const SECS = 5;
 /** A finished job is on screen this long. */
 const SECS_DONE = 6;
 export const GAP = 8;
 /** How many plates show at once, and how many wait before the oldest waiting one goes to the corner log. */
-export const SHOWN = 2;
+export const SHOWN = 1;
 export const QUEUED = 8;
 
 interface Slot { n: Notice; left: number; handle: unknown }

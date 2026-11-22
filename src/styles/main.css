@@ -1401,6 +1401,29 @@ html:not(.breakout) .pause-card #brief { display: none; }
 #p-set:hover, #p-set:focus-visible { color: var(--hud-hi); border-color: var(--hud-mid); outline: none; }
 #pause.settings-on #p-set { display: none; }
 
+/* ── the pause card's log face: what was said, newest first (ui/heard.ts) ── */
+#pause .log-only { display: none; }
+#pause.log-on .log-only { display: grid; }
+#pause.log-on .pause-acts.log-only { display: flex; align-items: center; justify-content: flex-end; gap: 14px; }
+#pause.log-on :is(.main-only, .voice) { display: none !important; }
+#pause.log-on .pause-card.term { width: min(760px, 94vw); }
+#pause.log-on .p-top { border-bottom: 0; padding-bottom: 0; }
+#pause .heard { display: grid; gap: 0; max-height: min(52vh, 420px); overflow-y: auto; margin: 0; padding: 0; list-style: none; }
+#pause .heard li { display: grid; grid-template-columns: 9.5em minmax(0, 1fr); gap: 14px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+#pause .heard li:last-child { border-bottom: 0; }
+#pause .heard .hd-from { font: 600 13px/1.35 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+#pause .heard .hd-note .hd-from { color: var(--teal-bright); }
+#pause .heard .hd-text { font: 400 16px/1.4 var(--font-display); color: var(--ink); }
+#pause .heard .hd-none { display: block; font: 400 15px/1.4 var(--font-display); color: var(--ink-2); }
+#pause .pause-card #p-logback { min-height: 44px; padding: 0 18px; }
+#pause .pause-card #p-logback::before { content: "<"; margin-right: 8px; color: var(--hud); }
+@media (max-height: 520px) {
+  #pause .heard { max-height: 58vh; }
+  #pause .heard li { grid-template-columns: 7.5em minmax(0, 1fr); gap: 10px; padding: 6px 0; }
+  #pause .heard .hd-text { font-size: 14px; }
+  #pause .pause-card #p-logback { min-height: 40px; }
+}
+
 /* the chapter just begun, on the title: its name and what it changed, as chips */
 .recap { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin: 0; }
 .recap[hidden] { display: none; }
