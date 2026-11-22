@@ -89,6 +89,8 @@ export interface Ctx {
   pursuit: number;
   /** Units to a named site (Infinity: not here). */
   dist(site: string): number;
+  /** How far the gate stands from the arrival point; "leave" scales to it on short lanes. */
+  lane?: number;
   flags: ReadonlySet<string>;
   /** A card has been answered (or none is open and it was seen). */
   cardDone(id: string): boolean;
@@ -99,6 +101,8 @@ export interface Ctx {
 /** Seconds between two lines, and how near the gate "leave" is. */
 export const GAP = 2;
 export const LEAVE_R = 900;
+/** "Leave" fires within this of the gate: LEAVE_R, or under half the lane on a short one. */
+export function leaveR(lane?: number): number { return lane ? Math.min(LEAVE_R, lane * 0.45) : LEAVE_R; }
 
 export class Script {
   /** Rows by id, for any stop (a carried row may belong to the last one). */
@@ -256,7 +260,7 @@ export class Script {
       case 'after': { const at = this.playedAt.get(o.row); return at !== undefined && c.t - at >= (o.delay ?? 0); }
       case 'flag': return c.flags.has(o.flag);
       case 'pursuit': return c.pursuit <= o.days;
-      case 'leave': return c.dist('gate') <= LEAVE_R;
+      case 'leave': return c.dist('gate') <= leaveR(c.lane);
       case 'place': return !!c.placeDone?.(o.place);
     }
   }

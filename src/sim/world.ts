@@ -165,7 +165,7 @@ export const PLACE_AT = 30;
 /** Seconds a road gate holds a stop's main beats once the player is near it (the Narrows rule, #384, for every stop): the HUD counts it down, so the wait always has an end (owner, 14 November 2026). */
 const GATE_HOLD = 90;
 /** Units from the gate at which a hold is told and its clock starts: she is waiting at the gate, not only in the ring. */
-const HOLD_NEAR = 900;
+const HOLD_NEAR = 900; // or 0.6 of a short lane, so the hold's clock never runs from the arrival
 /** Seconds after arriving on the road that the scan is said. */
 const SCAN_AT = 0.8;
 /** The Slow Door takes this long to open after arrival (content/script/arrivals.ts). */
@@ -1114,7 +1114,7 @@ export class World implements EncounterHost {
       } else {
         b.blockade = 'done';
         // an open lane's toll is not every jump's: a roll, and not on the heels of another call; none in the first system past Cerro, whose story is enough, nor at a road gate, whose arrival is authored
-        const def = !b.def.quiet && !b.def.safe && !b.def.first && !b.def.relay && this.deskRng.next() < DESK.toll && this.desk.may('major', 'free', this.runTime) ? pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll') : null;
+        const def = !b.def.quiet && !b.def.safe && !b.def.first && !b.def.relay && !this.flags.has(ON_ROAD) && this.deskRng.next() < DESK.toll && this.desk.may('major', 'free', this.runTime) ? pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll') : null;
         if (def) this.openComms(def);
       }
     }
@@ -1124,7 +1124,7 @@ export class World implements EncounterHost {
     // the Narrows gate holds her while its scene plays: no spooling, so the script's lines are not held back as a jump's
     const inReach = dl < Math.max(APPROACH, b.spoolNeed * 46);
     // near the gate, the hold is told and its clock runs (she may wait short of the ring); in reach, it stops the drive
-    const atGate = dl < Math.max(HOLD_NEAR, APPROACH, b.spoolNeed * 46);
+    const atGate = dl < Math.max(Math.min(HOLD_NEAR, Math.hypot(b.lane.x, b.lane.z) * 0.6), APPROACH, b.spoolNeed * 46);
     const gateHeld = atGate && this.gateHeld();
     // from afar the gate is just as shut: the HUD and the ring show it (quietly; the notice waits until she is near the gate)
     if (!gateHeld) this.gateWhy = atGate ? '' : (this.holdOf()?.why ?? '');
@@ -2091,7 +2091,7 @@ export class World implements EncounterHost {
    * still to come; once that has played, the goal is the way out (`Jump to …`) and the line goes, or stays as a quiet line where
    * the stop has no beat of its own (it says what the place is). The Slow Door counts down.
    */
-  storyGoal(): { main?: string; quiet: string[] } {
+  storyGoal(): { main?: string; quiet: string[]; out?: boolean } {
     const sc = this.script;
     // before the stop's line has played (a delayed one), it is shown already; a stop with none has the way out
     const first = sc && !this.storyObjective ? sc.arrivalLine() : undefined;
@@ -2100,18 +2100,21 @@ export class World implements EncounterHost {
     if (!o) return { quiet: [] };
     let main = o.main;
     let quiet = o.quiet ? [o.quiet] : [];
+    // whether the line is the way out (the Jump Gate), so the HUD may put the gate's range beside it
+    let out = this.storyObjective ? this.storyObjective.from === 'leave' : !first && !!way;
     if (o.from === 'arrive' && sc && main && main !== tr('Rest here, or keep moving') && !sc.mainsLeft(this.flags, this.tankCap ? this.fuel / this.tankCap : 0)) {
-      const out = sc.leaveLine();
+      const leave = sc.leaveLine();
       // a stop with no beat keeps what it is, without its "Next:"
       if (!sc.hasMains()) quiet = [main.replace(/^[^·:]+:\s*/, ''), ...quiet];
-      main = out ? tr(out) : undefined;
+      main = leave ? tr(leave) : undefined;
+      out = true;
     }
     if (this.bk?.def.script === 'slowdoor') {
       const left = Math.ceil(SLOW_DOOR - (this.runTime - this.desk.arrived));
       const now = left > 0 ? `${tr('Opening')} · ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : tr('Gate open');
       quiet = quiet.map((q) => (q === tr('Opening · 3:00') ? now : q));
     }
-    return { main, quiet };
+    return { main, quiet, out };
   }
 
   /** When the gate first held her (Infinity: not yet), whether it has let go, and whether she was told. */
@@ -2199,6 +2202,7 @@ export class World implements EncounterHost {
       // the first system past Cerro has its own word on the pursuit (stolen): the days count from the next stop
       pursuit: b.def.first ? Infinity : Math.max(0, halfDays((this.sortie.calloway ?? Infinity) / DAY_SECONDS - t / DAY_SECONDS)),
       dist: (site: string) => { const p = sites[site]; return p ? Math.hypot(p.x - s.x, p.z - s.z) : Infinity; },
+      lane: Math.hypot(b.lane.x, b.lane.z),
       cardDone: (id: string) => this.cardsSeen.has(id) && !this.comms && !this.call,
       placeDone: (id: string) => { const p = STORY_PLACES.find((x) => x.id === id); return !!p && placeDone(p, this.flags); },
     };

@@ -130,6 +130,11 @@ stop before a cut one. One past the Narrows keeps its chart. `tests/shortreach.t
 - **Story places are close.** `StoryPlaceDef.along` is units ahead of the arrival now, not a share of the lane: a skiff or a
   buoy about 650 m out, a ferry or a wreck about 900 m, a pickup just beyond its partner (owner: Ilse's skiff "too far away").
   Never past half the way to the gate.
+- **The gates are close too.** A road stop's Jump Gate stands 5.5 to 6.5 km from the arrival (`ROAD_LANE` in `sim/chart.ts`,
+  was 9 to 28 km; save v29 moves an old road save's gates in). The owner saw "25 km" after the jump in: that was the gate, and
+  the HUD set the gate's range beside story lines that were not about the gate. The objective shows a range only when it is
+  the way out now. "Leave" fires within 0.45 of the lane and the gate hold's clock within 0.6 (`leaveR`, `HOLD_NEAR`), and
+  the road has no lane toll. `tests/distances.test.ts`.
 - **The places are built like ships** (`render/places.ts`): plated octagonal bodies from `render/parts.ts`, glazed noses, lit
   ports, docking collars on the side she comes alongside, drives, tanks, a dish; the wreck's stern knocked askew with ribs bare
   in the gap; the buoy a turned float with a lattice mast and solar wings. About twice their old size.

@@ -18,7 +18,7 @@ function gilt(flags: string[]): Journey {
   j.at = at.id;
   j.status = 'sortie';
   j.dest = null;
-  j.carry.flags.push('archive_woke', 'ship_stolen', ...flags);
+  j.carry.flags.push('archive_woke', 'ship_stolen', 'on_road', ...flags);
   return j;
 }
 
@@ -75,6 +75,9 @@ describe('the Registry launch at Gilt Market', () => {
       const l = c.launch!;
       // tucked in behind the launch as it walks
       s.x = l.x - 12 * Math.sign(c.past(l.x + 1, l.z) - c.past(l.x, l.z) || 1); s.z = l.z; s.vx = s.vz = 0; s.invuln = 99;
+      // a call on the way (the hearing's own lines, the gate's) is answered and the walk goes on
+      const open = w.comms ?? w.call;
+      if (open) w.answer(open.def.choices[0]!.id);
       w.step(STEP, NO);
     }
     expect(c.state).toBe('through');

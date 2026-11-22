@@ -1,7 +1,7 @@
 import { HUSH } from '../sim/desk';
 import { CHITS_PER_CYRITE, TANK_MAX, refine } from '../sim/purse';
 import { hunchOf, newDossier } from '../sim/calloway';
-import { layPlaces, sightPlaces, sysById, SIGHT } from '../sim/chart';
+import { layPlaces, roadLane, sightPlaces, sysById, SIGHT } from '../sim/chart';
 import { dealSituations, layJobs } from '../sim/situations';
 import { composeChart } from '../sim/experience';
 import { layScatter } from '../sim/scatter';
@@ -111,6 +111,8 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 27) shortMarches(j as Journey);
   // 27 → 28: Saltmarsh, Cradle Gap, Lucky Haven and Mute Hall (the Thren breathers) are cut, each folded into the stop before it
   if (j.version < 28) shortBreathers(j as Journey);
+  // 28 → 29: the road's gates are close (5.5 to 6.5 km); a road chart's lanes are folded in as a new one's are
+  if (j.version < 29 && (j as Journey).chart.regionSet === 'road') for (const s of (j as Journey).chart.systems) s.lane = roadLane('road', s.lane);
   j.version = VERSION;
   return j as Journey;
 }

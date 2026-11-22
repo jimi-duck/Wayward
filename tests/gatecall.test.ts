@@ -61,8 +61,8 @@ describe('a shut Jump Gate', () => {
     let eta = 0, open = -1;
     for (let i = 0; i < Math.round(240 / STEP); i++) {
       w.ship.invuln = 99;
-      // she waits 700 units short of the gate, as a player who stops to see what happens would
-      if (i === Math.round(40 / STEP)) { w.ship.x = w.bk!.lane.x - 700; w.ship.z = w.bk!.lane.z; w.ship.vx = 0; w.ship.vz = 0; }
+      // she waits a third of the lane short of the gate, as a player who stops to see what happens would
+      if (i === Math.round(40 / STEP)) { w.ship.x = w.bk!.lane.x - Math.hypot(w.bk!.lane.x, w.bk!.lane.z) / 3; w.ship.z = w.bk!.lane.z; w.ship.vx = 0; w.ship.vz = 0; }
       // a hostile hangs about her the whole time
       if (i > Math.round(40 / STEP) && i % 60 === 0 && !w.aliens.some((a) => !a.fleeing && Math.hypot(a.x - w.ship.x, a.z - w.ship.z) < 120)) {
         (w as unknown as { applyOutcome(o: object, n: number, c: unknown[]): number[] }).applyOutcome({ text: '', spawn: [{ variant: 'picket', n: 1, from: 'ahead' }] }, 0, []);
@@ -91,7 +91,7 @@ describe('a shut Jump Gate', () => {
     let took = false, moot = -1, open = -1;
     for (let i = 0; i < Math.round(240 / STEP); i++) {
       w.ship.invuln = 99;
-      if (i === Math.round(40 / STEP)) { w.ship.x = w.bk!.lane.x - 860; w.ship.z = w.bk!.lane.z; w.ship.vx = 0; w.ship.vz = 0; }
+      if (i === Math.round(40 / STEP)) { w.ship.x = w.bk!.lane.x - Math.hypot(w.bk!.lane.x, w.bk!.lane.z) * 0.55; w.ship.z = w.bk!.lane.z; w.ship.vx = 0; w.ship.vz = 0; }
       // nothing hostile comes near her: the call has nothing to wait for but the job
       for (const a of w.aliens) if (Math.hypot(a.x - w.ship.x, a.z - w.ship.z) < 400) { a.x = w.ship.x + 3000; a.z = w.ship.z + 3000; }
       w.step(STEP, NO_INPUT);
