@@ -269,3 +269,12 @@ stop's one card; its one answer, "Take them, walk with us", files the manifests 
 hull lost is `drift_scattered`. Hester's Gannet call follows the walk. The Drift come to the Threshold for `drift_walked` too. Drift
 hulls are civilians on the target card (`Alien.civil`). A pilot that only keeps up loses about two hulls. `tests/driftwalk.test.ts`.
 
+
+## Kiln, a silent run (22 November 2026)
+
+The Belt's set piece (living-world plan). Val sold her heading, so at Kiln four Custody pickets hold a line across the lane, 45% of
+the way to the gate (`LEG_CHASES.b_kiln.cordon`, `sim/cordon.ts`). Each sways on its post and sweeps a ring 60 units round it
+(less in cover), drawn red on the plane. Inside a sweep with the drive lit, exposure climbs fast; drifting, slowly; outside it falls.
+The HUD's first line reads the cordon and the exposure. Full exposure, or a shot at a picket, and the cordon is made
+(`cordon_made`): the pickets turn and the leg's chase starts. Past the line unseen she is through (`cordon_cold`), and no chase comes
+at Kiln. Paying Val off or jamming her (`vell_paid`, `vell_exposed`) lifts the cordon with the chase. `tests/cordon.test.ts`.

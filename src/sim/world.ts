@@ -32,6 +32,7 @@ import { Stage, makeStage } from './stage';
 import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_LINE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR, NED_DONE, NED_DONE_AT, NED_PARTITION, NED_PARTITION_AT, PARTITION } from './postjump';
 import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
+import { Cordon } from './cordon';
 import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_EVERY_ALERT, FLAK_R, SiteBrain, type Mood } from './site';
 import { LOOSE } from './pickups';
 import { Barge, bargeBerth } from './barge';
@@ -201,6 +202,8 @@ export class World implements EncounterHost {
   private parked: Encounter | null = null;
   /** The system's situation, played on the sector (sim/stage.ts). */
   stage: Stage | null = null;
+  /** A cordon across the lane, for a silent run (sim/cordon.ts). */
+  cordon: Cordon | null = null;
   /** The first system past Cerro's working traffic and the guards its dock sends (sim/traffic.ts). */
   traffic: Traffic | null = null;
   /** The mining system's refinery barge (sim/barge.ts), if it has one. */
@@ -495,6 +498,7 @@ export class World implements EncounterHost {
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     this.stage = null;
+    this.cordon = null;
     this.traffic = null;
     if (this.mode !== 'breakout') {
       this.bk = null; this.cyrite = 0; this.fuel = 0; this.supplies = 0; this.callowayAt = Infinity;
@@ -524,6 +528,7 @@ export class World implements EncounterHost {
       if (r.size === 0 && this.rng.next() < 0.12 && n < most) { r.kind = 'rich'; r.hp = r.maxHp = Math.round(r.maxHp * 1.6); n++; }
     }
     if (def.situation && !def.home) this.stage = makeStage(def.system, def.situation, this);
+    if (def.cordon && this.bk) this.cordon = new Cordon(def.cordon, this);
     { const plan = trafficPlan(this); if (plan) this.traffic = new Traffic(this, plan); }
     {
       const d = this.bk?.def;
@@ -956,7 +961,7 @@ export class World implements EncounterHost {
     // a situation (a patrol's sweep, a toll, a distress call) never plays in the first system once the story has it: from the breach to the jump
     // (owner, 6 November 2026: no distress signal or raider there)
     if (!(b.def.first && (recovering(this.flags) || lockLifted(this.flags)))) this.stage?.step(this, dt);
-    if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); this.den?.step(this, dt); this.thrSeed?.step(this, dt); }
+    if (this.phase === 'play') { this.cordon?.step(this, dt); this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); this.den?.step(this, dt); this.thrSeed?.step(this, dt); }
     // the Archive keeps a photograph of a den once it has been seen, and of a seed once she has come near it
     if (this.den && this.den.state !== 'dark') this.flags.add('raider_den');
     if (this.thrSeed && Math.hypot(this.ship.x - this.thrSeed.x, this.ship.z - this.thrSeed.z) < 220) this.flags.add('thren_seed');
@@ -3582,7 +3587,7 @@ export class World implements EncounterHost {
     // Voice hulls adapt: past a share of their hull soaked (the original's 6 of 16), half damage
     if (FACTION_TRAITS[al.faction].adapt && al.soaked >= al.maxHp * (BORG_ADAPT / 16)) dmg *= 0.5;
     if (src === 'torpedo' && al.mark > 0) dmg *= this.stats.markBonus;
-    if (al.ward && src !== 'hazard' && src !== 'plasma') this.stage?.shot(this, al);
+    if (al.ward && src !== 'hazard' && src !== 'plasma') { this.stage?.shot(this, al); this.cordon?.shot(this, al); }
     if (this.traffic && src !== 'hazard' && src !== 'plasma') this.traffic.hit(this, al, al.hp - dmg <= 0);
     al.soaked += dmg;
     al.hp -= dmg;

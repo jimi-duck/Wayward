@@ -814,6 +814,9 @@ export class Hud {
         lines.push(...goal.quiet);
         // first, so a phone (which shows one line) shows it while it lasts
         if (this.hintOn(world)) lines.unshift(`<span class="hint">${this.hintLine!.text}</span>`);
+        // a silent run (sim/cordon.ts): the exposure, first (before a hint), while the cordon has not seen her (caution gold, then threat red)
+        const cd = world.cordon;
+        if (cd?.state === 'cold') lines.unshift(`<span class="${cd.exposure > 0.5 ? 'threat' : 'caution'}">${t(cd.inside ? 'In a sweep · coast, drive cold' : 'Custody cordon · coast through the sweeps')} · <b>${t('exposure {n}%', { n: Math.round(cd.exposure * 100) })}</b></span>`);
         // Custody's pursuit, once it is a day or less behind: a readout, never a notice (caution gold, then threat red)
         const pd = world.pursuitDays;
         if (pd <= 1) lines.push(`<span class="${pd <= 0.5 ? 'threat' : 'caution'}">${t(pd <= 0.5 ? 'Custody pursuit · half a day behind' : 'Custody pursuit · 1 day behind')}</span>`);

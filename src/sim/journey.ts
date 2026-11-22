@@ -274,6 +274,8 @@ export function sortieDef(j: Journey): SortieDef {
     def.notice = { ...def.notice, captain: null };
     // and the drive takes longer: the gate is reached with them on your tail
     def.spool = SPOOL * SPOOL_HUNTED;
+    // a cordon (sim/cordon.ts): the chase waits until it sees her
+    if (chase.cordon) { def.cordon = { ...chase.cordon }; def.pace = { first: 1e9, calm: chase.calm }; }
   }
   // her own line for the place, for the title card (content/log.ts)
   def.log = leg >= 0 ? JUNO_LOG[def.script ?? ''] ?? null : null;
