@@ -55,6 +55,8 @@ const INCOMING_RANGE = 70;
 const STICKY = 1.25;
 /** Deposits and pickups are marked inside this range. */
 const NEAR = 80;
+/** A place that is not the lead is named only inside this range (1.5 km). */
+const SIDE_NAMED = 150;
 /** A neutral hull is named inside this range. */
 const TRADER = 200;
 
@@ -354,7 +356,9 @@ export class Targeting {
           const d = Math.hypot(wp.x - s.x, wp.z - s.z);
           // near, a depot or the audit dock names itself on its own model (sim/sitetags.ts), so the berth mark only shows the way in
           if (d < TAG_R && ((wp.kind === 'port' && !world.bk.def.first) || (wp.kind === 'audit' && !lockLifted(world.flags)))) { put(wp.x, 0.5, wp.z, 'm dia obj far', ''); continue; }
-          put(wp.x, 0.5, wp.z, primary(wp.x, wp.z) ? 'm dia obj far pri' : 'm dia obj far', `${tr(wp.name)}\n${range(d)}${gateClock(world, wp.kind)}`);
+          // one target (owner, 22 November 2026): the lead is named in the goal colour; every other place is a small quiet mark, named only close by
+          const pri = primary(wp.x, wp.z);
+          put(wp.x, 0.5, wp.z, pri ? 'm dia obj far pri' : 'm dia obj far side', pri || d < SIDE_NAMED ? `${tr(wp.name)}\n${range(d)}${gateClock(world, wp.kind)}` : '');
         }
       }
       if (ev && !primary(ev.x, ev.z)) putEvent();
@@ -409,6 +413,8 @@ export class Targeting {
       this.pointer($(id), $(`${id}-t`), sector, s.x, s.z, s.heading, live && !lesson ? { x: wp.x, y: 0.5, z: wp.z } : null,
         `${tr(wp.name)} · ${range(Math.hypot(wp.x - s.x, wp.z - s.z))}${gateClock(world, wp.kind)}`);
       $(id).classList.toggle('pri', isLead(wp.x, wp.z));
+      // one target: the lead's pointer has words; another place's is a small quiet arrow
+      $(id).classList.toggle('side', !!lead && !isLead(wp.x, wp.z));
     }
     if (bk && lockLifted(world.flags)) $('ptr-audit').classList.remove('on');
     if (!bk || !world.seenPlaces().some((p) => p.kind === 'yard')) $('ptr-yard').classList.remove('on');

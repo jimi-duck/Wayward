@@ -399,6 +399,15 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 #ptr-obj, #ptr-lane, #ptr-audit, #ptr-port, #ptr-yard, #ptr-relay, #ptr-story { --pc: var(--hud-hi); }
 #ptr-unk { --pc: rgba(var(--ink-body-rgb), .62); }
 .ptr.pri { --pc: var(--goal); }
+/* one target (owner, 22 November 2026): a place that is not the lead is a small, quiet arrow with no words, and a small quiet mark */
+.ptr.side span { display: none; }
+.ptr.side { opacity: .55; }
+#hud .ptr.side i { width: 11px !important; height: 11px !important; left: -5.5px !important; top: -5.5px !important; border-width: 2px !important; }
+#marks .m.dia.side { width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; opacity: .7; }
+/* the lead's arrow breathes, so it is the one the eye finds */
+.ptr.pri i { animation: ptr-lead 1.6s ease-in-out infinite; }
+@keyframes ptr-lead { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .ptr.pri i { animation: none; } }
 .ptr[data-crowd] span { display: none; }
 /* hulls off screen: a smaller chevron each, in the faction's colour, brighter the closer; it blinks when one is close behind */
 #threats .thr { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
