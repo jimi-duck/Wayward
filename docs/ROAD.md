@@ -295,3 +295,13 @@ chute (`yn_spill`). Four work-order canisters spill along the lane, one shown at
 with `trail`, so they may sit up to 400 units out). Taking the first aboard brings yard security: a red notice and the new
 `{ chase: true }` script output, which lifts the heat to at least 0.4 and calls the leg's pursuit within 3 s. Each canister after
 that is a teal "Work order aboard" notice; the fourth is Ben's line and the wall entry `orders_all`.
+
+## Gilt Market, the Registry launch (22 November 2026)
+
+The Free Ports' set piece (living-world plan). Thane's hearing card keeps its three answers. "Brook speaks for it" and "Enter
+Lucan's signature" now also set `hearing_launch`: the Office sends a Chartered launch to carry the witness in, and Custody strings
+a scan cordon of three pickets across the approach (`sim/cordon.ts` with `escort`, made by `World` at `f_gilt`). The launch walks
+through the line and waits for her when she falls more than 150 units behind. Within 40 units of it she is in its shadow (a steel
+blue ring on the plane): a sweep reads the launch, not her. Alone in a sweep, the exposure climbs as at Kiln. Through cold
+(`hearing_cold`), nobody comes; seen (`hearing_made`), the pickets turn and the chase begins. Either way the launch goes on and
+`hearing_in` plays Thane's ruling. "Walk out" is unchanged. `tests/registry.test.ts`.

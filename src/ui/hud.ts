@@ -819,7 +819,7 @@ export class Hud {
         if (sk?.live) lines.unshift(`<span class="caution">${t(sk.line)} · <b>${Math.round(sk.progress * 100)}%</b></span>`);
         // a silent run (sim/cordon.ts): the exposure, first (before a hint), while the cordon has not seen her (caution gold, then threat red)
         const cd = world.cordon;
-        if (cd?.state === 'cold') lines.unshift(`<span class="${cd.exposure > 0.5 ? 'threat' : 'caution'}">${t(cd.inside ? 'In a sweep · coast, drive cold' : 'Custody cordon · coast through the sweeps')} · <b>${t('exposure {n}%', { n: Math.round(cd.exposure * 100) })}</b></span>`);
+        if (cd?.state === 'cold') lines.unshift(`<span class="${cd.exposure > 0.5 ? 'threat' : 'caution'}">${t(cd.launch ? (cd.shaded ? 'In the launch’s shadow · keep close' : cd.inside ? 'In a sweep · back beside the launch' : 'Scan cordon · fly in the launch’s shadow') : cd.inside ? 'In a sweep · coast, drive cold' : 'Custody cordon · coast through the sweeps')} · <b>${t('exposure {n}%', { n: Math.round(cd.exposure * 100) })}</b></span>`);
         // Custody's pursuit, once it is a day or less behind: a readout, never a notice (caution gold, then threat red)
         const pd = world.pursuitDays;
         if (pd <= 1) lines.push(`<span class="${pd <= 0.5 ? 'threat' : 'caution'}">${t(pd <= 0.5 ? 'Custody pursuit · half a day behind' : 'Custody pursuit · 1 day behind')}</span>`);

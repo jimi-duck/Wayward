@@ -8,7 +8,7 @@ import { RELAY_JAM_R, RELAY_R } from '../sim/traffic';
 import { setBuoyMood } from './monuments';
 import { GANTRY_R } from '../sim/gantry';
 import { MARKET_R } from '../sim/market';
-import { CORDON_SCAN } from '../sim/cordon';
+import { CORDON_SCAN, SHADOW } from '../sim/cordon';
 import { DEPOT_AT } from '../sim/solids';
 import { animateStation, buildStation, clothMats, pools } from './stations';
 
@@ -26,6 +26,8 @@ const AMBER = new Color(3.6, 2, 0.45);
 /** A cordon's sweeps: red, the threat colour, faint until one has her. */
 const SWEEP = new Color(2.6, 0.35, 0.3);
 const CYAN = new Color(0.4, 2.4, 3.2);
+/** The Registry launch's shadow at Gilt Market: steel blue, the player's hand (brand v1.1). */
+const STEEL = new Color(0.9, 1.25, 1.9);
 /** The gate's light strips at full: teal, held low so they read as lit panels, not a glow. */
 const STRIP = new Color(0.3, 1.25, 1.4);
 /** The strips while the gate holds her: a low, dull caution gold (brand: gold is caution only). */
@@ -524,6 +526,8 @@ export class BreakoutView {
   /** Kiln's cordon (sim/cordon.ts): one ring on the plane round each picket, the reach of its sweep. */
   private readonly sweeps = new Group();
   private readonly sweepRings: Group[] = [];
+  /** The Registry launch's shadow, where a sweep reads the launch and not her. */
+  private readonly shadow = flatRing(SHADOW, 1.6, STEEL, 0.5);
   /** The ring and its bases, turned to face the way you arrive. */
   private readonly gate = new Group();
   /** 0 to 1: how shut the gate looks (eased). */
@@ -660,6 +664,7 @@ export class BreakoutView {
     this.tether.frustumCulled = false;
     this.tether.visible = false;
     this.lane.visible = this.port.visible = this.audit.visible = false;
+    this.sweeps.add(this.shadow);
     scene.add(this.sweeps, this.lane, this.port, this.audit, this.mast, this.relay, this.barge, this.tether, this.gantry, this.market, this.den, this.seedG);
 
   }
@@ -716,6 +721,12 @@ export class BreakoutView {
       const hot = cd!.inside && Math.hypot(s.x - ship.x, s.z - ship.z) < s.r;
       const pulse = hot ? Math.sin(this.time * (4 + 8 * cd!.exposure)) ** 2 : 0;
       ((r.children[0] as Mesh).material as MeshBasicMaterial).opacity = hot ? 0.45 + 0.3 * pulse : 0.22;
+    }
+    const la = cd?.launch ?? null;
+    this.shadow.visible = !!la;
+    if (la) {
+      this.shadow.position.set(la.x, -0.5, la.z);
+      (this.shadow.material as MeshBasicMaterial).opacity = cd!.shaded ? 0.8 : 0.45 + 0.3 * Math.sin(this.time * 3) ** 2;
     }
     const rp = world.traffic?.relayPost ?? null;
     this.relay.visible = !!b && !!rp;

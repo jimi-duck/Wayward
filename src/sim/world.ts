@@ -32,7 +32,7 @@ import { Stage, makeStage } from './stage';
 import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_LINE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR, NED_DONE, NED_DONE_AT, NED_PARTITION, NED_PARTITION_AT, PARTITION } from './postjump';
 import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
-import { Cordon } from './cordon';
+import { Cordon, HEARING_IN, HEARING_LAUNCH } from './cordon';
 import { Speak, SPEAK_FAILED, SPEAK_FLAG, SPOKEN } from './speak';
 import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_EVERY_ALERT, FLAK_R, SiteBrain, type Mood } from './site';
 import { LOOSE } from './pickups';
@@ -967,6 +967,15 @@ export class World implements EncounterHost {
     if (!(b.def.first && (recovering(this.flags) || lockLifted(this.flags)))) this.stage?.step(this, dt);
     // "Answer the pattern" at Stillwater (content/thren.ts): the knot comes in front of her
     if (!this.knot && this.bk?.def.script === 'd_still' && this.flags.has(SPEAK_FLAG) && !this.flags.has(SPOKEN) && !this.flags.has(SPEAK_FAILED)) this.knot = new Speak(this);
+    // Thane's hearing (content/hearing.ts): the Registry launch carries the witness in through Custody's scan cordon
+    const bk = this.bk;
+    if (bk && !this.cordon && bk.def.script === 'f_gilt' && this.flags.has(HEARING_LAUNCH) && !this.flags.has(HEARING_IN)) {
+      const d = Math.hypot(bk.lane.x - this.ship.x, bk.lane.z - this.ship.z) || 1;
+      this.cordon = new Cordon({ n: 3, along: Math.min(0.7, Math.max(0.25, 320 / d)), escort: true, flags: ['hearing_cold', 'hearing_made'] }, this);
+      // as at Kiln: nobody comes unless the cordon sees her
+      bk.nextPursuit = Math.max(bk.nextPursuit, this.runTime + 1e9);
+    }
+    if (this.cordon && this.cordon.state !== 'cold' && this.flags.has(HEARING_LAUNCH)) this.flags.add(HEARING_IN);
     if (this.phase === 'play') { this.knot?.tick(this, dt); this.cordon?.step(this, dt); this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); this.den?.step(this, dt); this.thrSeed?.step(this, dt); }
     // the Archive keeps a photograph of a den once it has been seen, and of a seed once she has come near it
     if (this.den && this.den.state !== 'dark') this.flags.add('raider_den');
