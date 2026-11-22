@@ -315,7 +315,7 @@ export const SITUATIONS: SituationDef[] = [
       act('picket', 2, 'pass', 'hostile', 'Transport escort', { foe: true, from: 'ahead' }),
     ],
     card: 'story_brook_road', also: ['story_brook_declined'], at: 1e9, hail: -1, accept: ['rescue'],
-    goal: { kind: 'strike', hold: 0, limit: 150, line: 'Cripple the transport before the Jump Gate, then take Brook off', run: { gate: true, alive: true } },
+    goal: { kind: 'strike', hold: 0, limit: 150, line: 'Cripple Brook’s transport', run: { gate: true, alive: true } },
     win: { text: 'Brook is aboard · Custody marks you', flag: 'brook_free', standing: { custody: -1 } },
     lose: { text: 'The transport makes the Jump Gate · Brook is taken', flag: 'brook_taken' },
     ignore: { text: 'The transport goes on without you · Brook is taken', flag: 'brook_taken' },

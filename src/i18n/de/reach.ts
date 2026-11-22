@@ -184,7 +184,7 @@ export const REACH_DE: Record<string, string> = {
   'A Custody transport is taking a Kellern clerk to a cell.': 'Ein Custody-Transporter bringt einen Kellern-Angestellten in eine Zelle.',
   'Custody transport': 'Custody-Transporter',
   'Transport escort': 'Transporter-Begleitschiff',
-  'Cripple the transport before the Jump Gate, then take Brook off': 'Leg den Transporter vor dem Sprungtor lahm, dann hol Brook raus',
+  'Cripple Brook’s transport': 'Leg Brooks Transporter lahm',
   'Brook is aboard · Custody marks you': 'Brook ist an Bord · die Custody merkt sich dich',
   'The transport makes the Jump Gate · Brook is taken': 'Der Transporter erreicht das Sprungtor · Brook ist weg',
   'The transport goes on without you · Brook is taken': 'Der Transporter fliegt ohne dich weiter · Brook ist weg',

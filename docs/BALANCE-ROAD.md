@@ -9,14 +9,14 @@ pilot who keeps moving; it does not read, and it does not linger. These are pilo
 
 | Strategy | Policy | At the Narrows | Stuck | Time on the road | Wrecks |
 |---|---|---|---|---|---|
-| random | run | 6/6 | 0 | 27:49 | 0.2 |
-| random | bluff | 6/6 | 0 | 30:52 | 0.3 |
-| random | fight | 6/6 | 0 | 28:15 | 0.2 |
-| torpedo+defence | run | 6/6 | 0 | 28:49 | 0.2 |
-| torpedo+defence | bluff | 6/6 | 0 | 26:59 | 0.5 |
-| torpedo+defence | fight | 6/6 | 0 | 29:34 | 0.3 |
+| random | run | 6/6 | 0 | 22:26 | 0.0 |
+| random | bluff | 5/6 | 1 | 27:39 | 0.2 |
+| random | fight | 6/6 | 0 | 26:29 | 0.2 |
+| torpedo+defence | run | 6/6 | 0 | 25:07 | 0.2 |
+| torpedo+defence | bluff | 6/6 | 0 | 22:15 | 0.2 |
+| torpedo+defence | fight | 5/6 | 1 | 26:33 | 0.2 |
 
-Whole leg, those that arrived (36): 28:43 on average, against a target of about 40 minutes.
+Whole leg, those that arrived (34): 24:10 on average, against a target of about 40 minutes.
 
 ## Stop by stop
 
@@ -26,17 +26,15 @@ Whole leg, those that arrived (36): 28:43 on average, against a target of about 
 | Stop | Visits | Time | Cyrite in → out | Jump fluid in → out | Days | Rows | Carried | Wrecked |
 |---|---|---|---|---|---|---|---|---|
 | Cerro | 36 | 4:26 | 0.0 → 55618.7 | 6.0 → 1.1 | 0.0 → — | 0.0 | 0.0 | 6% |
-| Marwick | 6 | 3:49 | 88.7 → 98.7 | 0.0 → 0.0 | 1.5 → 0.5 | 1.0 | 0.0 | 0% |
-| Northfold | 34 | 1:02 | 68.4 → 91.6 | 0.0 → 0.0 | 0.6 → 0.3 | 6.5 | 0.0 | 0% |
-| Halden’s Reach | 36 | 2:05 | 27866.8 → 27801.5 | 0.6 → 0.0 | 0.8 → 0.2 | 11.0 | 0.0 | 0% |
-| Hollis | 36 | 1:06 | 27801.5 → 27831.4 | 0.9 → 0.0 | 0.7 → 0.5 | 6.6 | 0.2 | 0% |
-| Marlow | 42 | 2:37 | 23858.0 → 23834.0 | 0.1 → 0.4 | 0.6 → 0.3 | 9.4 | 0.0 | 14% |
-| Vesta | 36 | 1:51 | 27800.4 → 27831.7 | 0.0 → 0.0 | 0.9 → — | 5.5 | 0.2 | 0% |
-| Branford | 36 | 2:49 | 27831.7 → 27876.8 | 4.7 → 0.0 | 0.8 → 1.4 | 7.4 | 0.3 | 0% |
-| Copperline | 36 | 2:45 | 27876.8 → 27798.3 | 0.0 → 0.0 | 0.8 → 1.2 | 7.6 | 0.0 | 0% |
-| The Narrows | 36 | 5:50 | 27798.3 → 250020.1 | 0.0 → 0.8 | 0.7 → 0.6 | 11.6 | 0.9 | 6% |
+| Marwick | 6 | 3:49 | 88.7 → 97.7 | 0.0 → 0.0 | 1.5 → 0.5 | 1.0 | 0.0 | 0% |
+| Northfold | 36 | 1:09 | 27845.3 → 27870.9 | 0.6 → 0.0 | 0.8 → 0.4 | 6.6 | 0.0 | 0% |
+| Halden’s Reach | 36 | 2:05 | 27870.9 → 27807.0 | 0.0 → 0.0 | 0.8 → 0.2 | 11.0 | 0.0 | 0% |
+| Tallyhouse | 36 | 2:03 | 27807.0 → 27779.6 | 0.9 → 0.0 | 0.7 → 0.3 | 12.0 | 0.0 | 0% |
+| Miners’ Gap | 36 | 2:36 | 27779.6 → 27816.2 | 0.0 → 0.0 | 0.8 → 0.6 | 8.3 | 0.3 | 0% |
+| Copperline | 36 | 2:24 | 27816.2 → 27777.7 | 0.0 → 0.0 | 0.7 → 0.5 | 7.1 | 0.1 | 0% |
+| The Narrows | 36 | 6:34 | 27777.7 → 194450.4 | 0.0 → 2.1 | 0.6 → 0.0 | 11.6 | 0.9 | 8% |
 | Marrest | 6 | 3:22 | 63.7 → 70.3 | 0.0 → 0.0 | 1.5 → 0.3 | 1.0 | 0.0 | 0% |
-| Pellwick | 4 | 3:30 | 122.0 → 124.0 | 0.0 → 0.0 | 1.5 → 0.5 | 1.0 | 0.0 | 0% |
+| Pellwick | 4 | 3:30 | 122.0 → 125.0 | 0.0 → 0.0 | 1.5 → 0.5 | 1.0 | 0.0 | 0% |
 | Jansen Deep | 6 | 5:14 | 37.0 → 41.0 | 0.0 → 0.0 | 1.5 → 0.0 | 1.0 | 0.0 | 0% |
-| Marwatch | 6 | 5:14 | 26.7 → 30.7 | 0.0 → 0.0 | 1.5 → 0.0 | 1.0 | 0.0 | 0% |
-| Quill Watch | 6 | 2:52 | 51.3 → 64.3 | 0.0 → 0.0 | 1.5 → 0.5 | 1.0 | 0.0 | 0% |
+| Marwatch | 6 | 5:14 | 26.7 → 31.7 | 0.0 → 0.0 | 1.5 → 0.0 | 1.0 | 0.0 | 0% |
+| Quill Watch | 6 | 2:52 | 51.3 → 66.3 | 0.0 → 0.0 | 1.5 → 0.5 | 1.0 | 0.0 | 0% |
