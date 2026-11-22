@@ -795,7 +795,9 @@ export class Hud {
           // a gate rebooting or opening: its countdown is the number on the right, and the bar fills as it runs
           const gt = world.gateTimer;
           text($('obj-t'), mast ? named ?? t('Reach the relay mast') : named ?? t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
-          text($('obj-left'), gt ? clock(gt.left) : mast ? range(Math.hypot(mast.x - s.x, mast.z - s.z)) : ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
+          // the gate's range only beside a line about the gate: a story line ("find the Warden's record") never borrows it (the owner read 25 km as a story place's)
+          const gateLine = !named || goal.out;
+          text($('obj-left'), gt ? clock(gt.left) : mast ? range(Math.hypot(mast.x - s.x, mast.z - s.z)) : !ready ? `${Math.floor(world.fuel)}/${world.jumpCost}` : gateLine ? range(dl) : '');
           ticks($('obj-p'), gt ? 1 - gt.left / gt.total : 1 - dl / bk.def.lane, 30);
         }
         text($('obj-s'), recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact')

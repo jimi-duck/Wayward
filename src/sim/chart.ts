@@ -176,6 +176,11 @@ export const regionCount = (c: Chart) => 1 + Math.max(0, ...c.systems.map(region
 /** The first columns past Cerro run short (units, about 10 km), so the early game is a hop and not a haul. */
 const EARLY_COLS = 4;
 const EARLY_LANE = [900, 1100] as const;
+/**
+ * The Warden's Road keeps every gate close (living-world plan, 22 November 2026): 5.5 to 6.5 km from arrival, so a stop is
+ * its scene and not a haul. The owner read a story place as 25 km off when the number was the gate's.
+ */
+export const ROAD_LANE = [550, 650] as const;
 
 const round5 = (n: number) => Math.max(1, Math.round(n));
 
@@ -202,6 +207,13 @@ function nameIn(R: RegionDef, rng: Rng, used: Set<string>): string {
   }
   // the pairs ran out: number it
   for (let n = 2; ; n++) { const name = `${pre[rng.int(pre.length)]!}${post[rng.int(post.length)]!} ${n}`; if (!used.has(name)) { used.add(name); return name; } }
+}
+
+/** A dealt lane on the road, folded into ROAD_LANE (the same draw, so the rest of the chart is unchanged); off the road, as dealt. */
+export function roadLane(set: RegionSet | undefined, dealt: number): number {
+  if (set !== 'road') return dealt;
+  const lo = ROAD_LANE[0], span = ROAD_LANE[1] - ROAD_LANE[0];
+  return lo + Math.round(((dealt * 7919) % (span + 1)) / 50) * 50;
 }
 
 /** Lay a chart out from a seed: the three regions every journey had, or (for the long journey) the eight. */
@@ -235,7 +247,7 @@ export function makeChart(seed: number, set: RegionSet = 'three', breathers = 1)
         id: `s${systems.length}`, name, kind, col, region, x: col / 5, y, holder, cyrite,
         supplies: Math.round(rng.range(t.supplies[0], t.supplies[1]) * 100) / 100,
         port: hasPort ? { name: kind === 'home' ? 'Frontier Supply' : stop?.port ?? portNames[rng.int(portNames.length)]!, prices: kind === 'home' ? { ...BASE_PRICES } : pricesFor(holder, rng) } : null,
-        lane: Math.round((col <= EARLY_COLS ? rng.range(EARLY_LANE[0], EARLY_LANE[1]) : rng.range(t.lane[0], t.lane[1])) / 50) * 50,
+        lane: roadLane(set, Math.round((col <= EARLY_COLS ? rng.range(EARLY_LANE[0], EARLY_LANE[1]) : rng.range(t.lane[0], t.lane[1])) / 50) * 50),
         survey: clamp(Math.round((cyrite + rng.range(-0.25, 0.25)) * 100) / 100, 0, 1),
         ...(stop?.quiet ? { quiet: true } : {}),
       });

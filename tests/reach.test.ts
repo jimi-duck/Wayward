@@ -94,13 +94,14 @@ describe('Tallyhouse and Copperline', () => {
     const a = fly(withOrder, { story_ledger: 'take' }, 320);
     expect(a.cards).toEqual(['story_ledger']);
     expect(a.pings).toEqual(expect.arrayContaining(['“L. C. again. On the order, and on the money.”', '“Whoever that is, they signed both.”']));
-    // without the order: the clerk's books come first, then Ilse's buoy
+    // without the order: Sam reads the initials by what she has when the books are read. If Ilse's buoy came first
+    // (the stop is short), the initials match at once; if not, L. C. means nothing until the buoy brings the order
     const without = at(3);
     const b = fly(without, { story_ledger: 'take' }, 320);
-    expect(b.pings).toContain('“L. C. means nothing to me. Remember it anyway.”');
-    // Ilse's buoy brings the order after the books: then, and only then, the initials match
+    const nothing = b.pings.indexOf('“L. C. means nothing to me. Remember it anyway.”');
     const again = b.pings.indexOf('“L. C. again. On the order, and on the money.”');
-    if (again >= 0) expect(again).toBeGreaterThan(b.pings.indexOf('“L. C. means nothing to me. Remember it anyway.”'));
+    expect(nothing >= 0 || again >= 0).toBe(true);
+    if (nothing >= 0 && again >= 0) expect(again).toBeGreaterThan(nothing);
     expect(b.cards.slice(0, 2)).toEqual(['story_ledger', 'ilse_recording']);
   });
 
