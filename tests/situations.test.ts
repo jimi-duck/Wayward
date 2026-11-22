@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import { ARC, QUESTIONS, SITUATIONS, SITUATION_BY_ID, OBSERVATIONS } from '../src/content/situations';
 import { SCENE_CARDS } from '../src/content/situationCards';
+import { CARD_BY_ID } from '../src/sim/comms';
 import { REGIONS_LONG } from '../src/content/regions';
 import { VARIANTS } from '../src/sim/enemies';
 import type { InputFrame } from '../src/input/types';
@@ -54,14 +55,16 @@ const put = (w: World, x: number, z: number) => { w.ship.x = x; w.ship.z = z; w.
 describe('the situations as data', () => {
   it('name a real call, real hulls and real follow-ups', () => {
     for (const d of SITUATIONS) {
-      if (d.card) expect(CARD[d.card], d.id).toBeDefined();
+      // a road scene can take a story card as its call (Brook's transport)
+      if (d.card) expect(CARD[d.card] ?? CARD_BY_ID[d.card], d.id).toBeDefined();
+      for (const c of d.also ?? []) expect(CARD_BY_ID[c], d.id).toBeDefined();
       if (d.tight) expect(SITUATION_BY_ID[d.tight], d.id).toBeDefined();
       for (const a of d.actors ?? []) expect(VARIANTS[a.variant], `${d.id}:${a.variant}`).toBeDefined();
       if (d.threat) expect(VARIANTS[d.threat.variant], d.id).toBeDefined();
       if (d.trap) expect(VARIANTS[d.trap.variant], d.id).toBeDefined();
       for (const fx of Object.values(d.after ?? {})) if (fx.follow) expect(SITUATION_BY_ID[fx.follow.id], d.id).toBeDefined();
       // an accepted answer is one the card has
-      for (const k of d.accept ?? []) expect(CARD[d.card!]?.choices.map((c) => c.id), `${d.id}:${k}`).toContain(k);
+      for (const k of d.accept ?? []) expect((CARD[d.card!] ?? CARD_BY_ID[d.card!])?.choices.map((c) => c.id), `${d.id}:${k}`).toContain(k);
       // a goal that asks for something has a card to take it on
       if (d.goal.kind !== 'call') expect(d.card, d.id).toBeDefined();
     }

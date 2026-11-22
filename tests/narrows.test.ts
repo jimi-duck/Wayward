@@ -14,7 +14,7 @@ const NO_INPUT = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, r
 /** A road journey standing at the Narrows, the gate out of the Reach. */
 function narrows(seed = 5) {
   const j = newJourney(seed, false, 'road');
-  const line = j.chart.systems.filter((s) => s.col >= 1 && s.col <= 9).sort((a, b) => a.col - b.col);
+  const line = j.chart.systems.filter((s) => s.col >= 1 && s.col <= 7).sort((a, b) => a.col - b.col);
   j.trail = [j.chart.home, ...line.map((s) => s.id)];
   j.at = line[line.length - 1]!.id;
   j.status = 'sortie';
@@ -129,4 +129,22 @@ describe('the Narrows', () => {
     const j = narrows();
     expect(sortieDef(j).story).toBeNull();
   });
+
+  it('opens Ada’s note at the relay even in a fight, so the gate still reboots', () => {
+    // the road pilot (22 November 2026): the pursuit caught her at the Narrows, the note waited for a calm that never came
+    const j = narrows();
+    const def = { ...sortieDef(j), pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, situation: null, place: null, thren: 0, calloway: Infinity };
+    const w = new World(7, { mode: 'breakout', sortie: def, carry: j.carry });
+    let note = false;
+    for (let i = 0; i < Math.round(60 / STEP) && !note; i++) {
+      if (i === Math.round(20 / STEP)) { const r = relayOf(w.bk!)!; w.ship.x = r.x - 150; w.ship.z = r.z; }
+      // a raider stays on her the whole time
+      if (i >= Math.round(20 / STEP) && !w.aliens.some((a) => a.faction !== 'custody' && !a.ward)) w.spawnHostile('raptor', { x: w.ship.x + 30, y: 0, z: w.ship.z });
+      w.ship.invuln = 99;
+      w.step(STEP, NO_INPUT);
+      if (w.comms?.def.id === 'warden_note_1') note = true;
+      else if (w.comms) w.answer(w.comms.def.choices[0]!.id);
+    }
+    expect(note).toBe(true);
+  }, 60000);
 });

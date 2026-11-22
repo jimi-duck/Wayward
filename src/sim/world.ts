@@ -15,7 +15,7 @@ import { Script, type Output } from './script';
 import { derive, SIG_CLUES, relaysLit, relayFlag } from './evidence';
 import { ON_ROAD } from '../content/road';
 import { debtLeft } from './threads';
-import { GHOST_STOP, GHOST_TANK, spawnGhost, stepGhost, type Ghost } from './ghost';
+import { GHOST_AFTER, GHOST_STOP, spawnGhost, stepGhost, type Ghost } from './ghost';
 import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
@@ -384,9 +384,12 @@ export class World implements EncounterHost {
   private cardsSeen = new Set<string>();
   /** The stop's story script (sim/script.ts), if it has one, and the objective it has set. */
   private script: Script | null = null;
-  /** The contact at Hollis (sim/ghost.ts), once it has come. */
+  /** The contact at Northfold (sim/ghost.ts), once it has come. */
   ghost: Ghost | null = null;
   private ghostMade = false;
+  /** Seconds of quiet sky before it came, and seconds since. */
+  private ghostWait = 0;
+  private ghostAge = 0;
   storyObjective: { main?: string; quiet?: string; from?: string } | null = null;
   /** Cards heard earlier in the journey: the ones that come once do not come again. */
   private heard = new Set<string>();
@@ -486,7 +489,7 @@ export class World implements EncounterHost {
     this.placeHold = 0; this.placeHoldOf = '';
     this.radioQ = [];
     this.floor = new Floor();
-    this.ghost = null; this.ghostMade = false;
+    this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
     this.seamT = 0;
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.storyMade = false; this.scanned = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
@@ -2180,7 +2183,12 @@ export class World implements EncounterHost {
     if ('radio' in o) this.events.push({ type: 'ping', id: `story_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text, vars), moment: 'calm', system: name });
     else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason && (o.notice.reason.includes('{') ? tr(o.notice.reason, vars) : o.notice.reason) });
     else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet), from: o.objective.from };
-    else if ('card' in o) { const def = CARD_BY_ID[o.card]; if (def) this.desk.offer(def, 'major', this.runTime, false, true); }
+    else if ('card' in o) {
+      const def = CARD_BY_ID[o.card];
+      // an urgent card opens now in a fight, where the desk would hold it (the Narrows' note: the gate's reboot waits on it); otherwise the desk
+      if (def && o.urgent && this.busy() === 'fight' && !this.comms && !this.call && this.phase === 'play') this.openComms(def);
+      else if (def) this.desk.offer(def, 'major', this.runTime, false, true);
+    }
     else if ('wall' in o) this.flags.add(o.wall);
     else this.flags.add(`pursuit_${o.pursuit}`);
   }
@@ -2234,9 +2242,9 @@ export class World implements EncounterHost {
       }
     }
     // the stop's story script: its lines wait for a safe moment and never drop (sim/script.ts)
-    // the ghost: it comes at a free moment once the tank is half full, and never in a fight
-    if (this.ghost) stepGhost(this.ghost, s, this.tankCap ? this.fuel / this.tankCap : 0, 1 / 60);
-    else if (!this.ghostMade && b.def.script === GHOST_STOP && this.tankCap && this.fuel / this.tankCap >= GHOST_TANK && this.scriptFree(busy, t)) {
+    // the ghost: it comes after a while of quiet sky, and never in a fight
+    if (this.ghost) stepGhost(this.ghost, s, (this.ghostAge += 1 / 60), 1 / 60);
+    else if (!this.ghostMade && b.def.script === GHOST_STOP && this.scriptFree(busy, t) && (this.ghostWait += 1 / 60) >= GHOST_AFTER) {
       this.ghostMade = true;
       this.ghost = spawnGhost({ x: s.x, z: s.z, heading: s.heading });
       this.flags.add('ghost_here');

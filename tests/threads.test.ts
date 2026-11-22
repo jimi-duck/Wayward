@@ -64,8 +64,8 @@ describe('the replies', () => {
     expect(sold.pings).not.toContain('“Medicine through, and nobody saw you. Good. I’ll call again.”');
   });
 
-  it('hester answers a refusal at Branford', () => {
-    const no = fly(6, 'sc_toll', 'no');
+  it('hester answers a refusal at Miners’ Gap', () => {
+    const no = fly(4, 'sc_toll', 'no');
     expect(no.pings).toContain('“Understood. We’ll find another way. We always do.”');
   });
 

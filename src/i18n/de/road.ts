@@ -3,7 +3,7 @@
 export const ROAD: Record<string, string> = {
   'Kellern space, quiet crossing': 'Kellern-Raum, ruhige Passage',
   'Next: Halden’s Reach · find the Warden’s record': 'Weiter: Halden’s Reach · die Akte des Wardens finden',
-  'The Narrows · 7 jumps': 'Die Narrows · 7 Sprünge',
+  'The Narrows · 5 jumps': 'Die Narrows · 5 Sprünge',
   'Jump to Halden’s Reach': 'Spring nach Halden’s Reach',
   'Jump to Northfold': 'Spring nach Northfold',
   'Then Halden’s Reach · find the Warden’s record': 'Dann Halden’s Reach · die Akte des Wardens finden',

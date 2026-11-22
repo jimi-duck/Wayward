@@ -90,11 +90,11 @@ export const WALL: WallItem[] = [
     lead: 'Kellern’s books may carry the same initials.',
   }),
   clue({
-    flag: 'clue_ghost', name: 'Unknown contact · Hollis', certainty: 'fact', at: 0,
-    proves: 'Something held at the edge of your scope and matched your speed, and it came closer as the tank filled.',
+    flag: 'clue_ghost', name: 'Unknown contact · Northfold', certainty: 'fact', at: 0,
+    proves: 'Something held at the edge of your scope and matched your speed, then came closer.',
     not: 'What it was, or what it wanted.',
-    detail: 'No transponder, no hull the scope could read, and no bolt touched it. Sam called it a ghost. Old rigs throw them.',
-    ask: 'What was on the scope at Hollis?',
+    detail: 'No transponder, no hull the scope could read, and no bolt touched it. Sam called it a ghost. Old relays throw them.',
+    ask: 'What was on the scope at Northfold?',
     lead: 'None yet.',
   }),
   clue({

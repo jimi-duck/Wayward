@@ -8,7 +8,7 @@ import { ACCOUNTS, ANALYST, flag, free, radio } from './kit';
 // each answers a broadcast the player has already heard (content/wall.ts `says`).
 
 export const EVIDENCE_ROWS: Row[] = [
-  // Marlow: Brook's second set of books
+  // Tallyhouse: Brook's second set of books
   radio('ev_allocation', 'marlow', flag('frag_ledger'), 'Adam Brook', 'kellern', '“Read the second set too. Fuel tables. The Merit Grants column is forty years of zeros.”', { wall: 'clue_allocation' }),
 
   // Tamsin Field: the debt has a history

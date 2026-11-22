@@ -47,7 +47,7 @@ export type Output =
   | { radio: { from: string; caller: string; text: string } }
   | { notice: { tone: Tone; headline: string; reason?: string } }
   | { objective: { main?: string; quiet?: string; /** The trigger of the row that set it (filled in by the runner). */ from?: Trigger['on'] } }
-  | { card: string }
+  | { card: string; /** Opens in a fight (an urgent row): the gate waits on it. */ urgent?: boolean }
   | { wall: string }
   | { pursuit: string };
 
@@ -281,14 +281,15 @@ export class Script {
     if (!row) { this.queue.shift(); return out; }
     const quiet = c.busy !== 'transit' && (c.busy !== 'fight' || !!row.urgent);
     // a carried row waits for a free moment, as does any card
-    if (!quiet || ((head.carried || 'card' in row.do) && !c.free && !row.urgent)) return out;
+    // (an urgent row does not wait for a free moment in a fight, which may never end; out of one, it waits like the rest)
+    if (!quiet || ((head.carried || 'card' in row.do) && !c.free && !(row.urgent && c.busy === 'fight'))) return out;
     this.queue.shift();
     // a card counts as played once it is answered, so a jump before then carries it
     const card = 'card' in row.do ? row.do.card : null;
     play(row.id, !card);
     this.last = c.t;
     if (card) this.holding = { row: row.id, card };
-    out.push(row.do);
+    out.push('card' in row.do && row.urgent ? { ...row.do, urgent: true } : row.do);
     return out;
   }
 }

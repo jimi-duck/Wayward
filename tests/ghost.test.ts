@@ -1,27 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
-import { GHOST_FAR, GHOST_NEAR } from '../src/sim/ghost';
+import { GHOST_CLOSE_AFTER, GHOST_FAR, GHOST_NEAR } from '../src/sim/ghost';
 import { newJourney, sortieDef } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 
-// The ghost at Hollis: it holds, never closes, takes nothing, and waits for a quiet sky.
+// The ghost at Northfold: it holds, never closes, takes nothing, and waits for a quiet sky.
 
 const NO_INPUT = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' } as const;
 const FLY = { ...NO_INPUT, thrust: 1 } as const;
 
-/** A road journey standing at Hollis (stop 3), a quiet sky, the tank at `tank`. */
-function hollis(tank: number) {
+/** A road journey standing at Northfold (the first stop past the audit dock), a quiet sky. */
+function northfold() {
   const j = newJourney(5, false, 'road');
-  const line = j.chart.systems.filter((s) => s.col >= 1 && s.col <= 4).sort((a, b) => a.col - b.col);
+  const line = j.chart.systems.filter((s) => s.col >= 1 && s.col <= 2).sort((a, b) => a.col - b.col);
   j.trail = [j.chart.home, ...line.map((s) => s.id)];
   j.at = line[line.length - 1]!.id;
   j.status = 'sortie';
   j.dest = null;
   j.carry.flags.push('archive_woke');
   const def = { ...sortieDef(j), pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, blockade: false, situation: null, place: null, thren: 0, calloway: Infinity };
-  const w = new World(9, { mode: 'breakout', sortie: def, carry: j.carry });
-  w.fuel = w.tankCap * tank;
-  return w;
+  return new World(9, { mode: 'breakout', sortie: def, carry: j.carry });
 }
 
 /** Steps for `secs`, answering any card that opens (a call pauses the world), and checks `each` after every step. */
@@ -34,37 +32,40 @@ function run(w: World, secs: number, input: Parameters<World['step']>[1] = NO_IN
   }
 }
 
+/** Steps until it has come (the arrival and Sam's first lines go first), at most two minutes. */
+function untilGhost(w: World): void {
+  for (let i = 0; i < 120 / STEP && !w.ghost; i++) run(w, STEP);
+}
+
 const dist = (w: World) => Math.hypot(w.ghost!.x - w.ship.x, w.ghost!.z - w.ship.z);
 
-describe('the ghost at Hollis', () => {
-  it('waits for the tank to pass half', () => {
-    const w = hollis(0.3);
-    run(w, 60);
+describe('the ghost at Northfold', () => {
+  it('waits for a while of quiet sky', () => {
+    const w = northfold();
+    run(w, 30);
     expect(w.ghost).toBeNull();
-    w.fuel = w.tankCap * 0.6;
-    run(w, 20);
+    untilGhost(w);
     expect(w.ghost).not.toBeNull();
     expect(w.flags.has('ghost_here')).toBe(true);
     expect(w.aliens.filter((a) => !a.extra).length).toBe(0); // working traffic (extra) flies on
   });
 
-  it('never closes, however the ship flies at it, then comes nearer once at three quarters', () => {
-    const w = hollis(0.6);
-    run(w, 20);
+  it('never closes, however the ship flies at it, then comes nearer once', () => {
+    const w = northfold();
+    untilGhost(w);
     expect(dist(w)).toBeCloseTo(GHOST_FAR, 0);
     // fly straight at it
     const bearing = Math.atan2(-(w.ghost!.z - w.ship.z), w.ghost!.x - w.ship.x);
     w.ship.heading = bearing;
     run(w, 20, FLY, () => expect(dist(w)).toBeGreaterThanOrEqual(GHOST_FAR - 4));
-    w.fuel = w.tankCap * 0.8;
-    run(w, 40, FLY);
+    run(w, GHOST_CLOSE_AFTER + 20, FLY);
     expect(dist(w)).toBeCloseTo(GHOST_NEAR, 0);
     expect(w.flags.has('ghost_close')).toBe(true);
   });
 
   it('takes no damage: it is no hull, so no bolt has it to hit', () => {
-    const w = hollis(0.6);
-    run(w, 20);
+    const w = northfold();
+    untilGhost(w);
     const bearing = Math.atan2(-(w.ghost!.z - w.ship.z), w.ghost!.x - w.ship.x);
     w.ship.heading = bearing;
     run(w, 20, { ...NO_INPUT, fire: true });
@@ -73,16 +74,15 @@ describe('the ghost at Hollis', () => {
   });
 
   it('never comes while a hostile is near', () => {
-    const w = hollis(0.6);
+    const w = northfold();
     w.spawnHostile('raptor', { x: w.ship.x + 40, y: 0, z: w.ship.z });
     run(w, 10);
     expect(w.ghost).toBeNull();
   });
 
   it('logs the Wall at once: a jump before Sam speaks still has it', () => {
-    const w = hollis(0.6);
-    // nothing comes before the arrival's sweep and title are done (FLOOR.arrival)
-    run(w, 20);
+    const w = northfold();
+    untilGhost(w);
     expect(w.flags.has('ghost_here')).toBe(true);
     expect(w.flags.has('clue_ghost')).toBe(true);
     // the carry has it for the next stop

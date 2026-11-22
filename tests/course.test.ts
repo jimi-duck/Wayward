@@ -20,15 +20,15 @@ function at(i: number, seed = 5): Journey {
 }
 
 describe('the Course', () => {
-  it('shows three layers at Northfold: the Narrows, Halden\'s Reach and Hollis', () => {
+  it('shows three layers at Northfold: the Narrows, Halden\'s Reach and Tallyhouse', () => {
     const c = courseView(at(1))!;
-    expect(c.goal).toMatchObject({ name: 'The Narrows', jumps: 7 });
+    expect(c.goal).toMatchObject({ name: 'The Narrows', jumps: 5 });
     expect(c.next.name).toBe('Halden’s Reach');
-    expect(c.after?.name).toBe('Hollis');
+    expect(c.after?.name).toBe('Tallyhouse');
     expect(c.to.name).toBe('Halden’s Reach');
     // the screen's goal is the story's: Halden's Reach while it is ahead, then the gate
     expect(c.aim).toMatchObject({ name: 'Halden’s Reach', jumps: 1 });
-    expect(courseView(at(2))!.aim).toMatchObject({ name: 'The Narrows', jumps: 6 });
+    expect(courseView(at(2))!.aim).toMatchObject({ name: 'The Narrows', jumps: 4 });
   });
 
   it('ends the layers at the last stop: next is the Narrows, nothing after', () => {
@@ -41,8 +41,8 @@ describe('the Course', () => {
   it('draws the road as one pip per stop, the Narrows last, with the current one lit', () => {
     const c = courseView(at(3))!;
     expect(c.road.map((r) => r.name)).toEqual([...ROAD.slice(1).map((r) => r.name), 'The Narrows']);
-    expect(c.road.map((r) => r.state)).toEqual(['done', 'done', 'here', 'ahead', 'ahead', 'ahead', 'ahead', 'ahead']);
-    expect(c.road.filter((r) => r.job)).toHaveLength(3);
+    expect(c.road.map((r) => r.state)).toEqual(['done', 'done', 'here', 'ahead', 'ahead', 'ahead']);
+    expect(c.road.filter((r) => r.job)).toHaveLength(2);
   });
 
   it('is only the road\'s own: no Course off the road; at the Narrows it shows the Marches ahead', () => {
@@ -50,7 +50,7 @@ describe('the Course', () => {
     expect(onRoad(three)).toBe(false);
     expect(courseView(three)).toBeNull();
     expect(courseView(at(0))).not.toBeNull();
-    const j = at(7);
+    const j = at(5);
     j.at = j.chart.systems.find((s) => s.kind === 'gate')!.id;
     const c = courseView(j)!;
     expect(c.next.name).toBe('Wake');
@@ -58,10 +58,11 @@ describe('the Course', () => {
   });
 
   it('hides the pursuit while Juno rests at the breather', () => {
-    const vesta = at(5);
-    expect(sysById(vesta.chart, vesta.at).name).toBe('Vesta');
-    expect(courseView(vesta)!.pursuit.hidden).toBe(true);
-    expect(courseView(at(4))!.pursuit.hidden).toBe(false);
+    // the Reach has none since it was cut to five stops: the Marches' Low Harrow is the first (the Narrows is column 7)
+    const harrow = at(11);
+    expect(sysById(harrow.chart, harrow.at).name).toBe('Low Harrow');
+    expect(courseView(harrow)!.pursuit.hidden).toBe(true);
+    expect(courseView(at(10))!.pursuit.hidden).toBe(false);
   });
 
   it('counts the pursuit to the half day and reads amber at 1 and red at half a day', () => {
@@ -111,7 +112,7 @@ describe('the Course', () => {
     expect(c.road[0]).toMatchObject({ name: 'Northfold', state: 'done', day: 3, net: true });
     expect(c.net).toBe(1);
     expect(c.nextAt.net).toBe(false);
-    expect(c.legs).toMatchObject({ at: 0, done: 5, of: 8 });
+    expect(c.legs).toMatchObject({ at: 0, done: 5, of: 6 });
     expect(c.legs.names).toHaveLength(8);
     expect(c.stores.plates).toBeLessThanOrEqual(c.stores.maxPlates);
     expect(courseView(at(3))!.net).toBeNull();
