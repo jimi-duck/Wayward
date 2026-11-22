@@ -2274,14 +2274,16 @@ export class World implements EncounterHost {
       this.paintCalled = true;
       this.events.push({ type: 'ping', id: 'paint_bay', from: tr(PAINTER), caller: 'frontier', text: tr(PAINT_LINE), moment: 'calm', system: b.def.name });
     }
+    // on the road a stop has one card at most, its own (living-world plan, 22 November 2026): no port approach card and no chance card
+    const road = this.flags.has(ON_ROAD);
     // the port's approach calls once
-    if (!this.portCalled && !this.docked && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
+    if (!road && !this.portCalled && !this.docked && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
       this.portCalled = true;
       const def = pickCard(this.commsCtx(), this.blocked(), this.rng, 'port');
       if (def && (weightOf(def) === 'major' || this.deskRng.next() < DESK.portNews)) d.offer(def, weightOf(def), t, true);
     }
     // a new card by chance: only on an opportunity, never on a timer alone, and few a sortie; none in the first system past Cerro, whose story is enough
-    if (!b.def.quiet && !b.def.first && t >= this.cardNext && d.wants(t, busy)) {
+    if (!road && !b.def.quiet && !b.def.first && t >= this.cardNext && d.wants(t, busy)) {
       const def = pickCard(this.commsCtx(), this.blocked(), this.rng);
       if (def) { d.offer(def, weightOf(def), t); d.used(); }
     }

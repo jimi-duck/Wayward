@@ -25,7 +25,7 @@ const rest = (id: string, stop: string, name: string, jumps: string): Row[] => [
 const MARCHES_ROWS: Row[] = [
   // 1 · Wake (landfall): note 1's lead becomes the goal; the edge relay (Calloway's file on her: content/script/arc.ts)
   notice('mw_notice', 'm_wake', arrive(), 'teal', 'Wake', 'the Marches · past the charts'),
-  objective('mw_objective', 'm_wake', arrive(), 'Next: Kessel Hold', 'The Rift · 7 jumps'),
+  objective('mw_objective', 'm_wake', arrive(), 'Next: Kessel Hold', 'The Rift · 6 jumps'),
   radio('mw_edge', 'm_wake', free(6), 'Edge relay', 'unknown', '“Past here the charts are wishes. Fly carefully.”'),
   // the ledger's second route: Brook freed without it, his own copy finds her here
   radio('mw_brook', 'm_wake', after('mw_edge', 2), 'Adam Brook', 'kellern', '“Free, and still counting. My copy of Kellern’s books is in your file now.”', { if: { has: ['brook_free'], not: ['frag_ledger'] }, wall: 'frag_ledger' }),
@@ -57,15 +57,12 @@ const MARCHES_ROWS: Row[] = [
   radio('walk_wren', 'm_walk', after('walk_saffi', 2), 'Wren Saffi', 'miners', '“Ninefold, line nine. My parents. Gran reads the list every year. I just fly.”'),
   // the lifeboat's echo
   radio('walk_boat', 'm_walk', after('walk_wren', 4), 'Ma Saffi', 'miners', '“Anka’s boat came through. Forty-one names. You kept them.”', { if: { has: ['lifeboat_saved'] } }),
-  objective('walk_gate', 'm_walk', leave(), 'Jump to Low Harrow'),
-
-  // 5 · Low Harrow (breather): Thren folklore, a scored hull, Wren on full tanks; Hester's call (the job is at Gannet Reach)
-  ...rest('mh', 'm_harrow', 'Low Harrow', 'The Rift · 3 jumps'),
-  notice('mh_hull', 'm_harrow', settle(), 'white', 'Drift hull', 'scored in long parallel lines', { wall: 'saw_scored' }),
-  radio('mh_wren', 'm_harrow', after('mh_hull', 2), 'Wren Saffi', 'miners', '“Don’t run a lane full. They follow the full ones. Everybody knows that.”', { if: { full: false } }),
-  radio('mh_wren_full', 'm_harrow', after('mh_hull', 2), 'Wren Saffi', 'miners', '“You’re running heavy. I’d vent some, if I were you. Gran would just stare.”', { if: { full: true } }),
-  radio('mh_hester', 'm_harrow', after('mh_hull', 8), HESTER[0], HESTER[1], '“Hester again. A shift went quiet at Gannet. Nine people. I’ve got no ships. You’ve got one.”'),
-  objective('mh_gate', 'm_harrow', leave(), 'Jump to Gannet Reach'),
+  // what was Low Harrow's (cut 22 November 2026): a scored hull in the fleet's wake, Wren's rule about full tanks, Hester's call for Gannet
+  notice('walk_hull', 'm_walk', after('walk_saffi', 12), 'white', 'Drift hull', 'scored in long parallel lines', { wall: 'saw_scored' }),
+  radio('walk_rule', 'm_walk', after('walk_hull', 2), 'Wren Saffi', 'miners', '“Don’t run a lane full. They follow the full ones. Everybody knows that.”', { if: { full: false } }),
+  radio('walk_rule_full', 'm_walk', after('walk_hull', 2), 'Wren Saffi', 'miners', '“You’re running heavy. I’d vent some, if I were you. Gran would just stare.”', { if: { full: true } }),
+  radio('walk_hester', 'm_walk', after('walk_hull', 8), HESTER[0], HESTER[1], '“Hester again. A shift went quiet at Gannet. Nine people. I’ve got no ships. You’ve got one.”'),
+  objective('walk_gate', 'm_walk', leave(), 'Jump to Gannet Reach'),
 
   // 6 · Gannet Reach (pressure): Oduya's rigs (if the moot stands with her), then Hester's missing shift
   notice('mg_notice', 'm_gannet', arrive(), 'amber', 'Gannet Reach', 'Holdfast rigs · Kellern security aboard'),

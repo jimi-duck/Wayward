@@ -107,6 +107,8 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 25) shortReach(j as Journey);
   // 25 → 26: the audit dock's system has a fixed name (Ringhold), so the chart and the story agree; a road chart's dealt name is replaced
   if (j.version < 26) nameAudit(j as Journey);
+  // 26 → 27: the Marches are six stops (Low Harrow, the breather, cut). A road journey not yet past them gets the new Marches
+  if (j.version < 27) shortMarches(j as Journey);
   j.version = VERSION;
   return j as Journey;
 }
@@ -345,22 +347,41 @@ const REACH_MOVED: Record<string, string> = { Marlow: 'Tallyhouse', Branford: 'M
  * is kept as near as it can be. One already past the Narrows keeps its chart: the Reach is behind it.
  */
 function shortReach(j: Journey): void {
+  if (j.chart.regionSet !== 'road' || roadRegion(j.chart, 0)) return;
+  shortLeg(j, 0, REACH_MOVED, true);
+}
+
+/** v27: where a stop of the old Marches went (Low Harrow, the breather, folded into the Long Walk before it). */
+const MARCHES_MOVED: Record<string, string> = { 'Low Harrow': 'The Long Walk' };
+
+/** v27: a road journey not yet past the Marches gets the six-stop Marches; one past it keeps its chart (the Marches are behind it). */
+function shortMarches(j: Journey): void {
   const c = j.chart;
-  if (c.regionSet !== 'road' || roadRegion(c, 0)) return;
-  const reach = c.systems.filter((s) => s.kind !== 'home' && regionOf(s) === 0);
-  const inReach = (id: string) => id === c.home || reach.some((s) => s.id === id);
-  if (!inReach(j.at)) return;
+  if (c.regionSet !== 'road' || roadRegion(c, 1) || !c.systems.some((s) => s.name === 'Low Harrow')) return;
+  shortLeg(j, 1, MARCHES_MOVED, false);
+}
+
+/**
+ * A road journey still at or before leg `leg` gets the chart dealt from the same seed. Each system it knows is matched by name, a cut
+ * stop's to the one before it (`moved`); with `byCol`, the leg's first column is matched by column (a dealt name). The pursuit's place
+ * on the trail is kept as near as it can be.
+ */
+function shortLeg(j: Journey, leg: number, moved: Record<string, string>, byCol: boolean): void {
+  const c = j.chart;
+  const known = c.systems.filter((s) => s.kind !== 'home' && regionOf(s) <= leg);
+  const inLeg = (id: string) => id === c.home || known.some((s) => s.id === id);
+  if (!inLeg(j.at)) return;
   const fresh = newJourney(j.seed ?? 0, false, 'road', j.survival).chart;
-  if (fresh.home !== c.home || !roadRegion(fresh, 0)) return;
-  const freshReach = fresh.systems.filter((s) => s.kind !== 'home' && regionOf(s) === 0);
+  if (fresh.home !== c.home || !roadRegion(fresh, leg)) return;
+  const freshKnown = fresh.systems.filter((s) => s.kind !== 'home' && regionOf(s) <= leg);
   const minCol = (xs: { col: number }[]) => Math.min(...xs.map((s) => s.col));
   const to = (id: string): string | null => {
     if (id === c.home) return fresh.home;
-    const old = reach.find((s) => s.id === id);
+    const old = known.find((s) => s.id === id);
     if (!old) return null;
-    if (old.col === minCol(reach)) return freshReach.find((s) => s.col === minCol(freshReach))?.id ?? null;
-    const name = REACH_MOVED[old.name] ?? old.name;
-    return freshReach.find((s) => s.name === name)?.id ?? null;
+    if (byCol && old.col === minCol(known)) return freshKnown.find((s) => s.col === minCol(freshKnown))?.id ?? null;
+    const name = moved[old.name] ?? old.name;
+    return freshKnown.find((s) => s.name === name)?.id ?? null;
   };
   const at = to(j.at);
   if (!at) return;

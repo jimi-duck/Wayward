@@ -104,7 +104,7 @@ describe('arriving in a system on the road', () => {
 
 describe('a road gate after the Warden key', () => {
   it('says the gate is resetting while it holds, then that it is open', () => {
-    const j = at(15);
+    const j = at(14);
     j.carry.fuel = 40;
     const w = new World(5, { mode: 'breakout', sortie: { ...quiet(j), blockade: false }, carry: j.carry });
     const notices: string[] = [];

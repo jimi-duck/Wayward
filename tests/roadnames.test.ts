@@ -30,3 +30,32 @@ describe('the road’s names', () => {
     expect(roadRegion(back.chart, 0)).toBe(true);
   });
 });
+
+describe('the six-stop Marches (v27)', () => {
+  /** A road journey whose chart still has Low Harrow after the Long Walk, standing at `name`. */
+  function oldMarches(name: string): Journey {
+    const j = JSON.parse(JSON.stringify(newJourney(9, false, 'road'))) as Journey;
+    const c = j.chart, walk = c.systems.find((s) => s.name === 'The Long Walk')!;
+    for (const s of c.systems) if (s.col > walk.col) s.col += 1;
+    c.systems.push({ ...walk, id: 'old_harrow', name: 'Low Harrow', col: walk.col + 1, quiet: true });
+    const line = c.systems.filter((s) => s.kind !== 'home').sort((a, b) => a.col - b.col);
+    const k = line.findIndex((s) => s.name === name);
+    j.trail = [c.home, ...line.slice(0, k + 1).map((s) => s.id)];
+    j.at = j.trail[j.trail.length - 1]!;
+    j.version = 26;
+    return j;
+  }
+
+  it('a save at Low Harrow comes back at the Long Walk, on the road', () => {
+    const j = migrate(oldMarches('Low Harrow'))!;
+    expect(roadRegion(j.chart, 1)).toBe(true);
+    expect(j.chart.systems.find((s) => s.id === j.at)!.name).toBe('The Long Walk');
+    expect(j.chart.systems.some((s) => s.name === 'Low Harrow')).toBe(false);
+  });
+
+  it('a save at Kessel Hold stays at Kessel Hold', () => {
+    const j = migrate(oldMarches('Kessel Hold'))!;
+    expect(j.chart.systems.find((s) => s.id === j.at)!.name).toBe('Kessel Hold');
+    expect(roadRegion(j.chart, 1)).toBe(true);
+  });
+});
