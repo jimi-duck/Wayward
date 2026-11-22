@@ -40,6 +40,8 @@ export interface StoryPlaceDef {
   skip?: string[];
   /** What to do there, for the HUD (English, for t()). */
   verb: string;
+  /** A pickup on a trail toward the gate (Yard Nine's breaker line): it may stand further out than the first beat. */
+  trail?: boolean;
 }
 
 /** Slow enough to count as holding (units a second). */

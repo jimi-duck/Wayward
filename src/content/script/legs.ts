@@ -213,6 +213,13 @@ const YARDS_ROWS: Row[] = [
   notice('yn_notice', 'y_nine', arrive(), 'teal', 'Yard Nine', 'Kellern yard · the breakers’ birthplace'),
   objective('yn_objective', 'y_nine', arrive(), 'Yard Nine · the first work order', 'Kellern yard · refit bay open'),
   main('yn_anand', 'y_nine', { on: 'place', place: 'yn_anand' }, 'story_workorder'),
+  // the breaker line: the rest of the orders spill down the chute, and yard security comes for them (content/script/places.ts)
+  radio('yn_spill', 'y_nine', flag('frag_workorder'), 'Ben Anand', 'kellern', '“Security’s purging the archive down the chute. The rest of the orders are spilling. Grab what you can.”'),
+  notice('yn_security', 'y_nine', { on: 'place', place: 'yn_order1' }, 'red', 'Yard security', 'they want the orders back'),
+  { id: 'yn_chase', stop: 'y_nine', on: { on: 'place', place: 'yn_order1' }, do: { chase: true } },
+  notice('yn_order2', 'y_nine', { on: 'place', place: 'yn_order2' }, 'teal', 'Work order aboard', '2 of 4'),
+  notice('yn_order3', 'y_nine', { on: 'place', place: 'yn_order3' }, 'teal', 'Work order aboard', '3 of 4'),
+  radio('yn_all', 'y_nine', { on: 'place', place: 'yn_order4' }, 'Ben Anand', 'kellern', '“All of them. BY9-001 to 005. That’s the whole first ring, signed and countersigned.”', { wall: 'orders_all' }),
   quill('yn_quill_won', 'y_nine', 'job_needle_won', '“You fly like you’ve got somewhere to be. Pike says you do. Fine. I’m in.”'),
   quill('yn_quill_lost', 'y_nine', 'job_needle_lost', '“You fly like you’ve got somewhere to be. Pike says you do. Fine. I’m in.”'),
   objective('yn_gate', 'y_nine', leave(), 'Jump to Anvil Slip'),
