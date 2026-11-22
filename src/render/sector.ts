@@ -17,6 +17,7 @@ import { BreakoutView } from './breakout';
 import { SiteView } from './site';
 import { YardView } from './yard';
 import { PlaceView } from './places';
+import { LeadBeacon } from './lead';
 import { ScarView } from './scars';
 import { CameraRig, type CameraSubject } from './camera';
 import { DebrisField } from './debris';
@@ -106,6 +107,7 @@ export class Sector {
   private readonly site: SiteView;
   private readonly yard: YardView;
   private readonly place: PlaceView;
+  private readonly lead: LeadBeacon;
   private readonly scars: ScarView;
   private readonly warp: WarpView;
   /** The jump's path, latched when the drive lets go, and the run it belongs to. */
@@ -177,6 +179,7 @@ export class Sector {
     this.site = new SiteView(this.scene);
     this.yard = new YardView(this.scene);
     this.place = new PlaceView(this.scene);
+    this.lead = new LeadBeacon(this.scene);
     this.scars = new ScarView(this.scene);
     this.space = new SpaceView(this.scene, glow, renderer, tier.name === 'low' || tier.name === 'phone');
     this.warp = new WarpView(this.scene, glow, tier.name === 'low' ? 56 : tier.name === 'high' ? 170 : 110);
@@ -728,6 +731,7 @@ export class Sector {
     // Ned's yard, built into its rock (render/yard.ts)
     this.yard.update(world, dt, this.fx);
     this.place.update(world, dt);
+    this.lead.update(world, dt, this.reduceMotion);
     this.scars.update(world, dt);
     if (this.dyingT > 0) this.dyingT = Math.max(0, this.dyingT - dt);
     if (!world.alive) this.deathAge += dt; else this.hullGone = false;
