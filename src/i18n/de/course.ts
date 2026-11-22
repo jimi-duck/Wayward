@@ -11,6 +11,7 @@ export const COURSE: Record<string, string> = {
   'an old relay, dark seventy years': 'ein altes Relais, seit siebzig Jahren dunkel',
   'the relay Ada watched': 'das Relais, das Ada bewachte',
   'the quiet way to Halden’s Reach': 'der ruhige Weg nach Halden’s Reach',
+  'the company’s audit dock': 'das Prüfdock der Firma',
   'find the Warden’s record': 'die Akte des Wardens finden',
   'mine, and fill the tank': 'abbauen und den Tank füllen',
   'someone here keeps the real books': 'hier führt jemand die echten Bücher',

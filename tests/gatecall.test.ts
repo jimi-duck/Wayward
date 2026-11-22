@@ -25,8 +25,8 @@ function at(name: string, seed = 5) {
 
 import { LEGS } from '../src/content/road';
 const CHART = new Set(newJourney(5, false, 'road').chart.systems.map((x) => x.name));
-// (the later legs are laid down when she gets there)
-const NAMES = LEGS.flat().map((r) => r.name).filter((n): n is string => !!n && CHART.has(n));
+// (the later legs are laid down when she gets there; the audit dock's system plays the opening, not a stop's gate)
+const NAMES = LEGS.flat().filter((r) => r.script !== 'audit').map((r) => r.name).filter((n): n is string => !!n && CHART.has(n));
 
 describe('a shut Jump Gate', () => {
   it.each(NAMES)('%s: names the caller and the blocker, then opens once the call is answered', (name) => {

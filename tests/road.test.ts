@@ -99,14 +99,14 @@ describe('the hunch on the road', () => {
 });
 
 describe('saves', () => {
-  it('is version 25, and an older journey loads on its own chart with an empty queue', () => {
-    expect(VERSION).toBe(25);
+  it('is version 26, and an older journey loads on its own chart with an empty queue', () => {
+    expect(VERSION).toBe(26);
     const j = newJourney(7, false, 'eight');
     const old = JSON.parse(JSON.stringify(j));
     old.version = 20;
     delete old.carry.pending;
     const back = migrate(old);
-    expect(back?.version).toBe(25);
+    expect(back?.version).toBe(26);
     expect(back?.chart.regionSet).toBe('eight');
     expect(back?.carry.pending).toEqual([]);
   });

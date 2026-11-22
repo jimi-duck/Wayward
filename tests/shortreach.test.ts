@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { migrate } from '../src/meta/save';
 import { sysById } from '../src/sim/chart';
 import { roadRegion } from '../src/sim/road';
-import type { Journey } from '../src/sim/journey';
+import { VERSION, type Journey } from '../src/sim/journey';
 
 // v25: the Reach went from seven stops to five (Hollis and Vesta cut, Marlow renamed Tallyhouse, Branford Miners' Gap). A road
 // save made inside the old Reach comes back on the new one, where it stood or at the stop before a cut one.
@@ -28,7 +28,7 @@ describe('a save from the seven-stop Reach', () => {
     ['Copperline', 'Copperline'],
   ])('at %s comes back at %s, on the five-stop Reach', (from, to) => {
     const j = migrate(oldAt(from))!;
-    expect(j.version).toBe(25);
+    expect(j.version).toBe(VERSION);
     expect(roadRegion(j.chart, 0)).toBe(true);
     expect(sysById(j.chart, j.at).name).toBe(to);
     expect(j.trail[j.trail.length - 1]).toBe(j.at);

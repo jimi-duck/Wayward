@@ -658,7 +658,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_filter', kind: 'plea', caller: 'miners', tier: 'important',
-    lines: [{ if: { flag: 'tanker_taken' }, text: '“The tanker with our new filters never came. Someone took her at Sallow.”' }],
+    lines: [{ if: { flag: 'tanker_taken' }, text: '“The tanker with our new filters never came. Someone took her at Sallow Port.”' }],
     from: 'Settlement steward', title: 'One Filter Left',
     text: '“Our last air filter is dying. Two supplies of parts in ninety seconds, or we start counting breaths.”',
     cargo: 'A settlement · lamps low, a filter running hot',

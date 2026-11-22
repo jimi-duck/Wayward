@@ -122,6 +122,20 @@ Branford, the Gutter-tolled lane Hester's crews haul through, is Miners' Gap. Sc
 A road save made inside the old Reach comes back on the new one (save v25, `shortReach` in `meta/save.ts`): where it stood, or at the
 stop before a cut one. One past the Narrows keeps its chart. `tests/shortreach.test.ts`.
 
+## Fixed names, close places, Juno's log (22 November 2026)
+
+- **Every system on the road has a fixed name.** The audit dock's system was the one stop the chart named from the seed, so the
+  map and the story disagreed from the first jump (owner, 22 November 2026). It is **Ringhold** now. A v25 road save keeps its
+  dealt name until it loads, then takes Ringhold (save v26, `nameAudit` in `meta/save.ts`). `tests/roadnames.test.ts`.
+- **Story places are close.** `StoryPlaceDef.along` is units ahead of the arrival now, not a share of the lane: a skiff or a
+  buoy about 650 m out, a ferry or a wreck about 900 m, a pickup just beyond its partner (owner: Ilse's skiff "too far away").
+  Never past half the way to the gate.
+- **The places are built like ships** (`render/places.ts`): plated octagonal bodies from `render/parts.ts`, glazed noses, lit
+  ports, docking collars on the side she comes alongside, drives, tanks, a dish; the wreck's stern knocked askew with ribs bare
+  in the gap; the buoy a turned float with a lattice mast and solar wings. About twice their old size.
+- **Juno's log.** A jump's title card carries one line of hers under the system's name (`content/log.ts`, German in
+  `i18n/de/log.ts`), 13 words at most, on the road only. On phones it sits above the name. `tests/log.test.ts`.
+
 ## The Belt chase
 
 Val's route trade sells Juno's heading to the Offices (`sim/journey.ts beltChased`). At Kiln and Tarik's Lamps, the first pursuit comes 20 s after arrival and again 6 s after each calm. Heat starts at 0.3, and most of the pursuit is Offices pickets from ahead. A red notice says so on arrival. The chase ends at the Scrapgate's pickets (`scrapgate_pickets`). Paying Val to forget (`vell_paid`) or jamming her channel (`vell_exposed`) at Tarik's Lamps shakes it, and the Scrapgate is then clear.
@@ -150,7 +164,7 @@ The pause card's Objective gives a little more than the HUD (18 November 2026). 
 
 ## Story jumps follow the chart
 
-The first jump out of the audit dock's system goes to Northfold, the quiet lane; Halden's Reach is the one after. The archive's answer reads "Set course: Northfold" (the letter still says to start at Halden's Reach, which is the lead), and the first system's way-out line is "Jump to Northfold · then Halden's Reach". From there every stop's "Next:" and "Jump to" line names the system the chart's one lane leads to. `tests/storyjumps.test.ts` walks the whole road on three seeds and checks each of them, the Course's next stop and the plotted lane.
+The first jump out of the audit dock's system (Ringhold) goes to Northfold, the quiet lane; Halden's Reach is the one after. The archive's answer reads "Set course: Northfold" (the letter still says to start at Halden's Reach, which is the lead), and the first system's way-out line is "Jump to Northfold · then Halden's Reach". From there every stop's "Next:" and "Jump to" line names the system the chart's one lane leads to. `tests/storyjumps.test.ts` walks the whole road on three seeds and checks each of them, the Course's next stop and the plotted lane.
 
 ## Add a stop
 

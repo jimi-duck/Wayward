@@ -1,4 +1,5 @@
 import { HUSH } from './desk';
+import { JUNO_LOG } from '../content/log';
 import { t } from '../i18n';
 import {
   DANGER_DAYS, PLACE_CHITS, PLACE_COVER, PLACE_CYRITE, PLACE_KRAIL, PLACE_PARTS, PLACES, REWARD_WORD,
@@ -92,7 +93,7 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 25;
+export const VERSION = 26;
 /** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
 const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
@@ -274,6 +275,8 @@ export function sortieDef(j: Journey): SortieDef {
     // and the drive takes longer: the gate is reached with them on your tail
     def.spool = SPOOL * SPOOL_HUNTED;
   }
+  // her own line for the place, for the title card (content/log.ts)
+  def.log = leg >= 0 ? JUNO_LOG[def.script ?? ''] ?? null : null;
   // what she got away from on the last jump, for the title card
   def.escaped = j.carry.flags.includes(ESCAPED_CALLOWAY) ? ESCAPED_LINES.calloway : j.carry.flags.includes(ESCAPED_CHASE) ? ESCAPED_LINES.chase : null;
   // set adrift here a moment ago: the gate is not dead ahead any more
