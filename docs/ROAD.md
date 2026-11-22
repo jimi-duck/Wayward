@@ -74,7 +74,7 @@ Wane Rest, the last stop, plays the end as a scene (`content/script/threshold.ts
 
 1. Thane's last broadcast.
 2. "They gather": the Thren close round the gate.
-3. Who came: one line each from the allies the player built (Pike with `thread_line_2`, Hester with `thread_crews_3`, the Long Walk with `job_long_walk_won`, the analyst with `thread_survey_2`), the Hollow Saints with `saints_helped`, Val as a rival with `broker`, or "Nobody came".
+3. Who came: one line each from the allies the player built (Pike with `thread_line_2`, Hester with `thread_crews_3`, the Long Walk with `job_long_walk_won` or `drift_walked`, the analyst with `thread_survey_2`), the Hollow Saints with `saints_helped`, Val as a rival with `broker`, or "Nobody came".
 4. A main notice, "Calloway holds the gate", that holds the gate until the scene has played. Her last card follows at the gate, as before.
 5. On the ending screen, Ada's note 8 admits the keys would have worked in any hand, and its button is Juno's answer ("You could have asked me", or "My name is Juno. I chose." if the implant was burned).
 6. The choice. Every road epilogue has a `charter` slot: what that future does to the Charter.
@@ -139,8 +139,7 @@ stop before a cut one. One past the Narrows keeps its chart. `tests/shortreach.t
 ## The Marches, six stops (22 November 2026)
 
 Low Harrow, the Marches' breather, is cut. What it held now plays at the Long Walk, after Ma Saffi: the scored Drift hull, Wren's
-rule about full tanks, and Hester's call for the missing shift at Gannet. The watcher (`thren_curious`, the leg's Thren meeting) is
-the Long Walk's scene. Wake's way-out line counts six jumps to the Rift. A road save not yet past the Marches gets the new chart on
+rule about full tanks, and Hester's call for the missing shift at Gannet. Wake's way-out line counts six jumps to the Rift. A road save not yet past the Marches gets the new chart on
 load (save v27, `shortMarches` in `meta/save.ts`, on the same `shortLeg` as v25): at Low Harrow it comes back at the Long Walk.
 `tests/roadnames.test.ts`.
 
@@ -259,3 +258,14 @@ It still needs human playtests.
   the police: the first pursuer comes after 150 s, and the heat rises slowly.
 - A wreck on the road leaves Juno in the same system, set going again with the
   gate a little off her heading (`SortieDef.off`). No chart, no tow.
+
+## The Long Walk, an escort (22 November 2026)
+
+The Marches' set piece (living-world plan). Five Drift hulls wait about 1 km ahead on arrival, beside Ma Saffi's ship. Her card is the
+stop's one card; its one answer, "Take them, walk with us", files the manifests and starts the scene `drift_walk`
+(`content/situations.ts`): an `escort` goal (`sim/mission.ts`). The fleet walks to the Jump Gate and waits when she is more than
+190 units behind; two waves of Kellern pickets (12 s and 42 s) chew any hull they get near; the HUD reads "Hulls n of 5". After
+75 s the Drift make the lane: pay by hulls left, `drift_walked`, and `drift_walk_whole` or `drift_walk_cost` (Wren's line). Every
+hull lost is `drift_scattered`. Hester's Gannet call follows the walk. The Drift come to the Threshold for `drift_walked` too. Drift
+hulls are civilians on the target card (`Alien.civil`). A pilot that only keeps up loses about two hulls. `tests/driftwalk.test.ts`.
+

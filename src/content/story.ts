@@ -498,10 +498,11 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_drift', handover: true, kind: 'trade', caller: 'miners',
     from: 'Ma Saffi · the Long Walk', title: 'The ships we lost',
-    text: '“We kept the manifests of every ship turned away that night. Twenty-three. Our dead belong in your file. Copy them, or don’t, but read them.”',
-    cargo: 'Drift fleet · forty hulls, lashed together',
+    text: '“We kept the manifests of every ship turned away that night. Twenty-three. Our dead belong in your file. Kellern wants us off this lane. Walk with us.”',
+    cargo: 'Drift fleet · five hulls, walking to the gate',
     choices: [
-      { id: 'swap', label: 'Take the manifests', tone: 'help', hint: 'They go in the file, and the Drift stand with you.', win: { text: 'Manifests in the file · Wren will remember you', flag: ['frag_manifests', 'pact_drift', 'wren_trust'], hunt: -0.5 } },
+      // the Long Walk's set piece (content/situations.ts drift_walk): taking them walks the fleet to the Jump Gate
+      { id: 'swap', label: 'Take them, walk with us', tone: 'help', hint: 'They go in the file. Then see the Drift to the Jump Gate.', win: { text: 'Manifests in the file · the Drift move off', flag: ['frag_manifests', 'pact_drift', 'wren_trust'], hunt: -0.5 } },
     ],
   }),
   story({

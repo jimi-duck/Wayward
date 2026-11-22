@@ -11,25 +11,25 @@ as it can, and does not read. Pilot numbers, not playtests.
 
 | Strategy | Policy | Threshold | Minutes | Wrecks | Endings open | Dropped | Twice |
 |---|---|---|---|---|---|---|---|
-| torpedo+defence | run | yes | 170 | 0 | vanish | none | none |
-| torpedo+defence | run | yes | 181 | 0 | vanish | none | none |
-| torpedo+defence | bluff | yes | 174 | 0 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | bluff | yes | 186 | 1 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 190 | 1 | broadcast, unite, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 167 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | run | yes | 168 | 2 | vanish | none | none |
+| torpedo+defence | run | yes | 158 | 0 | vanish | none | none |
+| torpedo+defence | bluff | yes | 154 | 0 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 166 | 0 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 190 | 3 | broadcast, unite, sell, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 160 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
 
 ## Leg by leg
 
 | Leg | Minutes (mean) | Wrecks (mean) |
 |---|---|---|
-| The Reach | 25 | 0.0 |
-| The Marches | 18 | 0.0 |
-| The Salvage Belt | 22 | 0.2 |
-| The Drift Deep | 21 | 0.0 |
-| The Breaker Yards | 22 | 0.0 |
-| The Free Ports | 21 | 0.0 |
-| The Hollows | 29 | 0.2 |
-| The Last Lanes | 20 | 0.0 |
+| The Reach | 22 | 0.3 |
+| The Marches | 18 | 0.2 |
+| The Salvage Belt | 23 | 0.3 |
+| The Drift Deep | 20 | 0.0 |
+| The Breaker Yards | 21 | 0.0 |
+| The Free Ports | 20 | 0.0 |
+| The Hollows | 24 | 0.0 |
+| The Last Lanes | 18 | 0.0 |
 
 ## Jobs on the road
 
@@ -39,7 +39,6 @@ never chases a goal, so this shows what is reachable, not how often a player win
 | Job | Won | Lost | Declined | Ignored |
 |---|---|---|---|---|
 | nothing_to_declare | 2 | 2 | 2 | 0 |
-| follow_cyrite | 2 | 2 | 2 | 0 |
 | pirate_toll | 0 | 2 | 4 | 0 |
 | lifeboat_wake | 4 | 0 | 2 | 0 |
 | keep_distance | 2 | 2 | 2 | 0 |
@@ -52,21 +51,25 @@ never chases a goal, so this shows what is reachable, not how often a player win
 | the_witness | 4 | 0 | 2 | 0 |
 | long_walk | 0 | 4 | 2 | 0 |
 | finders_keepers | 0 | 4 | 2 | 0 |
-| something_dark | 3 | 1 | 2 | 0 |
+| something_dark | 4 | 0 | 2 | 0 |
 | missing_payroll | 2 | 2 | 2 | 0 |
-| last_shift | 3 | 1 | 2 | 0 |
+| last_shift | 4 | 0 | 2 | 0 |
 | tarik_bend | 2 | 2 | 2 | 0 |
 | cradle_crew | 2 | 2 | 2 | 0 |
 | needle | 0 | 4 | 2 | 0 |
 | drift_cache | 0 | 4 | 2 | 0 |
 | voice_wire | 0 | 4 | 2 | 0 |
-| kill_zone | 0 | 2 | 4 | 0 |
+| kill_zone | 1 | 1 | 4 | 0 |
 | dead_drop | 0 | 4 | 2 | 0 |
 | be_bait | 4 | 0 | 2 | 0 |
 | lose_prefect | 0 | 4 | 2 | 0 |
 | recovery_order | 2 | 2 | 2 | 0 |
 | sables_crossing | 0 | 0 | 0 | 0 |
 | ring_centre | 4 | 0 | 2 | 0 |
+
+## Notes, 22 November 2026 (a shorter road, 58 stops)
+
+After the living-world cuts (#584 to #587: the Reach in five stops, the Marches in six, four Thren breathers folded, no port or chance cards on the road): all six runs reached the Threshold, in 154 to 190 minutes (about 10 minutes less than before), with 5 wrecks in all (3 in one fight run). Nothing dropped or played twice. `follow_cyrite` is off the road. No balance changes.
 
 ## Notes, 17 November 2026 (make the run bite, first pass)
 

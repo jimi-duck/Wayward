@@ -43,7 +43,7 @@ const hash = (s: string): number => { let h = 2166136261; for (let i = 0; i < s.
 
 const JOB_IDS = new Set(MISSIONS.map((m) => m.id));
 /** Goals that ask for effort: a fight, a chase, a hazard, a stealth run, a haul. The rest are a call, a reach, a follow, a watch. */
-export const HEAVY_GOALS: ReadonlySet<string> = new Set(['destroy', 'strike', 'defend', 'race', 'survey', 'sneak', 'recover']);
+export const HEAVY_GOALS: ReadonlySet<string> = new Set(['destroy', 'strike', 'defend', 'race', 'survey', 'sneak', 'recover', 'escort']);
 /** How much likelier-not a heavy job is straight after one (the column before) or with one a column between. */
 const TIRED_ONE = 0.15;
 const TIRED_TWO = 0.5;

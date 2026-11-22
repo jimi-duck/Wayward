@@ -50,18 +50,23 @@ const MARCHES_ROWS: Row[] = [
   accounts('mt_acc', 'm_tamsin', 'wanted'),
   objective('mt_gate', 'm_tamsin', leave(), 'Jump to the Long Walk'),
 
-  // 4 · the Long Walk (turn): Ma Saffi and the manifests; Wren after any answer
-  notice('walk_notice', 'm_walk', arrive(), 'teal', 'The Long Walk', 'Drift fleet · forty hulls, lashed together'),
+  // 4 · the Long Walk (turn, the Marches' set piece): Ma Saffi's card hands over the manifests, then she walks the Drift to the
+  // Jump Gate under Kellern guns (content/situations.ts drift_walk). Wren talks on the way; the count comes back after
+  notice('walk_notice', 'm_walk', arrive(), 'teal', 'The Long Walk', 'Drift fleet · five hulls, waiting'),
   objective('walk_objective', 'm_walk', arrive(), 'The Long Walk · the Drift kept the names'),
   main('walk_saffi', 'm_walk', { on: 'place', place: 'mw_saffi' }, 'story_drift'),
   radio('walk_wren', 'm_walk', after('walk_saffi', 2), 'Wren Saffi', 'miners', '“Ninefold, line nine. My parents. Gran reads the list every year. I just fly.”'),
   // the lifeboat's echo
   radio('walk_boat', 'm_walk', after('walk_wren', 4), 'Ma Saffi', 'miners', '“Anka’s boat came through. Forty-one names. You kept them.”', { if: { has: ['lifeboat_saved'] } }),
-  // what was Low Harrow's (cut 22 November 2026): a scored hull in the fleet's wake, Wren's rule about full tanks, Hester's call for Gannet
-  notice('walk_hull', 'm_walk', after('walk_saffi', 12), 'white', 'Drift hull', 'scored in long parallel lines', { wall: 'saw_scored' }),
+  // what was Low Harrow's (cut 22 November 2026): a scored hull in the fleet, Wren's rule about full tanks, Hester's call for Gannet
+  notice('walk_hull', 'm_walk', after('walk_saffi', 30), 'white', 'Drift hull', 'scored in long parallel lines', { wall: 'saw_scored' }),
   radio('walk_rule', 'm_walk', after('walk_hull', 2), 'Wren Saffi', 'miners', '“Don’t run a lane full. They follow the full ones. Everybody knows that.”', { if: { full: false } }),
   radio('walk_rule_full', 'm_walk', after('walk_hull', 2), 'Wren Saffi', 'miners', '“You’re running heavy. I’d vent some, if I were you. Gran would just stare.”', { if: { full: true } }),
-  radio('walk_hester', 'm_walk', after('walk_hull', 8), HESTER[0], HESTER[1], '“Hester again. A shift went quiet at Gannet. Nine people. I’ve got no ships. You’ve got one.”'),
+  // the count, said once the walk is over: a hull lost stays lost
+  radio('walk_cost', 'm_walk', flag('drift_walk_cost'), 'Wren Saffi', 'miners', '“Not all of us. Gran will read more names this year.”'),
+  radio('walk_lost', 'm_walk', flag('drift_scattered'), 'Wren Saffi', 'miners', '“They broke us up. We’ll find each other. We always do.”'),
+  radio('walk_hester', 'm_walk', flag('drift_walked'), HESTER[0], HESTER[1], '“Hester again. A shift went quiet at Gannet. Nine people. I’ve got no ships. You’ve got one.”'),
+  radio('walk_hester_lost', 'm_walk', flag('drift_scattered'), HESTER[0], HESTER[1], '“Hester again. A shift went quiet at Gannet. Nine people. I’ve got no ships. You’ve got one.”'),
   objective('walk_gate', 'm_walk', leave(), 'Jump to Gannet Reach'),
 
   // 6 · Gannet Reach (pressure): Oduya's rigs (if the moot stands with her), then Hester's missing shift
