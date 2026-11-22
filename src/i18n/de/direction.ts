@@ -183,8 +183,6 @@ export const DIRECTION: Record<string, string> = {
   'Six motes and a web layer. The rig keeps everything, if you hold.': 'Sechs Funken und ein Netzleger. Die Insel behält alles, wenn du hältst.',
   'The knot comes on': 'Der Knoten kommt näher',
   // continuity (Phase 4)
-  '“Hester, rig boss. My prospector says you robbed her. I still need a ship. Branford’s toll, we can’t pay.”': '„Hester, Rig-Chefin. Mein Prospektor sagt, du hast ihn ausgeraubt. Ich brauch trotzdem ein Schiff. Den Zoll bei Branford können wir nicht zahlen.“',
-  '“Hester, rig boss. Heard you’re flying alone. There’s a toll on our lane at Branford we can’t pay.”': '„Hester, Rig-Chefin. Hab gehört, du fliegst allein. Auf unserer Lane bei Branford liegt ein Zoll, den wir nicht zahlen können.“',
   // Thane's hearing (content/hearing.ts, content/script/hearing.ts)
   'Commissioner Aurel Thane · Office of Public Record': 'Kommissar Aurel Thane · Amt für Öffentliche Akten',
   'Thane will hear the file, but not from her': 'Thane hört die Akte an, aber nicht von ihr',

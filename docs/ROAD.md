@@ -103,7 +103,24 @@ Mining draws them ([STORY_DIRECTION.md](STORY_DIRECTION.md) §3), and each leg m
 
 At Gilt Market, Commissioner Aurel Thane hears Juno's file (`content/hearing.ts`, a main card). Her own evidence is "not admissible": Bonded testimony never is. The answers are the Chartered voices she has. Brook (shown with `brook_free`) testifies and loses his Charter (`brook_struck`, and the Broadcast ending remembers). Lucan's signature (shown with `clue_order_sig`) is entered and sealed (`hearing_sealed`). Or she walks out, and Thane rules the file a forgery (`hearing_forgery`). The Office's broadcasts answer each one. `tests/hearing.test.ts`.
 
-Continuity: Hester's opener at Vesta now remembers the Hollis prospector (helped, robbed or never met), and the archive's last line points at Halden's Warden families, not at relays.
+Continuity: Hester's opener now plays as Juno arrives at Miners' Gap, her crews' lane, and the archive's last line points at Halden's Warden families, not at relays.
+
+## The Reach, five stops (22 November 2026)
+
+The living-world plan (owner, 21 November 2026: too much distance and fluff) cuts each leg's filler. The Reach is the first: Hollis
+(work) and Vesta (breather) are gone, and two names now say what the stop is. Marlow, Kellern's accounts station, is Tallyhouse;
+Branford, the Gutter-tolled lane Hester's crews haul through, is Miners' Gap. Script keys stay (`marlow`, `branford`).
+
+| Stop | What it is now |
+|---|---|
+| Northfold | The quiet lane, and the ghost: it comes after 8 s of quiet sky and closes 25 s later (was Hollis, on the tank) |
+| Halden's Reach | Ilse and the order, as before |
+| Tallyhouse | Brook and the books; Ilse's message buoy waits here if she never heard the order (was Vesta) |
+| Miners' Gap | Hester's opener on arrival, then her toll job (`follow_cyrite`, the prospector, is no longer on the road) |
+| Copperline | Brook taken, as before |
+
+A road save made inside the old Reach comes back on the new one (save v25, `shortReach` in `meta/save.ts`): where it stood, or at the
+stop before a cut one. One past the Narrows keeps its chart. `tests/shortreach.test.ts`.
 
 ## The Belt chase
 
@@ -186,7 +203,7 @@ Script rows marked `urgent` play during the fight. `npm run pilot:narrows`
 flies the scene alone on a starter fit (8 seeds a policy, 13 November 2026):
 through 6, 7 and 7 of 8 by the fight, bluff and run policies, about 5 to 6
 minutes, against 7 of 8 for each on the old scene with the same fit. Pilot
-numbers, not playtests. The ghost at Hollis (`sim/ghost.ts`) is a
+numbers, not playtests. The ghost at Northfold (`sim/ghost.ts`) is a
 passive contact outside `aliens`: it holds, matches speed, and is never
 explained.
 

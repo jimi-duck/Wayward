@@ -47,7 +47,7 @@ export const KEEP = new Set<string>([
   'Halden’s Reach', 'Tollmere', 'Vesta', 'Ashgrove', 'Corrin Deep', 'Marlow', 'Sallow', 'Pell', 'Northfold', 'Dunmore', 'Kettle', 'Branford',
   'Oriel', 'Wick', 'Lantern', 'Hask', 'Sable Run', 'Greyhollow', 'Imbrie', 'Coldwater', 'Tamsin’s Rest', 'Hollis', 'Fallow', 'Quarry Nine',
   'Hester', 'Adam Brook', 'Ilse Marrow', 'Oren Lisle', 'Ines Duarte', 'Cerro', 'Kellern Fuel Dock', 'Kellern Claim Office', 'Frontier Supply Depot', 'Kellern Audit Dock', 'Dust Traders Exchange', 'Guild Hall', 'The Bent Nail',
-  'Copperline', 'Salvage Barge', 'Holdfast Stores', 'The Claim Hall', 'Free Dock', 'Claim Shack', 'Kellern Mining',
+  'Copperline', 'Tallyhouse', 'Miners’ Gap', 'Salvage Barge', 'Holdfast Stores', 'The Claim Hall', 'Free Dock', 'Claim Shack', 'Kellern Mining',
   // the made-up names a region deals (content/regions.ts NAME_PEOPLE, NAME_PLACES)
   'Hadley', 'Morgan', 'Kowalski', 'Amara', 'Okafor', 'Jansen', 'Ibarra', 'Lindqvist', 'Castell', 'Nakamura', 'Brandt', 'Quill',
   '’s Rest', 'Deep', 'Yard', 'Station', 'Reach', 'Mere', 'Fell', 'Watch',

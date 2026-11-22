@@ -144,10 +144,10 @@ describe('Northfold plays from data', () => {
     const before = new Script(SCRIPT, 'marlow', new Set());
     expect(before.mainsLeft(new Set())).toBe(true);
     expect(before.hasMains()).toBe(true);
-    expect(before.leaveLine()).toBe('Jump to Vesta');
+    expect(before.leaveLine()).toBe('Jump to Miners’ Gap');
     const after = new Script(SCRIPT, 'marlow', new Set(['ml_ledger', 'ml_wall']));
-    expect(after.mainsLeft(new Set())).toBe(false);
-    expect(new Script(SCRIPT, 'hollis', new Set()).hasMains()).toBe(false);
+    expect(after.mainsLeft(new Set(['frag_order']))).toBe(false);
+    expect(new Script(SCRIPT, 'northfold', new Set()).hasMains()).toBe(false);
   });
 
   it('turns a stop’s line into the way out once its beat has played', () => {

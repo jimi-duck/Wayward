@@ -45,7 +45,7 @@ describe('the Reach, from the pilot flights', () => {
   });
 
   it('no Reach beat comes back as a missed one past the Narrows', () => {
-    const j = at(9);
+    const j = at(7);
     const far = j.chart.systems.find((s) => regionOf(s) === 1 && s.kind !== 'gate');
     expect(far).toBeDefined();
     j.at = far!.id;
@@ -56,11 +56,11 @@ describe('the Reach, from the pilot flights', () => {
   });
 
   it('the Narrows makes no offer', () => {
-    expect(sortieDef(at(9)).nemesis.offer).toBeNull();
+    expect(sortieDef(at(7)).nemesis.offer).toBeNull();
   });
 
   it('the Narrows gate holds until the scene has played, then lets her go', () => {
-    const j = at(9);
+    const j = at(7);
     j.carry.fuel = 40;
     const w = new World(5, { mode: 'breakout', sortie: { ...quiet(j), blockade: false }, carry: j.carry });
     let jumpedAt = -1;
@@ -79,7 +79,7 @@ describe('the Reach, from the pilot flights', () => {
 
 describe('arriving in a system on the road', () => {
   it('says the scan first, and pins a job only once its call has rung', () => {
-    const k = at(4);
+    const k = at(5);
     const def = sortieDef(k);
     const v = new World(7, { mode: 'breakout', sortie: { ...def, pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, place: null, thren: 0, calloway: Infinity }, carry: k.carry });
     const order: string[] = [];
@@ -96,7 +96,7 @@ describe('arriving in a system on the road', () => {
       if (open && open.def.id !== v.stage?.def.card) v.answer(open.def.choices[0]!.id);
       else if (open) v.answer(open.def.choices[0]!.id);
     }
-    expect(v.stage?.def.id).toBe('follow_cyrite');
+    expect(v.stage?.def.id).toBe('pirate_toll');
     expect(order.slice(0, 2)).toEqual(['scan', 'call']);
     expect(order.indexOf('marker')).toBeGreaterThan(order.indexOf('call'));
   });
@@ -104,7 +104,7 @@ describe('arriving in a system on the road', () => {
 
 describe('a road gate after the Warden key', () => {
   it('says the gate is resetting while it holds, then that it is open', () => {
-    const j = at(17);
+    const j = at(15);
     j.carry.fuel = 40;
     const w = new World(5, { mode: 'breakout', sortie: { ...quiet(j), blockade: false }, carry: j.carry });
     const notices: string[] = [];

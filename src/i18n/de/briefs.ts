@@ -5,16 +5,12 @@ export const BRIEFS: Record<string, string> = {
     'Das Archiv hat einen ruhigen Weg genannt, und das ist er. Alle anderen Ausgänge werden überwacht, und dein Rumpf ist als gestohlen gemeldet. Noch jagt dich niemand.',
   'Old Lane Wardens spend their last years in this hospice ring. One of them ran the Narrows relay the night the lanes closed, and kept the paper.':
     'Alte Lane Wardens verbringen ihre letzten Jahre in diesem Hospizring. Eine von ihnen führte in der Nacht der Schließung das Narrows-Relais und hat das Papier behalten.',
-  'A Kellern claim with rich rock and nobody watching. Mine here before the long run on. Something on the scope is keeping pace with you.':
-    'Ein Kellern-Claim mit reichem Gestein, und niemand schaut zu. Bau hier ab, bevor es weit weitergeht. Etwas auf dem Scope hält mit dir Schritt.',
-  'A Kellern accounts station. One clerk here keeps the company’s real books, the ones that show where the Scatter’s Krail actually went.':
-    'Eine Kellern-Buchhaltungsstation. Ein Angestellter hier führt die echten Bücher der Firma, die zeigen, wohin das Krail der Scatter wirklich ging.',
-  'A quiet system with no patrols, and nobody hunts you here. Rest as long as you like. A rig boss called Hester wants a word about a toll.':
-    'Ein ruhiges System ohne Patrouillen, hier jagt dich niemand. Ruh dich aus, so lange du willst. Die Rigchefin Hester will mit dir über eine Maut reden.',
-  'Pirates have put a toll beacon on a mining crew’s lane, and the Net is spreading behind you. Staying long is a risk.':
-    'Piraten haben ein Mautfeuer auf die Route einer Minencrew gesetzt, und das Net breitet sich hinter dir aus. Lange zu bleiben ist riskant.',
-  'Kellern’s last port before the Narrows. Fit what you can. Custody has traced the company’s real books to Adam Brook, the clerk at Marlow.':
-    'Kellerns letzter Hafen vor den Narrows. Rüste auf, was geht. Die Custody hat die echten Bücher der Firma zu Adam Brook zurückverfolgt, dem Angestellten von Marlow.',
+  'Kellern’s accounts station, where every claim in the Reach is tallied. One clerk here keeps the real books, the ones that show where the Scatter’s Krail went.':
+    'Kellerns Buchhaltungsstation, hier wird jeder Claim der Reach verbucht. Ein Angestellter führt die echten Bücher, die zeigen, wohin das Krail der Scatter ging.',
+  'The lane Hester’s crews haul through. Pirates have put a toll beacon on it, and the Net is spreading behind you. Staying long is a risk.':
+    'Die Route, über die Hesters Crews schleppen. Piraten haben ein Mautfeuer darauf gesetzt, und das Net breitet sich hinter dir aus. Lange zu bleiben ist riskant.',
+  'Kellern’s last port before the Narrows. Fit what you can. Custody has traced the company’s real books to Adam Brook, the clerk at Tallyhouse.':
+    'Kellerns letzter Hafen vor den Narrows. Rüste auf, was geht. Die Custody hat die echten Bücher der Firma zu Adam Brook zurückverfolgt, dem Angestellten in Tallyhouse.',
   'You are through the Narrows and into the Scatter, cut off for seventy years. Ada’s note sends you on. Raiders work this lane, and a lifeboat is calling.':
     'Du bist durch die Narrows und in der Scatter, seit siebzig Jahren abgeschnitten. Adas Notiz schickt dich weiter. Räuber lauern auf dieser Route, und ein Rettungsboot ruft um Hilfe.',
   'A Holdfast port that lost kin the night the lanes closed. Its moot is meeting, and the file you carry is what they want to hear.':

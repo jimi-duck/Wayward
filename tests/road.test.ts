@@ -36,7 +36,7 @@ describe('the Reach on the road', () => {
       if (r.name) expect(s.name).toBe(r.name);
       if (r.port !== undefined) expect(s.port?.name ?? null).toBe(r.port);
     });
-    expect(line.filter((s) => s.quiet).map((s) => s.name)).toEqual(['Vesta']);
+    expect(line.filter((s) => s.quiet).map((s) => s.name)).toEqual([]);
   });
 
   it('keeps names unique and lays the same stops on every seed, with different skies', () => {
@@ -92,20 +92,20 @@ describe('the hunch on the road', () => {
 
   it('is still read from the trail on the long journey', () => {
     const e = makeChart(11, 'eight');
-    const t = [e.home, ...e.systems.filter((s) => s.col >= 1 && s.col <= 9).sort((a, b) => a.col - b.col).filter((s, i, all) => all.findIndex((x) => x.col === s.col) === i).map((s) => s.id)];
+    const t = [e.home, ...e.systems.filter((s) => s.col >= 1 && s.col <= 7).sort((a, b) => a.col - b.col).filter((s, i, all) => all.findIndex((x) => x.col === s.col) === i).map((s) => s.id)];
     expect(hunchOf(e, t, [RELAY_BROADCAST])).toEqual(hunchOf(e, t));
   });
 });
 
 describe('saves', () => {
-  it('is version 24, and an older journey loads on its own chart with an empty queue', () => {
-    expect(VERSION).toBe(24);
+  it('is version 25, and an older journey loads on its own chart with an empty queue', () => {
+    expect(VERSION).toBe(25);
     const j = newJourney(7, false, 'eight');
     const old = JSON.parse(JSON.stringify(j));
     old.version = 20;
     delete old.carry.pending;
     const back = migrate(old);
-    expect(back?.version).toBe(24);
+    expect(back?.version).toBe(25);
     expect(back?.chart.regionSet).toBe('eight');
     expect(back?.carry.pending).toEqual([]);
   });

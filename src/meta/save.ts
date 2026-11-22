@@ -102,6 +102,9 @@ export function migrate(raw: unknown): Journey | null {
   // 23 → 24: the job rework (thirty road jobs, a thirteen-step spine): the stops not yet reached get their new jobs, and the two
   // retired jobs' flags carry over to the ones that took their places
   if (j.version < 24) reworkJobs(j as Journey);
+  // 24 → 25: the Reach is five stops, not seven (Hollis and Vesta cut; Marlow is Tallyhouse, Branford is Miners' Gap). A road journey
+  // still in the Reach gets the new Reach, standing where it stood or at the stop before a cut one
+  if (j.version < 25) shortReach(j as Journey);
   j.version = VERSION;
   return j as Journey;
 }
@@ -329,6 +332,50 @@ function authorRoad(j: Journey): void {
   fresh.seenNet = [...c.seenNet];
   fresh.seenDay = c.seenDay;
   j.chart = fresh;
+}
+
+/** v25: where a stop of the old Reach went: renamed, or cut and folded into the stop before it. */
+const REACH_MOVED: Record<string, string> = { Marlow: 'Tallyhouse', Branford: 'Miners’ Gap', Hollis: 'Halden’s Reach', Vesta: 'Tallyhouse' };
+
+/**
+ * v25: a road journey in the Reach as it was (seven stops) gets the five-stop Reach dealt from the same seed. Each system it knows is
+ * matched by name (the audit dock's system by its column), a cut stop's to the stop before it, and the pursuit's place on the trail
+ * is kept as near as it can be. One already past the Narrows keeps its chart: the Reach is behind it.
+ */
+function shortReach(j: Journey): void {
+  const c = j.chart;
+  if (c.regionSet !== 'road' || roadRegion(c, 0)) return;
+  const reach = c.systems.filter((s) => s.kind !== 'home' && regionOf(s) === 0);
+  const inReach = (id: string) => id === c.home || reach.some((s) => s.id === id);
+  if (!inReach(j.at)) return;
+  const fresh = newJourney(j.seed ?? 0, false, 'road', j.survival).chart;
+  if (fresh.home !== c.home || !roadRegion(fresh, 0)) return;
+  const freshReach = fresh.systems.filter((s) => s.kind !== 'home' && regionOf(s) === 0);
+  const minCol = (xs: { col: number }[]) => Math.min(...xs.map((s) => s.col));
+  const to = (id: string): string | null => {
+    if (id === c.home) return fresh.home;
+    const old = reach.find((s) => s.id === id);
+    if (!old) return null;
+    if (old.col === minCol(reach)) return freshReach.find((s) => s.col === minCol(freshReach))?.id ?? null;
+    const name = REACH_MOVED[old.name] ?? old.name;
+    return freshReach.find((s) => s.name === name)?.id ?? null;
+  };
+  const at = to(j.at);
+  if (!at) return;
+  const trail: string[] = [];
+  for (const id of j.trail) { const n = to(id); if (n && trail[trail.length - 1] !== n) trail.push(n); }
+  if (trail[trail.length - 1] !== at) trail.push(at);
+  const seen = (ids: string[]) => [...new Set(ids.map(to).filter((x): x is string => !!x))];
+  fresh.visited = seen(c.visited);
+  fresh.seenNet = seen(c.seenNet);
+  fresh.seenDay = c.seenDay;
+  j.chart = fresh;
+  j.at = at;
+  j.dest = null;
+  j.trail = trail;
+  const last = trail.length - 1;
+  j.hunt.idx = Math.min(j.hunt.idx, last);
+  j.hunt.seenIdx = Math.min(j.hunt.seenIdx, last);
 }
 
 /** The jobs retired in v24, and what took their flags over (Two Captains was the Account's last step; Recovery Order is now). */

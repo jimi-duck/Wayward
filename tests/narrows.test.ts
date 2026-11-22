@@ -14,7 +14,7 @@ const NO_INPUT = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, r
 /** A road journey standing at the Narrows, the gate out of the Reach. */
 function narrows(seed = 5) {
   const j = newJourney(seed, false, 'road');
-  const line = j.chart.systems.filter((s) => s.col >= 1 && s.col <= 9).sort((a, b) => a.col - b.col);
+  const line = j.chart.systems.filter((s) => s.col >= 1 && s.col <= 7).sort((a, b) => a.col - b.col);
   j.trail = [j.chart.home, ...line.map((s) => s.id)];
   j.at = line[line.length - 1]!.id;
   j.status = 'sortie';

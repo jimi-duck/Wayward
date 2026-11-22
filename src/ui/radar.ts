@@ -281,7 +281,7 @@ export class Radar {
       g.restore();
       if (a.id === target && !out) this.bracket(g, x, y, 6 * dpr, dpr, INK.red);
     }
-    // the contact at Hollis (sim/ghost.ts): a faint white ring, never a hull
+    // the contact at Northfold (sim/ghost.ts): a faint white ring, never a hull
     if (world.ghost) {
       const [x, y, out] = to(world.ghost.x, world.ghost.z);
       g.strokeStyle = rgba(RGB.white, out ? 0.3 : 0.55); g.lineWidth = dpr;

@@ -25,13 +25,20 @@ export const REACH: Row[] = [
 
   // ── Stop 1 · Northfold (landfall) ──
   notice('nf_notice', 'northfold', { on: 'arrive' }, 'teal', 'Northfold', 'Kellern space, quiet crossing'),
-  objective('nf_objective', 'northfold', { on: 'arrive' }, 'Next: Halden’s Reach · find the Warden’s record', 'The Narrows · 7 jumps'),
+  objective('nf_objective', 'northfold', { on: 'arrive' }, 'Next: Halden’s Reach · find the Warden’s record', 'The Narrows · 5 jumps'),
   sam('nf_sam_1', 'northfold', { on: 'free' }, '“Every lane out of here is watched but one. Whoever left you that message picked a quiet one.”'),
   sam('nf_sam_2', 'northfold', { on: 'after', row: 'nf_sam_1' }, '“My signal won’t reach past the Narrows. Make the most of me while you can.”'),
   // the Quiet Line's first job, at the quiet landfall so Halden is the Warden's alone (owner, 6 November 2026) (content/missions.ts nothing_to_declare): Owen Pike answers by what the player did; flags from sim/stage.ts
   pike('hr_pike_won', 'job_nothing_to_declare_won', '“Medicine through, and nobody saw you. Good. I’ll call again.”', { not: ['job_nothing_to_declare_sell'] }),
   pike('hr_pike_sold', 'job_nothing_to_declare_sell', '“Custody paid you thirty-five. The hospice paid the rest.”'),
   pike('hr_pike_no', 'job_nothing_to_declare_declined', '“No offence taken. The Line’s patient.”'),
+  // the ghost (sim/ghost.ts): the quiet lane is not quite empty. The flag comes with the contact; the Wall is set the moment it triggers,
+  // so a jump before Sam speaks still logs it
+  notice('nf_ghost', 'northfold', { on: 'flag', flag: 'ghost_here' }, 'white', 'UNKNOWN CONTACT', '4.2 km · holding', { wall: 'clue_ghost' }),
+  sam('nf_sam_g1', 'northfold', { on: 'after', row: 'nf_ghost' }, '“Ghost on the scope. Old relays throw them.”'),
+  sam('nf_sam_g2', 'northfold', { on: 'after', row: 'nf_sam_g1' }, '“Probably.”'),
+  notice('nf_ghost_2', 'northfold', { on: 'flag', flag: 'ghost_close' }, 'white', 'UNKNOWN CONTACT', '3.1 km'),
+  sam('nf_sam_g3', 'northfold', { on: 'after', row: 'nf_ghost_2' }, '“It’s closer. I don’t like that.”'),
   objective('nf_gate', 'northfold', { on: 'leave' }, 'Jump to Halden’s Reach'),
 
   // ── Stop 2 · Halden's Reach (hub) ──
@@ -46,24 +53,11 @@ export const REACH: Row[] = [
   sam('hr_paper', 'halden', { on: 'place', place: 'hr_paper' }, '“Paper. Nobody’s held any in years. Keep it dry, Juno.”', { main: true }),
   card('hr_order', '*', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] }, holdsJob: true }),
   card('hr_hand', '*', { on: 'flag', flag: 'clue_order_sig' }, 'story_handwriting', { if: { not: ['ada_named'] }, holdsJob: true }),
-  objective('hr_gate', 'halden', { on: 'leave' }, 'Jump to Hollis'),
+  objective('hr_gate', 'halden', { on: 'leave' }, 'Jump to Tallyhouse'),
 
-  // ── Stop 3 · Hollis (work): the ghost and the job's thread lines follow ──
-  notice('ho_notice', 'hollis', { on: 'arrive', delay: 2 }, 'teal', 'Hollis', 'mining claim, rich rock'),
-  // Hester's crews, step 1: the prospector's parting line
-  { id: 'ho_prospector', stop: 'hollis', if: { not: ['job_follow_cyrite_rob'] }, on: { on: 'flag', flag: 'job_follow_cyrite_won' }, do: { radio: { from: 'The prospector', caller: 'frontier', text: '“Juno Aster, isn’t it? I’ll tell every claim office who kept the Gutter off me.”' } } },
-  { id: 'ho_robbed', stop: 'hollis', on: { on: 'flag', flag: 'job_follow_cyrite_rob' }, do: { radio: { from: 'The prospector', caller: 'frontier', text: '“Hester will hear about this. Every rig in the Reach will.”' } } },
-  // the ghost (sim/ghost.ts): the flag comes with the contact; the Wall is set the moment it triggers, so a jump before Sam speaks still logs it
-  notice('ho_ghost', 'hollis', { on: 'flag', flag: 'ghost_here' }, 'white', 'UNKNOWN CONTACT', '4.2 km · holding', { wall: 'clue_ghost' }),
-  sam('ho_sam_1', 'hollis', { on: 'after', row: 'ho_ghost' }, '“Ghost on the scope. Old rigs throw them.”'),
-  sam('ho_sam_2', 'hollis', { on: 'after', row: 'ho_sam_1' }, '“Probably.”'),
-  notice('ho_ghost_2', 'hollis', { on: 'flag', flag: 'ghost_close' }, 'white', 'UNKNOWN CONTACT', '3.1 km'),
-  sam('ho_sam_3', 'hollis', { on: 'after', row: 'ho_ghost_2' }, '“It’s closer. I don’t like that.”'),
-  objective('ho_gate', 'hollis', { on: 'leave' }, 'Jump to Marlow'),
-
-  // ── Stop 4 · Marlow (turn) ──
-  notice('ml_notice', 'marlow', { on: 'arrive', delay: 2 }, 'teal', 'Marlow', 'Kellern accounts station'),
-  objective('ml_objective', 'marlow', { on: 'arrive', delay: 2 }, 'Marlow · someone here keeps the real books'),
+  // ── Stop 3 · Tallyhouse (turn) ──
+  notice('ml_notice', 'marlow', { on: 'arrive', delay: 2 }, 'teal', 'Tallyhouse', 'Kellern accounts station'),
+  objective('ml_objective', 'marlow', { on: 'arrive', delay: 2 }, 'Tallyhouse · someone here keeps the real books'),
   // Brook's shuttle idles off the station (content/script/places.ts): alongside, he offers the books; the spike he leaves is taken aboard
   card('ml_ledger', 'marlow', { on: 'place', place: 'ml_shuttle' }, 'story_ledger', { main: true }),
   { id: 'ml_brook', stop: 'marlow', on: { on: 'flag', flag: 'frag_ledger' }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“The spike’s off my stern. If anyone asks, I was never here. They’ll ask.”' } } },
@@ -71,35 +65,25 @@ export const REACH: Row[] = [
   sam('ml_sam_1', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. again. On the order, and on the money.”', { if: { has: ['clue_order_sig'] } }),
   sam('ml_sam_2', 'marlow', { on: 'after', row: 'ml_sam_1' }, '“Whoever that is, they signed both.”'),
   sam('ml_sam_alt', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. means nothing to me. Remember it anyway.”', { if: { not: ['clue_order_sig'] } }),
-  objective('ml_gate', 'marlow', { on: 'leave' }, 'Jump to Vesta'),
+  // Juno never heard Ilse at Halden: her recording waits on a message buoy off the station, with the order and Ada's name
+  card('ml_ilse', 'marlow', { on: 'place', place: 'ml_buoy' }, 'ilse_recording', { if: { not: ['frag_order'] }, main: true }),
+  sam('ml_ada', 'marlow', { on: 'after', row: 'ml_sam_2', delay: 4 }, '“Ada Aster. Dad said the Wardens were the Reach’s last honest people. So does Eben, at the yards.”', { if: { has: ['ada_named'] } }),
+  objective('ml_gate', 'marlow', { on: 'leave' }, 'Jump to Miners’ Gap'),
 
-  // ── Stop 5 · Vesta (breather): nothing runs on a timer; lines come as Juno settles ──
-  notice('ve_notice', 'vesta', { on: 'arrive' }, 'teal', 'Vesta', 'quiet crossing · no pursuit'),
-  objective('ve_objective', 'vesta', { on: 'arrive' }, 'Rest here, or keep moving', 'The Narrows · 3 jumps'),
-  notice('ve_ghost', 'vesta', { on: 'settle' }, 'teal', 'The Wall', 'unknown contact logged', { if: { has: ['clue_ghost'] } }),
-  // Juno never heard Ilse at Halden: her recording waits on a message buoy here, with the order and Ada's name
-  card('ve_ilse', 'vesta', { on: 'place', place: 've_buoy' }, 'ilse_recording', { if: { not: ['frag_order'] }, main: true }),
-  // Hester's opener remembers what Juno did for her prospector at Hollis (helped, robbed, or never met)
-  { id: 've_hester', stop: 'vesta', if: { has: ['job_follow_cyrite_won'], not: ['job_follow_cyrite_rob'] }, on: { on: 'settle' }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. My prospector says you’re decent. There’s a toll on our lane at Branford we can’t pay.”' } } },
-  { id: 've_hester_rob', stop: 'vesta', if: { has: ['job_follow_cyrite_rob'] }, on: { on: 'settle' }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. My prospector says you robbed her. I still need a ship. Branford’s toll, we can’t pay.”' } } },
-  { id: 've_hester_new', stop: 'vesta', if: { not: ['job_follow_cyrite_won', 'job_follow_cyrite_rob'] }, on: { on: 'settle' }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. Heard you’re flying alone. There’s a toll on our lane at Branford we can’t pay.”' } } },
-  sam('ve_sam', 'vesta', { on: 'settle' }, '“Ada Aster. Dad said the Wardens were the Reach’s last honest people. So does Eben, at the yards.”', { if: { has: ['ada_named'] } }),
-  // only if she stays: a flavour line, dropped if she jumps first
-  sam('ve_stay', 'vesta', { on: 'after', row: 've_sam', delay: 20 }, '“You don’t have to talk. I’ll just stay on the line a bit.”', { stale: 30 }),
-  objective('ve_gate', 'vesta', { on: 'leave' }, 'Jump to Branford'),
-
-  // ── Stop 6 · Branford (work under pressure) ──
-  notice('bf_notice', 'branford', { on: 'arrive', delay: 2 }, 'teal', 'Branford', 'contested lane'),
+  // ── Stop 4 · Miners’ Gap (work under pressure) ──
+  notice('bf_notice', 'branford', { on: 'arrive', delay: 2 }, 'teal', 'Miners’ Gap', 'contested lane · Hester’s crews'),
   notice('bf_net', 'branford', { on: 'arrive', delay: 4 }, 'amber', 'Net at Northfold'),
-  objective('bf_objective', 'branford', { on: 'arrive', delay: 2 }, 'Branford · the lane to Copperline', 'Toll beacon · on the scope'),
-  // Hester's crews, step 2: her three results (flags from sim/stage.ts)
-  hester('bf_hester_won', 'job_pirate_toll_won', '“That’s two. I’m writing your name down.”'),
+  objective('bf_objective', 'branford', { on: 'arrive', delay: 2 }, 'Miners’ Gap · the lane to Copperline', 'Toll beacon · on the scope'),
+  // Hester's opener: the beacon is on her crews' lane, and the job's call follows
+  { id: 'bf_hester', stop: 'branford', on: { on: 'arrive', delay: 6 }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. Heard you’re flying alone. That beacon’s on our lane, and we can’t pay its toll.”' } } },
+  // Hester's crews, step 1: her three results (flags from sim/stage.ts)
+  hester('bf_hester_won', 'job_pirate_toll_won', '“I owe you one. I’m writing your name down.”'),
   hester('bf_hester_lost', 'job_pirate_toll_lost', '“You tried. More than most.”'),
   hester('bf_hester_no', 'job_pirate_toll_declined', '“Understood. We’ll find another way. We always do.”'),
   sam('bf_sam', 'branford', { on: 'free' }, '“Net’s spreading behind you. Don’t stop long.”'),
   objective('bf_gate', 'branford', { on: 'leave' }, 'Jump to Copperline'),
 
-  // ── Stop 7 · Copperline (reckoning) ──
+  // ── Stop 5 · Copperline (reckoning) ──
   notice('cl_notice', 'copperline', { on: 'arrive', delay: 2 }, 'teal', 'Copperline', 'Kellern port · before the Narrows'),
   objective('cl_objective', 'copperline', { on: 'arrive', delay: 2 }, 'Copperline · refit before the Narrows'),
   sam('cl_sam', 'copperline', { on: 'free', after: 5 }, '“Last port before the Narrows. Fit what you can.”'),

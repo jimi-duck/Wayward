@@ -11,11 +11,11 @@ export const STORY_PLACES: StoryPlaceDef[] = [
   // Halden's Reach: Ilse's skiff off the hospice ring; she reads the order to her, then puts the paper out in a canister
   { id: 'hr_skiff', stop: 'halden', name: 'Ilse’s skiff', look: 'skiff', along: 0.17, off: -110, act: { hold: 6 }, r: 16, done: 'ilse_met', skip: ['frag_order'], verb: 'Hold alongside Ilse’s skiff' },
   { id: 'hr_paper', stop: 'halden', name: 'The order, on paper', look: 'canister', along: 0.19, off: -98, act: { pickup: true }, r: 3, done: 'order_aboard', show: 'frag_order', after: 'hr_canister', verb: 'Take the canister aboard' },
-  // Marlow: Brook's shuttle, idling off the accounts station; then the spike he leaves behind
+  // Tallyhouse: Brook's shuttle, idling off the accounts station; then the spike he leaves behind
   { id: 'ml_shuttle', stop: 'marlow', name: 'A clerk’s shuttle', look: 'skiff', along: 0.25, off: -117, act: { hold: 5 }, r: 16, done: 'brook_alongside', skip: ['frag_ledger'], verb: 'Hold alongside the clerk’s shuttle' },
   { id: 'ml_spike', stop: 'marlow', name: 'Brook’s data spike', look: 'canister', along: 0.28, off: -104, act: { pickup: true }, r: 3, done: 'spike_aboard', show: 'frag_ledger', after: 'ml_brook', verb: 'Take the data spike aboard' },
-  // Vesta: Ilse's message buoy, left where she knew Juno would rest (only if Juno never heard her at Halden)
-  { id: 've_buoy', stop: 'vesta', name: 'Ilse’s message buoy', look: 'buoy', along: 0.15, off: -91, act: { hold: 5 }, r: 14, done: 'buoy_read', skip: ['frag_order'], verb: 'Hold by Ilse’s message buoy' },
+  // Tallyhouse: Ilse's message buoy, left on Juno's way to the books (only if Juno never heard her at Halden)
+  { id: 'ml_buoy', stop: 'marlow', name: 'Ilse’s message buoy', look: 'buoy', along: 0.18, off: 96, act: { hold: 5 }, r: 14, done: 'buoy_read', skip: ['frag_order'], verb: 'Hold by Ilse’s message buoy' },
   // ── the road past the Narrows: each meeting happens at a hull she can see ──
   // The Long Walk: Ma Saffi's ship, the fleet's last, keeping the manifests
   { id: 'mw_saffi', stop: 'm_walk', name: 'Ma Saffi’s ship', look: 'ferry', along: 0.15, off: -110, act: { hold: 5 }, r: 18, done: 'saffi_alongside', skip: ['frag_manifests'], verb: 'Hold alongside Ma Saffi’s ship' },

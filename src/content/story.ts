@@ -387,7 +387,7 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    // Juno cut Ilse off at Halden's Reach: her recording carries the same document, and names Ada, to Vesta
+    // Juno cut Ilse off at Halden's Reach: her recording carries the same document, and names Ada, on a buoy at Tallyhouse
     id: 'ilse_recording', kind: 'rumour', caller: 'miners', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
     from: 'Ilse Marrow · recorded', title: 'The order',
     letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1']], sign: '— Authorised: L. C.' },
