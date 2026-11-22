@@ -1,5 +1,7 @@
 import { arrive } from './arrive';
 import { DESK } from '../sim/desk';
+import { lineSecs } from '../sim/floor';
+import { heard } from './heard';
 import type { Caller, Open } from '../sim/comms';
 import type { GameEvent } from '../sim/events';
 import { artOf, oddsWord } from './comms';
@@ -175,7 +177,8 @@ export class Radio {
     box.classList.remove('in');
     void box.offsetWidth;
     box.classList.add('in');
-    this.lineTimer = window.setTimeout(() => { box.hidden = true; }, DESK.ping.show * 1000);
+    this.lineTimer = window.setTimeout(() => { box.hidden = true; }, lineSecs(e.text) * 1000);
+    heard(t(e.from), t(e.text), CALLER_CSS[e.caller as Caller] ?? INK.white2);
   }
 
   private draw(o: Open): void {

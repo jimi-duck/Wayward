@@ -75,6 +75,7 @@
       <symbol id="i-signal" viewBox="0 0 24 24"><path d="M12 12v9 M8 21h8 M7.5 7.5a6.4 6.4 0 000 9 M16.5 7.5a6.4 6.4 0 010 9 M4 4.5a11 11 0 000 15 M20 4.5a11 11 0 010 15"/></symbol>
       <symbol id="i-link" viewBox="0 0 24 24"><path d="M9 7H5l-3 5 3 5h4 M15 7h4l3 5-3 5h-4 M8 12h8"/></symbol>
       <symbol id="i-photo" viewBox="0 0 24 24"><path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.6"/><path d="M17.5 10.5h1"/></symbol>
+      <symbol id="i-log" viewBox="0 0 24 24"><path d="M4 5h16 M4 10h16 M4 15h10 M4 20h7 M17 15v6 M14.500 18.500L17 21l2.500-2.500"/></symbol>
       <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.5"/><path d="M12 2v3.5 M12 18.5V22 M2 12h3.5 M18.5 12H22 M4.9 4.9l2.5 2.5 M16.6 16.6l2.5 2.5 M4.9 19.1l2.5-2.5 M16.6 7.4l2.5-2.5"/></symbol>
       <symbol id="i-job" viewBox="0 0 24 24"><path d="M12 2l10 10-10 10L2 12z M12 7v6 M12 15.500v1.500"/></symbol>
       <symbol id="i-cyrite" viewBox="0 0 24 24"><path d="M12 2l4 6-4 14-4-14z M8 8h8 M3 12l5-4 M21 12l-5-4"/></symbol>
@@ -563,6 +564,7 @@
           </div>
           <div class="p-icons main-only">
             <button type="button" id="p-photo" aria-label="Photo mode"><svg class="ico"><use href="#i-photo"/></svg></button>
+            <button type="button" id="p-log" class="story-only" aria-label="Radio log"><svg class="ico"><use href="#i-log"/></svg></button>
             <button type="button" id="p-set" aria-label="Settings"><svg class="ico"><use href="#i-gear"/></svg></button>
           </div>
         </header>
@@ -594,6 +596,7 @@
           <div><dt class="w"><kbd>Shift</kbd></dt><dd>Roll</dd></div>
           <div><dt><kbd>S</kbd><i>/</i><kbd>↓</kbd></dt><dd>Brake</dd></div>
           <div><dt><kbd>2</kbd><i>/</i><kbd>F</kbd></dt><dd>Fire torpedo</dd></div>
+          <div class="story-only"><dt><kbd>L</kbd></dt><dd>Radio log</dd></div>
         </dl>
         <dl class="keys-l only-touch-l">
           <div><dt>Left thumb</dt><dd>Steer and thrust</dd></div>
@@ -628,6 +631,15 @@
           <span class="p-any only-desktop">Any key resumes</span>
           <button type="button" class="ng-n dim" id="p-exit"><span class="story-only">Save & exit</span><span class="arcade-only">Exit</span></button>
           <button type="button" class="ng-n ochre" id="p-go"><span class="story-only">Resume</span><span class="arcade-only">Begin</span></button>
+        </div>
+        <!-- the log face: what was said, newest first (ui/heard.ts); L in flight opens it -->
+        <section class="term-s log-only" id="log">
+          <h3 class="th">Radio log</h3>
+          <ol class="heard" id="heard"></ol>
+        </section>
+        <div class="pause-acts log-only">
+          <span class="p-any only-desktop">L or Backspace goes back</span>
+          <button type="button" id="p-logback"><span>Back</span></button>
         </div>
         <div class="pause-acts set-only">
           <button type="button" id="p-back"><span>Back</span></button>

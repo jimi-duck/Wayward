@@ -18,6 +18,7 @@ import { Radar } from './radar';
 import { Heading } from './guide';
 import { range, Targeting } from './targeting';
 import { num, plural, t } from '../i18n';
+import { heard } from './heard';
 import { damageWord } from './panels';
 import { Notifier, NoticePlates, type Notice } from './notify';
 import { blockOf, cheapest, quickPicks } from '../sim/bay';
@@ -265,7 +266,9 @@ export class Hud {
         case 'storyNotice':
           // the arrival scan, while the title card is up, is the card's last line, not a second message
           if (this.titleT > 0 && e.headline === SCAN_LINE) { text($('tc-s'), t(e.headline)); break; }
-          this.notify(world, { type: e.tone === 'amber' ? 'warning' : e.tone === 'red' ? 'denied' : 'arrival', headline: e.headline, reason: e.reason, key: `story:${e.headline}` }); break;
+          this.notify(world, { type: e.tone === 'amber' ? 'warning' : e.tone === 'red' ? 'denied' : 'arrival', headline: e.headline, reason: e.reason, key: `story:${e.headline}` });
+          if (e.headline !== SCAN_LINE) heard('', e.reason ? `${t(e.headline)} · ${t(e.reason)}` : t(e.headline), '');
+          break;
         case 'yardDone':
           // the special moment: the new name, like a film's title, as the autopilot flies her out of Ned's yard
           if (e.n === 2) this.nameCard();

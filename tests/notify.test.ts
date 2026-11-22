@@ -25,24 +25,29 @@ describe('the centre notices', () => {
     expect(r.up).toEqual(['Docking denied']);
   });
 
-  it('shows two at most and queues the rest in order, none dropped', () => {
+  it('shows one at a time, 5 s each, and queues the rest in order, none dropped', () => {
     const r = rig();
-    for (const h of ['One', 'Two', 'Three', 'Four']) r.n.notify({ type: 'arrival', headline: h }, 0);
-    expect(r.up).toEqual(['One', 'Two']);
+    for (const h of ['One', 'Two', 'Three']) r.n.notify({ type: 'arrival', headline: h }, 0);
+    expect(r.up).toEqual(['One']);
     r.n.step(SECS + 0.1);
-    expect(r.up).toEqual(['Three', 'Four']);
+    expect(r.up).toEqual(['Two']);
+    r.n.step(SECS + 0.1);
+    expect(r.up).toEqual(['Three']);
     expect(r.corner).toEqual([]);
-    expect(SHOWN).toBe(2);
+    expect(SHOWN).toBe(1);
+    expect(SECS).toBe(5);
   });
 
   it('puts a denial ahead of the waiting arrivals and warnings', () => {
     const r = rig();
-    for (const h of ['A', 'B']) r.n.notify({ type: 'arrival', headline: h }, 0);
+    r.n.notify({ type: 'arrival', headline: 'A' }, 0);
     r.n.notify({ type: 'arrival', headline: 'C' }, 0);
     r.n.notify({ type: 'warning', headline: 'W' }, 0);
     r.n.notify({ type: 'denied', headline: 'D' }, 0);
     r.n.step(SECS + 0.1);
-    expect(r.up).toEqual(['D', 'W']);
+    expect(r.up).toEqual(['D']);
+    r.n.step(SECS + 0.1);
+    expect(r.up).toEqual(['W']);
     r.n.step(SECS + 0.1);
     expect(r.up).toEqual(['C']);
   });

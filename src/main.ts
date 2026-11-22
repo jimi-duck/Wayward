@@ -38,6 +38,7 @@ import { StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel, preloadPort } from './ui/port';
 import { BayPanel } from './ui/bay';
 import { showConsole } from './ui/briefing';
+import { forget, showHeard } from './ui/heard';
 import type { RegionSet } from './content/regions';
 import { installCrashCard, onCrashKeep } from './ui/crash';
 import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18n';
@@ -554,6 +555,7 @@ function boot(review: typeof import('./review') | null): void {
     loop.paused = on;
     if (!on && photo) setPhoto(false);
     if (on) showSettings(false);
+    else showLog(false);
     document.documentElement.classList.toggle('paused', on && started);
     if (on) {
       input.reset();
@@ -577,12 +579,19 @@ function boot(review: typeof import('./review') | null): void {
     showBrief();
     if (on) el('p-back').focus({ preventScroll: true });
   };
+  /** The pause card's log face: the last lines said (ui/heard.ts). L in flight opens the card on it. */
+  const logOpen = () => el('pause').classList.contains('log-on');
+  const showLog = (on: boolean) => {
+    el('pause').classList.toggle('log-on', on);
+    if (on) { showSettings(false); showHeard(); el('p-logback').focus({ preventScroll: true }); }
+    showBrief();
+  };
   /** The briefing's live parts: its title, the bay's count, the settings' rows. */
   const showBrief = () => {
     const first = !profile.briefed;
     el('pause').classList.toggle('first', first);
     // the arcade's card names the run; the Story's is the ship's "All stop"
-    el('pause-t').textContent = t(settingsOpen() ? 'Settings' : document.documentElement.classList.contains('breakout') ? 'All stop' : 'Survive');
+    el('pause-t').textContent = t(settingsOpen() ? 'Settings' : el('pause').classList.contains('log-on') ? 'Radio log' : document.documentElement.classList.contains('breakout') ? 'All stop' : 'Survive');
     el('p-paint-r').hidden = !el('paint').childElementCount;
   };
   // Phones and tablets take the whole screen where the browser allows it
@@ -635,6 +644,7 @@ function boot(review: typeof import('./review') | null): void {
     let fresh = false;
     if (!resume || !journey || (journey.status === 'over' && !pending(journey))) {
       fresh = true;
+      forget();
       // a journey left at the Threshold still goes into the Archive, the file unchosen
       if (journey && pending(journey)) recordJourney(profile, journeyRecord(journey));
       journey = newJourney(Math.floor(Math.random() * 1e9), false, NEW_SET, profile.survival);
@@ -651,7 +661,7 @@ function boot(review: typeof import('./review') | null): void {
     {
       layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), brk: el('brk'),
     },
-    () => (started ? (photo ? setPhoto(false) : panelOpen() ? undefined : settingsOpen() ? showSettings(false) : setPaused(!loop.paused)) : menuEnter()),
+    () => (started ? (photo ? setPhoto(false) : panelOpen() ? undefined : settingsOpen() ? showSettings(false) : logOpen() ? showLog(false) : setPaused(!loop.paused)) : menuEnter()),
     () => openBay(),
   );
 
@@ -945,6 +955,9 @@ function boot(review: typeof import('./review') | null): void {
     // toggled on those, and answering them here as well would undo it.
     // in Settings a key does not resume: Backspace goes back, the pause keys are Input's
     if (settingsOpen()) { if (e.code === 'Backspace') showSettings(false); return; }
+    // the log face: L or Backspace goes back to the card; L in flight, or on the card, opens it
+    if (logOpen()) { if (e.code === 'Backspace' || e.code === 'KeyL') showLog(false); return; }
+    if (e.code === 'KeyL' && world.mode === 'breakout' && !callHold) { if (!loop.paused) setPaused(true); showLog(true); return; }
     // a call holds the world itself: its own keys (and any held key) must not lift that hold from under the card
     // Tab (Shift+Tab back) switches the camera view in flight; while paused it only resumes, as any key does
     if (e.code === 'Tab' && !loop.paused) nextView(e.shiftKey ? -1 : 1);
@@ -976,6 +989,7 @@ function boot(review: typeof import('./review') | null): void {
   el('pause').addEventListener('pointerdown', (e) => {
     e.preventDefault();
     if (settingsOpen()) showSettings(false);
+    else if (logOpen()) showLog(false);
     else setPaused(false);
   });
   // the briefing's buttons answer themselves, without resuming underneath
@@ -985,6 +999,8 @@ function boot(review: typeof import('./review') | null): void {
   };
   act('p-set', () => showSettings(true));
   act('p-back', () => showSettings(false));
+  act('p-log', () => showLog(true));
+  act('p-logback', () => showLog(false));
   act('p-saver', () => setSaver(!saver));
   act('p-lefty', () => setLefty(!lefty));
   const toggleAuto = () => { autoFire = !autoFire; keep('wayward.autofire', autoFire ? '1' : '0'); paintTouch(); };
