@@ -74,6 +74,8 @@ const STEAM: RGB = [0.78, 0.7, 0.6];
 /** The arrival sweep: seconds held on the wide shot, then seconds to swing in behind the ship. */
 const ARRIVE_HOLD = 0.75;
 const ARRIVE_SWING = 3.25;
+/** Seconds the arrival holds on a story place before it swings back behind her. */
+const ARRIVE_AIM_HOLD = 2;
 /** The still world's drift: photo mode's circle (radians a second), and the pause's slow sway (radians, and its pace). */
 const ORBIT_RATE = 0.12;
 const SWAY = 0.32;
@@ -659,7 +661,8 @@ export class Sector {
   private arriveSweep(world: World, dt: number): number {
     if (this.arriveT < 0) return 0;
     this.arriveT += dt * (inFight(world) || this.console !== null || this.reduceMotion ? 4 : 1);
-    const k = clamp((this.arriveT - ARRIVE_HOLD) / ARRIVE_SWING, 0, 1);
+    // a stop with a story place holds on it a little longer, so it is seen before anything is said (owner, 22 November 2026)
+    const k = clamp((this.arriveT - (this.rig.aim ? ARRIVE_AIM_HOLD : ARRIVE_HOLD)) / ARRIVE_SWING, 0, 1);
     if (k >= 1) { this.arriveT = -1; return 0; }
     const e = k * k * k * (k * (k * 6 - 15) + 10);
     return 1 - e;
@@ -716,6 +719,9 @@ export class Sector {
     subject.speedFrac = Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(world.hull));
     if (!this.snapped) { this.rig.snap(subject); this.snapped = true; }
     if (wt >= 0) this.jumpSeen = true;
+    // the arrival looks at the stop's story place, if it has one in sight now
+    const sp = this.arriveT >= 0 ? world.storyPlace : null;
+    this.rig.aim = sp ? { x: sp.x, z: sp.z } : null;
     this.rig.arrive = this.arriveSweep(world, dt);
     this.drift(world, uiDt);
     this.rig.warp.lens = wt >= 0 ? lens(wt) : 0;

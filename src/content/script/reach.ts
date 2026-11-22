@@ -7,6 +7,7 @@ import type { Row } from '../../sim/script';
 // narrows.ts.
 
 const SAM = 'Sam Okoro';
+const ILSE = 'Ilse Marrow';
 const sam = (id: string, stop: string, on: Row['on'], text: string, extra: Partial<Row> = {}): Row => ({ id, stop, on, do: { radio: { from: SAM, caller: 'miners', text } }, ...extra });
 const notice = (id: string, stop: string, on: Row['on'], tone: 'teal' | 'amber' | 'red' | 'white', headline: string, reason?: string, extra: Partial<Row> = {}): Row => ({ id, stop, on, do: { notice: { tone, headline, reason } }, ...extra });
 const objective = (id: string, stop: string, on: Row['on'], main: string, quiet?: string): Row => ({ id, stop, on, do: { objective: { main, quiet } } });
@@ -21,11 +22,11 @@ export const REACH: Row[] = [
   notice('wall_order', '*', { on: 'flag', flag: 'clue_order_sig' }, 'teal', 'The Wall', 'the closing order, signed L. C.'),
 
   // ── The audit dock's system: the first jump is Northfold, the quiet lane the archive points to (Halden's Reach is the one after) ──
-  objective('au_gate', 'audit', { on: 'leave' }, 'Jump to Northfold', 'Then Halden’s Reach · find the Warden’s record'),
+  objective('au_gate', 'audit', { on: 'leave' }, 'Jump to Northfold', 'Then Halden’s Reach · meet Ilse Marrow'),
 
   // ── Stop 1 · Northfold (landfall) ──
   notice('nf_notice', 'northfold', { on: 'arrive' }, 'teal', 'Northfold', 'Kellern space, quiet crossing'),
-  objective('nf_objective', 'northfold', { on: 'arrive' }, 'Next: Halden’s Reach · find the Warden’s record', 'The Narrows · 5 jumps'),
+  objective('nf_objective', 'northfold', { on: 'arrive' }, 'Next: Halden’s Reach · meet Ilse Marrow', 'The Narrows · 5 jumps'),
   sam('nf_sam_1', 'northfold', { on: 'free' }, '“Every lane out of here is watched but one. Whoever left you that message picked a quiet one.”'),
   sam('nf_sam_2', 'northfold', { on: 'after', row: 'nf_sam_1' }, '“My signal won’t reach past the Narrows. Make the most of me while you can.”'),
   // the Quiet Line's first job, at the quiet landfall so Halden is the Warden's alone (owner, 6 November 2026) (content/missions.ts nothing_to_declare): Owen Pike answers by what the player did; flags from sim/stage.ts
@@ -43,14 +44,17 @@ export const REACH: Row[] = [
 
   // ── Stop 2 · Halden's Reach (hub) ──
   notice('hr_notice', 'halden', { on: 'arrive' }, 'teal', 'Halden’s Reach', 'Kellern port, hospice ring'),
-  objective('hr_objective', 'halden', { on: 'arrive' }, 'Halden’s Reach · find the Warden’s record', 'Frontier port · refit bay open'),
-  sam('hr_sam', 'halden', { on: 'free' }, '“Halden’s Reach. Old Warden families retire here. That skiff off the hospice ring is calling you.”'),
+  // the model scene (owner, 22 November 2026, "Make every stop readable"): the arrival looks at the skiff, Ilse speaks first and
+  // alone, she talks Juno in, the card, the paper, and Sam once, at the end
+  objective('hr_objective', 'halden', { on: 'arrive' }, 'Ilse’s skiff · hold alongside', 'Frontier port · refit bay open'),
+  { id: 'hr_ilse', stop: 'halden', on: { on: 'arrive' }, do: { radio: { from: ILSE, caller: 'miners', text: '“Wayward, this is Ilse Marrow, off the hospice ring. Come alongside. Slowly. Kellern listens on the open band.”' } } },
+  { id: 'hr_ilse_near', stop: 'halden', on: { on: 'near', site: 'hr_skiff', within: 40 }, if: { not: ['ilse_met'] }, do: { radio: { from: ILSE, caller: 'miners', text: '“Closer. Hold there. Let me read your hull.”' } } },
   // Ilse's skiff off the hospice ring (content/script/places.ts): she reads the order once Juno holds alongside (no choice: the owner,
   // 31 October 2026), then puts the paper out in a canister to be taken aboard. The gate waits for both, and names the place.
   // The name follows the order wherever it is taken (it can be carried on)
   card('hr_warden', 'halden', { on: 'place', place: 'hr_skiff' }, 'story_order', { holdsJob: true, main: true }),
-  { id: 'hr_canister', stop: 'halden', on: { on: 'flag', flag: 'frag_order' }, do: { radio: { from: 'Ilse Marrow', caller: 'miners', text: '“It’s in the canister off my bow. Paper can’t be wiped.”' } } },
-  sam('hr_paper', 'halden', { on: 'place', place: 'hr_paper' }, '“Paper. Nobody’s held any in years. Keep it dry, Juno.”', { main: true }),
+  { id: 'hr_canister', stop: 'halden', on: { on: 'flag', flag: 'frag_order' }, do: { radio: { from: ILSE, caller: 'miners', text: '“It’s in the canister off my bow. Paper can’t be wiped.”' } } },
+  sam('hr_paper', 'halden', { on: 'place', place: 'hr_paper' }, '“Paper, signed L. C. Tallyhouse keeps Kellern’s books. Someone there will know the hand.”', { main: true }),
   card('hr_order', '*', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] }, holdsJob: true }),
   card('hr_hand', '*', { on: 'flag', flag: 'clue_order_sig' }, 'story_handwriting', { if: { not: ['ada_named'] }, holdsJob: true }),
   objective('hr_gate', 'halden', { on: 'leave' }, 'Jump to Tallyhouse'),

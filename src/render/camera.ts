@@ -1,5 +1,5 @@
 import { MathUtils, PerspectiveCamera } from 'three';
-import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
+import { angleDelta, clamp, smoothDamp, smoothDampAngle } from '../core/math';
 
 // ── the chase camera ──────────────────────────────────────────────────────
 // The player picks the view on the pause card (`view`). Chase, the default, is
@@ -121,6 +121,8 @@ export class CameraRig {
   reveal = 0;
   /** 1 to 0: what is left of a jump arrival's opening sweep. The ship flies as normal under it. */
   arrive = 0;
+  /** What the arrival looks at (the stop's story place, render/sector.ts): the sweep turns the shot from behind her toward it, instead of its arc. */
+  aim: { x: number; z: number } | null = null;
   /** Radians the shot has drifted round the ship (a paused world, photo mode: render/sector.ts). */
   drift = 0;
   /** 0 to 1: photo mode's framing, a little further off and lower, so more of the sky shows. */
@@ -206,7 +208,9 @@ export class CameraRig {
     const dist = (Math.max(F.h / (2 * tanV), F.w / (2 * tanV * this.aspect)) + (reduceMotion ? 0 : this.recoil)) * this.zoomNow * this.pull * (1 - 0.12 * this.bay) * (1 + (reduceMotion ? 0 : WARP_PULL * lens)) * (1 + REVEAL_PULL * this.reveal) * (1 + ARRIVE_PULL * this.arrive) * (1 + PHOTO_PULL * this.photo);
 
     // forward along the yaw, and the camera behind and above
-    const yaw = this.yaw + REVEAL_ARC * this.reveal + ARRIVE_ARC * this.arrive + this.drift;
+    let yaw = this.yaw + REVEAL_ARC * this.reveal + (this.aim ? 0 : ARRIVE_ARC * this.arrive) + this.drift;
+    // an arrival with a place to see: the shot looks from behind her toward it, so it stands up in the picture past her
+    if (this.aim && this.arrive > 0) yaw += angleDelta(yaw, Math.atan2(-(this.aim.z - this.target.z), this.aim.x - this.target.x)) * this.arrive;
     const fx = Math.cos(yaw), fz = -Math.sin(yaw);
     // the ship keeps its place in the picture (ELEV - PITCH below the middle) while the camera moves for a jump, a reveal or a photo
     const E = MathUtils.degToRad(F.elev), P = MathUtils.degToRad(F.pitch);
