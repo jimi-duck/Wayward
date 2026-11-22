@@ -12,7 +12,7 @@ export const STORY_PLACES: StoryPlaceDef[] = [
   { id: 'hr_skiff', stop: 'halden', name: 'Ilse’s skiff', look: 'skiff', along: 60, off: -32, act: { hold: 6 }, r: 16, done: 'ilse_met', skip: ['frag_order'], verb: 'Hold alongside Ilse’s skiff' },
   { id: 'hr_paper', stop: 'halden', name: 'The order, on paper', look: 'canister', along: 80, off: -22, act: { pickup: true }, r: 3, done: 'order_aboard', show: 'frag_order', after: 'hr_canister', verb: 'Take the canister aboard' },
   // Tallyhouse: Brook's shuttle, idling off the accounts station; then the spike he leaves behind
-  { id: 'ml_shuttle', stop: 'marlow', name: 'A clerk’s shuttle', look: 'skiff', along: 60, off: -32, act: { hold: 5 }, r: 16, done: 'brook_alongside', skip: ['frag_ledger'], verb: 'Hold alongside the clerk’s shuttle' },
+  { id: 'ml_shuttle', stop: 'marlow', name: 'Brook’s shuttle', look: 'skiff', along: 60, off: -32, act: { hold: 5 }, r: 16, done: 'brook_alongside', skip: ['frag_ledger'], verb: 'Hold alongside Brook’s shuttle' },
   { id: 'ml_spike', stop: 'marlow', name: 'Brook’s data spike', look: 'canister', along: 80, off: -22, act: { pickup: true }, r: 3, done: 'spike_aboard', show: 'frag_ledger', after: 'ml_brook', verb: 'Take the data spike aboard' },
   // Tallyhouse: Ilse's message buoy, left on Juno's way to the books (only if Juno never heard her at Halden)
   { id: 'ml_buoy', stop: 'marlow', name: 'Ilse’s message buoy', look: 'buoy', along: 58, off: 32, act: { hold: 5 }, r: 14, done: 'buoy_read', skip: ['frag_order'], verb: 'Hold by Ilse’s message buoy' },

@@ -14,7 +14,7 @@ export const COURSE: Record<string, string> = {
   'the company’s audit dock': 'das Prüfdock der Firma',
   'meet Ilse Marrow': 'Ilse Marrow treffen',
   'mine, and fill the tank': 'abbauen und den Tank füllen',
-  'someone here keeps the real books': 'hier führt jemand die echten Bücher',
+  'meet Adam Brook, a clerk': 'Adam Brook treffen, einen Buchhalter',
   'rest here, or keep moving': 'hier rasten oder weiterfliegen',
   'the Net closes behind': 'hinter dir schließt sich das Netz',
   'a clerk in trouble': 'ein Angestellter in Not',

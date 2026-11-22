@@ -1408,6 +1408,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 #pause.log-on :is(.main-only, .voice) { display: none !important; }
 #pause.log-on .pause-card.term { width: min(760px, 94vw); }
 #pause.log-on .p-top { border-bottom: 0; padding-bottom: 0; }
+#pause.log-on .log-only .th { display: none; }
 #pause .heard { display: grid; gap: 0; max-height: min(52vh, 420px); overflow-y: auto; margin: 0; padding: 0; list-style: none; }
 #pause .heard li { display: grid; grid-template-columns: 9.5em minmax(0, 1fr); gap: 14px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
 #pause .heard li:last-child { border-bottom: 0; }

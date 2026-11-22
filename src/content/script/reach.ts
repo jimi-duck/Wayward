@@ -27,8 +27,7 @@ export const REACH: Row[] = [
   // ── Stop 1 · Northfold (landfall) ──
   notice('nf_notice', 'northfold', { on: 'arrive' }, 'teal', 'Northfold', 'Kellern space, quiet crossing'),
   objective('nf_objective', 'northfold', { on: 'arrive' }, 'Next: Halden’s Reach · meet Ilse Marrow', 'The Narrows · 5 jumps'),
-  sam('nf_sam_1', 'northfold', { on: 'free' }, '“Every lane out of here is watched but one. Whoever left you that message picked a quiet one.”'),
-  sam('nf_sam_2', 'northfold', { on: 'after', row: 'nf_sam_1' }, '“My signal won’t reach past the Narrows. Make the most of me while you can.”'),
+  // Sam speaks once a stop (owner, 22 November 2026): here, on the ghost; the Narrows' warning moves to Copperline
   // the Quiet Line's first job, at the quiet landfall so Halden is the Warden's alone (owner, 6 November 2026) (content/missions.ts nothing_to_declare): Owen Pike answers by what the player did; flags from sim/stage.ts
   pike('hr_pike_won', 'job_nothing_to_declare_won', '“Medicine through, and nobody saw you. Good. I’ll call again.”', { not: ['job_nothing_to_declare_sell'] }),
   pike('hr_pike_sold', 'job_nothing_to_declare_sell', '“Custody paid you thirty-five. The hospice paid the rest.”'),
@@ -36,10 +35,8 @@ export const REACH: Row[] = [
   // the ghost (sim/ghost.ts): the quiet lane is not quite empty. The flag comes with the contact; the Wall is set the moment it triggers,
   // so a jump before Sam speaks still logs it
   notice('nf_ghost', 'northfold', { on: 'flag', flag: 'ghost_here' }, 'white', 'UNKNOWN CONTACT', '4.2 km · holding', { wall: 'clue_ghost' }),
-  sam('nf_sam_g1', 'northfold', { on: 'after', row: 'nf_ghost' }, '“Ghost on the scope. Old relays throw them.”'),
-  sam('nf_sam_g2', 'northfold', { on: 'after', row: 'nf_sam_g1' }, '“Probably.”'),
+  sam('nf_sam_g1', 'northfold', { on: 'after', row: 'nf_ghost' }, '“Ghost on the scope. Old relays throw them. Probably.”'),
   notice('nf_ghost_2', 'northfold', { on: 'flag', flag: 'ghost_close' }, 'white', 'UNKNOWN CONTACT', '3.1 km'),
-  sam('nf_sam_g3', 'northfold', { on: 'after', row: 'nf_ghost_2' }, '“It’s closer. I don’t like that.”'),
   objective('nf_gate', 'northfold', { on: 'leave' }, 'Jump to Halden’s Reach'),
 
   // ── Stop 2 · Halden's Reach (hub) ──
@@ -61,22 +58,20 @@ export const REACH: Row[] = [
 
   // ── Stop 3 · Tallyhouse (turn) ──
   notice('ml_notice', 'marlow', { on: 'arrive', delay: 2 }, 'teal', 'Tallyhouse', 'Kellern accounts station'),
-  objective('ml_objective', 'marlow', { on: 'arrive', delay: 2 }, 'Tallyhouse · someone here keeps the real books'),
+  objective('ml_objective', 'marlow', { on: 'arrive', delay: 2 }, 'Brook’s shuttle · hold alongside'),
+  { id: 'ml_hail', stop: 'marlow', on: { on: 'arrive' }, if: { not: ['brook_met'] }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“This is Adam Brook, accounts. I’m off the station’s stern. Come alongside before my shift ends.”' } } },
   // Brook's shuttle idles off the station (content/script/places.ts): alongside, he offers the books; the spike he leaves is taken aboard
   card('ml_ledger', 'marlow', { on: 'place', place: 'ml_shuttle' }, 'story_ledger', { main: true }),
   { id: 'ml_brook', stop: 'marlow', on: { on: 'flag', flag: 'frag_ledger' }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“The spike’s off my stern. If anyone asks, I was never here. They’ll ask.”' } } },
   notice('ml_wall', 'marlow', { on: 'place', place: 'ml_spike' }, 'teal', 'The Wall', 'same initials on the transfers', { main: true }),
-  sam('ml_sam_1', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. again. On the order, and on the money.”', { if: { has: ['clue_order_sig'] } }),
-  sam('ml_sam_2', 'marlow', { on: 'after', row: 'ml_sam_1' }, '“Whoever that is, they signed both.”'),
+  sam('ml_sam_1', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. again, on the order and on the money. Whoever that is signed both.”', { if: { has: ['clue_order_sig'] } }),
   sam('ml_sam_alt', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. means nothing to me. Remember it anyway.”', { if: { not: ['clue_order_sig'] } }),
   // Juno never heard Ilse at Halden: her recording waits on a message buoy off the station, with the order and Ada's name
   card('ml_ilse', 'marlow', { on: 'place', place: 'ml_buoy' }, 'ilse_recording', { if: { not: ['frag_order'] }, main: true }),
-  sam('ml_ada', 'marlow', { on: 'after', row: 'ml_sam_2', delay: 4 }, '“Ada Aster. Dad said the Wardens were the Reach’s last honest people. So does Eben, at the yards.”', { if: { has: ['ada_named'] } }),
   objective('ml_gate', 'marlow', { on: 'leave' }, 'Jump to Miners’ Gap'),
 
   // ── Stop 4 · Miners’ Gap (work under pressure) ──
   notice('bf_notice', 'branford', { on: 'arrive', delay: 2 }, 'teal', 'Miners’ Gap', 'contested lane · Hester’s crews'),
-  notice('bf_net', 'branford', { on: 'arrive', delay: 4 }, 'amber', 'Net at Northfold'),
   objective('bf_objective', 'branford', { on: 'arrive', delay: 2 }, 'Miners’ Gap · the lane to Copperline', 'Toll beacon · on the scope'),
   // Hester's opener: the beacon is on her crews' lane, and the job's call follows
   { id: 'bf_hester', stop: 'branford', on: { on: 'arrive', delay: 6 }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. Heard you’re flying alone. That beacon’s on our lane, and we can’t pay its toll.”' } } },
@@ -90,10 +85,9 @@ export const REACH: Row[] = [
   // ── Stop 5 · Copperline (reckoning) ──
   notice('cl_notice', 'copperline', { on: 'arrive', delay: 2 }, 'teal', 'Copperline', 'Kellern port · before the Narrows'),
   objective('cl_objective', 'copperline', { on: 'arrive', delay: 2 }, 'Copperline · refit before the Narrows'),
-  sam('cl_sam', 'copperline', { on: 'free', after: 5 }, '“Last port before the Narrows. Fit what you can.”'),
+  sam('cl_sam', 'copperline', { on: 'free', after: 5 }, '“Last port before the Narrows. My signal dies there, so fit what you can now.”'),
   // a Custody transport crosses the system: Brook, whichever way the ledger went
   card('cl_brook', 'copperline', { on: 'after', row: 'cl_sam', delay: 6 }, 'story_brook_road', { if: { has: ['brook_met'] }, main: true }),
   card('cl_brook_no', 'copperline', { on: 'after', row: 'cl_sam', delay: 6 }, 'story_brook_declined', { if: { not: ['brook_met'] }, main: true }),
-  sam('cl_taken', 'copperline', { on: 'flag', flag: 'brook_taken' }, '“They’ll make an example of him. Don’t let it be for nothing.”'),
   objective('cl_gate', 'copperline', { on: 'leave' }, 'Jump to the Narrows'),
 ];
