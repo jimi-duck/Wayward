@@ -305,3 +305,12 @@ through the line and waits for her when she falls more than 150 units behind. Wi
 blue ring on the plane): a sweep reads the launch, not her. Alone in a sweep, the exposure climbs as at Kiln. Through cold
 (`hearing_cold`), nobody comes; seen (`hearing_made`), the pickets turn and the chase begins. Either way the launch goes on and
 `hearing_in` plays Thane's ruling. "Walk out" is unchanged. `tests/registry.test.ts`.
+
+## The Threshold, everyone she helped (22 November 2026)
+
+The last leg's set piece (living-world plan). At Wane Rest each ally's "who came" line now brings their hulls too
+(`sim/gathering.ts`, rows in `content/script/threshold.ts` `GATHERING`): Pike's Quiet Line (3 liners), Hester's rigs (3 barges),
+the Long Walk (4 haulers, from the job or the Drift she walked), the Survey analyst (1), the Hollow Saints (2) and Val (1). They
+come in down the lane and take places in two lines either side of it, 470 units and more short of the gate, outside Calloway's
+checkpoint, so she flies the last stretch to Calloway between them. Civilian, meek, never armed. Oren's three lights were already
+places. `tests/gathering.test.ts`.

@@ -18,6 +18,7 @@ import { debtLeft } from './threads';
 import { GHOST_AFTER, GHOST_STOP, spawnGhost, stepGhost, type Ghost } from './ghost';
 import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
+import { GATHERING } from '../content/script/threshold';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
 import { ledgerFor, type LedgerRow } from './contract';
 import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, SPOOL_KNOCK, JAM_SPOOL, SWARM_WEAVER, SWARM_DRAWN, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, RELAY_MARK_R, SAFE_R, SAFE_HOLD, HOLD_MAX, holdMax, ROLL_SECRET, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
@@ -33,6 +34,7 @@ import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_LINE, YARD_ZAP, YARD_R
 import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
 import { Cordon, HEARING_IN, HEARING_LAUNCH } from './cordon';
+import { Gathering } from './gathering';
 import { Speak, SPEAK_FAILED, SPEAK_FLAG, SPOKEN } from './speak';
 import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_EVERY_ALERT, FLAK_R, SiteBrain, type Mood } from './site';
 import { LOOSE } from './pickups';
@@ -207,6 +209,8 @@ export class World implements EncounterHost {
   cordon: Cordon | null = null;
   /** A Thren knot she is answering, at Stillwater (sim/speak.ts). */
   knot: Speak | null = null;
+  /** Everyone she helped, come to the Threshold (sim/gathering.ts). */
+  gathering: Gathering | null = null;
   /** The first system past Cerro's working traffic and the guards its dock sends (sim/traffic.ts). */
   traffic: Traffic | null = null;
   /** The mining system's refinery barge (sim/barge.ts), if it has one. */
@@ -502,6 +506,7 @@ export class World implements EncounterHost {
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     this.stage = null;
     this.cordon = null;
+    this.gathering = null;
     this.knot = null;
     this.traffic = null;
     if (this.mode !== 'breakout') {
@@ -568,6 +573,7 @@ export class World implements EncounterHost {
     }
     if (this.carryIn) this.bringAboard(this.carryIn);
     this.script = def.script ? new Script(SCRIPT, def.script, this.heard, this.carryIn?.pending ?? []) : null;
+    if (def.script === 'l_wane' && this.bk) this.gathering = new Gathering(GATHERING);
     this.holdAt = Infinity;
     this.gateLet = false;
     this.holdNoted = '';
@@ -575,6 +581,9 @@ export class World implements EncounterHost {
     this.stock();
     this.fitAboard();
   }
+
+  /** Whether a story row has played here (or earlier on the journey). */
+  rowPlayed(id: string): boolean { return this.script?.played(id) ?? false; }
 
   /** A new ship leaves with the basics fitted: lasers, a shield charge, the torpedo bay. */
   private stock(): void {
@@ -976,7 +985,7 @@ export class World implements EncounterHost {
       bk.nextPursuit = Math.max(bk.nextPursuit, this.runTime + 1e9);
     }
     if (this.cordon && this.cordon.state !== 'cold' && this.flags.has(HEARING_LAUNCH)) this.flags.add(HEARING_IN);
-    if (this.phase === 'play') { this.knot?.tick(this, dt); this.cordon?.step(this, dt); this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); this.den?.step(this, dt); this.thrSeed?.step(this, dt); }
+    if (this.phase === 'play') { this.gathering?.step(this); this.knot?.tick(this, dt); this.cordon?.step(this, dt); this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); this.den?.step(this, dt); this.thrSeed?.step(this, dt); }
     // the Archive keeps a photograph of a den once it has been seen, and of a seed once she has come near it
     if (this.den && this.den.state !== 'dark') this.flags.add('raider_den');
     if (this.thrSeed && Math.hypot(this.ship.x - this.thrSeed.x, this.ship.z - this.thrSeed.z) < 220) this.flags.add('thren_seed');

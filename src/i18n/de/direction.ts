@@ -279,6 +279,10 @@ export const DIRECTION: Record<string, string> = {
   'In a sweep · back beside the launch': 'Im Scan · zurück ans Boot',
   'Scan cordon · fly in the launch’s shadow': 'Scan-Sperre · flieg im Schatten des Boots',
   'Registry launch': 'Registerboot',
+  // the gathering at the Threshold (sim/gathering.ts): who came, on the scope
+  'Hester’s rigs': 'Hesters Bohrinseln',
+  'Hollow Saints': 'Hohle Heilige',
+  'Val': 'Val',
   '“The Registry launch will carry it in. Custody scans the approach for Bonded hulls. Keep close to the launch.”': '„Das Registerboot bringt es rein. Custody scannt den Anflug nach gebundenen Rümpfen. Bleib dicht am Boot.“',
   'exposure {n}%': 'entdeckt {n} %',
   'Through the cordon': 'Durch die Sperre',
