@@ -213,6 +213,8 @@ export interface SortieDef {
   pace?: { first: number; calm: number };
   /** Seconds the drive takes to spool here (a hunted stop's is longer; SPOOL otherwise). */
   spool?: number;
+  /** A cordon across the lane (sim/cordon.ts): a silent run; the stop's chase waits until it sees her. */
+  cordon?: { n: number; along: number };
   /** What she got away from on the last jump, for the arrival's title card (English key; null when nothing chased her). */
   escaped?: string | null;
   /** Juno's line for this stop of the road (content/log.ts), under the name on the title card (English key; null off the road). */

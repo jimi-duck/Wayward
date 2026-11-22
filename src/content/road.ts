@@ -1,4 +1,5 @@
 import type { Holder, SystemKind } from './systems';
+import type { CordonDef } from '../sim/cordon';
 
 // ── the Warden's Road: the Reach as fixed stops ─────────────────────────────
 // Behind `?road` the Reach is not a chart to choose across but one line of
@@ -178,6 +179,8 @@ export interface LegChase {
   ahead: number;
   /** Any of these flags shakes it. */
   shaken?: string[];
+  /** A cordon across the lane (sim/cordon.ts): the chase waits until it sees her, and never comes if she runs through it cold. */
+  cordon?: CordonDef;
 }
 
 const HUNT = { first: 25, calm: 8, heat: 0.3, ahead: 0.6 } as const;
@@ -188,7 +191,8 @@ export const LEG_CHASES: Record<string, LegChase> = {
   // the Marches: Kellern security boards the rigs, then comes for her
   m_gannet: { who: ['picket', 'picket', 'lancer'], ...HUNT },
   // the Belt: the Offices bought her heading from Val
-  b_kiln: { who: ['picket', 'picket', 'lancer'], first: 20, calm: 6, heat: 0.3, ahead: 0.6, shaken: ['vell_paid', 'vell_exposed'] },
+  // Kiln is the Belt's set piece: a silent run through the cordon the Offices strung on her heading (living-world plan)
+  b_kiln: { who: ['picket', 'picket', 'lancer'], first: 20, calm: 6, heat: 0.3, ahead: 0.6, shaken: ['vell_paid', 'vell_exposed'], cordon: { n: 4, along: 0.45 } },
   b_tarik: { who: ['picket', 'picket', 'lancer'], first: 20, calm: 6, heat: 0.3, ahead: 0.6, shaken: ['vell_paid', 'vell_exposed'] },
   // the Drift Deep: Custody follows her into the swarm
   d_still: { who: ['picket', 'lancer'], ...HUNT },

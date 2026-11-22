@@ -8,6 +8,7 @@ import { RELAY_JAM_R, RELAY_R } from '../sim/traffic';
 import { setBuoyMood } from './monuments';
 import { GANTRY_R } from '../sim/gantry';
 import { MARKET_R } from '../sim/market';
+import { CORDON_SCAN } from '../sim/cordon';
 import { DEPOT_AT } from '../sim/solids';
 import { animateStation, buildStation, clothMats, pools } from './stations';
 
@@ -22,6 +23,8 @@ import { Kit, metal, seeded, type V3 } from './kit';
 // plane in cyan.
 
 const AMBER = new Color(3.6, 2, 0.45);
+/** A cordon's sweeps: red, the threat colour, faint until one has her. */
+const SWEEP = new Color(2.6, 0.35, 0.3);
 const CYAN = new Color(0.4, 2.4, 3.2);
 /** The gate's light strips at full: teal, held low so they read as lit panels, not a glow. */
 const STRIP = new Color(0.3, 1.25, 1.4);
@@ -518,6 +521,9 @@ export function flatRing(r: number, w: number, color: Color, opacity: number): M
 
 export class BreakoutView {
   private readonly lane = new Group();
+  /** Kiln's cordon (sim/cordon.ts): one ring on the plane round each picket, the reach of its sweep. */
+  private readonly sweeps = new Group();
+  private readonly sweepRings: Group[] = [];
   /** The ring and its bases, turned to face the way you arrive. */
   private readonly gate = new Group();
   /** 0 to 1: how shut the gate looks (eased). */
@@ -654,7 +660,7 @@ export class BreakoutView {
     this.tether.frustumCulled = false;
     this.tether.visible = false;
     this.lane.visible = this.port.visible = this.audit.visible = false;
-    scene.add(this.lane, this.port, this.audit, this.mast, this.relay, this.barge, this.tether, this.gantry, this.market, this.den, this.seedG);
+    scene.add(this.sweeps, this.lane, this.port, this.audit, this.mast, this.relay, this.barge, this.tether, this.gantry, this.market, this.den, this.seedG);
 
   }
 
@@ -691,6 +697,26 @@ export class BreakoutView {
     this.lane.visible = !!b;
     this.port.visible = !!b?.port;
     this.audit.visible = !!b?.audit;
+    // the cordon's sweeps, while it has not seen her: faint, brighter inside one, pulsing as exposure climbs
+    const cd = b && world.cordon?.state === 'cold' ? world.cordon : null;
+    const sw = cd ? cd.sweeps(world) : [];
+    while (this.sweepRings.length < sw.length) {
+      // a ring on the plane: the sweep's reach. Nothing taller (a wall or a dome washes the view red from inside it)
+      const g = new Group();
+      g.add(flatRing(CORDON_SCAN, 1.2, SWEEP, 0.22));
+      this.sweepRings.push(g);
+      this.sweeps.add(g);
+    }
+    for (const [i, r] of this.sweepRings.entries()) {
+      const s = sw[i];
+      r.visible = !!s;
+      if (!s) continue;
+      r.position.set(s.x, -0.5, s.z);
+      r.scale.setScalar(s.r / CORDON_SCAN);
+      const hot = cd!.inside && Math.hypot(s.x - ship.x, s.z - ship.z) < s.r;
+      const pulse = hot ? Math.sin(this.time * (4 + 8 * cd!.exposure)) ** 2 : 0;
+      ((r.children[0] as Mesh).material as MeshBasicMaterial).opacity = hot ? 0.45 + 0.3 * pulse : 0.22;
+    }
     const rp = world.traffic?.relayPost ?? null;
     this.relay.visible = !!b && !!rp;
     if (b && rp) {
