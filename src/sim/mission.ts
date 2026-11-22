@@ -31,6 +31,10 @@ import type { World } from './world';
 //   sneak    reach the drop past patrols that sweep the site. Time spent
 //            inside a sweep builds exposure (a spoofer, ghost echo or baffles
 //            slow it); full exposure and the patrols turn.
+//   escort   a slow fleet (the scene's own hulls) makes for the Jump Gate and
+//            waits when the ship falls behind. Foes near a hull chew at it, a
+//            hull lost stays lost, and the count is on the HUD. Pay by hulls
+//            that made it.
 
 /** Seconds of a job's hold (a reading, a drop, a tow, a watch or a follow) a hit on the ship takes back: under fire, nothing holds. */
 export const HOLD_KNOCK = 2;
@@ -75,6 +79,10 @@ const CACHE_R = 24;
 const CACHE_HOLD = 1.3;
 /** The ring the cases drift in, round the site. */
 const CACHE_RING: [number, number] = [90, 230];
+/** Escort: the fleet waits when the ship is further than this from it; it keeps this far apart; this near the gate it is through. */
+const FLEET_WAIT = 190;
+const FLEET_GAP = 22;
+const FLEET_OUT = 60;
 /** Seconds in the core between burns. */
 const BURN_EVERY = 1.6;
 
@@ -121,6 +129,9 @@ export class Run {
   target: Alien | null = null;
   foes: Alien[] = [];
   private rival: Alien | null = null;
+  /** Escort: the hulls being walked to the gate, and how many there were. */
+  fleet: Alien[] = [];
+  fleetN = 0;
   private total = 0;
   private state: 'on' | 'disabled' | 'scattered' = 'on';
   private hold = 0;
@@ -148,7 +159,7 @@ export class Run {
     this.start(w);
   }
 
-  owns(al: Alien): boolean { return al === this.target || al === this.rival || this.foes.includes(al); }
+  owns(al: Alien): boolean { return al === this.target || al === this.rival || this.foes.includes(al) || this.fleet.includes(al); }
 
   // ── spawning ───────────────────────────────────────────────────────────
   private spot(w: World, a: ActorSpec, i: number, n: number): { x: number; z: number } {
@@ -212,6 +223,15 @@ export class Run {
         this.target.ward!.act = 'pass';
         this.target.ward!.hx = x - uz * side * 520 + ux * 180; this.target.ward!.hz = z + ux * side * 520 + uz * 180;
         this.startHp = this.target.maxHp;
+        for (const a of specs) if (a.foe) this.foe(w, a);
+        break;
+      }
+      case 'escort': {
+        // the scene's hulls, in sight since arrival; or, with none, a fleet put in ahead of her
+        const ta = specs.find((a) => a.target)!;
+        this.fleet = this.adopted.length ? [...this.adopted] : Array.from({ length: ta.n }, (_, i) => this.ship(w, ta, { x: w.ship.x + ux * 120 - uz * (i - (ta.n - 1) / 2) * FLEET_GAP, z: w.ship.z + uz * 120 + ux * (i - (ta.n - 1) / 2) * FLEET_GAP }, 'pass'));
+        for (const a of this.fleet) { a.job = true; a.civil = a.civil || !!ta.civil; if (a.ward) { a.ward.act = 'pass'; a.ward.temper = 'meek'; } }
+        this.fleetN = this.fleet.length;
         for (const a of specs) if (a.foe) this.foe(w, a);
         break;
       }
@@ -287,6 +307,7 @@ export class Run {
       case 'survey': v = this.survey(w, dt); break;
       case 'sneak': v = this.sneak(w, dt); break;
       case 'recover': v = this.recover(w, dt); break;
+      case 'escort': v = this.escort(w, dt); break;
     }
     this.focusNow(w);
     return v;
@@ -358,14 +379,7 @@ export class Run {
   private defend(w: World, dt: number): Verdict {
     const g = this.goal, rig = this.target!;
     if (!w.aliens.includes(rig)) return 'lost';
-    // waves
-    const waves = this.def.waves ?? [];
-    while (this.waves < waves.length && this.clock >= waves[this.waves]!.at) {
-      const wv = waves[this.waves]!;
-      this.foe(w, { variant: wv.variant, n: wv.n + depthExtra(w.sortie.threat), act: 'pass', temper: 'hostile', tag: 'Raider', foe: true, from: 'ahead' });
-      this.waves++;
-      w.events.push({ type: 'ping', id: `mis_${this.def.id}_w${this.waves}`, from: t('Scope'), caller: 'unknown', text: t('“Hostiles inbound on the rig.”'), moment: 'calm', system: w.sortie.name });
-    }
+    this.waveOn(w);
     this.foes = this.alive(w, this.foes);
     let near = 0;
     for (const f of this.foes) if (Math.hypot(f.x - rig.x, f.z - rig.z) < CHEW_R) near++;
@@ -381,6 +395,57 @@ export class Run {
       return 'won';
     }
     return null;
+  }
+
+  private escort(w: World, dt: number): Verdict {
+    const g = this.goal, s = w.ship, gate = w.bk?.lane ?? { x: s.x + this.site.ux * 900, z: s.z + this.site.uz * 900 };
+    // a hull lost stays lost: the scope says so, once each
+    const was = this.fleet.length;
+    this.fleet = this.alive(w, this.fleet);
+    if (this.fleet.length < was) w.events.push({ type: 'ping', id: `mis_${this.def.id}_lost${this.fleet.length}`, from: t('Scope'), caller: 'unknown', text: t('“We lost one. {n} left.”', { n: this.fleet.length }), moment: 'calm', system: w.sortie.name });
+    if (!this.fleet.length) return 'lost';
+    this.waveOn(w);
+    // the fleet's middle; it walks on to the gate while she keeps up, and waits for her when she does not
+    let cx = 0, cz = 0;
+    for (const a of this.fleet) { cx += a.x; cz += a.z; }
+    cx /= this.fleet.length; cz /= this.fleet.length;
+    const gd = Math.hypot(gate.x - cx, gate.z - cz) || 1, gx = (gate.x - cx) / gd, gz = (gate.z - cz) / gd;
+    const wait = Math.hypot(s.x - cx, s.z - cz) > FLEET_WAIT;
+    for (const [i, a] of this.fleet.entries()) {
+      a.mode = 'drift';
+      const k = (i - (this.fleet.length - 1) / 2) * FLEET_GAP;
+      // abreast of the middle, across the heading, and a hull's length on when walking
+      const px = cx - gz * k, pz = cz + gx * k;
+      a.ax = wait ? px : px + gx * 120; a.az = wait ? pz : pz + gz * 120;
+    }
+    // foes near a hull chew at it: drawing them off is as good as killing them
+    this.foes = this.alive(w, this.foes);
+    for (const f of this.foes) {
+      let near: Alien | null = null, b = CHEW_R;
+      for (const a of this.fleet) { const d = Math.hypot(f.x - a.x, f.z - a.z); if (d < b) { b = d; near = a; } }
+      if (near) { near.hp -= CHEW * dt * (near.maxHp / 40); if (near.hp <= 0) w.wreck(near); }
+    }
+    this.progress = Math.min(1, this.clock / g.hold);
+    this.status = t('Hulls {n} of {m}', { n: this.fleet.length, m: this.fleetN });
+    if (this.clock >= g.hold || gd < FLEET_OUT) {
+      this.scale = 0.4 + 0.6 * (this.fleet.length / Math.max(1, this.fleetN));
+      w.flags.add(this.fleet.length === this.fleetN ? `${this.def.id}_whole` : `${this.def.id}_cost`);
+      for (const f of this.foes) leave(f);
+      for (const a of this.fleet) { a.job = false; if (a.ward) { a.ward.act = 'pass'; a.ward.hx = gate.x; a.ward.hz = gate.z; } }
+      return 'won';
+    }
+    return null;
+  }
+
+  /** Foes in waves (defend, escort): so many seconds into the goal, from out ahead. */
+  private waveOn(w: World): void {
+    const waves = this.def.waves ?? [];
+    while (this.waves < waves.length && this.clock >= waves[this.waves]!.at) {
+      const wv = waves[this.waves]!;
+      this.foe(w, { variant: wv.variant, n: wv.n + depthExtra(w.sortie.threat), act: 'pass', temper: 'hostile', tag: 'Raider', foe: true, from: 'ahead' });
+      this.waves++;
+      w.events.push({ type: 'ping', id: `mis_${this.def.id}_w${this.waves}`, from: t('Scope'), caller: 'unknown', text: t(wv.say ?? '“Hostiles inbound on the rig.”'), moment: 'calm', system: w.sortie.name });
+    }
   }
 
   private race(w: World, dt: number): Verdict {
@@ -496,6 +561,7 @@ export class Run {
   private focusNow(w: World): void {
     const g = this.goal;
     switch (g.kind) {
+      case 'escort': { let cx = 0, cz = 0; for (const a of this.fleet) { cx += a.x; cz += a.z; } const n = Math.max(1, this.fleet.length); this.focus = { x: cx / n, z: cz / n, r: 70 }; break; }
       case 'strike': case 'defend': { const t0 = this.target; if (t0) this.focus = { x: t0.x, z: t0.z, r: this.state === 'disabled' ? TOW_R : 40 }; break; }
       case 'race': { const p = this.points.find((q) => q.on); if (p) this.focus = { x: p.x, z: p.z, r: BEACON_R }; break; }
       case 'recover': { const s = w.ship; let b = Infinity; for (const p of this.points) { if (!p.on) continue; const d = Math.hypot(p.x - s.x, p.z - s.z); if (d < b) { b = d; this.focus = { x: p.x, z: p.z, r: CACHE_R }; } } break; }

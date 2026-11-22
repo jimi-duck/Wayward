@@ -54,6 +54,8 @@ export interface ActorSpec {
   /** Missions: the ship the goal is about (the tanker, the wanted captain, the rig), a ward whose hull is `hp` times the usual. */
   target?: boolean;
   hp?: number;
+  /** A civilian hull (the Drift's fleet): the target card reads its tag, not hostile, no bounty. */
+  civil?: boolean;
   /** Missions: when this ship goes down the rest scatter and the job is done for less (`goal.scatter`). */
   scatter?: boolean;
   /** Only when this flag is set, or only when it is not (a toll that brings more scouts when the Gutter has gone cold on you). */
@@ -75,8 +77,9 @@ export interface Goal {
    *   survey   readings at rings round a hazard, as close as you dare
    *   sneak    reach the drop without the patrols reading the hold
    *   recover  drifting cases to pick up, in any order; a crew arrives after the first
+   *   escort   a slow fleet makes for the Jump Gate under attack; the count is on screen and a hull lost stays lost
    */
-  kind: 'call' | 'reach' | 'follow' | 'watch' | 'destroy' | 'strike' | 'defend' | 'race' | 'survey' | 'sneak' | 'recover';
+  kind: 'call' | 'reach' | 'follow' | 'watch' | 'destroy' | 'strike' | 'defend' | 'race' | 'survey' | 'sneak' | 'recover' | 'escort';
   /** Seconds to hold inside the ring (reach, watch) or stay with the lead ship (follow). */
   hold: number;
   /** Seconds after taking it before it is missed. */
@@ -155,8 +158,8 @@ export interface SituationDef {
   goal: Goal;
   /** Hostiles that come once the goal is taken on: so many seconds in, from ahead (a convoy's raiders). */
   threat?: { variant: string; n: number; after: number; /** The radio line when they come (a twist); the plain "Contacts ahead" otherwise. */ say?: string };
-  /** Missions: more foes in waves (defend): so many seconds into the goal, from out ahead. */
-  waves?: Array<{ variant: string; n: number; at: number }>;
+  /** Missions: more foes in waves (defend, escort): so many seconds into the goal, from out ahead, and what the scope says. */
+  waves?: Array<{ variant: string; n: number; at: number; say?: string }>;
   /** Hostiles waiting on the straight line to the Jump Gate, sprung when the ship passes this far along it, unless the situation was won (the pickets the stranger led you round). */
   trap?: { variant: string; n: number; at: number; /** Sprung sooner when this flag is set (the route was sold). */ early?: { flag: string; at: number } };
   /** Plays only when this flag is set (Sable's crossing waits for her to be taken on); otherwise the stop is quiet. */
@@ -320,6 +323,24 @@ export const SITUATIONS: SituationDef[] = [
     lose: { text: 'The transport makes the Jump Gate · Brook is taken', flag: 'brook_taken' },
     ignore: { text: 'The transport goes on without you · Brook is taken', flag: 'brook_taken' },
     say: [{ on: 'won', from: 'Adam Brook', text: '“I’ll make copies. They can’t arrest every one of them.”' }],
+  },
+  {
+    // The Long Walk, the Marches' set piece (living-world plan, 21 November 2026): the Drift fleet is in sight on arrival, waiting
+    // for her. Ma Saffi's card is the call (content/script/legs.ts plays it at her ship); its one answer walks the fleet to the
+    // Jump Gate while Kellern security comes for it. The count is on the HUD, and a hull lost stays lost.
+    id: 'drift_walk', name: 'Walk with the Drift', blurb: 'A Drift fleet walking to the Jump Gate, under Kellern guns.', group: 'frontier',
+    kinds: ['transit'], regions: [1, 1], weight: 0,
+    actors: [act('hauler', 5, 'lead', 'meek', 'Drift hull', { target: true, civil: true, hp: 1.6, pace: 0.7, from: 'ahead' })],
+    card: 'story_drift', at: 1, hail: -1, accept: ['swap'],
+    goal: { kind: 'escort', hold: 75, limit: 0, line: 'Walk the Drift to the Jump Gate' },
+    waves: [
+      { variant: 'picket', n: 2, at: 12, say: '“Kellern security. They want the Drift off the lane.”' },
+      { variant: 'picket', n: 3, at: 42, say: '“More of them, from ahead. Stay with the fleet.”' },
+    ],
+    win: { text: 'The Drift make the lane', flag: 'drift_walked', standing: { miners: 1 } },
+    lose: { text: 'The Drift are scattered · no hull made the lane', flag: 'drift_scattered' },
+    ignore: { text: 'The Drift walk on without you' },
+    say: [{ on: 'won', from: 'Ma Saffi', text: '“Every hull we brought, we count. Today the count was yours too.”' }],
   },
   {
     id: 'thren_curious', name: 'It Is Studying You', blurb: 'One unknown contact matches your speed and keeps its distance.', group: 'unknown',

@@ -17,8 +17,8 @@ export const BRIEFS: Record<string, string> = {
     'Ein Holdfast-Hafen, der in der Nacht der Schließung Angehörige verlor. Der Moot tagt, und deine Akte ist das, was sie hören wollen.',
   'Gutter ground. Kellern’s recovery accounts desk has found you, and an offer to settle your debt is coming. They want you alive, and in their hands.':
     'Gutter-Gebiet. Kellerns Inkasso-Abteilung hat dich gefunden, und ein Angebot, deine Schulden zu begleichen, ist unterwegs. Sie wollen dich lebend und in ihrer Hand.',
-  'A Drift fleet that never stops moving. Ma Saffi’s people kept the manifests of every ship lost the night the lanes went dark, and want them in your file.':
-    'Eine Drift-Flotte, die nie anhält. Ma Saffis Leute haben die Frachtlisten aller Schiffe aufbewahrt, die in der Nacht der Schließung verloren gingen, und wollen sie in deiner Akte.',
+  'A Drift fleet, always moving. Ma Saffi kept the manifests of the ships turned back that night. Kellern wants them off the lane. Walk them to the gate.':
+    'Eine Drift-Flotte, immer unterwegs. Ma Saffi hat die Ladelisten der Schiffe aufbewahrt, die in jener Nacht abgewiesen wurden. Kellern will sie von der Spur haben. Bring sie zum Tor.',
   'A gutted Drift hull lies here, scored in long parallel lines. The people nearby have rules for something that follows full tanks. Rest, and listen.':
     'Hier liegt ein ausgeweideter Drift-Rumpf, von langen parallelen Spuren gezeichnet. Die Leute in der Nähe haben Regeln für etwas, das volle Tanks verfolgt. Ruh dich aus und hör zu.',
   'Kellern security is boarding Holdfast rigs and taking the claims. Whoever stood with you at Kessel Hold is counting on you here. Expect Kellern ships.':

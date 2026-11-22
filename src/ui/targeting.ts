@@ -260,9 +260,9 @@ export class Targeting {
         for (const k of ['elite', 'friendly', 'boss', 'neutral']) { this.box.classList.toggle(k, k === 'neutral'); this.card.classList.toggle(k, k === 'neutral'); }
         return;
       }
-      name = tr(alienLabel(a));
-      // working traffic is nobody's bounty: it reads as a civilian hull, in the friendly colour
-      const civil = !!world.traffic?.owns(a) && !!a.ward;
+      name = a.civil && a.ward?.tag ? tr(a.ward.tag) : tr(alienLabel(a));
+      // working traffic is nobody's bounty, nor a scene's civilian hull: it reads as a civilian hull, in the friendly colour
+      const civil = (!!world.traffic?.owns(a) || !!a.civil) && !!a.ward;
       const patrol = !civil && !!world.traffic?.isPatrol(a);
       sub = civil ? `<b>${tr('Civilian')}</b> · ${tr('Not hostile')}` : patrol ? `<b>${tr('Custody')}</b> · ${tr('Routine check')}` : `<b>${tr(cap(a.faction))}</b> · +${alienBonus(a)}`;
       hp = a.hp / a.maxHp;

@@ -54,7 +54,7 @@ const hash = (s: string): number => { let h = 2166136261; for (let i = 0; i < s.
 export const JOB_LIMIT = 0.85;
 
 /** The goals a Run (sim/mission.ts) plays. */
-const MISSION = new Set(['destroy', 'strike', 'defend', 'race', 'survey', 'sneak', 'recover']);
+const MISSION = new Set(['destroy', 'strike', 'defend', 'race', 'survey', 'sneak', 'recover', 'escort']);
 
 export interface StageResult { id: string; result: SitResult }
 
@@ -138,6 +138,7 @@ export class Stage {
       al.spK *= a.pace ?? 1;
       if (a.hp) { al.hp *= a.hp; al.maxHp *= a.hp; }
       if (a.target) al.job = true;
+      if (a.civil) al.civil = true;
       this.actors.push(al);
     }
   }
@@ -400,7 +401,8 @@ export class Stage {
   /** The scene's pin on the sector: while the goal is on, the HUD, compass, radar and edge pointers read it like any sector event. */
   private mark(w: World): void {
     // a job is pinned once its call has rung, so the waypoint never comes before the word; a plain scene is pinned once it is on
-    const live = (this.taken || (this.begun && this.def.goal.kind !== 'call' && this.heard)) && !this.result;
+    // a scene the script calls (no hail ring: Brook's transport, the Drift at the Long Walk) is pinned only once it is taken
+    const live = (this.taken || (this.begun && this.def.goal.kind !== 'call' && this.heard && this.def.hail >= 0)) && !this.result;
     if (!live) {
       if (this.marker && w.encounter === this.marker) w.encounter = null;
       this.marker = null;
@@ -423,7 +425,7 @@ export class Stage {
   }
 
   /** A job in the sky that has not been taken on: on the scope, with its call still to ring. */
-  get onScope(): boolean { return this.begun && this.heard && !this.taken && !this.result && this.def.goal.kind !== 'call'; }
+  get onScope(): boolean { return this.begun && this.heard && !this.taken && !this.result && this.def.goal.kind !== 'call' && this.def.hail >= 0; }
   /** A job is heard once its call has rung; a plain scene needs no call to be seen. */
   private get heard(): boolean { return !this.early || this.rangAt !== null; }
 

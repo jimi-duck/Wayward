@@ -391,6 +391,8 @@ export interface Alien {
   ward?: Ward;
   /** Part of a mission (sim/mission.ts): kept however far off it is. */
   job?: boolean;
+  /** A civilian hull of a scene (the Drift's fleet): the target card names it by its tag, not hostile and nobody's bounty. */
+  civil?: boolean;
 }
 
 export interface Shot {
