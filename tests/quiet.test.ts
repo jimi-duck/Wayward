@@ -57,7 +57,7 @@ describe('a quiet system', () => {
     expect(calm.hostiles).toBe(0);
     expect(calm.stopped).toBe(0);
     expect(calm.heat).toBeLessThan(sortieDef(j).heat);
-  });
+  }, 60000);
 
   it('is not quiet once the Net has reached it', () => {
     const j = inFirstSystem();

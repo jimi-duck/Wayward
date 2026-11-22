@@ -109,6 +109,8 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 26) nameAudit(j as Journey);
   // 26 → 27: the Marches are six stops (Low Harrow, the breather, cut). A road journey not yet past them gets the new Marches
   if (j.version < 27) shortMarches(j as Journey);
+  // 27 → 28: Saltmarsh, Cradle Gap, Lucky Haven and Mute Hall (the Thren breathers) are cut, each folded into the stop before it
+  if (j.version < 28) shortBreathers(j as Journey);
   j.version = VERSION;
   return j as Journey;
 }
@@ -359,6 +361,16 @@ function shortMarches(j: Journey): void {
   const c = j.chart;
   if (c.regionSet !== 'road' || roadRegion(c, 1) || !c.systems.some((s) => s.name === 'Low Harrow')) return;
   shortLeg(j, 1, MARCHES_MOVED, false);
+}
+
+/** v28: the Thren breathers, each folded into the stop before it (living-world plan, 22 November 2026). */
+const BREATHERS_MOVED: Record<string, string> = { Saltmarsh: 'Kessler’s Wreck', 'Cradle Gap': 'Keelberth', 'Lucky Haven': 'Mirren’s Pier', 'Mute Hall': 'Palecairn' };
+
+/** v28: a road journey not yet past the Hollows gets the chart without the four breathers; past them, they are behind it. */
+function shortBreathers(j: Journey): void {
+  const c = j.chart;
+  if (c.regionSet !== 'road' || !c.systems.some((s) => s.name in BREATHERS_MOVED)) return;
+  shortLeg(j, 6, BREATHERS_MOVED, false);
 }
 
 /**

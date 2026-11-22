@@ -86,7 +86,7 @@ const BELT_ROWS: Row[] = [
   // 1 · Breakwater (landfall): the quiet at the Rift lands one jump late; Hester's last filter
   notice('bb_notice', 'b_breakwater', arrive(), 'teal', 'Breakwater', 'the Salvage Belt · wrecks and claims'),
   notice('bb_after', 'b_breakwater', arrive(5), 'red', 'Rift relay lit', 'they know your next gate', { if: { has: ['relay_rift'] } }),
-  objective('bb_objective', 'b_breakwater', arrive(), 'Next: Scrap Exchange', 'The Scrapgate · 7 jumps'),
+  objective('bb_objective', 'b_breakwater', arrive(), 'Next: Scrap Exchange', 'The Scrapgate · 6 jumps'),
   radio('bb_steward_won', 'b_breakwater', flag('job_one_filter_won'), 'Settlement steward', 'miners', '“Air for another month. I won’t forget it.”'),
   radio('bb_steward_lost', 'b_breakwater', flag('job_one_filter_lost'), 'Settlement steward', 'miners', '“You came. Some didn’t.”'),
   radio('bb_steward_no', 'b_breakwater', flag('job_one_filter_declined'), 'Settlement steward', 'miners', '“We’ll breathe shallow. We’re good at it.”'),
@@ -115,14 +115,12 @@ const BELT_ROWS: Row[] = [
   card('bk_box', 'b_kessler', flag('frag_blackbox'), 'story_ada', { holdsJob: true }),
   notice('bk_wall', 'b_kessler', after('bk_box'), 'teal', 'The Wall', 'Ada Aster · died 25 years ago', { wall: 'ada_died' }),
   radio('bk_after', 'b_kessler', after('bk_wall', 2), 'Dov Kessler', 'miners', '“Granddaughter. Hm. I’ll paint her name on the gate.”'),
-  objective('bk_gate', 'b_kessler', leave(), 'Jump to Saltmarsh'),
+  objective('bk_gate', 'b_kessler', leave(), 'Jump to Kiln'),
 
   // 5 · Saltmarsh (breather): the first sighting, a river of motes; it turns toward a full tank
-  ...rest('bs', 'b_saltmarsh', 'Saltmarsh', 'The Scrapgate · 3 jumps'),
-  notice('bs_river', 'b_saltmarsh', settle(), 'white', 'UNKNOWN', 'motes like a river · 1 km', { wall: 'saw_thren' }),
-  objective('bs_river_obj', 'b_saltmarsh', after('bs_river'), undefined, 'Wait it out, or burn fluid to run dark.'),
-  notice('bs_turn', 'b_saltmarsh', after('bs_river', 6), 'white', 'It turns', 'toward your tank', { if: { full: true }, wall: 'saw_turn' }),
-  objective('bs_gate', 'b_saltmarsh', leave(), 'Jump to Kiln'),
+  notice('bs_river', 'b_kessler', settle(), 'white', 'UNKNOWN', 'motes like a river · 1 km', { wall: 'saw_thren' }),
+  objective('bs_river_obj', 'b_kessler', after('bs_river'), undefined, 'Wait it out, or burn fluid to run dark.'),
+  notice('bs_turn', 'b_kessler', after('bs_river', 6), 'white', 'It turns', 'toward your tank', { if: { full: true }, wall: 'saw_turn' }),
 
   // 6 · Kiln (pressure): Kesh, if Val is in it; Quiet Line 4, the witness, who names Val
   notice('bn_notice', 'b_kiln', arrive(), 'amber', 'Kiln', 'Gutter crossing'),
@@ -199,7 +197,7 @@ const DEEP_ROWS: Row[] = [
 const YARDS_ROWS: Row[] = [
   // 1 · Cutton (landfall): Calloway asks what gathered on the Slow Door
   notice('yc_notice', 'y_cutton', arrive(), 'teal', 'Cutton', 'the Breaker Yards · Custody watches'),
-  objective('yc_objective', 'y_cutton', arrive(), 'Next: Yard Nine', 'The Breaker · 7 jumps'),
+  objective('yc_objective', 'y_cutton', arrive(), 'Next: Yard Nine', 'The Breaker · 6 jumps'),
   // Calloway's question at Cutton is cut (story direction plan): her best scene is the Tollgate
   // the cradle crew (standalone): Joss answers
   radio('yc_joss', 'y_cutton', flag('job_cradle_crew_won'), 'Joss Peller', 'miners', '“Forty. I counted them twice. Thank you.”'),
@@ -225,14 +223,12 @@ const YARDS_ROWS: Row[] = [
   objective('yk_objective', 'y_keel', arrive(), 'Keelberth · Sam, through the relays'),
   main('yk_sam', 'y_keel', free(6), 'story_tam_brother'),
   analyst('yk_survey', 'y_keel', 'job_voice_wire_won', '“The relay that hailed you heard the Narrows handshake. It’s listening to Ada’s route, not to you. Interesting distinction.”'),
-  objective('yk_gate', 'y_keel', leave(), 'Jump to Cradle Gap'),
+  objective('yk_gate', 'y_keel', leave(), 'Jump to Torchwall'),
 
   // 5 · Cradle Gap (breather): the cage, a breaker still holding a knot of motes
-  ...rest('yg', 'y_cradle', 'Cradle Gap', 'The Breaker · 3 jumps'),
-  notice('yg_cage', 'y_cradle', settle(), 'white', 'Breaker BY9-014', 'its field still holds something', { wall: 'saw_cage' }),
-  radio('yg_foreman', 'y_cradle', after('yg_cage', 3), 'The yard foreman', 'frontier', '“Seventy years in there. Hums at night. Faces the tanks when we refuel.”'),
-  notice('yg_pulse', 'y_cradle', after('yg_foreman', 4), 'white', 'It pulses', 'toward your tank', { if: { full: true } }),
-  objective('yg_gate', 'y_cradle', leave(), 'Jump to Torchwall'),
+  notice('yg_cage', 'y_keel', settle(), 'white', 'Breaker BY9-014', 'its field still holds something', { wall: 'saw_cage' }),
+  radio('yg_foreman', 'y_keel', after('yg_cage', 3), 'The yard foreman', 'frontier', '“Seventy years in there. Hums at night. Faces the tanks when we refuel.”'),
+  notice('yg_pulse', 'y_keel', after('yg_foreman', 4), 'white', 'It pulses', 'toward your tank', { if: { full: true } }),
 
   // 6 · Torchwall (pressure): Marit Voss and the strike; Hester's crossing
   notice('yt_notice', 'y_torch', arrive(), 'amber', 'Torchwall', 'yard crossing · crews restless'),
@@ -257,7 +253,7 @@ const YARDS_ROWS: Row[] = [
 // ── Leg 6 · the Free Ports: who was in the room ───────────────────────────
 const PORTS_ROWS: Row[] = [
   notice('fs_notice', 'f_saltquay', arrive(), 'teal', 'Saltquay', 'the Free Ports · everyone trades'),
-  objective('fs_objective', 'f_saltquay', arrive(), 'Next: Duarte Harbour', 'The Tollgate · 7 jumps'),
+  objective('fs_objective', 'f_saltquay', arrive(), 'Next: Duarte Harbour', 'The Tollgate · 6 jumps'),
   radio('fs_officer', 'f_saltquay', free(10), 'Checkpoint officer · Offices of Peace', 'custody', '“Inspector Ashgrove has been reassigned. I’m told you know why. Registry, please.”', { if: { has: ['ashgrove_met'] } }),
   objective('fs_gate', 'f_saltquay', leave(), 'Jump to Duarte Harbour'),
 
@@ -286,14 +282,12 @@ const PORTS_ROWS: Row[] = [
   // drawing the pickets off (standalone): the Guild gunship answers
   radio('fm_gun', 'f_mirren', flag('job_be_bait_won'), 'Guild gunship', 'guild', '“Three down. The pier is open. The Guild owes you one.”'),
   radio('fm_gun_warn', 'f_mirren', flag('job_be_bait_warn'), 'Guild gunship', 'guild', '“You warned them. We saw. Mind which Guild ports you dock at.”'),
-  objective('fm_gate', 'f_mirren', leave(), 'Jump to Lucky Haven'),
+  objective('fm_gate', 'f_mirren', leave(), 'Jump to Gilt Market'),
 
   // 5 · Lucky Haven (breather): people who live with them; Thren glass for sale; children in the damping field
-  ...rest('fh', 'f_haven', 'Lucky Haven', 'The Tollgate · 3 jumps'),
-  notice('fh_glass', 'f_haven', settle(), 'white', 'Thren glass', 'sold by the gram, dock four', { wall: 'saw_glass' }),
-  radio('fh_kids', 'f_haven', after('fh_glass', 4), 'A child on the dock', 'frontier', '“They’re in the field again. They don’t do anything. Mum says they’re lucky.”', { if: { full: false } }),
-  radio('fh_kids_full', 'f_haven', after('fh_glass', 4), 'A child on the dock', 'frontier', '“They’re all looking at your ship. They like you!”', { if: { full: true } }),
-  objective('fh_gate', 'f_haven', leave(), 'Jump to Gilt Market'),
+  notice('fh_glass', 'f_mirren', settle(), 'white', 'Thren glass', 'sold by the gram, dock four', { wall: 'saw_glass' }),
+  radio('fh_kids', 'f_mirren', after('fh_glass', 4), 'A child on the dock', 'frontier', '“They’re in the field again. They don’t do anything. Mum says they’re lucky.”', { if: { full: false } }),
+  radio('fh_kids_full', 'f_mirren', after('fh_glass', 4), 'A child on the dock', 'frontier', '“They’re all looking at your ship. They like you!”', { if: { full: true } }),
 
   // 6 · Gilt Market (pressure): Thane's hearing, Ines's price, Corin Ashe if he was exposed or used; Quiet Line 7
   notice('fg_notice', 'f_gilt', arrive(), 'amber', 'Gilt Market', 'Gutter market · everyone wants a copy'),
@@ -318,7 +312,7 @@ const PORTS_ROWS: Row[] = [
 const HOLLOWS_ROWS: Row[] = [
   notice('ha_notice', 'h_ashdeep', arrive(), 'teal', 'Ashdeep', 'the Hollows · nothing human lives here'),
   notice('ha_act', 'h_ashdeep', arrive(6), 'white', 'Act III', 'what the file is worth'),
-  objective('ha_objective', 'h_ashdeep', arrive(), 'Next: Hollowforge', 'The Seam · 7 jumps'),
+  objective('ha_objective', 'h_ashdeep', arrive(), 'Next: Hollowforge', 'The Seam · 6 jumps'),
   // the black-hole job is cut (story direction plan): its reading folds into the Thren story here
   radio('ha_reading', 'h_ashdeep', free(20), ANALYST[0], ANALYST[1], '“Survey reading from Ashdeep: Thren pressure tracks the extraction rate, year on year. It’s in the file they buried.”'),
   objective('ha_gate', 'h_ashdeep', leave(), 'Jump to Hollowforge'),
@@ -343,12 +337,10 @@ const HOLLOWS_ROWS: Row[] = [
   objective('hc_objective', 'h_cairn', arrive(), 'Palecairn · two voices want something'),
   main('hc_two', 'h_cairn', { on: 'place', place: 'hc_hulk' }, 'story_echo_sable'),
   notice('hc_home', 'h_cairn', flag('job_sables_crossing_won'), 'white', 'Sable', 'home, inside the swarm'),
-  objective('hc_gate', 'h_cairn', leave(), 'Jump to Mute Hall'),
+  objective('hc_gate', 'h_cairn', leave(), 'Jump to Ghostcinder'),
 
   // 5 · Mute Hall (breather): they line the lane; nobody drew it
-  ...rest('hm', 'h_mute', 'Mute Hall', 'The Seam · 3 jumps'),
-  radio('hm_sable', 'h_mute', settle(), 'Sable', 'unknown', '“Nobody human. They’ve drawn it for longer than there have been people.”', { if: { has: ['sable_trust'] } }),
-  objective('hm_gate', 'h_mute', leave(), 'Jump to Ghostcinder'),
+  radio('hm_sable', 'h_cairn', settle(), 'Sable', 'unknown', '“Nobody human. They’ve drawn it for longer than there have been people.”', { if: { has: ['sable_trust'] } }),
 
   // 6 · Ghostcinder (pressure): the swarm lane; machines letting swarms through the gates
   notice('hg_notice', 'h_cinder', arrive(), 'red', 'Ghostcinder', 'swarm lane · Thren in numbers'),

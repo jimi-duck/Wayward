@@ -59,3 +59,21 @@ describe('the six-stop Marches (v27)', () => {
     expect(roadRegion(j.chart, 1)).toBe(true);
   });
 });
+
+describe('the Thren breathers folded in (v28)', () => {
+  it('a save at Saltmarsh comes back at Kessler’s Wreck, the Belt on the road', () => {
+    const j = JSON.parse(JSON.stringify(newJourney(9, false, 'road'))) as Journey;
+    const c = j.chart, kess = c.systems.find((s) => s.name === 'Kessler’s Wreck')!;
+    for (const s of c.systems) if (s.col > kess.col) s.col += 1;
+    c.systems.push({ ...kess, id: 'old_salt', name: 'Saltmarsh', col: kess.col + 1, quiet: true });
+    const line = c.systems.filter((s) => s.kind !== 'home').sort((a, b) => a.col - b.col);
+    const k = line.findIndex((s) => s.name === 'Saltmarsh');
+    j.trail = [c.home, ...line.slice(0, k + 1).map((s) => s.id)];
+    j.at = 'old_salt';
+    j.version = 27;
+    const back = migrate(j)!;
+    expect(back.chart.systems.find((s) => s.id === back.at)!.name).toBe('Kessler’s Wreck');
+    expect(roadRegion(back.chart, 2)).toBe(true);
+    expect(back.chart.systems.some((s) => ['Saltmarsh', 'Cradle Gap', 'Lucky Haven', 'Mute Hall'].includes(s.name))).toBe(false);
+  });
+});
