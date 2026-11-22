@@ -29,6 +29,12 @@ export const STORY_PLACES: StoryPlaceDef[] = [
   { id: 'df_ferry', stop: 'd_ferry', name: 'The Quiet Ferry', look: 'ferry', along: 78, off: -42, act: { hold: 5 }, r: 18, done: 'ferry_alongside', skip: ['ferry_met'], verb: 'Hold alongside the Quiet Ferry' },
   { id: 'dn_ferry', stop: 'd_fold', name: 'The Quiet Ferry', look: 'ferry', along: 78, off: -42, act: { hold: 5 }, r: 18, done: 'ferry_alongside_2', skip: ['agent_exposed', 'agent_shielded'], verb: 'Hold alongside the Quiet Ferry' },
   // Yard Nine: Ben Anand's tender, off the claim office where nobody can listen
+  // ...then the breaker line (the Yards' set piece, living-world plan): security purges the archive down the yard's chute, and the
+  // other work orders spill along the line of half-built breakers, one after another, toward the gate
+  { id: 'yn_order1', stop: 'y_nine', name: 'Work order BY9-002', look: 'canister', along: 130, off: -40, act: { pickup: true }, r: 3, done: 'order_1', show: 'frag_workorder', after: 'yn_spill', verb: 'Take work order 1 of 4 aboard', trail: true },
+  { id: 'yn_order2', stop: 'y_nine', name: 'Work order BY9-003', look: 'canister', along: 210, off: 36, act: { pickup: true }, r: 3, done: 'order_2', show: 'order_1', verb: 'Take work order 2 of 4 aboard', trail: true },
+  { id: 'yn_order3', stop: 'y_nine', name: 'Work order BY9-004', look: 'canister', along: 290, off: -32, act: { pickup: true }, r: 3, done: 'order_3', show: 'order_2', verb: 'Take work order 3 of 4 aboard', trail: true },
+  { id: 'yn_order4', stop: 'y_nine', name: 'Work order BY9-005', look: 'canister', along: 370, off: 40, act: { pickup: true }, r: 3, done: 'order_4', show: 'order_3', verb: 'Take work order 4 of 4 aboard', trail: true },
   { id: 'yn_anand', stop: 'y_nine', name: 'Ben Anand’s tender', look: 'skiff', along: 60, off: -32, act: { hold: 5 }, r: 16, done: 'anand_alongside', skip: ['frag_workorder'], verb: 'Hold alongside Anand’s tender' },
   // Mirren's Pier: the old pier boat where she keeps the box
   { id: 'fm_mirren', stop: 'f_mirren', name: 'Old Mirren’s boat', look: 'skiff', along: 60, off: -32, act: { hold: 5 }, r: 16, done: 'mirren_alongside', skip: ['frag_witnesses'], verb: 'Hold alongside Old Mirren’s boat' },

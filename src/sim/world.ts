@@ -2201,6 +2201,7 @@ export class World implements EncounterHost {
       else if (def) this.desk.offer(def, 'major', this.runTime, false, true);
     }
     else if ('wall' in o) this.flags.add(o.wall);
+    else if ('chase' in o) { const b = this.bk; if (b) { b.heat = Math.max(b.heat, 0.4); b.nextPursuit = Math.min(b.nextPursuit, this.runTime + 3); } }
     else this.flags.add(`pursuit_${o.pursuit}`);
   }
 

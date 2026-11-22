@@ -24,7 +24,8 @@ describe('a story place, as data', () => {
     // never past half the way to a short lane's gate
     expect(placeAt(hold({ along: 900 }), { lane: { kind: 'lane', name: 'Jump Gate', x: 1000, z: 0, r: 30 } }).x).toBeCloseTo(500);
     // close to where she comes in: within a kilometre (owner 2026-11-22)
-    for (const p of STORY_PLACES) expect(Math.hypot(p.along, p.off), p.id).toBeLessThan(100);
+    // (a trail toward the gate, Yard Nine's breaker line, leads on from a first beat that is close)
+    for (const p of STORY_PLACES) expect(Math.hypot(p.along, p.off), p.id).toBeLessThan(p.trail ? 400 : 100);
     const ids = new Set(STORY_PLACES.map((p) => p.id));
     expect(ids.size).toBe(STORY_PLACES.length);
     for (const p of STORY_PLACES) {

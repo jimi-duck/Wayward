@@ -245,6 +245,21 @@ export const DIRECTION: Record<string, string> = {
   'Pickets inbound': 'Posten im Anflug',
   // Kiln's cordon, a silent run (sim/cordon.ts)
   'Custody cordon ahead': 'Custody-Sperre voraus',
+  // Yard Nine, the breaker line: the spilled work orders (content/script/places.ts)
+  'Work order BY9-002': 'Arbeitsauftrag BY9-002',
+  'Work order BY9-003': 'Arbeitsauftrag BY9-003',
+  'Work order BY9-004': 'Arbeitsauftrag BY9-004',
+  'Work order BY9-005': 'Arbeitsauftrag BY9-005',
+  'Take work order 1 of 4 aboard': 'Nimm Arbeitsauftrag 1 von 4 an Bord',
+  'Take work order 2 of 4 aboard': 'Nimm Arbeitsauftrag 2 von 4 an Bord',
+  'Take work order 3 of 4 aboard': 'Nimm Arbeitsauftrag 3 von 4 an Bord',
+  'Take work order 4 of 4 aboard': 'Nimm Arbeitsauftrag 4 von 4 an Bord',
+  '“Security’s purging the archive down the chute. The rest of the orders are spilling. Grab what you can.”': '„Die Sicherheit kippt das Archiv in den Schacht. Die anderen Aufträge treiben raus. Schnapp dir, was du kriegst.“',
+  'they want the orders back': 'sie wollen die Aufträge zurück',
+  'Work order aboard': 'Arbeitsauftrag an Bord',
+  '2 of 4': '2 von 4',
+  '3 of 4': '3 von 4',
+  '“All of them. BY9-001 to 005. That’s the whole first ring, signed and countersigned.”': '„Alle. BY9-001 bis 005. Das ist der ganze erste Ring, unterschrieben und gegengezeichnet.“',
   // Stillwater, answering a Thren knot (sim/speak.ts)
   'Answer the pattern': 'Antworte dem Muster',
   'Fly what it flies: still, one loop round it, still. Costs nothing, if it hears you.': 'Flieg, was er fliegt: still, eine Runde um ihn, still. Kostet nichts, wenn er dich hört.',

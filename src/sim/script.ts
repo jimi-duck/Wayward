@@ -49,7 +49,9 @@ export type Output =
   | { objective: { main?: string; quiet?: string; /** The trigger of the row that set it (filled in by the runner). */ from?: Trigger['on'] } }
   | { card: string; /** Opens in a fight (an urgent row): the gate waits on it. */ urgent?: boolean }
   | { wall: string }
-  | { pursuit: string };
+  | { pursuit: string }
+  /** Hunters come now (the stop's pursuit starts, its heat up): yard security after the work orders. */
+  | { chase: true };
 
 export interface Row {
   id: string;
@@ -269,7 +271,7 @@ export class Script {
       this.fired.add(r.id);
       if (r.wall) out.push({ wall: r.wall });
       const d = r.do;
-      if ('objective' in d) { out.push({ objective: { ...d.objective, from: r.on.on } }); play(r.id); } else if ('wall' in d || 'pursuit' in d) { out.push(d); play(r.id); } else this.queue.push({ id: r.id, at: c.t, carried: false });
+      if ('objective' in d) { out.push({ objective: { ...d.objective, from: r.on.on } }); play(r.id); } else if ('wall' in d || 'pursuit' in d || 'chase' in d) { out.push(d); play(r.id); } else this.queue.push({ id: r.id, at: c.t, carried: false });
     }
     // flavour that waited too long
     this.queue = this.queue.filter((q) => { const s = this.all.get(q.id)?.stale; return s === undefined || c.t - q.at < s; });

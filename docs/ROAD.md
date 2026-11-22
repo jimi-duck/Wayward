@@ -287,3 +287,11 @@ pattern" (`still_speak`), which takes the place of venting the rig's hold. A kno
 still within 75 units, one full loop round it (between 28 and 130 units out), three seconds still again. The HUD's first line
 names the step. Answered, the knot leaves (`still_spoken`, the Thren calm for 120 s, miners +1) and Hester says it copied her. A
 shot at a mote, or 150 s, and it comes on (`still_fought`). `tests/speak.test.ts`.
+
+## Yard Nine, the breaker line (22 November 2026)
+
+The Yards' set piece (living-world plan). After Anand's work-order card, Ben radios that security is purging the archive down the
+chute (`yn_spill`). Four work-order canisters spill along the lane, one shown at a time (`yn_order1` to `yn_order4`, story places
+with `trail`, so they may sit up to 400 units out). Taking the first aboard brings yard security: a red notice and the new
+`{ chase: true }` script output, which lifts the heat to at least 0.4 and calls the leg's pursuit within 3 s. Each canister after
+that is a teal "Work order aboard" notice; the fourth is Ben's line and the wall entry `orders_all`.
