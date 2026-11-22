@@ -1,3 +1,4 @@
+import type { Comer } from '../../sim/gathering';
 import type { Row } from '../../sim/script';
 import { CPS } from './broadcasts';
 import { ANALYST, PIKE, after, free, notice, objective, radio } from './kit';
@@ -39,4 +40,15 @@ export const THRESHOLD_ROWS: Row[] = [
   // 4 · Calloway: the gate is hers
   { ...notice('th_ready', STOP, after('th_gather', 40), 'teal', 'The Threshold', 'Calloway holds the gate'), main: true },
   objective('th_go', STOP, after('th_ready', 0), 'Fly to the Threshold', 'Calloway holds the gate herself'),
+];
+
+/** Who came, as hulls (sim/gathering.ts): each ally's line brings them in, and they line the lane to the gate. */
+export const GATHERING: Comer[] = [
+  { row: 'th_pike', variant: 'liner', n: 3, tag: 'Quiet Line' },
+  { row: 'th_hester', variant: 'barge', n: 3, tag: 'Hester’s rigs' },
+  { row: 'th_walk', variant: 'hauler', n: 4, tag: 'The Long Walk' },
+  { row: 'th_walk_drift', variant: 'hauler', n: 4, tag: 'The Long Walk' },
+  { row: 'th_analyst', variant: 'liner', n: 1, tag: 'Survey Office' },
+  { row: 'th_saints', variant: 'barge', n: 2, tag: 'Hollow Saints' },
+  { row: 'th_val', variant: 'barge', n: 1, tag: 'Val' },
 ];
