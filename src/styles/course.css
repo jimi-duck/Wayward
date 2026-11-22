@@ -1,8 +1,8 @@
 /* ── the Course: the Warden's Road between two stops (2026-11-14) ─────────
    The owner's mockup: a calm, industrial nav screen. No Neon Glass frame (it is
    a full screen, not a pop-up): a dark field with thin teal corner brackets.
-   The header says where she arrived, the goal and the Net behind; the map is the
-   road as one wave over the nebula; the panel on the right is the next stop, the
+   The map in the jump: the header names where she is jumping to, the goal and the Net behind; the map is the
+   road as one wave over the nebula, her ship on the lane in; the panel on the right is that stop, the
    route to the goal and the one button; under the map a legend and the whole
    road, leg by leg. Amber is the route and the action, teal is here and
    information, red is the Continuance Net and nothing else. Labels are
@@ -27,7 +27,7 @@
 #course > .panel.coursep::before, #course > .panel.coursep::after { content: none; display: none; }
 #course .panel.coursep > * { transform: none; }
 
-/* the header: where she arrived, big, then the chips; the stores right */
+/* the header: where she is jumping to, big, then the chips; the stores right */
 .co-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px 32px; min-width: 0; }
 .co-id { display: grid; gap: 6px; min-width: 0; }
 .co-k { margin: 0; display: flex; align-items: center; gap: 0 .5em; font: 500 12px/1.2 var(--font-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--ink-2); }
@@ -89,7 +89,8 @@
 .co-sub { font: 400 10px var(--font-mono); letter-spacing: .24em; fill: var(--ink-2); paint-order: stroke; stroke: rgba(var(--void-rgb), .7); stroke-width: 3px; }
 .co-lab.done .co-name { fill: var(--ink-2); }
 .co-lab.done .co-sub { fill: var(--ink-3); }
-.co-lab.here .co-sub { fill: var(--cy); }
+.co-lab.here .co-name, .co-lab.here .co-sub { fill: var(--pick-hi); }
+.co-lab.here .co-name { font-size: 15px; }
 .co-lab.next .co-name, .co-lab.next .co-sub, .co-lab.route .co-sub, .co-lab.gate:not(.done) .co-name, .co-lab.gate:not(.done) .co-sub { fill: var(--pick-hi); }
 .co-lab.next .co-name { font-size: 15px; }
 .co-jtag path { fill: rgba(var(--void-rgb), .82); stroke: rgba(var(--pick-rgb), .7); stroke-width: 1; }
@@ -211,7 +212,7 @@
   #co-go small { font-size: 10px; }
   .co-name { font-size: 10px; letter-spacing: .16em; }
   .co-sub { font-size: 9px; letter-spacing: .14em; }
-  .co-lab.next .co-name { font-size: 11px; }
+  .co-lab.next .co-name, .co-lab.here .co-name { font-size: 11px; }
 }
 /* the smallest phones: the button keeps its whole name in view */
 @media (max-height: 520px) { #co-go b { font-size: 13px; letter-spacing: .1em; } }

@@ -6,11 +6,13 @@ import { num, plural, t } from '../i18n';
 
 // ── the Course ────────────────────────────────────────────────────────────
 // On the Warden's Road the chart's question changes from "where next?" to
-// "how far, and at what cost?". The screen comes up as she lands: the header
-// says where (with the goal, the jumps to it and the Net behind), the map is the
-// road as one wave over the nebula with the route in amber, the panel on the right
-// is the next stop and the route to the goal, with the one button that flies on
-// into the system she has just reached. Under the map a legend and the whole road,
+// "how far, and at what cost?". The screen is the map in the jump (owner,
+// 22 November 2026): it comes up while she is in the lane, and is all about
+// where she is flying to. The header names it (with the goal, the jumps to it
+// and the Net behind), the map is the road as one wave over the nebula with her
+// ship on the lane in and the road on in amber, the panel on the right is that
+// system, what is there, and the route on to the goal, with the one button that
+// drops her out of the jump into it. Under the map a legend and the whole road,
 // leg by leg. The view is sim/course.ts; the Wall lives here as it does on the chart.
 
 type State = 'done' | 'here' | 'next' | 'route' | 'ahead';
@@ -68,7 +70,7 @@ export class CoursePanel {
 
   /** The header: arrived where and when, the name, the goal, the jumps to it and the Net behind; the stores on the right. */
   private head(c: Course): void {
-    $('co-k').replaceChildren(h('i', 'co-dia'), h('b', '', t('Arrived')), ` · ${t(c.region)} · ${t('Day {n}', { n: c.day })}`);
+    $('co-k').replaceChildren(h('i', 'co-dia'), h('b', '', t('In the jump')), ` · ${t(c.region)} · ${t('Day {n}', { n: c.day })}`);
     $('co-t').textContent = t(c.here.name);
     $('co-chips').replaceChildren(
       h('span', 'co-chip goal', `${t('Goal')} · ${t(c.aim.name)}`),
@@ -87,12 +89,12 @@ export class CoursePanel {
     );
   }
 
-  /** The panel: the next stop, what it offers, the route to the goal, and the one button. */
+  /** The panel: the system she is jumping to, what it offers, the route on to the goal, and the one button. */
   private side(c: Course): void {
-    $('co-nk').textContent = `${t('Next stop')} · ${t('J{n} of {of}', { n: 1, of: c.aim.jumps })}`;
-    $('co-nn').textContent = t(c.next.name);
-    $('co-ns').textContent = c.next.purpose ? sentence(t(c.next.purpose)) : '';
-    const n = c.nextAt;
+    $('co-nk').textContent = t('Jumping to');
+    $('co-nn').textContent = t(c.here.name);
+    $('co-ns').textContent = c.here.purpose ? sentence(t(c.here.purpose)) : '';
+    const n = c.hereAt;
     const dl = (k: string, ...v: Array<Node | string>) => h('div', 'co-row', '', h('span', 'k', k), h('span', 'v', '', ...v.map((x) => (typeof x === 'string' ? document.createTextNode(x) : x))));
     const wallb = h('button', 'co-wallb', '', mono(t('File {n}/{of}', { n: c.file.found, of: c.file.of })), h('span', 'tri', ' ▸')) as HTMLButtonElement;
     wallb.type = 'button';
@@ -100,6 +102,7 @@ export class CoursePanel {
     $('co-rows').replaceChildren(
       dl(t('Depot'), n.depot ? t('Yes') : t('No'), ...(n.depot && n.bonded ? [h('span', 'amb', ` · ${t('Bonded +{n}%', { n: n.bonded })}`)] : [])),
       dl(t('Continuance'), ...(n.net ? [h('span', 'red', `▲ ${t('Net holds it')}`)] : [h('span', 'dim', t('No Net'))])),
+      ...(n.job ? [dl(t('Job'), t('On offer'))] : []),
       dl(t('Wall'), wallb),
       ...(c.debt ? [dl(t('Debt'), c.debt.settled ? t('Settled') : mono(`${num(c.debt.left)} CR`))] : []),
     );
@@ -111,15 +114,15 @@ export class CoursePanel {
     let k = 0;
     $('co-route').replaceChildren(...list.map((x, i) => {
       const here = x.state === 'here', last = i === list.length - 1;
-      const cls = here ? 'here' : last && x.gate ? 'goal gate' : last ? 'goal' : i === 1 ? 'next' : 'later';
-      const tag = here ? t('Here') : `J${++k}`;
+      // where she is jumping to is the amber one; the rest of the road on is quiet until the goal
+      const cls = here ? 'here next' : last && x.gate ? 'goal gate' : last ? 'goal' : 'later';
+      const tag = here ? t('Arriving') : `J${++k}`;
       return h('li', cls, '', h('i', 'pip'), h('span', 'nm', t(x.name)), mono(tag, 'j'));
     }));
-    // the button: into the system she has just reached, and what is there to do in it
+    // the button: out of the jump into the system the panel names, what there is to do in it, and the stop after
     const what = [c.hereAt.depot ? t('Refuel') : '', c.hereAt.job ? t('Job') : '', t('Wall')].filter(Boolean).join(' · ');
-    // the button names the jump, as the panel does; what is first to do here is the small line under it
-    $('co-go-t').textContent = t('Plot course to {name}', { name: t(c.next.name) });
-    $('co-go-s').textContent = `${t('{name} first', { name: t(c.here.name) })} · ${what}`;
+    $('co-go-t').textContent = t('Arrive at {name}', { name: t(c.here.name) });
+    $('co-go-s').textContent = `${what} · ${t('then {name}', { name: t(c.next.name) })}`;
   }
 
   /** Under the map: the whole road, leg by leg, with the prologue done and this leg in amber. */
@@ -156,8 +159,9 @@ export class CoursePanel {
       ...(at < 0 ? [{ name: c.here.name, kind: c.here.kind, state: 'here' as const, gate: false, aim: false, jump: 0, net: false }] : []),
       ...c.road.map((r, i): MapNode => {
         const k = i - at; // jumps from here (at -1: the first stop is J1)
-        const state: State = r.state === 'done' ? 'done' : r.state === 'here' ? 'here' : k === 1 ? 'next' : i <= aimAt ? 'route' : 'ahead';
-        return { name: r.name, kind: r.kind, state, gate: r.kind === 'gate' || r.kind === 'edge', aim: i === aimAt, jump: state === 'next' || state === 'route' ? k : 0, day: r.day, net: r.net };
+        // the stop she is jumping to is 'here' (drawn as the destination); the road on from it is the route, J1 the jump after
+        const state: State = r.state === 'done' ? 'done' : r.state === 'here' ? 'here' : i <= aimAt || k === 1 ? 'route' : 'ahead';
+        return { name: r.name, kind: r.kind, state, gate: r.kind === 'gate' || r.kind === 'edge', aim: i === aimAt, jump: state === 'route' ? k : 0, day: r.day, net: r.net };
       }),
     ];
     const hereI = nodes.findIndex((n) => n.state === 'here');
@@ -203,14 +207,15 @@ export class CoursePanel {
     const tags: SVGElement[] = [];
     for (let i = 1; i < nodes.length; i++) {
       const [p1, c1, c2, p2] = ctl(i), d = `M${f(p1.x)} ${f(p1.y)}C${f(c1.x)} ${f(c1.y)} ${f(c2.x)} ${f(c2.y)} ${f(p2.x)} ${f(p2.y)}`;
-      const n = nodes[i]!, look = n.state === 'done' || n.state === 'here' ? 'done' : n.state === 'next' ? 'next' : n.state === 'route' ? 'route' : 'ahead';
+      // the lane she is in now: solid amber with a glow, her ship on it
+      const n = nodes[i]!, look = n.state === 'done' ? 'done' : n.state === 'here' ? 'next' : n.state === 'route' ? 'route' : 'ahead';
       if (look === 'next') kids.push(svg('path', { d, class: 'co-lane-glow' }));
       kids.push(svg('path', { d, class: `co-lane ${look}` }));
-      if (n.jump && (!small || n.state === 'next')) {
+      if (n.jump && (!small || n.jump === 1)) {
         // the J tag at the middle of the hop (the cubic at t = 0.5), a little off the line
         const mx = (p1.x + 3 * c1.x + 3 * c2.x + p2.x) / 8, my = (p1.y + 3 * c1.y + 3 * c2.y + p2.y) / 8;
         const w = 30, hh = 17, x0 = mx + 8, y0 = my - hh / 2, cut = 4;
-        const tag = svg('g', { class: `co-jtag${n.state === 'next' ? ' next' : ''}` });
+        const tag = svg('g', { class: 'co-jtag' });
         tag.append(svg('path', { d: `M${f(x0 + cut)} ${f(y0)}H${f(x0 + w)}V${f(y0 + hh - cut)}L${f(x0 + w - cut)} ${f(y0 + hh)}H${f(x0)}V${f(y0 + cut)}Z` }));
         tag.append(svg('text', { x: f(x0 + w / 2), y: f(y0 + hh / 2 + 4), 'text-anchor': 'middle' }, `J${n.jump}`));
         tag.append(svg('circle', { cx: f(mx), cy: f(my), r: 2 }));
@@ -228,16 +233,12 @@ export class CoursePanel {
         if (n.state !== 'done') g.append(svg('circle', { cx: x, cy: y, r: 46 * k, fill: 'url(#co-h-amber)' }));
         const dia = (s: number, cls: string) => svg('path', { d: `M${x} ${y - s}L${x + s} ${y}L${x} ${y + s}L${x - s} ${y}Z`, class: cls });
         g.append(dia(15 * k, 'co-dia-o'), dia(8 * k, 'co-dia-i'));
-      } else if (n.state === 'here') {
-        r = 15 * k;
-        g.append(svg('circle', { cx: x, cy: y, r: 40 * k, fill: 'url(#co-h-teal)' }));
-        g.append(svg('circle', { cx: x, cy: y, r: 13 * k, class: 'co-here' }));
-        for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]] as const) g.append(svg('line', { x1: x + dx * 16 * k, y1: y + dy * 16 * k, x2: x + dx * 21 * k, y2: y + dy * 21 * k, class: 'co-tick' }));
-        g.append(svg('path', { d: `M${x} ${y - 7 * k}L${x + 5.5 * k} ${y + 5.5 * k}L${x} ${y + 2.5 * k}L${x - 5.5 * k} ${y + 5.5 * k}Z`, class: 'co-ship' }));
-      } else if (n.state === 'next') {
+      } else if (n.state === 'here' || n.state === 'next') {
+        // where she is jumping to: the amber destination, with the sight ticks round it
         r = 15 * k;
         g.append(svg('circle', { cx: x, cy: y, r: 44 * k, fill: 'url(#co-h-amber)' }));
         g.append(svg('circle', { cx: x, cy: y, r: 15 * k, class: 'co-ring amber' }), svg('circle', { cx: x, cy: y, r: 10 * k, class: 'co-ring amber thick' }), svg('circle', { cx: x, cy: y, r: 4.5 * k, class: 'co-core amber' }));
+        for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]] as const) g.append(svg('line', { x1: x + dx * 18 * k, y1: y + dy * 18 * k, x2: x + dx * 23 * k, y2: y + dy * 23 * k, class: 'co-tick' }));
       } else if (n.state === 'route') {
         r = 9 * k;
         g.append(svg('circle', { cx: x, cy: y, r: 9 * k, class: 'co-ring amber thick' }), svg('circle', { cx: x, cy: y, r: 3 * k, class: 'co-core amber' }));
@@ -251,7 +252,7 @@ export class CoursePanel {
       solids.push({ x, y, r: r + 4 });
       // the name in wide-tracked capitals, and one line under it: here and what it is, the jump and what it is, or the day flown
       const kind = n.gate ? t('Jump Gate') : t(KIND_WORD[n.kind]);
-      const sub = n.state === 'here' ? `${t('Here')} · ${kind}`
+      const sub = n.state === 'here' ? `${t('Arriving')} · ${kind}`
         : n.state === 'done' ? (n.day ? t('Day {n}', { n: n.day }) : '')
         : n.jump ? `J${n.jump} · ${n.aim && !n.gate ? t('Goal') : kind}` : n.gate ? kind : '';
       const lab = svg('g', { class: `co-lab ${n.state}${n.gate ? ' gate' : ''}` });
@@ -264,6 +265,23 @@ export class CoursePanel {
       kids.push(g);
     });
     kids.push(...tags);
+    // her ship, in the lane: most of the way along the hop into the stop she is jumping to, nose on along the lane
+    if (hereI >= 0) {
+      const k = small ? 0.8 : 1;
+      let x: number, y: number, a: number;
+      if (hereI > 0) {
+        const [p1, c1, c2, p2] = ctl(hereI), u = 0.62, v = 1 - u;
+        x = v * v * v * p1.x + 3 * v * v * u * c1.x + 3 * v * u * u * c2.x + u * u * u * p2.x;
+        y = v * v * v * p1.y + 3 * v * v * u * c1.y + 3 * v * u * u * c2.y + u * u * u * p2.y;
+        const dx = 3 * v * v * (c1.x - p1.x) + 6 * v * u * (c2.x - c1.x) + 3 * u * u * (p2.x - c2.x), dy = 3 * v * v * (c1.y - p1.y) + 6 * v * u * (c2.y - c1.y) + 3 * u * u * (p2.y - c2.y);
+        a = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
+      } else { x = pts[0]!.x - 34 * k; y = pts[0]!.y; a = 90; }
+      const ship = svg('g', { class: 'co-s here', transform: `translate(${f(x)} ${f(y)}) rotate(${f(a)})` });
+      ship.append(svg('circle', { cx: 0, cy: 0, r: 22 * k, fill: 'url(#co-h-teal)' }));
+      ship.append(svg('path', { d: `M0 ${-8 * k}L${6.5 * k} ${6.5 * k}L0 ${3 * k}L${-6.5 * k} ${6.5 * k}Z`, class: 'co-ship' }));
+      kids.push(ship);
+      solids.push({ x, y, r: 12 * k });
+    }
     for (const tg of tags) { const c0 = tg.querySelector('circle')!; solids.push({ x: Number(c0.getAttribute('cx')) + 23, y: Number(c0.getAttribute('cy')), r: 14 }); }
     // past the goal: the next leg, faint, fading out
     if (c.legs.at + 1 < c.legs.names.length && !small) {
