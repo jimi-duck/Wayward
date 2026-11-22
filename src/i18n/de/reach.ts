@@ -7,7 +7,7 @@ export const REACH_DE: Record<string, string> = {
   'The Wall': 'Die Wand',
   'the closing order, signed L. C.': 'der Schließungsbefehl, gezeichnet L. C.',
   'Kellern port, hospice ring': 'Kellern-Hafen, Hospizring',
-  'Halden’s Reach · find the Warden’s record': 'Halden’s Reach · die Akte des Wardens finden',
+  'Ilse’s skiff · hold alongside': 'Ilses Skiff · längsseits halten',
   'Frontier port · refit bay open': 'Frontier-Hafen · Werkstatt offen',
   'Jump to the Rift': 'Spring in den Rift',
   'Jump to the Scrapgate': 'Spring zum Scrapgate',
@@ -35,7 +35,8 @@ export const REACH_DE: Record<string, string> = {
   'Copperline · refit before the Narrows': 'Copperline · vor den Narrows aufrüsten',
   'unknown contact logged': 'unbekannter Kontakt vermerkt',
   // radio
-  '“Halden’s Reach. Old Warden families retire here. That skiff off the hospice ring is calling you.”': '„Halden’s Reach. Alte Warden-Familien ziehen sich hierher zurück. Das Skiff am Hospizring ruft dich.“',
+  '“Wayward, this is Ilse Marrow, off the hospice ring. Come alongside. Slowly. Kellern listens on the open band.”': '„Wayward, hier ist Ilse Marrow, am Hospizring. Komm längsseits. Langsam. Kellern hört auf dem offenen Band mit.“',
+  '“Closer. Hold there. Let me read your hull.”': '„Näher. Halt da. Lass mich deinen Rumpf lesen.“',
   '“The spike’s off my stern. If anyone asks, I was never here. They’ll ask.”': '„Der Spike treibt hinter meinem Heck. Wenn jemand fragt: Ich war nie hier. Sie werden fragen.“',
   '“L. C. again. On the order, and on the money.”': '„Schon wieder L. C. Auf dem Befehl und auf dem Geld.“',
   '“Whoever that is, they signed both.”': '„Wer das auch ist, hat beides unterschrieben.“',

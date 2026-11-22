@@ -14,7 +14,7 @@ export const PLACES_DE: Record<string, string> = {
   'Ilse’s message buoy': 'Ilses Nachrichtenboje',
   'Hold by Ilse’s message buoy': 'Halt bei Ilses Nachrichtenboje',
   '“It’s in the canister off my bow. Paper can’t be wiped.”': '„Er ist im Behälter vor meinem Bug. Papier kann man nicht löschen.“',
-  '“Paper. Nobody’s held any in years. Keep it dry, Juno.”': '„Papier. Das hat seit Jahren keiner mehr in der Hand gehabt. Halt es trocken, Juno.“',
+  '“Paper, signed L. C. Tallyhouse keeps Kellern’s books. Someone there will know the hand.”': '„Papier, unterschrieben mit L. C. In Tallyhouse liegen Kellerns Bücher. Da kennt jemand die Handschrift.“',
   'Ma Saffi’s ship': 'Ma Saffis Schiff',
   'Hold alongside Ma Saffi’s ship': 'Halt neben Ma Saffis Schiff',
   'The Aster’s wreck': 'Das Wrack der Aster',

@@ -3,8 +3,8 @@
 export const BRIEFS: Record<string, string> = {
   'The archive named a quiet lane, and this is it. Every other way out is watched, and your hull is posted as stolen. Nobody is hunting you yet.':
     'Das Archiv hat einen ruhigen Weg genannt, und das ist er. Alle anderen Ausgänge werden überwacht, und dein Rumpf ist als gestohlen gemeldet. Noch jagt dich niemand.',
-  'Old Lane Wardens spend their last years in this hospice ring. One of them ran the Narrows relay the night the lanes closed, and kept the paper.':
-    'Alte Lane Wardens verbringen ihre letzten Jahre in diesem Hospizring. Eine von ihnen führte in der Nacht der Schließung das Narrows-Relais und hat das Papier behalten.',
+  'Ilse Marrow stood watch at the Narrows the night the lanes closed. She kept the order, and she is waiting off the hospice ring.':
+    'Ilse Marrow hatte Wache an den Narrows, in der Nacht, als die Lanes geschlossen wurden. Sie hat den Befehl behalten und wartet am Hospizring.',
   'Kellern’s accounts station, where every claim in the Reach is tallied. One clerk here keeps the real books, the ones that show where the Scatter’s Krail went.':
     'Kellerns Buchhaltungsstation, hier wird jeder Claim der Reach verbucht. Ein Angestellter führt die echten Bücher, die zeigen, wohin das Krail der Scatter ging.',
   'The lane Hester’s crews haul through. Pirates have put a toll beacon on it, and the Net is spreading behind you. Staying long is a risk.':

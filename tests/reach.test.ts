@@ -72,6 +72,13 @@ describe('Halden’s Reach, and Ilse’s buoy at Tallyhouse', () => {
     expect(j.carry.pending).toEqual([]);
   });
 
+  it('is the model scene: Ilse speaks first, and Sam once, at the end', () => {
+    const p = fly(at(2), { story_handwriting: 'grandmother' });
+    expect(p.pings[0]).toContain('this is Ilse Marrow');
+    const sam = p.pings.filter((t) => t.includes('Tallyhouse keeps Kellern’s books') || t.includes('Old Warden families'));
+    expect(sam).toEqual(['“Paper, signed L. C. Tallyhouse keeps Kellern’s books. Someone there will know the hand.”']);
+  });
+
   it('a player who somehow reaches Tallyhouse without the order hears her recording there, and gets the same flags', () => {
     // jump on to Tallyhouse (stop 3): the recording waits on a buoy off the station
     const v = at(3);

@@ -161,7 +161,7 @@ describe('Northfold plays from data', () => {
     for (let i = 0; i < Math.round(5 / STEP); i++) { w.step(STEP, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); w.events.length = 0; }
     const g = w.storyGoal();
     expect(g.main).toBe('Jump to Halden’s Reach');
-    expect(g.quiet[0]).toBe('Halden’s Reach · find the Warden’s record');
+    expect(g.quiet[0]).toBe('Halden’s Reach · meet Ilse Marrow');
   });
 
   it('keeps the queue in the save', () => {
