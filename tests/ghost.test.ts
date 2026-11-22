@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
-import { GHOST_CLOSE_AFTER, GHOST_FAR, GHOST_NEAR } from '../src/sim/ghost';
+import { GHOST_AFTER, GHOST_CLOSE_AFTER, GHOST_FAR, GHOST_NEAR } from '../src/sim/ghost';
 import { newJourney, sortieDef } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 
@@ -42,7 +42,8 @@ const dist = (w: World) => Math.hypot(w.ghost!.x - w.ship.x, w.ghost!.z - w.ship
 describe('the ghost at Northfold', () => {
   it('waits for a while of quiet sky', () => {
     const w = northfold();
-    run(w, 30);
+    // the arrival's hush and the first lines come first: never in the first GHOST_AFTER seconds
+    run(w, GHOST_AFTER);
     expect(w.ghost).toBeNull();
     untilGhost(w);
     expect(w.ghost).not.toBeNull();

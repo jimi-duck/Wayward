@@ -5,8 +5,8 @@ export const BRIEFS: Record<string, string> = {
     'Das Archiv hat einen ruhigen Weg genannt, und das ist er. Alle anderen Ausgänge werden überwacht, und dein Rumpf ist als gestohlen gemeldet. Noch jagt dich niemand.',
   'Ilse Marrow stood watch at the Narrows the night the lanes closed. She kept the order, and she is waiting off the hospice ring.':
     'Ilse Marrow hatte Wache an den Narrows, in der Nacht, als die Lanes geschlossen wurden. Sie hat den Befehl behalten und wartet am Hospizring.',
-  'Kellern’s accounts station, where every claim in the Reach is tallied. One clerk here keeps the real books, the ones that show where the Scatter’s Krail went.':
-    'Kellerns Buchhaltungsstation, hier wird jeder Claim der Reach verbucht. Ein Angestellter führt die echten Bücher, die zeigen, wohin das Krail der Scatter ging.',
+  'Kellern’s accounts station. Adam Brook, a clerk, keeps the real books: where the Scatter’s Krail went. He wants them out, and he is waiting in his shuttle.':
+    'Kellerns Abrechnungsstation. Adam Brook, ein Buchhalter, führt die echten Bücher: wohin das Krail des Scatter ging. Er will sie loswerden und wartet in seinem Shuttle.',
   'The lane Hester’s crews haul through. Pirates have put a toll beacon on it, and the Net is spreading behind you. Staying long is a risk.':
     'Die Route, über die Hesters Crews schleppen. Piraten haben ein Mautfeuer darauf gesetzt, und das Net breitet sich hinter dir aus. Lange zu bleiben ist riskant.',
   'Kellern’s last port before the Narrows. Fit what you can. Custody has traced the company’s real books to Adam Brook, the clerk at Tallyhouse.':

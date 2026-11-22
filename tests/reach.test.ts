@@ -100,13 +100,13 @@ describe('Tallyhouse and Copperline', () => {
     withOrder.carry.flags.push('frag_order', 'clue_order_sig', 'ada_named');
     const a = fly(withOrder, { story_ledger: 'take' }, 320);
     expect(a.cards).toEqual(['story_ledger']);
-    expect(a.pings).toEqual(expect.arrayContaining(['“L. C. again. On the order, and on the money.”', '“Whoever that is, they signed both.”']));
+    expect(a.pings).toContain('“L. C. again, on the order and on the money. Whoever that is signed both.”');
     // without the order: Sam reads the initials by what she has when the books are read. If Ilse's buoy came first
     // (the stop is short), the initials match at once; if not, L. C. means nothing until the buoy brings the order
     const without = at(3);
     const b = fly(without, { story_ledger: 'take' }, 320);
     const nothing = b.pings.indexOf('“L. C. means nothing to me. Remember it anyway.”');
-    const again = b.pings.indexOf('“L. C. again. On the order, and on the money.”');
+    const again = b.pings.indexOf('“L. C. again, on the order and on the money. Whoever that is signed both.”');
     expect(nothing >= 0 || again >= 0).toBe(true);
     if (nothing >= 0 && again >= 0) expect(again).toBeGreaterThan(nothing);
     expect(b.cards.slice(0, 2)).toEqual(['story_ledger', 'ilse_recording']);

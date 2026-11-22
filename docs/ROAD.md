@@ -319,3 +319,19 @@ the Long Walk (4 haulers, from the job or the Drift she walked), the Survey anal
 come in down the lane and take places in two lines either side of it, 470 units and more short of the gate, outside Calloway's
 checkpoint, so she flies the last stretch to Calloway between them. Civilian, meek, never armed. Oren's three lights were already
 places. `tests/gathering.test.ts`.
+
+## Every stop readable: the Reach (22 November 2026)
+
+The owner found the Reach confusing: a far gate read as a story place, lines too quick, no clear target. The plan
+("WAYWARD: Make every stop readable") gives each stop five beats: setup in the jump's Course (the stop's brief names the
+person), an arrival that looks at the place (`render/camera.ts` `aim`, 2 s), one voice first, one target (the lead's
+beacon, `render/lead.ts`), the act, then the payoff and one exit line. Sam speaks once a stop.
+
+- **Northfold**: Sam once, on the ghost ("Ghost on the scope. Old relays throw them. Probably.").
+- **Halden's Reach**: Ilse hails on arrival and talks Juno in near the skiff; the order; the paper; Sam's one line points at
+  Tallyhouse.
+- **Tallyhouse**: Adam Brook hails from his shuttle ("Brook's shuttle"); the books; the Wall; Sam's one line on L. C.
+- **Miners' Gap**: one arrival notice (the Net's notice is gone; Sam says it); Hester, then Sam.
+- **Copperline**: Sam's one line carries the Narrows warning ("My signal dies there"); then Brook's transport.
+
+Not playtested; the owner plays the Reach before the other legs change.
