@@ -20,6 +20,7 @@ import { OVERHAUL, OVERHAUL_KEEP } from './overhaul';
 import { REWORK, REWORK_KEEP } from './rework';
 import { DIRECTION } from './direction';
 import { PLACES_DE } from './places';
+import { LOG } from './log';
 
 // ── German ────────────────────────────────────────────────────────────────
 // English on the left, German on the right. Short and informal (du), like the
@@ -31,7 +32,7 @@ import { PLACES_DE } from './places';
 //   space  · the shared world's features and expanses (content/features.ts)
 //   scenes · situations: their calls, goals and the Archive's sightings (content/situations.ts)
 
-export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...BRIEFS, ...REACH_DE, ...OVERHAUL, ...SIGNALS, ...REWORK, ...ARMS, ...DIRECTION, ...PLACES_DE };
+export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...BRIEFS, ...REACH_DE, ...OVERHAUL, ...SIGNALS, ...REWORK, ...ARMS, ...DIRECTION, ...PLACES_DE, ...LOG };
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([
@@ -47,7 +48,7 @@ export const KEEP = new Set<string>([
   'Halden’s Reach', 'Tollmere', 'Vesta', 'Ashgrove', 'Corrin Deep', 'Marlow', 'Sallow', 'Pell', 'Northfold', 'Dunmore', 'Kettle', 'Branford',
   'Oriel', 'Wick', 'Lantern', 'Hask', 'Sable Run', 'Greyhollow', 'Imbrie', 'Coldwater', 'Tamsin’s Rest', 'Hollis', 'Fallow', 'Quarry Nine',
   'Hester', 'Adam Brook', 'Ilse Marrow', 'Oren Lisle', 'Ines Duarte', 'Cerro', 'Kellern Fuel Dock', 'Kellern Claim Office', 'Frontier Supply Depot', 'Kellern Audit Dock', 'Dust Traders Exchange', 'Guild Hall', 'The Bent Nail',
-  'Copperline', 'Tallyhouse', 'Miners’ Gap', 'Salvage Barge', 'Holdfast Stores', 'The Claim Hall', 'Free Dock', 'Claim Shack', 'Kellern Mining',
+  'Copperline', 'Tallyhouse', 'Miners’ Gap', 'Ringhold', 'Salvage Barge', 'Holdfast Stores', 'The Claim Hall', 'Free Dock', 'Claim Shack', 'Kellern Mining',
   // the made-up names a region deals (content/regions.ts NAME_PEOPLE, NAME_PLACES)
   'Hadley', 'Morgan', 'Kowalski', 'Amara', 'Okafor', 'Jansen', 'Ibarra', 'Lindqvist', 'Castell', 'Nakamura', 'Brandt', 'Quill',
   '’s Rest', 'Deep', 'Yard', 'Station', 'Reach', 'Mere', 'Fell', 'Watch',

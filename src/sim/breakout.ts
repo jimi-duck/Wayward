@@ -215,6 +215,8 @@ export interface SortieDef {
   spool?: number;
   /** What she got away from on the last jump, for the arrival's title card (English key; null when nothing chased her). */
   escaped?: string | null;
+  /** Juno's line for this stop of the road (content/log.ts), under the name on the title card (English key; null off the road). */
+  log?: string | null;
   /** No raiders, no chance fights, no crew hails: only lingering draws the police (the road's first two systems). */
   safe?: boolean;
   /** The Jump Gate lies this many radians off the ship's heading (set adrift on the road: slightly off course). */

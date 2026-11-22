@@ -154,7 +154,7 @@ export const REWORK: Record<string, string> = {
   'Earn 66 Cyrite for the location, without going near it.': 'Verdien 66 Cyrit mit der Position, ohne in die Nähe zu kommen.',
   'Coordinates sold · 66 Cyrite received': 'Koordinaten verkauft · 66 Cyrit erhalten',
   'Hester’s crews ↓↓': 'Hesters Crews ↓↓',
-  '“The tanker with our new filters never came. Someone took her at Sallow.”': '„Der Tanker mit unseren neuen Filtern kam nie an. Jemand hat ihn bei Sallow geschnappt.“',
+  '“The tanker with our new filters never came. Someone took her at Sallow Port.”': '„Der Tanker mit unseren neuen Filtern kam nie an. Jemand hat ihn bei Sallow Port geschnappt.“',
   'Custody pays 55 Cyrite. The frontier will remember your choice.': 'Die Custody zahlt 55 Cyrit. Die Grenze vergisst deine Wahl nicht.',
   '55 Cyrite received · the frontier will remember': '55 Cyrit erhalten · die Grenze vergisst das nicht',
   'Wren ↓': 'Wren ↓',

@@ -23,7 +23,7 @@ export interface StoryPlaceDef {
   /** English, for t(). */
   name: string;
   look: PlaceLook;
-  /** Where: a share of the way from the start to the Jump Gate, and units off the line (+ starboard, − port). */
+  /** Where: units ahead of the arrival, toward the Jump Gate, and units off the line (+ starboard, − port). Close, so she sees it from where she comes in (owner 2026-11-22). */
   along: number;
   off: number;
   /** Hold: seconds to hold inside the ring. Pickup: fly over it. */
@@ -49,10 +49,11 @@ export const PICK_R = 6;
 /** Rock and bulwarks are kept this far outside a live place's ring, so she can hold there. */
 export const PLACE_CLEAR = 18;
 
-/** Where a place stands in a sortie: laid out from the start (0, 0) toward the Jump Gate, as sim/breakout.ts `course` lays its own. */
+/** Where a place stands in a sortie: laid out from the start (0, 0) toward the Jump Gate, never past half the way there. */
 export function placeAt(def: StoryPlaceDef, b: Pick<Breakout, 'lane'>): { x: number; z: number } {
   const d = Math.hypot(b.lane.x, b.lane.z) || 1, fx = b.lane.x / d, fz = b.lane.z / d, rx = -fz, rz = fx;
-  return { x: b.lane.x * def.along + rx * def.off, z: b.lane.z * def.along + rz * def.off };
+  const a = Math.min(def.along, d / 2);
+  return { x: fx * a + rx * def.off, z: fz * a + rz * def.off };
 }
 
 /**

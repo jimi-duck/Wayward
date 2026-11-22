@@ -14,7 +14,7 @@ export const ON_ROAD = 'on_road';
 type RoadRole = 'start' | 'landfall' | 'hub' | 'work' | 'turn' | 'breather' | 'pressure' | 'reckoning';
 
 export interface RoadStop {
-  /** Absent: the chart names it (the audit dock's system, which plays as it does today). */
+  /** The system's name. Absent: the chart deals one (only a save from before v26 has a dealt name on the road). */
   name?: string;
   kind: Exclude<SystemKind, 'home' | 'gate' | 'edge'>;
   holder: Holder;
@@ -39,7 +39,8 @@ export interface RoadStop {
 }
 
 export const ROAD: RoadStop[] = [
-  { kind: 'port', holder: 'kellern', role: 'start', script: 'audit' },
+  // the audit dock's system: named, so the chart, the title card and the story agree from the first jump (owner 2026-11-22)
+  { name: 'Ringhold', purpose: 'the company’s audit dock', kind: 'port', holder: 'kellern', role: 'start', script: 'audit' },
   { name: 'Northfold', purpose: 'the quiet way to Halden’s Reach', brief: 'The archive named a quiet lane, and this is it. Every other way out is watched, and your hull is posted as stolen. Nobody is hunting you yet.', kind: 'transit', holder: 'none', port: null, role: 'landfall', job: 'nothing_to_declare', script: 'northfold' },
   { name: 'Halden’s Reach', purpose: 'find the Warden’s record', brief: 'Old Lane Wardens spend their last years in this hospice ring. One of them ran the Narrows relay the night the lanes closed, and kept the paper.', kind: 'port', holder: 'kellern', port: 'Kellern Fuel Dock', role: 'hub', script: 'halden' },
   { name: 'Tallyhouse', purpose: 'someone here keeps the real books', brief: 'Kellern’s accounts station, where every claim in the Reach is tallied. One clerk here keeps the real books, the ones that show where the Scatter’s Krail went.', kind: 'port', holder: 'kellern', port: 'Kellern Claim Office', role: 'turn', script: 'marlow' },

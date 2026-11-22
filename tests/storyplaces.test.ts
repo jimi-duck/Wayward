@@ -14,13 +14,17 @@ import { Script } from '../src/sim/script';
 // Story places (sim/places.ts, owner 2026-11-21): each beat happens somewhere she can see, and she does something there.
 
 const NO = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' } as const;
-const hold = (over: Partial<StoryPlaceDef> = {}): StoryPlaceDef => ({ id: 'p', stop: 's', name: 'A skiff', look: 'skiff', along: 0.5, off: -100, act: { hold: 4 }, r: 10, done: 'p_done', verb: 'Hold', ...over });
+const hold = (over: Partial<StoryPlaceDef> = {}): StoryPlaceDef => ({ id: 'p', stop: 's', name: 'A skiff', look: 'skiff', along: 60, off: -100, act: { hold: 4 }, r: 10, done: 'p_done', verb: 'Hold', ...over });
 
 describe('a story place, as data', () => {
   it('stands along the course, off to the side, and every one names a stop and a row that waits on it', () => {
     const at = placeAt(hold(), { lane: { kind: 'lane', name: 'Jump Gate', x: 1000, z: 0, r: 30 } });
-    expect(at.x).toBeCloseTo(500);
+    expect(at.x).toBeCloseTo(60);
     expect(Math.abs(at.z)).toBeCloseTo(100);
+    // never past half the way to a short lane's gate
+    expect(placeAt(hold({ along: 900 }), { lane: { kind: 'lane', name: 'Jump Gate', x: 1000, z: 0, r: 30 } }).x).toBeCloseTo(500);
+    // close to where she comes in: within a kilometre (owner 2026-11-22)
+    for (const p of STORY_PLACES) expect(Math.hypot(p.along, p.off), p.id).toBeLessThan(100);
     const ids = new Set(STORY_PLACES.map((p) => p.id));
     expect(ids.size).toBe(STORY_PLACES.length);
     for (const p of STORY_PLACES) {

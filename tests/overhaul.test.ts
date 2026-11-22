@@ -9,7 +9,7 @@ import type { SortieResult } from '../src/sim/breakout';
 import { jumps, regionOf, type Chart } from '../src/sim/chart';
 import { authoredEnd, choices, epilogue } from '../src/sim/endings';
 import { derive } from '../src/sim/evidence';
-import { endSortie, gateCheck, newJourney, options, plot, sortieDef, type Journey } from '../src/sim/journey';
+import { endSortie, gateCheck, newJourney, options, plot, sortieDef, VERSION, type Journey } from '../src/sim/journey';
 import { legOf, roadRegion, scriptKey, stopAt } from '../src/sim/road';
 import { Script, type Ctx, type Output, type Row } from '../src/sim/script';
 import { ACCOUNT_DEBT, count, debtLeft } from '../src/sim/threads';
@@ -373,7 +373,7 @@ describe('a road save from before the whole road', () => {
     const o = oldSave(3);
     expect(roadRegion(o.chart, 1)).toBe(false);
     const back = migrate(o)!;
-    expect(back.version).toBe(25);
+    expect(back.version).toBe(VERSION);
     for (let i = 0; i < LEGS.length; i++) expect(roadRegion(back.chart, i), `leg ${i}`).toBe(true);
     expect(back.at).toBe(o.at);
     expect(back.chart.visited).toEqual(o.chart.visited);

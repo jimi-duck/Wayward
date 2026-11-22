@@ -991,17 +991,21 @@ export class Hud {
   }
 
   /** A jump arrival: the new system's name, like a film's title, while the camera sweeps over it (render/sector.ts). */
-  private titleCard(d: { name: string; kind: SystemKind; netted?: boolean; escaped?: string | null }): void {
+  private titleCard(d: { name: string; kind: SystemKind; netted?: boolean; escaped?: string | null; log?: string | null }): void {
     text($('tc-k'), t(d.netted ? 'Netted · Custody control' : KIND_NAME[d.kind]));
     text($('tc-t'), d.name);
     // what she got away from on the jump in (sim/journey.ts ESCAPED_LINES)
     text($('tc-s'), d.escaped ? t(d.escaped) : '');
+    // Juno's own line for the place, on the road (content/log.ts)
+    text($('tc-l'), d.log ? `“${t(d.log)}”` : '');
     const el = $('title-card');
     el.classList.remove('on', 'name');
     void el.offsetWidth;
-    el.style.setProperty('--tc-secs', `${TITLE_SECS}s`);
+    // a line of hers takes a little longer to read
+    const secs = d.log ? TITLE_SECS + 2 : TITLE_SECS;
+    el.style.setProperty('--tc-secs', `${secs}s`);
     el.classList.add('on');
-    this.titleT = TITLE_SECS;
+    this.titleT = secs;
   }
 
   /** Ned's yard is done (sim/postjump.ts YARD_TITLE_AT): the new name in the arrival title card's style, with what was done as its last line. */

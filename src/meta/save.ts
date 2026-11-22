@@ -16,7 +16,7 @@ import { atChapter } from '../sim/chapters';
 import { newJourney } from '../sim/journey';
 import { regionOf } from '../sim/chart';
 import { roadRegion, stopAt } from '../sim/road';
-import { LEGS } from '../content/road';
+import { LEGS, ROAD } from '../content/road';
 
 // ── the journey save ──────────────────────────────────────────────────────
 // A journey outlives a run, so it is kept in localStorage: written whenever
@@ -105,6 +105,8 @@ export function migrate(raw: unknown): Journey | null {
   // 24 → 25: the Reach is five stops, not seven (Hollis and Vesta cut; Marlow is Tallyhouse, Branford is Miners' Gap). A road journey
   // still in the Reach gets the new Reach, standing where it stood or at the stop before a cut one
   if (j.version < 25) shortReach(j as Journey);
+  // 25 → 26: the audit dock's system has a fixed name (Ringhold), so the chart and the story agree; a road chart's dealt name is replaced
+  if (j.version < 26) nameAudit(j as Journey);
   j.version = VERSION;
   return j as Journey;
 }
@@ -376,6 +378,15 @@ function shortReach(j: Journey): void {
   const last = trail.length - 1;
   j.hunt.idx = Math.min(j.hunt.idx, last);
   j.hunt.seenIdx = Math.min(j.hunt.seenIdx, last);
+}
+
+/** v26: the Reach's first stop on a road chart takes its fixed name, when the rest of the Reach is the road's stops. */
+function nameAudit(j: Journey): void {
+  const c = j.chart, first = ROAD[0];
+  if (c.regionSet !== 'road' || !first?.name) return;
+  const reach = c.systems.filter((s) => regionOf(s) === 0 && s.kind !== 'home' && s.kind !== 'gate' && s.kind !== 'edge').sort((a, b) => a.col - b.col);
+  if (reach.length !== ROAD.length || !ROAD.every((r, k) => k === 0 || !r.name || r.name === reach[k]!.name)) return;
+  reach[0]!.name = first.name;
 }
 
 /** The jobs retired in v24, and what took their flags over (Two Captains was the Account's last step; Recovery Order is now). */
