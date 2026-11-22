@@ -9,14 +9,14 @@ pilot who keeps moving; it does not read, and it does not linger. These are pilo
 
 | Strategy | Policy | At the Narrows | Stuck | Time on the road | Wrecks |
 |---|---|---|---|---|---|
-| random | run | 6/6 | 0 | 22:26 | 0.0 |
-| random | bluff | 5/6 | 1 | 27:39 | 0.2 |
-| random | fight | 6/6 | 0 | 26:29 | 0.2 |
-| torpedo+defence | run | 6/6 | 0 | 25:07 | 0.2 |
-| torpedo+defence | bluff | 6/6 | 0 | 22:15 | 0.2 |
-| torpedo+defence | fight | 5/6 | 1 | 26:33 | 0.2 |
+| random | run | 6/6 | 0 | 22:14 | 0.0 |
+| random | bluff | 6/6 | 0 | 24:06 | 0.2 |
+| random | fight | 6/6 | 0 | 23:20 | 0.0 |
+| torpedo+defence | run | 6/6 | 0 | 22:31 | 0.0 |
+| torpedo+defence | bluff | 6/6 | 0 | 21:56 | 0.2 |
+| torpedo+defence | fight | 6/6 | 0 | 23:08 | 0.0 |
 
-Whole leg, those that arrived (34): 24:10 on average, against a target of about 40 minutes.
+Whole leg, those that arrived (36): 22:53 on average, against a target of about 40 minutes.
 
 ## Stop by stop
 
@@ -32,7 +32,7 @@ Whole leg, those that arrived (34): 24:10 on average, against a target of about 
 | Tallyhouse | 36 | 2:03 | 27807.0 → 27779.6 | 0.9 → 0.0 | 0.7 → 0.3 | 12.0 | 0.0 | 0% |
 | Miners’ Gap | 36 | 2:36 | 27779.6 → 27816.2 | 0.0 → 0.0 | 0.8 → 0.6 | 8.3 | 0.3 | 0% |
 | Copperline | 36 | 2:24 | 27816.2 → 27777.7 | 0.0 → 0.0 | 0.7 → 0.5 | 7.1 | 0.1 | 0% |
-| The Narrows | 36 | 6:34 | 27777.7 → 194450.4 | 0.0 → 2.1 | 0.6 → 0.0 | 11.6 | 0.9 | 8% |
+| The Narrows | 36 | 4:22 | 27777.7 → 83341.8 | 0.0 → 0.0 | 0.6 → 0.0 | 12.0 | 1.0 | 0% |
 | Marrest | 6 | 3:22 | 63.7 → 70.3 | 0.0 → 0.0 | 1.5 → 0.3 | 1.0 | 0.0 | 0% |
 | Pellwick | 4 | 3:30 | 122.0 → 125.0 | 0.0 → 0.0 | 1.5 → 0.5 | 1.0 | 0.0 | 0% |
 | Jansen Deep | 6 | 5:14 | 37.0 → 41.0 | 0.0 → 0.0 | 1.5 → 0.0 | 1.0 | 0.0 | 0% |
