@@ -2183,7 +2183,12 @@ export class World implements EncounterHost {
     if ('radio' in o) this.events.push({ type: 'ping', id: `story_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text, vars), moment: 'calm', system: name });
     else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason && (o.notice.reason.includes('{') ? tr(o.notice.reason, vars) : o.notice.reason) });
     else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet), from: o.objective.from };
-    else if ('card' in o) { const def = CARD_BY_ID[o.card]; if (def) this.desk.offer(def, 'major', this.runTime, false, true); }
+    else if ('card' in o) {
+      const def = CARD_BY_ID[o.card];
+      // an urgent card opens now, fight or not (the Narrows' note: the gate's reboot waits on it); the rest go through the desk
+      if (def && o.urgent && !this.comms && !this.call && this.phase === 'play') this.openComms(def);
+      else if (def) this.desk.offer(def, 'major', this.runTime, false, true);
+    }
     else if ('wall' in o) this.flags.add(o.wall);
     else this.flags.add(`pursuit_${o.pursuit}`);
   }

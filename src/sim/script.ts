@@ -47,7 +47,7 @@ export type Output =
   | { radio: { from: string; caller: string; text: string } }
   | { notice: { tone: Tone; headline: string; reason?: string } }
   | { objective: { main?: string; quiet?: string; /** The trigger of the row that set it (filled in by the runner). */ from?: Trigger['on'] } }
-  | { card: string }
+  | { card: string; /** Opens in a fight (an urgent row): the gate waits on it. */ urgent?: boolean }
   | { wall: string }
   | { pursuit: string };
 
@@ -288,7 +288,7 @@ export class Script {
     play(row.id, !card);
     this.last = c.t;
     if (card) this.holding = { row: row.id, card };
-    out.push(row.do);
+    out.push('card' in row.do && row.urgent ? { ...row.do, urgent: true } : row.do);
     return out;
   }
 }
