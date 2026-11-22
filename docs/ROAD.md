@@ -136,6 +136,17 @@ stop before a cut one. One past the Narrows keeps its chart. `tests/shortreach.t
 - **Juno's log.** A jump's title card carries one line of hers under the system's name (`content/log.ts`, German in
   `i18n/de/log.ts`), 13 words at most, on the road only. On phones it sits above the name. `tests/log.test.ts`.
 
+## The Marches, six stops (22 November 2026)
+
+Low Harrow, the Marches' breather, is cut. What it held now plays at the Long Walk, after Ma Saffi: the scored Drift hull, Wren's
+rule about full tanks, and Hester's call for the missing shift at Gannet. The watcher (`thren_curious`, the leg's Thren meeting) is
+the Long Walk's scene. Wake's way-out line counts six jumps to the Rift. A road save not yet past the Marches gets the new chart on
+load (save v27, `shortMarches` in `meta/save.ts`, on the same `shortLeg` as v25): at Low Harrow it comes back at the Long Walk.
+`tests/roadnames.test.ts`.
+
+On the road a stop has one card at most, its own: the port's approach card and the chance cards are off (`sim/world.ts`). Jobs,
+scenes and story cards still come as before.
+
 ## The Belt chase
 
 Val's route trade sells Juno's heading to the Offices (`sim/journey.ts beltChased`). At Kiln and Tarik's Lamps, the first pursuit comes 20 s after arrival and again 6 s after each calm. Heat starts at 0.3, and most of the pursuit is Offices pickets from ahead. A red notice says so on arrival. The chase ends at the Scrapgate's pickets (`scrapgate_pickets`). Paying Val to forget (`vell_paid`) or jamming her channel (`vell_exposed`) at Tarik's Lamps shakes it, and the Scrapgate is then clear.

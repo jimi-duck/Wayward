@@ -5,6 +5,7 @@ import { newJourney, sortieDef } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { t } from '../src/i18n';
 import { readFileSync } from 'node:fs';
+import { migrate } from '../src/meta/save';
 
 // A shut Jump Gate always says why, and what to do: never a bare "a call is coming in".
 
@@ -82,8 +83,8 @@ describe('a shut Jump Gate', () => {
   }, 60000);
 
   it('brings the call to her at the gate even with a job taken (a taken job used to keep it away for good)', () => {
-    // a journey the pilot flew to Kessel Hold (tools/road.pilot.ts style), saved as it arrived
-    const j = JSON.parse(readFileSync(new URL('./fixtures/road-kessel.json', import.meta.url), 'utf8'));
+    // a journey the pilot flew to Kessel Hold (tools/road.pilot.ts style), saved as it arrived, and loaded as a save is
+    const j = migrate(JSON.parse(readFileSync(new URL('./fixtures/road-kessel.json', import.meta.url), 'utf8')))!;
     const def = sortieDef(j);
     const w = new World(5000, { mode: 'breakout', sortie: def, carry: j.carry });
     const W = w as unknown as { call: { choices: unknown[] } | null; stage?: { taken: boolean } };

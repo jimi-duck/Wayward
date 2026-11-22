@@ -19,7 +19,6 @@ export const JUNO_LOG: Readonly<Record<string, string>> = {
   m_kessel: 'They lost kin the night the lanes closed. I have the file.',
   m_tamsin: 'Kellern wants its debt back, with me attached.',
   m_walk: 'A fleet that never stops, keeping the names of the lost.',
-  m_harrow: 'Something scored that hull. The locals have rules.',
   m_gannet: 'Kellern is boarding the rigs of people who stood by me.',
   m_sallow: 'Last refit before the Rift. Filters, or a fixer’s money.',
   rift: 'A dead relay, and an inspector who wants my papers.',

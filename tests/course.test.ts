@@ -54,15 +54,15 @@ describe('the Course', () => {
     j.at = j.chart.systems.find((s) => s.kind === 'gate')!.id;
     const c = courseView(j)!;
     expect(c.next.name).toBe('Wake');
-    expect(c.goal).toMatchObject({ name: 'The Rift', jumps: 8 });
+    expect(c.goal).toMatchObject({ name: 'The Rift', jumps: 7 });
   });
 
   it('hides the pursuit while Juno rests at the breather', () => {
-    // the Reach has none since it was cut to five stops: the Marches' Low Harrow is the first (the Narrows is column 7)
-    const harrow = at(11);
-    expect(sysById(harrow.chart, harrow.at).name).toBe('Low Harrow');
-    expect(courseView(harrow)!.pursuit.hidden).toBe(true);
-    expect(courseView(at(10))!.pursuit.hidden).toBe(false);
+    // the Reach and the Marches have none since they were cut (five and six stops): the Belt's Saltmarsh is the first
+    const salt = at(18);
+    expect(sysById(salt.chart, salt.at).name).toBe('Saltmarsh');
+    expect(courseView(salt)!.pursuit.hidden).toBe(true);
+    expect(courseView(at(17))!.pursuit.hidden).toBe(false);
   });
 
   it('counts the pursuit to the half day and reads amber at 1 and red at half a day', () => {

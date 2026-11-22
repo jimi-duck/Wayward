@@ -470,6 +470,7 @@ export const OVERHAUL: Record<string, string> = {
   '“I have the third key. The Governor gave it to me for this. I’m choosing not to use it.”': '„Ich habe den dritten Schlüssel. Die Gouverneurin gab ihn mir für genau das. Ich entscheide mich, ihn nicht zu benutzen.“',
   'Next: Kessel Hold': 'Nächster Halt: Kessel Hold',
   'The Rift · 7 jumps': 'The Rift · 7 Sprünge',
+  'The Rift · 6 jumps': 'The Rift · 6 Sprünge',
   'holding back · for now': 'hält sich zurück · vorerst',
   '“Ninefold, line nine. My parents. Gran reads the list every year. I just fly.”': '„Ninefold, Zeile neun. Meine Eltern. Oma liest die Liste jedes Jahr. Ich fliege nur.“',
   'Drift hull': 'Drift-Rumpf',
