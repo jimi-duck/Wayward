@@ -39,6 +39,13 @@ export const COURSE: Record<string, string> = {
   'Known lane': 'Bekannte Bahn',
   'Route to goal': 'Route zum Ziel',
   '{name} first': 'Zuerst {name}',
+  // the map in the jump (owner, 22 November 2026)
+  'In the jump': 'Im Sprung',
+  'Jumping to': 'Sprung nach',
+  'Arriving': 'Ankunft',
+  'Arrive at {name}': 'Ankommen in {name}',
+  'then {name}': 'danach {name}',
+  'On offer': 'Im Angebot',
   'Next jump needs {n} more fluid': 'Nächster Sprung braucht noch {n} Fluid',
   'Not shown while you rest': 'Nicht angezeigt, solange du rastest',
   'Custody pursuit · {when} behind': 'Custody-Verfolgung · {when} hinter dir',

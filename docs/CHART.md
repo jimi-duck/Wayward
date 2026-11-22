@@ -111,31 +111,36 @@ The goal block ends with one line of quest, per region (`WHYS` in `content/situa
 ## The Course map's look (2026-11-14)
 
 The owner's mockup (14 November 2026), built in `ui/course.ts` and `styles/course.css`, with its data from
-`sim/course.ts` (no rules of its own). The screen opens as she lands, so it is about where she has arrived.
+`sim/course.ts` (no rules of its own). Since 22 November 2026 it is the map in the jump (owner: "imagine it as being
+opened during the jump; when I close it I land in the system I've just seen"). It comes up after the gate, while she
+is in the lane, and is about the system she is jumping to; its button drops her out of the jump there. The lane on
+from that system is plotted with it (there is only one on the road).
 
 - **No Neon Glass frame.** The Course is a full screen, not a pop-up: a dark field with thin teal corner brackets.
   The exception is noted in `DESIGN-GUIDELINES.md`.
-- **Header.** "◆ Arrived · region · Day n", the system's name big, then chips: Goal (amber, the story's goal:
+- **Header.** "◆ In the jump · region · Day n", the name of the system she is jumping to big, then chips: Goal (amber, the story's goal:
   Halden's Reach while it is ahead, then the leg's gate), the jumps to it (teal), and "▲ Net n system behind"
   (red) only when the Continuance Net holds stops behind her on this leg. Top right, hull (with a bar) and Cyrite.
 - **Map** (left, about 70%). The stops on one Catmull-Rom wave over the nebula picture (`assets/course-nebula.webp`),
   vignetted towards the panel. Flown lanes thin grey, flown stops a grey dot ring with "Day n" (the day she arrived,
   from `Journey.legs`). The route to the goal amber: the next jump solid with a glow, later jumps dashed, each with a
-  cut-corner J tag at its middle. Stops past the goal are a dotted known lane. Here: a teal ring with a ship arrow and
-  tick marks. Next: an amber double ring with a glow. Later route stops: a small amber ring. A Jump Gate: an amber
+  cut-corner J tag at its middle. Stops past the goal are a dotted known lane. The lane she is in: solid amber with a
+  glow, and her ship (a teal arrow) on it, most of the way along. Where she is jumping to: an amber double ring with a
+  glow and tick marks, its name larger, "Arriving · Port". The route on (J1 is the jump after): a small amber ring. A Jump Gate: an amber
   diamond. Each name is wide-tracked capitals with one sub-line ("Here · Transit", "J1 · Port", "J3 · Jump Gate"),
   placed clear of nodes and other names by `placeLabels` (`ui/chart.ts`). The Net: a faint red hatched zone over the
   stops it holds, a dashed red edge with chevrons and the caption, and a small red triangle on each netted stop. Red
   is the Net only. A faint "Leg n · name ▸" past the goal.
-- **Next stop panel** (right, about 30%): "Next stop · J1 of n", the name in amber, its line, then Depot (yes or no,
+- **Jumping to panel** (right, about 30%): "Jumping to", the name in amber, its line, then Depot (yes or no,
   "Bonded +40%" in amber where `bonded()` applies), Continuance (red ▲ when the Net holds it), Wall (File n/8 ▸,
-  opens the Wall under the map; W does the same), Debt once the Account has called. "Route to goal": here, then each
-  jump with its J number. The one button, amber, "Plot course to <next stop>" (the same name as the panel and the J1 tag), with "<here> first · Refuel · Job · Wall" under it, and the
+  opens the Wall under the map; W does the same), Job when one is pinned there, Debt once the Account has called. "Route to goal": the stop she is arriving at,
+  then each jump on with its J number. The one button, amber, "Arrive at <name>" (the same name as the header and the
+  panel), with "Refuel · Job · Wall · then <next stop>" under it, and the
   keys under it. No fluid gauge or fluid warning: the HUD's objective says when the tank is short.
 - **Under the map**: the legend (Route, Flown, Known lane, Continuance Net, Jump Gate), then "The road · leg n of 8"
   and one bar for the whole game: Prologue ✓, legs done, this leg in amber with its progress (stops reached / stops).
 - **Sizes.** Fits 1280×720 with no scroll. Upright and 900px or narrower: map above, panel below (the sheet scrolls).
   A phone on its side: map left, panel right; the legend, the road, the route list and the keys go, and the map names
-  only here and the goal, with one J tag.
+  only where she is jumping to and the goal, with one J tag.
 
 Look at it alone with `/tools/course.html?stop=6&net=4` on the dev server (`&de` for German).

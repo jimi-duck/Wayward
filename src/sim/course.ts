@@ -40,7 +40,7 @@ export interface Course {
   /** What the next stop offers: a depot, the Bonded rate there (as a markup), and whether the Net holds it. */
   nextAt: { depot: boolean; bonded: number; net: boolean };
   /** What there is to do where she is: a depot to refuel at, a job pinned here. */
-  hereAt: { depot: boolean; job: boolean };
+  hereAt: { depot: boolean; job: boolean; bonded: number; net: boolean };
   /** The Wall's file. */
   file: { found: number; of: number };
   /** The ship's stores as the header reads them. */
@@ -122,7 +122,7 @@ export function courseView(j: Journey): Course | null {
     road,
     net: edge < 0 ? null : pos - edge,
     nextAt: { depot: !!to.port, bonded: to.port && bonded(flags, to.holder) ? Math.round((BONDED_RATE - 1) * 100) : 0, net: netted(c, to.id) },
-    hereAt: { depot: !!s.port && s.kind !== 'gate', job: pos >= 0 && !!rows[pos]?.job },
+    hereAt: { depot: !!s.port && s.kind !== 'gate', job: pos >= 0 && !!rows[pos]?.job, bonded: s.port && s.kind !== 'gate' && bonded(flags, s.holder) ? Math.round((BONDED_RATE - 1) * 100) : 0, net: netted(c, s.id) },
     file: fileCount(flags, c.regionSet ?? 'three'),
     stores: { plates: Math.min(j.carry.plates, max), maxPlates: max, cyrite: Math.floor(j.carry.cyrite) },
     legs: { names: Array.from({ length: legCount }, (_, i) => regionDef(c, i)?.name ?? ''), at: leg, done: pos + 1, of: R + 1, home: c.systems.find((x) => x.kind === 'home')?.name ?? '' },
