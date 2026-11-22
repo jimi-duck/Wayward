@@ -278,3 +278,12 @@ the way to the gate (`LEG_CHASES.b_kiln.cordon`, `sim/cordon.ts`). Each sways on
 The HUD's first line reads the cordon and the exposure. Full exposure, or a shot at a picket, and the cordon is made
 (`cordon_made`): the pickets turn and the leg's chase starts. Past the line unseen she is through (`cordon_cold`), and no chase comes
 at Kiln. Paying Val off or jamming her (`vell_paid`, `vell_exposed`) lifts the cordon with the chase. `tests/cordon.test.ts`.
+
+## Stillwater, speaking to a knot (22 November 2026)
+
+The Deep's set piece (living-world plan). Hester's Thren card keeps three answers: vent your Cyrite, fight, and now "Answer the
+pattern" (`still_speak`), which takes the place of venting the rig's hold. A knot of six motes comes in 110 units ahead
+(`sim/speak.ts`, `World.knot`) and moves in a shape: still, a slow wheel, still. She answers in kind, beside it: three seconds
+still within 75 units, one full loop round it (between 28 and 130 units out), three seconds still again. The HUD's first line
+names the step. Answered, the knot leaves (`still_spoken`, the Thren calm for 120 s, miners +1) and Hester says it copied her. A
+shot at a mote, or 150 s, and it comes on (`still_fought`). `tests/speak.test.ts`.

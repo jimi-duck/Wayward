@@ -245,6 +245,18 @@ export const DIRECTION: Record<string, string> = {
   'Pickets inbound': 'Posten im Anflug',
   // Kiln's cordon, a silent run (sim/cordon.ts)
   'Custody cordon ahead': 'Custody-Sperre voraus',
+  // Stillwater, answering a Thren knot (sim/speak.ts)
+  'Answer the pattern': 'Antworte dem Muster',
+  'Fly what it flies: still, one loop round it, still. Costs nothing, if it hears you.': 'Flieg, was er fliegt: still, eine Runde um ihn, still. Kostet nichts, wenn er dich hört.',
+  'The knot turns to watch you': 'Der Knoten dreht sich zu dir',
+  'The knot is still · go still beside it': 'Der Knoten steht still · halt still neben ihm',
+  'It circles · fly one loop round it': 'Er kreist · flieg eine Runde um ihn',
+  'Still again · hold beside it': 'Wieder still · halt neben ihm',
+  'The knot answers': 'Der Knoten antwortet',
+  'it lifts off the rig': 'er zieht von der Plattform ab',
+  'it did not hear you': 'er hat dich nicht gehört',
+  'Thren knot': 'Thren-Knoten',
+  '“It copied you. Ten years we shot at them, and nobody thought to wave.”': '„Er hat dich nachgemacht. Zehn Jahre haben wir auf sie geschossen, und keiner kam auf die Idee zu winken.“',
   'Custody cordon · coast through the sweeps': 'Custody-Sperre · gleite durch die Scans',
   'In a sweep · coast, drive cold': 'Im Scan · gleiten, Antrieb aus',
   'exposure {n}%': 'entdeckt {n} %',
