@@ -14,7 +14,7 @@ export const THREN_ROWS: Row[] = [
   // Stillwater: the swarm emergency
   main('tn_still', 'd_still', after('ds_hester', 8), 'thren_still'),
   radio('tn_still_vented', 'd_still', flag('still_vented'), HESTER[0], HESTER[1], '“You fed them your own pay. Nobody from the core ever did that for us.”'),
-  radio('tn_still_rig', 'd_still', flag('still_rig_vented'), HESTER[0], HESTER[1], '“Kellern will dock it from forty contracts. We’ll live. That’s the point, isn’t it?”'),
+  radio('tn_still_spoken', 'd_still', flag('still_spoken'), HESTER[0], HESTER[1], '“It copied you. Ten years we shot at them, and nobody thought to wave.”'),
   radio('tn_still_fought', 'd_still', flag('still_fought'), HESTER[0], HESTER[1], '“They come harder every year we dig. And the Survey still calls them rare.”'),
 
   // Ghostcinder: the crossing, with no fighting

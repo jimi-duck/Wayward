@@ -11,8 +11,9 @@ describe('the rising Thren', () => {
   it('puts every row in the script, and the Stillwater card exists', () => {
     for (const r of THREN_ROWS) expect(SCRIPT).toContain(r);
     const c = CARDS.find((x) => x.id === 'thren_still')!;
-    expect(c.choices.map((x) => x.id)).toEqual(['vent', 'rig', 'fight']);
-    expect(c.choices.filter((x) => x.win.calm).length).toBe(2);
+    expect(c.choices.map((x) => x.id)).toEqual(['vent', 'speak', 'fight']);
+    expect(c.choices.filter((x) => x.win.calm).length).toBe(1);
+    // answering the pattern calms them only once the knot has heard her (sim/speak.ts)
   });
 
   it('brings the next knot sooner after gunfire than any swarm gap would', () => {

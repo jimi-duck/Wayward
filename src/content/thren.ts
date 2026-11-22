@@ -14,8 +14,9 @@ export const THREN_CARDS: CardDef[] = [
     choices: [
       { id: 'vent', label: 'Vent your Cyrite', tone: 'help', hint: 'Ten Cyrite into the dark. The knot feeds and drifts off. The rig keeps its year.',
         cost: { cyrite: 10 }, win: { text: 'The knot turns for your Cyrite · the rig holds', flag: 'still_vented', calm: 120, standing: { miners: 1 } } },
-      { id: 'rig', label: 'Vent the rig’s hold', tone: 'trade', hint: 'The knot feeds. Kellern docks a year’s pay from forty contracts.',
-        win: { text: 'The rig’s hold vents · a year’s pay into the dark', flag: 'still_rig_vented', calm: 120, standing: { miners: -1 } } },
+      // the Deep's set piece (sim/speak.ts): the knot moves in a shape, and she answers it in kind
+      { id: 'speak', label: 'Answer the pattern', tone: 'trade', hint: 'Fly what it flies: still, one loop round it, still. Costs nothing, if it hears you.',
+        win: { text: 'The knot turns to watch you', flag: 'still_speak' } },
       { id: 'fight', label: 'Fight them off', tone: 'fight', hint: 'Six motes and a web layer. The rig keeps everything, if you hold.',
         win: { text: 'The knot comes on', flag: 'still_fought', spawn: [{ variant: 'weaver', n: 1, from: 'ahead' }, { variant: 'mote', n: 6, from: 'ahead' }] } },
     ],
