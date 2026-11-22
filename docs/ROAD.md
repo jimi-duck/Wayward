@@ -117,7 +117,7 @@ Branford, the Gutter-tolled lane Hester's crews haul through, is Miners' Gap. Sc
 | Halden's Reach | Ilse and the order, as before |
 | Tallyhouse | Brook and the books; Ilse's message buoy waits here if she never heard the order (was Vesta) |
 | Miners' Gap | Hester's opener on arrival, then her toll job (`follow_cyrite`, the prospector, is no longer on the road) |
-| Copperline | Brook taken, as before |
+| Copperline | Brook's transport is a chase: "Run it down" sends a Custody transport and two escorts for the Jump Gate (`brook_transport` in `content/situations.ts`, the stop's scene, whose call is the story card). Crippled and towed, Brook is free; sunk or through the gate, he is taken. `tests/brookrun.test.ts` |
 
 A road save made inside the old Reach comes back on the new one (save v25, `shortReach` in `meta/save.ts`): where it stood, or at the
 stop before a cut one. One past the Narrows keeps its chart. `tests/shortreach.test.ts`.
