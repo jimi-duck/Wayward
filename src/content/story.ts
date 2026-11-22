@@ -253,7 +253,8 @@ export const REGISTRY_CARD: CardDef = {
 function BROOK_CHOICES(): CardDef['choices'] {
   const brook = (text: string) => ({ from: 'Adam Brook', caller: 'kellern' as const, delay: 0.8, text });
   return [
-    { id: 'rescue', label: 'Break him out', tone: 'fight', hint: 'Fight the escort. Custody hears of it.', win: { text: 'Brook is aboard the shuttle · Custody marks you', flag: 'brook_free', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }], standing: { custody: -1 }, radio: brook('“I’ll make copies. They can’t arrest every one of them.”') } },
+    // a chase (content/situations.ts brook_transport): the transport runs for the Jump Gate with two escorts, and she has to cripple it first
+    { id: 'rescue', label: 'Run it down', tone: 'fight', hint: 'Cripple the transport before it makes the Jump Gate. Do not sink it.', win: { text: 'The transport is running for the Jump Gate' } },
     { id: 'divert', label: 'Divert the transport', tone: 'bluff', hint: 'Spoof a priority order. A gamble.', odds: { base: 0.45 }, win: { text: 'The transport turns aside · Brook walks free', flag: 'brook_free', radio: brook('“I owe you a clean ledger. I’ll send it on ahead.”') }, lose: { text: 'The order fails · the transport runs on', flag: 'brook_taken' } },
     { id: 'leave', label: 'Leave him', tone: 'refuse', hint: 'His account is already in your file.', win: { text: 'The channel closes · he is taken', flag: 'brook_taken' } },
   ];
@@ -403,14 +404,14 @@ export const STORY_CARDS: CardDef[] = [
     id: 'story_brook_road', kind: 'warning', caller: 'custody',
     from: 'Adam Brook · in Custody transport', title: 'They took the clerk',
     text: '“They traced the ledger back to me. I’m in a Custody transport, ten minutes from a cell. Please. You’ve got the only copy.”',
-    cargo: 'A Custody transport · one escort',
+    cargo: 'A Custody transport · two escorts',
     choices: BROOK_CHOICES(),
   }),
   story({
     id: 'story_brook_declined', kind: 'warning', caller: 'custody',
     from: 'Adam Brook · in Custody transport', title: 'They took the clerk',
     text: '“You turned my books down, and they came for me anyway. I’m in a Custody transport. Please. I’ve got nobody else.”',
-    cargo: 'A Custody transport · one escort',
+    cargo: 'A Custody transport · two escorts',
     choices: BROOK_CHOICES(),
   }),
 

@@ -95,6 +95,11 @@ export interface Goal {
   shares?: number[];
   /** Missions: how many cases to pick up (recover). */
   caches?: number;
+  /**
+   * Missions (strike): the target comes in ahead of the ship and runs for the Jump Gate, where it is out of reach; sunk, what it
+   * carries is lost with it (a person aboard), so it is not won at all.
+   */
+  run?: { gate: true; alive: true };
 }
 
 /** What a situation does to the chart when it is over. */
@@ -156,6 +161,8 @@ export interface SituationDef {
   trap?: { variant: string; n: number; at: number; /** Sprung sooner when this flag is set (the route was sold). */ early?: { flag: string; at: number } };
   /** Plays only when this flag is set (Sable's crossing waits for her to be taken on); otherwise the stop is quiet. */
   needs?: string;
+  /** Other cards that answer for `card` (a story beat told two ways, by what she did before: Brook's transport). */
+  also?: string[];
   /** What it does in the sortie when the goal is carried, or missed. */
   win?: Outcome;
   lose?: Outcome;
@@ -297,6 +304,22 @@ export const SITUATIONS: SituationDef[] = [
     actors: [act('mote', 5, 'pass', 'wary', 'Unknown formation', { from: 'ahead', pace: 1.2 })],
     at: 50, hail: 9999, goal: CALL, seen: ['saw_thren'],
     say: [{ on: 'start', from: 'Scope', text: '“Unregistered contacts crossing our field of view. No transponder signal.”' }],
+  },
+  {
+    // Copperline, the Reach's last stop: Brook in a Custody transport, run down before it makes the Jump Gate (living-world plan,
+    // 21 November 2026). The stop's story card is its call (content/script/reach.ts plays it); breaking him out is a chase, not a line
+    id: 'brook_transport', name: 'The Custody Transport', blurb: 'A Custody transport is taking a Kellern clerk to a cell.', group: 'corporate',
+    kinds: ['port'], regions: [0, 0], weight: 0,
+    actors: [
+      act('freighter', 1, 'hold', 'meek', 'Custody transport', { target: true, hp: 2.2, from: 'ahead' }),
+      act('picket', 2, 'pass', 'hostile', 'Transport escort', { foe: true, from: 'ahead' }),
+    ],
+    card: 'story_brook_road', also: ['story_brook_declined'], at: 1e9, hail: -1, accept: ['rescue'],
+    goal: { kind: 'strike', hold: 0, limit: 150, line: 'Cripple the transport before the Jump Gate, then take Brook off', run: { gate: true, alive: true } },
+    win: { text: 'Brook is aboard · Custody marks you', flag: 'brook_free', standing: { custody: -1 } },
+    lose: { text: 'The transport makes the Jump Gate · Brook is taken', flag: 'brook_taken' },
+    ignore: { text: 'The transport goes on without you · Brook is taken', flag: 'brook_taken' },
+    say: [{ on: 'won', from: 'Adam Brook', text: '“I’ll make copies. They can’t arrest every one of them.”' }],
   },
   {
     id: 'thren_curious', name: 'It Is Studying You', blurb: 'One unknown contact matches your speed and keeps its distance.', group: 'unknown',

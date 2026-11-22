@@ -49,6 +49,8 @@ const DISABLED_AT = 0.3;
 /** Close in this near, slow, for this long, to take a crippled target. */
 const TOW_R = 28;
 const TOW_HOLD = 2.5;
+/** A target running for the Jump Gate is through it, and out of reach, this close to the ring (units). */
+const GATE_OUT = 40;
 /** Foes this near a rig chew at it, this much of its hull a second each. */
 const CHEW_R = 95;
 const CHEW = 0.9;
@@ -194,8 +196,18 @@ export class Run {
         break;
       case 'strike': {
         const ta = specs.find((a) => a.target)!;
-        // out to the side of the course, heading for the far edge
         const side = hash(d.id) & 1 ? 1 : -1;
+        if (g.run) {
+          // a run for the gate: it comes in ahead of her, off to one side, and makes for the Jump Gate
+          const s = w.ship, gate = w.bk!.lane;
+          this.target = this.adopted[0] ?? this.ship(w, ta, { x: s.x + ux * 260 + uz * side * 110, z: s.z + uz * 260 - ux * side * 110 }, 'pass');
+          this.target.ward!.act = 'pass';
+          this.target.ward!.hx = gate.x; this.target.ward!.hz = gate.z;
+          this.startHp = this.target.maxHp;
+          for (const a of specs) if (a.foe) this.foe(w, a);
+          break;
+        }
+        // out to the side of the course, heading for the far edge
         this.target = this.adopted[0] ?? this.ship(w, ta, { x, z }, 'pass');
         this.target.ward!.act = 'pass';
         this.target.ward!.hx = x - uz * side * 520 + ux * 180; this.target.ward!.hz = z + ux * side * 520 + uz * 180;
@@ -301,8 +313,13 @@ export class Run {
     this.foes = this.alive(w, this.foes);
     const tg = this.target!;
     if (!w.aliens.includes(tg)) {
-      // gone: destroyed outright (the cargo with it), or lost to the edge of the sky
-      if (tg.hp <= 0) { this.scale = this.goal.spoil ?? 0.4; return 'won'; }
+      // gone: destroyed outright (the cargo with it, or the person aboard), or lost to the edge of the sky
+      if (tg.hp <= 0 && !this.goal.run?.alive) { this.scale = this.goal.spoil ?? 0.4; return 'won'; }
+      return 'lost';
+    }
+    // a run for the gate: through it, it is out of reach
+    if (this.goal.run && this.state === 'on' && Math.hypot(tg.x - w.bk!.lane.x, tg.z - w.bk!.lane.z) < GATE_OUT) {
+      w.aliens.splice(w.aliens.indexOf(tg), 1);
       return 'lost';
     }
     const W = tg.ward!;

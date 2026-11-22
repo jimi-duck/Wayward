@@ -70,7 +70,8 @@ describe('jobs on the road', () => {
       const inReach = j.chart.systems.filter((s) => regionOf(s) === 0);
       for (const s of inReach) {
         const row = ROAD.find((r) => r.name === s.name);
-        if (row?.job) expect(q[s.id]).toMatchObject({ id: row.job, arc: true });
+        const pin = row?.job ?? row?.scene;
+        if (pin) expect(q[s.id]).toMatchObject({ id: pin, arc: true });
         else expect(q[s.id]).toBeUndefined();
       }
       for (const row of ROAD) if (row.job) expect(Object.entries(q).filter(([, v]) => v.id === row.job && inReach.some((s) => q[s.id] === v))).toHaveLength(1);

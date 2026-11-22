@@ -175,4 +175,17 @@ export const REACH_DE: Record<string, string> = {
   'Left in the Narrows relay for whoever the relays let through. It ends: find the Drift, they never stopped moving.': 'Im Narrows-Relais hinterlassen für den, den die Relais durchlassen. Sie endet: Finde die Drift, sie haben nie aufgehört, sich zu bewegen.',
   'What did Ada leave on the road?': 'Was hat Ada auf der Straße hinterlassen?',
   'Find the Drift.': 'Finde die Drift.',
+  // Brook's transport, run down at Copperline (content/situations.ts brook_transport)
+  'Run it down': 'Hol ihn ein',
+  'Cripple the transport before it makes the Jump Gate. Do not sink it.': 'Leg den Transporter lahm, bevor er das Sprungtor erreicht. Versenk ihn nicht.',
+  'The transport is running for the Jump Gate': 'Der Transporter hält aufs Sprungtor zu',
+  'A Custody transport · two escorts': 'Ein Custody-Transporter · zwei Begleitschiffe',
+  'The Custody Transport': 'Der Custody-Transporter',
+  'A Custody transport is taking a Kellern clerk to a cell.': 'Ein Custody-Transporter bringt einen Kellern-Angestellten in eine Zelle.',
+  'Custody transport': 'Custody-Transporter',
+  'Transport escort': 'Transporter-Begleitschiff',
+  'Cripple the transport before the Jump Gate, then take Brook off': 'Leg den Transporter vor dem Sprungtor lahm, dann hol Brook raus',
+  'Brook is aboard · Custody marks you': 'Brook ist an Bord · die Custody merkt sich dich',
+  'The transport makes the Jump Gate · Brook is taken': 'Der Transporter erreicht das Sprungtor · Brook ist weg',
+  'The transport goes on without you · Brook is taken': 'Der Transporter fliegt ohne dich weiter · Brook ist weg',
 };

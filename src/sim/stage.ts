@@ -171,7 +171,7 @@ export class Stage {
 
   /** The call was answered. */
   answered(w: World, cardId: string, choice: string, tone: Tone, won: boolean, out: Outcome): void {
-    if (this.result || cardId !== this.def.card) return;
+    if (this.result || (cardId !== this.def.card && !this.def.also?.includes(cardId))) return;
     const d = this.def;
     this.offered = true;
     this.thread(w, choice);

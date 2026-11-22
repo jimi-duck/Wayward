@@ -44,7 +44,7 @@ export const ROAD: RoadStop[] = [
   { name: 'Halden’s Reach', purpose: 'find the Warden’s record', brief: 'Old Lane Wardens spend their last years in this hospice ring. One of them ran the Narrows relay the night the lanes closed, and kept the paper.', kind: 'port', holder: 'kellern', port: 'Kellern Fuel Dock', role: 'hub', script: 'halden' },
   { name: 'Tallyhouse', purpose: 'someone here keeps the real books', brief: 'Kellern’s accounts station, where every claim in the Reach is tallied. One clerk here keeps the real books, the ones that show where the Scatter’s Krail went.', kind: 'port', holder: 'kellern', port: 'Kellern Claim Office', role: 'turn', script: 'marlow' },
   { name: 'Miners’ Gap', purpose: 'the Net closes behind', brief: 'The lane Hester’s crews haul through. Pirates have put a toll beacon on it, and the Net is spreading behind you. Staying long is a risk.', kind: 'contested', holder: 'gutter', port: null, role: 'pressure', job: 'pirate_toll', script: 'branford' },
-  { name: 'Copperline', purpose: 'a clerk in trouble', brief: 'Kellern’s last port before the Narrows. Fit what you can. Custody has traced the company’s real books to Adam Brook, the clerk at Tallyhouse.', kind: 'port', holder: 'kellern', port: 'Kellern Fuel Dock', role: 'reckoning', script: 'copperline' },
+  { name: 'Copperline', scene: 'brook_transport', purpose: 'a clerk in trouble', brief: 'Kellern’s last port before the Narrows. Fit what you can. Custody has traced the company’s real books to Adam Brook, the clerk at Tallyhouse.', kind: 'port', holder: 'kellern', port: 'Kellern Fuel Dock', role: 'reckoning', script: 'copperline' },
 ];
 
 
