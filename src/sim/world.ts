@@ -2185,8 +2185,8 @@ export class World implements EncounterHost {
     else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet), from: o.objective.from };
     else if ('card' in o) {
       const def = CARD_BY_ID[o.card];
-      // an urgent card opens now, fight or not (the Narrows' note: the gate's reboot waits on it); the rest go through the desk
-      if (def && o.urgent && !this.comms && !this.call && this.phase === 'play') this.openComms(def);
+      // an urgent card opens now in a fight, where the desk would hold it (the Narrows' note: the gate's reboot waits on it); otherwise the desk
+      if (def && o.urgent && this.busy() === 'fight' && !this.comms && !this.call && this.phase === 'play') this.openComms(def);
       else if (def) this.desk.offer(def, 'major', this.runTime, false, true);
     }
     else if ('wall' in o) this.flags.add(o.wall);

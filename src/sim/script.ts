@@ -281,7 +281,8 @@ export class Script {
     if (!row) { this.queue.shift(); return out; }
     const quiet = c.busy !== 'transit' && (c.busy !== 'fight' || !!row.urgent);
     // a carried row waits for a free moment, as does any card
-    if (!quiet || ((head.carried || 'card' in row.do) && !c.free && !row.urgent)) return out;
+    // (an urgent row does not wait for a free moment in a fight, which may never end; out of one, it waits like the rest)
+    if (!quiet || ((head.carried || 'card' in row.do) && !c.free && !(row.urgent && c.busy === 'fight'))) return out;
     this.queue.shift();
     // a card counts as played once it is answered, so a jump before then carries it
     const card = 'card' in row.do ? row.do.card : null;
