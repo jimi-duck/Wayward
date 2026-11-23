@@ -349,3 +349,21 @@ Not playtested; the owner plays the Reach before the other legs change.
 The objective's marker is a small navigation lamp now, not a shaft (owner, 23 November 2026: "too prominent"): a soft
 point a little above the place, the same size on screen at any range, blinking slowly like a buoy; a faint ring opens on
 the plane round it now and then between 300 m and 2.2 km. It steps back in a fight, in a lesson and once she is there.
+
+### One-of-a-kind places (23 November 2026)
+
+Five stops told their story while she flew to the gate. Each now has a place of its own, built once and seen nowhere else
+(owner: "distinctive, unique and interesting to look at, rather than the same repeated elements"), and its card opens there
+(`content/script/places.ts`, looks in `render/places.ts`, bench `tools/places.html?look=…`):
+
+- **Kessel Hold**: the moot. The holdings' rigs, no two alike, moored nose-in round their hall, work lamps strung on the booms.
+  Hold among them; Oduya, Pike and Val speak, then the moot asks for the file.
+- **Tamsin Field**: Custody's relay, a long truss with three dishes and the conscripts' pod; the Saints' charges blink along
+  it. Fly by, and the Saints ask.
+- **Torchwall**: the crews' picket, tugs nose to tail across the crossing, cables and lamps slung between, boards hung on
+  them. Hold at the line; Marit asks for the lead.
+- **Ninehaven**: an old relay ring broken open, aerials splayed, a pale light running round what is left as it speaks. Fly by.
+- **Hollowforge**: the pattern on the scope, Thren shards hung in a slow turning spiral. Fly by.
+
+A new act, `pass`, is done as she comes inside the ring at any speed: a set piece is flown by, not parked at. A card earned
+at a place still waits for the scene's queued voices (`world.nowCard`), so the moot speaks before it asks.

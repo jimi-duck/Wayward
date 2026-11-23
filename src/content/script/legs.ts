@@ -246,7 +246,7 @@ const YARDS_ROWS: Row[] = [
   notice('yt_notice', 'y_torch', arrive(), 'amber', 'Torchwall', 'yard crossing · crews restless'),
   objective('yt_objective', 'y_torch', arrive(), 'Torchwall · the crews may strike'),
   // the committee argues first (content/script/resistance.ts), then Marit asks
-  main('yt_marit', 'y_torch', after('rs_vote_marit', 14), 'story_crew'),
+  main('yt_marit', 'y_torch', { on: 'place', place: 'yt_picket' }, 'story_crew'),
   radio('yt_hester', 'y_torch', flag('crews_stood'), HESTER[0], HESTER[1], '“Every crew you helped is standing at the Breaker. I didn’t ask them. That’s the point.”', { if: { has: ['thread_crews_3'] } }),
   // the cradle's echo, and Hester's rig
   radio('yt_cradle', 'y_torch', after('yt_marit', 3), 'Marit Voss', 'frontier', '“Forty of your people walked out at Cutton. They’re in our crews now.”', { if: { has: ['cradle_freed'] } }),
@@ -316,7 +316,7 @@ const PORTS_ROWS: Row[] = [
   notice('fn_notice', 'f_nine', arrive(), 'teal', 'Ninehaven', 'free port · before the Tollgate'),
   objective('fn_objective', 'f_nine', arrive(), 'Ninehaven · refit before the Tollgate'),
   radio('fn_static', 'f_nine', free(8), 'Static', 'unknown', '“…if the relays still know my name…”'),
-  main('fn_voice', 'f_nine', after('fn_static', 4), 'story_voice'),
+  main('fn_voice', 'f_nine', { on: 'place', place: 'fn_relay' }, 'story_voice'),
   objective('fn_gate', 'f_nine', leave(), 'Jump to the Tollgate'),
 ];
 
@@ -333,7 +333,7 @@ const HOLLOWS_ROWS: Row[] = [
   notice('hf_notice', 'h_forge', arrive(), 'teal', 'Hollowforge', 'a Voice foundry · still running'),
   objective('hf_objective', 'h_forge', arrive(), 'Hollowforge · a pattern on the scope'),
   notice('hf_scope', 'h_forge', free(6), 'white', 'Scope pattern', 'it repeats when you move', { wall: 'saw_thren' }),
-  main('hf_thren', 'h_forge', after('hf_scope', 4), 'story_thren'),
+  main('hf_thren', 'h_forge', { on: 'place', place: 'hf_pattern' }, 'story_thren'),
   objective('hf_gate', 'h_forge', leave(), 'Jump to Coldvault'),
 
   // 3 · Coldvault (work): Kellern's tug comes for the registry (the Account's last step)

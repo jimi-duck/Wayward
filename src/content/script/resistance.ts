@@ -17,12 +17,13 @@ const MARIT = 'Marit Voss';
 export const RESISTANCE_ROWS: Row[] = [
   // ── the moot: what freedom is for ──
   radio('rs_moot_hester', 'm_kessel', free(6), HESTER[0], HESTER[1], '“Read it, and every rig in the Marches stops work tomorrow. Together. That’s how you beat Kellern.”'),
-  radio('rs_moot_oduya', 'm_kessel', after('rs_moot_hester', 2), ODUYA, 'miners', '“No strike committees and no new bosses. Kessel Hold governs Kessel Hold. We share, we don’t merge.”'),
+  // the moot speaks once she is among its rigs (content/script/places.ts mk_moot)
+  radio('rs_moot_oduya', 'm_kessel', { on: 'place', place: 'mk_moot' }, ODUYA, 'miners', '“No strike committees and no new bosses. Kessel Hold governs Kessel Hold. We share, we don’t merge.”', { main: true }),
   radio('rs_moot_pike', 'm_kessel', after('rs_moot_oduya', 2), PIKE[0], PIKE[1], '“The Line doesn’t vote. We move people who need moving. Leave us out of your councils.”'),
   radio('rs_moot_val', 'm_kessel', after('rs_moot_pike', 2), VAL, 'gutter', '“Lovely. Three ideas, no ships. Call me when one of you wins.”'),
 
   // ── Tamsin Field: the Saints' operation ──
-  main('rs_saints', 'm_tamsin', free(20), 'saints_relay'),
+  main('rs_saints', 'm_tamsin', { on: 'place', place: 'mt_relay' }, 'saints_relay'),
   radio('rs_saints_helped', 'm_tamsin', flag('saints_helped'), SAINTS, 'gutter', '“Eleven. We’ll carry their names too. Nobody said this would be clean.”'),
   radio('rs_saints_saved', 'm_tamsin', flag('saints_stopped'), 'A conscript on the relay', 'custody', '“We’re in the pods. Whoever you are, my sister’s in Cerro. Thank you.”'),
   radio('rs_saints_cps', 'm_tamsin', after('rs_saints', 20), CPS, 'office', '“Terrorists destroyed a public relay at Tamsin Field. Eleven contract residents died. Report anyone with Saint ties.”', { if: { not: ['saints_stopped'] }, stale: 200 }),

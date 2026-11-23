@@ -8,13 +8,14 @@ import type { Breakout } from './breakout';
 //
 //   hold    · stay inside its ring, slow, for a few seconds (the ring fills)
 //   pickup  · fly over it: it comes aboard
+//   pass    · come close, at any speed: a set piece she flies by
 //
 // Done, it sets its flag and goes off the scope; the stop's script rows
 // trigger on that flag (content/script/). A main beat that waits on a place
 // holds the Jump Gate for as long as it takes, and the gate names the place.
 // Plain data: the flag is the only state that is saved.
 
-export type PlaceLook = 'skiff' | 'ferry' | 'wreck' | 'canister' | 'buoy';
+export type PlaceLook = 'skiff' | 'ferry' | 'wreck' | 'canister' | 'buoy' | 'moot' | 'relay' | 'picket' | 'chorus' | 'spiral';
 
 export interface StoryPlaceDef {
   id: string;
@@ -26,8 +27,8 @@ export interface StoryPlaceDef {
   /** Where: units ahead of the arrival, toward the Jump Gate, and units off the line (+ starboard, − port). Close, so she sees it from where she comes in (owner 2026-11-22). */
   along: number;
   off: number;
-  /** Hold: seconds to hold inside the ring. Pickup: fly over it. */
-  act: { hold: number } | { pickup: true };
+  /** Hold: seconds to hold inside the ring. Pickup: fly over it. Pass: come inside the ring, at any speed (a set piece she flies by). */
+  act: { hold: number } | { pickup: true } | { pass: true };
   /** The ring (units). */
   r: number;
   /** Set when it is done: the script's rows trigger on it. */
@@ -82,6 +83,7 @@ export function stopPlaces(defs: readonly StoryPlaceDef[], stop: string | undefi
 export function stepPlace(def: StoryPlaceDef, at: { x: number; z: number }, s: { x: number; z: number; vx: number; vz: number }, hold: number, dt: number, free: boolean): { hold: number; done: boolean } {
   const d = Math.hypot(s.x - at.x, s.z - at.z);
   if ('pickup' in def.act) return { hold: 0, done: d <= PICK_R };
+  if ('pass' in def.act) return { hold: 0, done: d <= def.r && free };
   const inside = d <= def.r && Math.hypot(s.vx, s.vz) <= HOLD_SLOW && free;
   const h = inside ? hold + dt : Math.max(0, hold - dt * 0.5);
   return { hold: h, done: h >= def.act.hold };
