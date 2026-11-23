@@ -2231,7 +2231,7 @@ export class World implements EncounterHost {
     if ('radio' in o) this.events.push({ type: 'ping', id: `${o.radio.live ? 'say' : o.radio.scene ? 'scene' : 'story'}_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text, vars), moment: 'calm', system: name });
     // a stop's arrival notice names the system: the jump's title card names it already, so its reason becomes the card's kicker (23 November 2026)
     else if ('notice' in o && this.bk && o.notice.headline === this.bk.def.name && o.notice.reason && this.runTime - this.desk.arrived < 3) this.arrivalLine = { tone: o.notice.tone, reason: o.notice.reason };
-    else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason && (o.notice.reason.includes('{') ? tr(o.notice.reason, vars) : o.notice.reason) });
+    else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason && (o.notice.reason.includes('{') ? tr(o.notice.reason, vars) : o.notice.reason), main: true });
     else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet), from: o.objective.from };
     else if ('card' in o) {
       const def = CARD_BY_ID[o.card];
