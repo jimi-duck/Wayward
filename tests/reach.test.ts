@@ -75,7 +75,7 @@ describe('Halden’s Reach, and Ilse’s buoy at Tallyhouse', () => {
 
   it('is the model scene: Ilse speaks first, and Sam once, at the end', () => {
     const p = fly(at(2), { story_handwriting: 'grandmother' });
-    expect(p.pings[0]).toContain('this is Ilse Marrow');
+    expect(p.pings[0]).toContain('Ilse Marrow, off the hospice ring');
     const sam = p.pings.filter((t) => t.includes('Tallyhouse keeps Kellern’s books') || t.includes('Old Warden families'));
     expect(sam).toEqual(['“Paper, signed L. C. Tallyhouse keeps Kellern’s books. Someone there will know the hand.”']);
   });

@@ -400,17 +400,22 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 
 ## Story places (2026-11-21)
 
-A story beat happens somewhere she can see, and she does something there (the "story in places" plan). A place is a row in
-`content/script/places.ts`: its stop, a name, a look (skiff, ferry, wreck, canister, buoy; `render/places.ts`), where it stands (a share of
-the way to the gate and units off the line, port side), and one act: **hold** inside its ring, slow (a fight does not stop it, so a hunted
-pilot can still hold), for a few seconds, or **pickup** (fly over it). Done, it sets its flag and leaves the scope. `sim/places.ts` has the rules; the world shows one
+A story beat happens somewhere she can see (the "story in places" plan), and since 23 November 2026 **the story comes to her**: she
+never stops, turns back or goes out of her way (owner: "fly to this ship, then that ship, wait, pick up the paper"). A place is a row
+in `content/script/places.ts`: its stop, a name, a look (`render/places.ts`) and one act. A **hold** with a skiff or ferry look is a
+hull that comes to her (`meets`): it flies out from ahead, pulls alongside off her port side and keeps pace (`stepMeet`); the ring
+fills at any speed. Done, it stays alongside as `World.escort` while it hands anything across, then peels away (`stepLeave`). A
+**pickup** that is not on a trail is handed across (`handed`): it flies from the hull to her. A **pass** is a fixed place (wreck,
+buoy, light, set piece) on her line to the gate, about a third of the way and close enough to the line that flying at the gate
+passes through its ring (`placeAt`, `ON_LINE`); one that comes up after she is past its spot stands ahead of her instead. Yard
+Nine's work orders are a trail, taken as she flies near (`TRAIL_R`). `sim/places.ts` has the rules; the world shows one
 place at a time (`World.storyPlace`): on the scope, as an edge pointer, as the guide's course and as the HUD objective (its verb, the
 range, then the seconds left as the ring fills). `show` and `after` hold a place back until a flag or a line that points to it;
 `skip` retires it when the beat came another way.
 
 A script row waits on a place with `{ on: 'place', place: id }`. A main beat that does holds the Jump Gate for as long as it takes, and
 the gate names the place ("Jump Gate shut · Ilse's skiff first"; told as a notice only once she makes for the gate). Rock is kept
-clear of a live place. A place whose beat has already played (a reload at the stop, or a beat the gate let go) is not shown again
+clear of a fixed place. A place whose beat has already played (a reload at the stop, or a beat the gate let go) is not shown again
 (`Script.placeSpent`). To add one: a row in `STORY_PLACES`, a script row on it, German twins for its name, verb and lines.
 
 On the road past the Narrows, each meeting that happens in person waits at its place: Ma Saffi's ship (the Long Walk), the Aster's
@@ -428,8 +433,8 @@ system has its **work lane**: six Bonded haulers queued by the live gate. By eve
 leg's Continuance slogan (`SLOGANS`); past the Narrows, once `relay_broadcast` is set, the Scatter has struck it out and written
 its own line across it in ochre (`OVERS`). None of it is saved or solid.
 
-A meeting's ring (a story place to hold at) is a damping field like the gate's: nobody fires inside it, and hostiles circle outside
-("A civilian beacon holds every gun cold"), so a hunted pilot can still hold alongside.
+A meeting's ring (a hull alongside) is a damping field like the gate's: nobody fires inside it, and hostiles circle outside
+("A civilian beacon holds every gun cold"), so a hunted pilot can still talk.
 
 ## The refit bay
 

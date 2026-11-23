@@ -43,13 +43,13 @@ export const REACH: Row[] = [
   notice('hr_notice', 'halden', { on: 'arrive' }, 'teal', 'Halden’s Reach', 'Kellern port, hospice ring'),
   // the model scene (owner, 22 November 2026, "Make every stop readable"): the arrival looks at the skiff, Ilse speaks first and
   // alone, the card, the paper, and Sam once, at the end
-  objective('hr_objective', 'halden', { on: 'arrive' }, 'Ilse’s skiff · hold alongside', 'Frontier port · refit bay open'),
-  { id: 'hr_ilse', stop: 'halden', on: { on: 'arrive' }, do: { radio: { from: ILSE, caller: 'miners', text: '“Wayward, this is Ilse Marrow, off the hospice ring. Come alongside. Slowly. Kellern listens on the open band.”' } } },
+  objective('hr_objective', 'halden', { on: 'arrive' }, 'Ilse’s skiff · coming alongside', 'Frontier port · refit bay open'),
+  { id: 'hr_ilse', stop: 'halden', on: { on: 'arrive' }, do: { radio: { from: ILSE, caller: 'miners', text: '“Wayward, Ilse Marrow, off the hospice ring. Keep flying, I’ll come to you. Kellern listens on the open band.”' } } },
   // Ilse's skiff off the hospice ring (content/script/places.ts): she reads the order once Juno holds alongside (no choice: the owner,
   // 31 October 2026), then puts the paper out in a canister to be taken aboard. The gate waits for both, and names the place.
   // The name follows the order wherever it is taken (it can be carried on)
   card('hr_warden', 'halden', { on: 'place', place: 'hr_skiff' }, 'story_order', { holdsJob: true, main: true }),
-  { id: 'hr_canister', stop: 'halden', on: { on: 'flag', flag: 'frag_order' }, do: { radio: { from: ILSE, caller: 'miners', text: '“It’s in the canister off my bow. Paper can’t be wiped.”' } } },
+  { id: 'hr_canister', stop: 'halden', on: { on: 'flag', flag: 'frag_order' }, do: { radio: { from: ILSE, caller: 'miners', text: '“I’m passing it across in a canister. Paper can’t be wiped.”' } } },
   sam('hr_paper', 'halden', { on: 'place', place: 'hr_paper' }, '“Paper, signed L. C. Tallyhouse keeps Kellern’s books. Someone there will know the hand.”', { main: true }),
   card('hr_order', '*', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] }, holdsJob: true }),
   // at Halden, Ilse names Ada on the radio after the order: one card a stop (owner, 23 November 2026); the card is for an order found elsewhere
@@ -59,11 +59,11 @@ export const REACH: Row[] = [
 
   // ── Stop 3 · Tallyhouse (turn) ──
   notice('ml_notice', 'marlow', { on: 'arrive', delay: 2 }, 'teal', 'Tallyhouse', 'Kellern accounts station'),
-  objective('ml_objective', 'marlow', { on: 'arrive', delay: 2 }, 'Brook’s shuttle · hold alongside'),
-  { id: 'ml_hail', stop: 'marlow', on: { on: 'arrive' }, if: { not: ['brook_met'] }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“This is Adam Brook, accounts. I’m off the station’s stern. Come alongside before my shift ends.”' } } },
+  objective('ml_objective', 'marlow', { on: 'arrive', delay: 2 }, 'Brook’s shuttle · coming alongside'),
+  { id: 'ml_hail', stop: 'marlow', on: { on: 'arrive' }, if: { not: ['brook_met'] }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“This is Adam Brook, accounts. I’m coming out to you. Keep your heading, my shift ends soon.”' } } },
   // Brook's shuttle idles off the station (content/script/places.ts): alongside, he offers the books; the spike he leaves is taken aboard
   card('ml_ledger', 'marlow', { on: 'place', place: 'ml_shuttle' }, 'story_ledger', { main: true }),
-  { id: 'ml_brook', stop: 'marlow', on: { on: 'flag', flag: 'frag_ledger' }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“The spike’s off my stern. If anyone asks, I was never here. They’ll ask.”' } } },
+  { id: 'ml_brook', stop: 'marlow', on: { on: 'flag', flag: 'frag_ledger' }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“The spike’s coming across. If anyone asks, I was never here. They’ll ask.”' } } },
   notice('ml_wall', 'marlow', { on: 'place', place: 'ml_spike' }, 'teal', 'The Wall', 'same initials on the transfers', { main: true }),
   sam('ml_sam_1', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. again, on the order and on the money. Whoever that is signed both.”', { if: { has: ['clue_order_sig'] } }),
   sam('ml_sam_alt', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. means nothing to me. Remember it anyway.”', { if: { not: ['clue_order_sig'] } }),
