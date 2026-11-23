@@ -177,6 +177,10 @@ neutral tone map, a mid-grey albedo lit face lands near the shoulder and reads a
 
 New props follow suit: keep structure albedo under about 0x50 per channel and put colour on the paint, not a light grey.
 
+The pale beige far ship near the sun was the sky's rim light (kit.ts `WORLD_RIM`), not its paint: at full strength
+it lit every face of a far work in the sky's colour, a flat wash that no darker paint could cover. Far works now take a
+fifth of it (`metal({ rim })`).
+
 ## Gas you can fly into (space plan step 1, 2026-11-21)
 
 Veils, shrouds, storm cells and static fields (`render/gas.ts`) are a few dozen lumps of lit gas through the bank's height,

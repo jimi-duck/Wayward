@@ -249,6 +249,8 @@ export interface MetalOptions {
   scale?: number;
   /** Strength of the seams and rivets. */
   bump?: number;
+  /** How much of the sky's rim light it takes (1 the usual). Far works take little: distance takes contrast first. */
+  rim?: number;
   emissive?: Color;
   /** Painted plate (the worn coat) instead of bare metal. */
   painted?: boolean;
@@ -291,6 +293,7 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
     }
     shader.uniforms.uKitScale = { value: scale };
     shader.uniforms.uRim = WORLD_RIM;
+    shader.uniforms.uRimK = { value: o.rim ?? 1 };
     if (o.engine) shader.uniforms.uEngine = { value: o.engine };
     shader.uniforms.uKitStrength = { value: strength };
     shader.vertexShader = shader.vertexShader
@@ -299,11 +302,11 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
         varying vec3 vKitP; varying vec3 vKitN; varying float vKitOcc; uniform sampler2D uKitBump; uniform float uKitStrength;
-        uniform vec3 uRim; uniform float uKitScale;${o.engine ? ' uniform vec3 uEngine;' : ''}
+        uniform vec3 uRim; uniform float uRimK; uniform float uKitScale;${o.engine ? ' uniform vec3 uEngine;' : ''}
         ${PERTURB}`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         float kitRim = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
-        totalEmissiveRadiance += uRim * kitRim * (0.5 + 0.5 * metalnessFactor);
+        totalEmissiveRadiance += uRim * uRimK * kitRim * (0.5 + 0.5 * metalnessFactor);
         ${o.engine ? 'totalEmissiveRadiance += uEngine * diffuseColor.rgb * (1.0 - smoothstep(-1.0, -0.1, vKitP.x / uKitScale)) * 0.9;' : ''}`)
       .replace('#include <map_fragment>', `
         vec3 kitW = pow(abs(normalize(vKitN)), vec3(4.0)); kitW /= (kitW.x + kitW.y + kitW.z);
