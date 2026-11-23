@@ -109,11 +109,11 @@ runs no steps.
   is a floating stick: the ring centres exactly under the thumb (a touch
   never steers by itself) and follows the thumb past its rim. It drives like
   a racing game: across steers on an eased curve, any push opens the
-  throttle, pulling back coasts. The right half is the trigger: Torpedo
-  is hit-tested with slack round it, and any other touch there holds
+  throttle, pulling back coasts (Settings can fix the stick bottom left
+  instead). The right half is the trigger: Torpedo, Roll and Reverse fan
+  round it and are hit-tested with slack, and any other touch there holds
   the lasers, so a thumb that misses a button still fires. A second finger
-  on the left is a barrel roll (a tap) or the break and reverse (a downward
-  flick). A `touchend` with no fingers left releases everything, whatever
+  on the left still rolls (a tap) or reverses (a downward flick), untaught. A `touchend` with no fingers left releases everything, whatever
   pointer events a system gesture swallowed. Controls appear on first touch.
 - Every shader is compiled behind the start card (`Sector.warm`), including
   the hidden effect pools and one of every hull, so nothing compiles mid-run.

@@ -211,13 +211,14 @@
 
     <!-- Touch controls. The left half of the screen is the stick's catchment
          (the ring comes to the thumb); the right half is the trigger's, with
-         Torpedo in reach of the same thumb. Each button carries
+         Torpedo, Roll and Reverse fanned round it in reach of the same thumb. Each button carries
          its own gauge. -->
     <div id="touch" aria-hidden="true">
       <div id="stick"><div id="knob"></div></div>
       <button type="button" id="fire" tabindex="-1"><span>Laser</span><i class="ticks" id="t-bank"></i></button>
       <button type="button" id="torp" tabindex="-1"><span>Torpedo</span><span class="rack" id="t-rack"></span></button>
-      <button type="button" id="brk" tabindex="-1"><span>Turn</span><i class="ticks" id="t-brk"></i></button>
+      <button type="button" id="roll" tabindex="-1"><span>Roll</span><i class="ticks" id="t-roll"></i></button>
+      <button type="button" id="brk" tabindex="-1"><span>Reverse</span><i class="ticks" id="t-brk"></i></button>
       <button type="button" id="pause-b" tabindex="-1" aria-label="Pause"><i></i><i></i></button>
     </div>
 
@@ -268,6 +269,8 @@
             <button type="button" id="s-saver" class="st-row st-sw" aria-pressed="false"><span class="st-t">Battery saver</span><b class="st-v" id="s-saver-v">Off</b></button>
             <button type="button" id="s-lefty" class="st-row st-sw" aria-pressed="false" hidden><span class="st-t">Left-handed</span><b class="st-v" id="s-lefty-v">Off</b></button>
             <button type="button" id="s-autofire" class="st-row st-sw" aria-pressed="false" hidden><span class="st-t">Auto-fire</span><b class="st-v" id="s-autofire-v">Off</b></button>
+            <button type="button" id="s-stick" class="st-row st-sw" aria-pressed="false" hidden><span class="st-t">Stick</span><b class="st-v" id="s-stick-v">Floating</b></button>
+            <button type="button" id="s-buzz" class="st-row st-sw" aria-pressed="false" hidden><span class="st-t">Vibration</span><b class="st-v" id="s-buzz-v">On</b></button>
             <button type="button" id="s-btnsize" class="st-row st-sw" aria-pressed="false" hidden><span class="st-t">Button size</span><b class="st-v" id="s-btnsize-v">Normal</b></button>
             <button type="button" id="s-compact" class="st-row st-sw" aria-pressed="false" hidden><span class="st-t">Compact HUD</span><b class="st-v" id="s-compact-v">Off</b></button>
             <div id="lang" class="st-row st-lang" role="group" aria-label="Language"></div>
@@ -602,8 +605,8 @@
           <div><dt>Left thumb</dt><dd>Steer and thrust</dd></div>
           <div><dt>Right thumb</dt><dd>Lasers</dd></div>
           <div><dt>Torpedo button</dt><dd>Torpedo</dd></div>
-          <div><dt>Second finger, tap</dt><dd>Roll</dd></div>
-          <div><dt>Turn button, or flick down</dt><dd>Brake and reverse</dd></div>
+          <div><dt>Roll button</dt><dd>Roll</dd></div>
+          <div><dt>Reverse button</dt><dd>Brake and reverse</dd></div>
         </dl>
         <dl class="keys-l only-pad">
           <div><dt><kbd>Stick</kbd></dt><dd>Steer</dd></div>
@@ -621,6 +624,8 @@
           <ol class="swl">
             <li id="p-lefty-r" hidden><button type="button" id="p-lefty" aria-pressed="false"><span class="l">Left-handed</span><b id="p-lefty-v">Off</b></button></li>
             <li id="p-autofire-r" hidden><button type="button" id="p-autofire" aria-pressed="false"><span class="l">Auto-fire</span><b id="p-autofire-v">Off</b></button></li>
+            <li id="p-stick-r" hidden><button type="button" id="p-stick" aria-pressed="false"><span class="l">Stick</span><b id="p-stick-v">Floating</b></button></li>
+            <li id="p-buzz-r" hidden><button type="button" id="p-buzz" aria-pressed="false"><span class="l">Vibration</span><b id="p-buzz-v">On</b></button></li>
             <li id="p-btnsize-r" hidden><button type="button" id="p-btnsize" aria-pressed="false"><span class="l">Button size</span><b id="p-btnsize-v">Normal</b></button></li>
             <li id="p-compact-r" hidden><button type="button" id="p-compact" aria-pressed="false"><span class="l">Compact HUD</span><b id="p-compact-v">Off</b></button></li>
             <li><button type="button" id="p-saver" aria-pressed="false"><span class="l">Battery saver</span><b id="p-saver-v">Off</b></button></li>

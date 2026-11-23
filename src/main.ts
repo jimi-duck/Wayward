@@ -42,6 +42,7 @@ import { forget, showHeard } from './ui/heard';
 import type { RegionSet } from './content/regions';
 import { installCrashCard, onCrashKeep } from './ui/crash';
 import { TapGuard } from './ui/tapguard';
+import { Haptics } from './ui/haptics';
 import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18n';
 
 /** New Story journeys run the eight regions; ?short plays the old three, for testing. */
@@ -185,7 +186,9 @@ function boot(review: typeof import('./review') | null): void {
   let reported = false;
   /** Swallows the taps that land in the first moment after a card or the pause card opens (ui/tapguard.ts). */
   const tapGuard = new TapGuard(el('touch'));
-  let wasOpen = false;
+  /** Vibration on phones that have it (ui/haptics.ts). */
+  const haptics = new Haptics();
+  let wasOpen = false, rollWas = 0;
   const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || course.open || ending.open || jobDone.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
   // the radio's calls ride along while the ship flies: answered by key or tap, banked in the journey like any card
   /** A call that asks for an answer holds the world still, like every other pop-up; it lets go when it is answered or lapses. */
@@ -516,7 +519,7 @@ function boot(review: typeof import('./review') | null): void {
     }
     // a panel that stops the run takes the screen: the HUD steps back
     const open = panelOpen();
-    if (open && !wasOpen) tapGuard.arm();
+    if (open && !wasOpen) { tapGuard.arm(); if (input.device === 'touch') haptics.buzz('card'); }
     wasOpen = open;
     document.documentElement.classList.toggle('panel-open', open);
   };
@@ -667,7 +670,7 @@ function boot(review: typeof import('./review') | null): void {
 
   const input = new Input(
     {
-      layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), brk: el('brk'),
+      layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), brk: el('brk'), roll: el('roll'),
     },
     () => (started ? (photo ? setPhoto(false) : panelOpen() ? undefined : settingsOpen() ? showSettings(false) : logOpen() ? showLog(false) : setPaused(!loop.paused)) : menuEnter()),
     () => openBay(),
@@ -714,6 +717,12 @@ function boot(review: typeof import('./review') | null): void {
         jobDone.show(e, () => { loop.paused = was; input.reset(); });
       }
       radio.events(events);
+      if (input.device === 'touch') {
+        haptics.events(events);
+        // a roll just began: its cooldown jumped back up
+        if (world.ship.rollCooldown > rollWas) haptics.buzz('roll');
+      }
+      rollWas = world.ship.rollCooldown;
       if (started && world.call && !callHold && !loop.paused && !panelOpen()) { callHold = true; loop.paused = true; input.reset(); }
       else if (callHold && !world.call) { callHold = false; if (!panelOpen()) { loop.paused = false; input.reset(); } }
       radio.sync(world.call, world.callUntil - world.runTime);
@@ -762,20 +771,30 @@ function boot(review: typeof import('./review') | null): void {
   const store = (k: string): string | null => { try { return localStorage.getItem(k); } catch { return null; } };
   const keep = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* not kept */ } };
   autoFire = store('wayward.autofire') === '1';
+  /** The stick: floating (comes to the thumb, the default) or fixed (stays bottom left). */
+  let fixedStick = store('wayward.stick') === 'fixed';
   const SIZES = ['normal', 'large', 'small'] as const;
   let size: (typeof SIZES)[number] = SIZES.find((x) => x === store('wayward.btnsize')) ?? 'normal';
   const paintTouch = () => {
     for (const x of SIZES) document.documentElement.classList.toggle(`btn-${x}`, size === x && x !== 'normal');
-    for (const [id, on, label] of [['autofire', autoFire, 'On'], ['btnsize', size !== 'normal', size === 'large' ? 'Large' : size === 'small' ? 'Small' : 'Normal']] as const) {
+    for (const [id, on, label] of [['autofire', autoFire, autoFire ? 'On' : 'Off'], ['buzz', haptics.on, haptics.on ? 'On' : 'Off'], ['btnsize', size !== 'normal', size === 'large' ? 'Large' : size === 'small' ? 'Small' : 'Normal']] as const) {
       for (const pre of ['s-', 'p-']) {
         const e = el(pre + id);
         e.classList.toggle('on', on);
         e.setAttribute('aria-pressed', String(on));
-        el(`${pre}${id}-v`).textContent = t(id === 'autofire' ? (autoFire ? 'On' : 'Off') : label);
+        el(`${pre}${id}-v`).textContent = t(label);
       }
     }
-    for (const id of ['s-autofire', 's-btnsize']) el(id).hidden = !coarse;
+    document.documentElement.classList.toggle('stick-fixed', fixedStick);
+    for (const pre of ['s-', 'p-']) {
+      el(pre + 'stick').setAttribute('aria-pressed', String(fixedStick));
+      el(`${pre}stick-v`).textContent = t(fixedStick ? 'Fixed' : 'Floating');
+    }
+    for (const id of ['s-autofire', 's-btnsize', 's-stick']) el(id).hidden = !coarse;
+    el('p-stick-r').hidden = !coarse;
     for (const id of ['p-autofire-r', 'p-btnsize-r']) el(id).hidden = !coarse;
+    // vibration only where the browser has it (never an iPhone)
+    el('s-buzz').hidden = el('p-buzz-r').hidden = !coarse || !haptics.available;
   };
   // the camera view (the pause card's Camera row, and the title's Settings): chase by default; kept per device.
   // Wide is the cinematic rig; the old Engine level view was folded into it when the card got its three buttons
@@ -1025,6 +1044,12 @@ function boot(review: typeof import('./review') | null): void {
   for (const b of camButtons) act(b.id, () => setView(b.dataset.view as CameraView));
   press('s-view', () => nextView());
   press('s-compact', toggleCompact);
+  const toggleStick = () => { fixedStick = !fixedStick; keep('wayward.stick', fixedStick ? 'fixed' : 'float'); paintTouch(); };
+  act('p-stick', toggleStick);
+  press('s-stick', toggleStick);
+  const toggleBuzz = () => { haptics.toggle(); paintTouch(); };
+  act('p-buzz', toggleBuzz);
+  press('s-buzz', toggleBuzz);
   act('p-autofire', toggleAuto);
   act('p-btnsize', nextSize);
   press('s-autofire', toggleAuto);

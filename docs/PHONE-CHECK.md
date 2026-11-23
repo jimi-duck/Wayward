@@ -45,3 +45,16 @@ Save & exit, which saved at the last gate and went back to the title. Reproduced
 Now the button pauses as the finger lifts, and `ui/tapguard.ts` swallows taps outside the touch controls
 for 0.35 s after the pause card or any panel opens (cards already had their own 0.4 s guard). The button
 moved to the top right corner (44x44); the ship's status steps 44 px left on touch screens.
+
+## Controls you can see (2026-11-23)
+
+- **Roll** is a button now: Torpedo, Roll and Reverse fan round Laser (`--fd` in `main.css`), each with its
+  gauge; Roll's shows its cooldown. The second-finger tap and flick still work but are no longer taught.
+- "Turn" is now **Reverse** (German still "Wende"); the pause card's control list names the buttons.
+- A lesson's button glows (`.teach`) while its lesson runs: Laser, Torpedo, Roll.
+- **Vibration** (Android; iPhone browsers have none, so the row is hidden there): a buzz on a roll, a
+  torpedo, a hit taken and a card opening. On by default, `wayward.buzz`.
+- **Stick: Floating or Fixed.** Fixed keeps the ring bottom left and steers from its centre; the knob stops
+  at the rim. `wayward.stick`.
+- Checked in touch emulation at 568x320 and 844x390: the Roll button rolls, the fixed stick steers, the
+  settings fit the pause card. Not checked: real thumbs, and real vibration.

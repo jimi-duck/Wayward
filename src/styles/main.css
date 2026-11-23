@@ -156,8 +156,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   --fw: clamp(80px, 24vh, 104px);
   --bw: clamp(60px, 17vh, 72px);
 }
-#stick, #fire, #torp, #brk, #pause-b { display: none; }
-.touch-ui #stick, .touch-ui #fire, .touch-ui #torp, .touch-ui #brk, .touch-ui #pause-b { display: grid; }
+#stick, #fire, #torp, #brk, #roll, #pause-b { display: none; }
+.touch-ui #stick, .touch-ui #fire, .touch-ui #torp, .touch-ui #brk, .touch-ui #roll, .touch-ui #pause-b { display: grid; }
 .touch-ui:not(.has-torps) #torp { display: none; }
 #stick {
   position: absolute; left: var(--in-l); bottom: var(--pb);
@@ -172,42 +172,54 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* the buttons are octagons, an edge and a glass like every panel, and each
    carries its own gauge under the thumb that uses it. The layer behind does
    the hit-testing (generously), so the buttons themselves take no events. */
-#fire, #torp, #brk {
+#fire, #torp, #brk, #roll {
   --c: 28%; --edge: var(--hud-mid); --fill: rgba(var(--glass-ink-rgb), .58);
   position: absolute; isolation: isolate; place-items: center; align-content: center; gap: 6px; border: 0; padding: 0; background: none;
   pointer-events: none; aspect-ratio: 1;
   font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink);
 }
-:is(#fire, #torp, #brk)::before, :is(#fire, #torp, #brk)::after { content: ""; position: absolute; pointer-events: none;
+:is(#fire, #torp, #brk, #roll)::before, :is(#fire, #torp, #brk, #roll)::after { content: ""; position: absolute; pointer-events: none;
   clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)); }
 /* the edge is only the 1px ring (evenodd), so the glass inside lets the view through and never shows the edge colour */
-:is(#fire, #torp, #brk)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
+:is(#fire, #torp, #brk, #roll)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
   clip-path: polygon(evenodd, var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c), var(--c) 0,
     var(--ci) 1px, calc(100% - var(--ci)) 1px, calc(100% - 1px) var(--ci), calc(100% - 1px) calc(100% - var(--ci)), calc(100% - var(--ci)) calc(100% - 1px), var(--ci) calc(100% - 1px), 1px calc(100% - var(--ci)), 1px var(--ci), var(--ci) 1px); }
-:is(#fire, #torp, #brk)::after { inset: 1px; z-index: -1; background: var(--fill); }
+:is(#fire, #torp, #brk, #roll)::after { inset: 1px; z-index: -1; background: var(--fill); }
 #fire { right: var(--in-r); bottom: var(--pb); width: var(--fw); --edge: var(--hud); font-size: 10px; }
 #fire.on { --fill: rgba(var(--blue-rgb), .34); }
 #t-bank { --n: 10; width: 56%; height: 5px; }
 #fire.dry #t-bank { --on: var(--alert); --off: var(--alert-dim); }
-/* torpedo: to the left of the trigger, a touch higher */
-#torp { right: calc(var(--in-r) + var(--fw) + 10px); bottom: calc(var(--pb) + var(--fw) * .3); width: var(--bw); }
+/* the fan: Torpedo, Roll and Reverse on an arc round the trigger, each one short reach for the same thumb.
+   --fd is the distance from the trigger's centre to a small button's centre. */
+#touch { --fd: calc(var(--fw) / 2 + var(--bw) / 2 + 10px); }
+/* torpedo: level with the trigger, to its left */
+#torp { right: calc(var(--in-r) + var(--fw) / 2 + var(--fd) - var(--bw) / 2); bottom: calc(var(--pb) + var(--fw) / 2 - var(--bw) / 2); width: var(--bw); }
 #torp.on { animation: tap-flash .22s var(--ez); }
 #t-rack { width: 58%; }
 #t-rack i { height: 5px; }
-/* break and reverse: above the trigger, a short reach up for the same thumb; the gauge refills over the cooldown */
-#brk { right: calc(var(--in-r) + var(--fw) * .22); bottom: calc(var(--pb) + var(--fw) + 10px); width: calc(var(--bw) * .86); --edge: var(--hud-mid); }
+/* roll: up and to the left of the trigger, on the diagonal (a little further out, so it clears its neighbours) */
+#roll { right: calc(var(--in-r) + var(--fw) / 2 + var(--fd) * .78 - var(--bw) / 2); bottom: calc(var(--pb) + var(--fw) / 2 + var(--fd) * .78 - var(--bw) / 2); width: var(--bw); }
+#roll.on { animation: tap-flash .22s var(--ez); }
+#roll.wait, #brk.wait { --fill: rgba(var(--glass-ink-rgb), .4); opacity: .7; }
+#t-roll { --n: 5; width: 56%; height: 4px; }
+/* break and reverse: straight above the trigger; the gauge refills over the cooldown */
+#brk { right: calc(var(--in-r) + var(--fw) / 2 - var(--bw) / 2); bottom: calc(var(--pb) + var(--fw) / 2 + var(--fd) - var(--bw) / 2); width: var(--bw); --edge: var(--hud-mid); }
 #brk.on { animation: tap-flash .22s var(--ez); }
-#brk.wait { --fill: rgba(var(--glass-ink-rgb), .4); opacity: .7; }
 #t-brk { --n: 5; width: 56%; height: 4px; }
 @keyframes tap-flash { from { scale: .88; } }
+/* the button a lesson is about: its edge breathes until the lesson moves on (still, with reduced motion) */
+:is(#fire, #torp, #roll).teach { --edge: var(--hud-hi); animation: teach 1.4s var(--ez) infinite; }
+@keyframes teach { 50% { filter: brightness(1.6); } }
+@media (prefers-reduced-motion: reduce) { :is(#fire, #torp, #roll).teach { animation: none; filter: brightness(1.4); } }
 /* button size (Settings, touch only): the thumb buttons and the stick ring a step larger or smaller */
 html.btn-large #touch { --sw: clamp(120px, 34vh, 150px); --fw: clamp(96px, 29vh, 124px); --bw: clamp(70px, 20vh, 84px); }
 html.btn-small #touch { --sw: clamp(90px, 26vh, 116px); --fw: clamp(68px, 20vh, 88px); --bw: clamp(52px, 14vh, 62px); }
 /* left-handed: the stick and the buttons trade sides */
 .lefty #stick { left: auto; right: var(--in-l); }
 .lefty #fire { right: auto; left: var(--in-r); }
-.lefty #torp { right: auto; left: calc(var(--in-r) + var(--fw) + 10px); }
-.lefty #brk { right: auto; left: calc(var(--in-r) + var(--fw) * .22); }
+.lefty #torp { right: auto; left: calc(var(--in-r) + var(--fw) / 2 + var(--fd) - var(--bw) / 2); }
+.lefty #roll { right: auto; left: calc(var(--in-r) + var(--fw) / 2 + var(--fd) * .78 - var(--bw) / 2); }
+.lefty #brk { right: auto; left: calc(var(--in-r) + var(--fw) / 2 - var(--bw) / 2); }
 /* pause: the top right corner, where phone games keep it, clear of both thumbs and of the flight path.
    (It sat low in the middle until 2026-11-23, right where the pause card puts Save & exit.) */
 #pause-b { position: absolute; right: max(var(--safe-r), 6px); top: calc(var(--safe-t) + 6px); width: 44px; height: 44px;
