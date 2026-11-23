@@ -59,6 +59,11 @@
       <symbol id="i-reg-info" viewBox="0 0 48 48"><circle cx="24" cy="24" r="19"/><path d="M24 21v13 M24 14v2"/></symbol>
       <symbol id="i-reg-go" viewBox="0 0 48 48"><path d="M6 24h32 M26 12l12 12-12 12"/></symbol>
       <symbol id="i-laser" viewBox="0 0 24 24"><path d="M3 9h5v6H3z M8 12h13 M13 7.5l2 2.5 M13 16.5l2-2.5"/></symbol>
+      <!-- the thumb buttons: solid glyphs after Material Symbols (Apache 2.0): bolt, rocket, autorenew, u-turn -->
+      <symbol id="tb-laser" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></symbol>
+      <symbol id="tb-torp" viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5zm2 8.5c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-6.31 9.52c-.48-1.23-1.52-4.17-1.67-6.87l-1.13.75c-.56.38-.89 1-.89 1.67V22l3.69-1.48zM20 22v-5.93c0-.67-.33-1.29-.89-1.66l-1.13-.75c-.15 2.69-1.2 5.64-1.67 6.87L20 22z"/></symbol>
+      <symbol id="tb-roll" viewBox="0 0 24 24"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/></symbol>
+      <symbol id="tb-reverse" viewBox="0 0 24 24"><path d="M6 21V9c0-3.31 2.69-6 6-6s6 2.69 6 6v4.17l1.59-1.59L21 13l-4 4-4-4 1.41-1.41L16 13.17V9c0-2.21-1.79-4-4-4S8 6.79 8 9v12z"/></symbol>
       <symbol id="i-torp" viewBox="0 0 24 24"><path d="M7 9h9l5 3-5 3H7z M7 9L3 5 M7 15l-4 4 M11 9v6"/></symbol>
       <symbol id="i-mine" viewBox="0 0 24 24"><path d="M12 7l4.3 2.5v5L12 17l-4.3-2.5v-5z M12 2v5 M12 17v5 M3.3 7l4.4 2.5 M16.3 14.5l4.4 2.5 M3.3 17l4.4-2.5 M16.3 9.5l4.4-2.5"/></symbol>
       <symbol id="i-core" viewBox="0 0 24 24"><path d="M13 2L5 13.5h6L10 22l8-11.5h-6z"/></symbol>
@@ -215,10 +220,10 @@
          its own gauge. -->
     <div id="touch" aria-hidden="true">
       <div id="stick"><div id="knob"></div></div>
-      <button type="button" id="fire" tabindex="-1"><span>Laser</span><i class="ticks" id="t-bank"></i></button>
-      <button type="button" id="torp" tabindex="-1"><span>Torpedo</span><span class="rack" id="t-rack"></span></button>
-      <button type="button" id="roll" tabindex="-1"><span>Roll</span><i class="ticks" id="t-roll"></i></button>
-      <button type="button" id="brk" tabindex="-1"><span>Reverse</span><i class="ticks" id="t-brk"></i></button>
+      <button type="button" id="fire" tabindex="-1" aria-label="Laser"><svg class="tb-i" aria-hidden="true"><use href="#tb-laser"/></svg><i class="ticks" id="t-bank"></i></button>
+      <button type="button" id="torp" tabindex="-1" aria-label="Torpedo"><svg class="tb-i" aria-hidden="true"><use href="#tb-torp"/></svg><span class="rack" id="t-rack"></span></button>
+      <button type="button" id="roll" tabindex="-1" aria-label="Roll"><svg class="tb-i" aria-hidden="true"><use href="#tb-roll"/></svg><i class="ticks" id="t-roll"></i></button>
+      <button type="button" id="brk" tabindex="-1" aria-label="Reverse"><svg class="tb-i" aria-hidden="true"><use href="#tb-reverse"/></svg><i class="ticks" id="t-brk"></i></button>
       <button type="button" id="pause-b" tabindex="-1" aria-label="Pause"><i></i><i></i></button>
     </div>
 

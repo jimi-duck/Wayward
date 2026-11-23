@@ -81,3 +81,5 @@ moved to the top right corner (44x44); the ship's status steps 44 px left on tou
 - Phone-size card art: not done. Phones draw at 2-3 device pixels per CSS pixel, so a card's picture needs about
   the desktop file anyway, and with the files now kept on the phone each is fetched once.
 - The iPhone "add to Home Screen" tip was already on the title for iPhone browsers.
+
+- Icons, not words, on the thumb buttons (owner, 2026-11-23): solid, minimal glyphs in the Material Symbols style, `tb-laser` (a bolt), `tb-torp` (a rocket), `tb-roll` (two turning arrows), `tb-reverse` (a U-turn) in `index.html`; each button keeps its name as `aria-label`. The first line icons were turned down as too fussy.
