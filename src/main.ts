@@ -8,6 +8,7 @@ import { CAMERA_VIEWS, ZOOMS, type CameraView } from './render/camera';
 import { QualityGovernor, keptTier, saveTier, tierIndex } from './render/quality';
 import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { DOCK_SETTLE_MS, Sector } from './render/sector';
+import { setLeanGeometry } from './render/lean';
 import { lockLifted } from './sim/postjump';
 import { World } from './sim/world';
 import { bestsOf, grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
@@ -81,7 +82,8 @@ function boot(review: typeof import('./review') | null): void {
   const TIER_KEY = 'wayward.tier';
   const settled = keptTier(TIER_KEY);
   const firstTier = () => settled ? settled.tier : tierIndex(coarse ? 'phone' : 'high');
-  const quality = new QualityGovernor(pinned >= 0 ? pinned : firstTier(), pinned >= 0, settled?.ceil);
+  // a phone's governor breathes: it draws a little smaller before it gives up a tier, and holds an even 30 at the bottom
+  const quality = new QualityGovernor(pinned >= 0 ? pinned : firstTier(), pinned >= 0, settled?.ceil, coarse);
   const keepTier = () => { if (pinned < 0 && !saver) saveTier(TIER_KEY, quality.tier.name, quality.ceiling); };
   // Battery saver (a switch on the title's Settings and the pause card): the low tier and 30 frames a second. Kept per device.
   const SAVER_KEY = 'wayward.saver';
@@ -97,6 +99,8 @@ function boot(review: typeof import('./review') | null): void {
   const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: dev ? ARCADE_SURVIVAL : profile.mode === 'arcade' ? profile.arcadeSurvival : profile.survival, mode: dev ? 'arcade' : profile.mode, space: !params.has('nospace'), review: dev });
   const showMode = () => document.documentElement.classList.toggle('breakout', world.mode === 'breakout');
   showMode();
+  // a phone's meshes are built lean (render/lean.ts): decided once, before anything is built
+  setLeanGeometry(coarse || quality.tier.name === 'low' || quality.tier.name === 'phone');
   const renderer = createRenderer(canvas, quality.tier);
   const sector = new Sector(renderer, quality.tier);
   sector.setCosmetic(profile.cosmetic);
@@ -128,7 +132,7 @@ function boot(review: typeof import('./review') | null): void {
   const iphoneBrowser = /iPhone|iPod/.test(navigator.userAgent) && !homeScreen;
   el('ios-tip').hidden = !iphoneBrowser;
   const fit = () => {
-    const dpr = fitRenderer(renderer, quality.tier, sector.off.has('half') ? 0.5 : 1);
+    const dpr = fitRenderer(renderer, quality.tier, (sector.off.has('half') ? 0.5 : 1) * quality.scale);
     const lift = hud.layout();
     sector.resize(canvas.clientWidth, canvas.clientHeight, dpr, lift);
   };
@@ -137,7 +141,7 @@ function boot(review: typeof import('./review') | null): void {
   // ?perf: the phone readout (frame, CPU and GPU time) with switches to take one layer out at a time; docs/PERF.md
   const perf = params.has('perf') ? new PerfReadout(el('debug'), {
     renderer, quality, off: sector.off, fit,
-    pin: (i) => { quality.pin(i); matchTier(renderer, quality.tier); sector.setTier(quality.tier); fit(); void sector.warm(); },
+    pin: (i) => { quality.pin(i); shownTier = quality.tier; matchTier(renderer, quality.tier); sector.setTier(quality.tier); fit(); void sector.warm(); },
   }) : null;
   // the console's text sizes change once the web fonts arrive
   document.fonts?.ready.then(fit);
@@ -677,6 +681,8 @@ function boot(review: typeof import('./review') | null): void {
   );
 
   let lastRun: unknown = null, lastSystem = '', wasPaused = true, veil = 0;
+  /** The tier the renderer is set up for, so a change of drawing size alone does not rebuild it. */
+  let shownTier = quality.tier;
 
   let autoFire = false;
   const slowmo = new SlowMo();
@@ -753,7 +759,12 @@ function boot(review: typeof import('./review') | null): void {
       wasPaused = loop.paused;
       // down at once when the frames are too slow; up only while the world is held (a pop-up, the pause card), never in flight
       const moved = !loop.paused ? quality.sample(dt) : started && !settling && !bay.open && quality.stepUp();
-      if (moved) {
+      if (moved && quality.tier === shownTier) {
+        // only the drawing size moved (or the frame rate settled on 30): no new shaders
+        fit();
+        loop.minInterval = saver || quality.thirty ? 1 / 30 : 0;
+      } else if (moved) {
+        shownTier = quality.tier;
         matchTier(renderer, quality.tier);
         sector.setTier(quality.tier);
         fit();
@@ -762,7 +773,7 @@ function boot(review: typeof import('./review') | null): void {
       }
     },
   });
-  loop.minInterval = saver ? 1 / 30 : 0;
+  loop.minInterval = saver || quality.thirty ? 1 / 30 : 0;
   // Left-handed (touch only): the stick on the right, the buttons on the left. Kept per device.
   const LEFTY_KEY = 'wayward.lefty';
   let lefty = false;
@@ -819,7 +830,8 @@ function boot(review: typeof import('./review') | null): void {
     const n = CAMERA_VIEWS.length;
     setView(CAMERA_VIEWS[(CAMERA_VIEWS.indexOf(sector.rig.view) + dir + n) % n]!);
   };
-  let compact = store('wayward.compact') === '1';
+  // on by default on a touch screen (2026-11-23): a phone's HUD needs the room more than the extra lines
+  let compact = coarse ? store('wayward.compact') !== '0' : store('wayward.compact') === '1';
   const paintCompact = () => {
     document.documentElement.classList.toggle('compact-hud', compact);
     for (const id of ['s-compact', 'p-compact']) {
@@ -863,6 +875,7 @@ function boot(review: typeof import('./review') | null): void {
     // on: the low tier now. off: back to where a phone starts, and the governor judges again
     quality.pin(on ? 0 : pinned >= 0 ? pinned : firstTier());
     if (!on && pinned < 0) quality.pin(null);
+    shownTier = quality.tier;
     matchTier(renderer, quality.tier);
     sector.setTier(quality.tier);
     fit();

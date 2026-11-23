@@ -440,3 +440,25 @@ Software raster time is SwiftShader's (the CPU drawing the GPU's work) through t
 Trade-off: a phone that could run Medium spends its first half minute and first pop-up on Phone. A phone that can't spends at most 3 s too slow, once, on the step it tried.
 
 Shots: `/mnt/project-files/perf-pass/tier-phone-phone.png` and `tier-phone-medium.png` (different skies; the run picks its own).
+
+## Pass 15: lean meshes and a governor that breathes (2026-11-23)
+
+Since pass 14 the far rocks, the backdrop and the field went to full detail (the space distance pass), and tiers never changed meshes, so a phone drew nearly three times the triangles: Phone 188k to 543k, Low 116k to 367k (Arcade, 844 x 390).
+
+**Lean meshes** (`render/lean.ts`): decided once, before the sector is built. On a touch screen, or a device that starts at Phone or Low, rock meshes are built at about half the detail: field rocks 8 subdivisions (was 11), bulwarks 14 (22), the backdrop 2 (4), the sky's 150 far rocks 3 (7). A computer keeps full detail on every tier. A phone that climbs to Medium keeps the lean meshes.
+
+**Breathing** (`QualityGovernor`, `breathe` on touch screens): when frames run slow, a phone first draws at 85%, then 75% of the tier's size, and only then drops a tier (which starts again at 100%). At Low with nothing left to give it holds an even 30 fps for the session (`thirty`), rather than juddering between 35 and 50. With room it gives the size back first, at the same quiet moments as a tier. A change of size only resizes the canvas: no shader work.
+
+| Arcade at 844 x 390, touch | Draws | Triangles |
+|---|---|---|
+| Phone, before | 147 | 543k |
+| Low, after | 104 | 220k |
+| Phone, after | 133 | 289k |
+| Medium, after (lean) | 132 | 311k |
+| High, after (lean) | 163 | 354k |
+
+The Story's first system on Phone, after: 190 draws, 400k triangles; the rest is the far works and stations, which the rendering thread owns.
+
+`node tools/phone-bench.mjs` (with the preview on :4179) prints this table for Arcade and the Story; run it before and after any change to what a frame draws. Already true and checked: shaders for the starting tier compile behind the title (`Sector.warm`); scene textures are about 16 MB, so memory is not a phone risk.
+
+**Not measured:** a real phone. Triangles and draws are what a phone pays for and what this cloud can count; frame times here are software rendering.

@@ -8,6 +8,7 @@ import { STEP } from '../core/loop';
 import { fbm } from '../core/noise';
 import { BULWARK_VARIANTS, ROCK_VARIANTS, type Bulwark, type Rock, type RockKind } from '../sim/field';
 import { PERTURB, seeded, WORLD_RIM } from './kit';
+import { detail } from './lean';
 
 // ── rock ──────────────────────────────────────────────────────────────────
 // Dark, dusty stone, split by fissures; basalt keeps a dull ember in its thinnest cracks. The shapes are built once
@@ -25,6 +26,8 @@ import { PERTURB, seeded, WORLD_RIM } from './kit';
 const PER_VARIANT = 48;
 /** Icosphere subdivisions: a field rock, and a bulwark (few on screen, seen up close). */
 const FIELD_DETAIL = 11, BULWARK_DETAIL = 22;
+/** The same on a phone (render/lean.ts): about half the triangles, the outline kept. */
+const FIELD_LEAN = 8, BULWARK_LEAN = 14, BACKDROP_LEAN = 2;
 /** Bulwarks are lumpy potatoes, not spheres: each shape stretched its own way. */
 const BULWARK_STRETCH: ReadonlyArray<[number, number, number]> = [[1.12, 0.9, 0.94], [0.94, 1, 1.1], [1.18, 0.86, 1]];
 const BACKDROP = 150;
@@ -573,12 +576,12 @@ export class RockView {
     // a field rock carries enough mesh for its basins, ledges and small craters to hold their shape on screen
     const shapes = Array.from({ length: ROCK_VARIANTS }, (_, k) => {
       const c = SHAPES[k % SHAPES.length]!;
-      return rockGeometry(k * 3.7 + 1, FIELD_DETAIL, c.craters, c.rough, c.cuts, c.stretch);
+      return rockGeometry(k * 3.7 + 1, detail(FIELD_DETAIL, FIELD_LEAN), c.craters, c.rough, c.cuts, c.stretch);
     });
     // rich rock is the same stone broken open on a geode: its own copy of each shape with the cavity cut in
     const geodes = Array.from({ length: ROCK_VARIANTS }, (_, k) => {
       const c = SHAPES[k % SHAPES.length]!;
-      return rockGeometry(k * 3.7 + 1, FIELD_DETAIL, c.craters, c.rough, c.cuts, c.stretch, 0.62);
+      return rockGeometry(k * 3.7 + 1, detail(FIELD_DETAIL, FIELD_LEAN), c.craters, c.rough, c.cuts, c.stretch, 0.62);
     });
     this.chunks = new Chunks(scene);
     this.seats = geodes.map((g, k) => shardSeats(g, 40 + k));
@@ -608,7 +611,7 @@ export class RockView {
       }
     }
     this.counts = this.meshes.map(() => 0);
-    for (let k = 0; k < BULWARK_VARIANTS; k++) this.bulwarkGeo.push(rockGeometry(k * 5.3 + 20, BULWARK_DETAIL, 3 + k, 0.36, 7 + k, BULWARK_STRETCH[k]));
+    for (let k = 0; k < BULWARK_VARIANTS; k++) this.bulwarkGeo.push(rockGeometry(k * 5.3 + 20, detail(BULWARK_DETAIL, BULWARK_LEAN), 3 + k, 0.36, 7 + k, BULWARK_STRETCH[k]));
     // a bulwark is a plain mesh, not an instance: hidden here so the warm-up compiles its program too
     const proxy = new Mesh(this.bulwarkGeo[0]!, this.bulwarkMat);
     proxy.visible = false;
@@ -622,7 +625,7 @@ export class RockView {
     const rnd = seeded(99);
     for (let k = 0; k < 3; k++) {
       // full detail: through the haze a far rock shows its lit faces and broken edges, so its outline must hold up too
-      const mesh = new InstancedMesh(rockGeometry(k * 2.9 + 40, 4, 2, 0.4, 7, k === 1 ? [1.35, 0.8, 0.85] : [1, 0.92, 1]), backMat, per);
+      const mesh = new InstancedMesh(rockGeometry(k * 2.9 + 40, detail(4, BACKDROP_LEAN), 2, 0.4, 7, k === 1 ? [1.35, 0.8, 0.85] : [1, 0.92, 1]), backMat, per);
       mesh.frustumCulled = false;
       this.backdrop.push(mesh);
       scene.add(mesh);

@@ -966,3 +966,19 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-mail dd { font-size: 11.5px; }
   .ns-main:has(.ns-lead) .ns-mail div:nth-child(n+3) { display: block; }
 }
+
+/* the smallest phones on their side (568x320, 640x360): one more step tighter, so a card's last answer and its whole
+   frame fit the screen without scrolling (2026-11-23) */
+@media (max-height: 380px) {
+  :root { --ng-pad: 12px 20px; --ng-pad-card: 10px 14px; --ng-gap: 6px; }
+  #comms .panel.comms .cm-list { gap: 6px; }
+  #comms .panel.comms { gap: 6px; }
+  .ns-wrap { gap: 10px; }
+  .ns-stack { gap: 6px; }
+  .ns-stack > .ns-p { padding: 8px 18px; }
+  .ns-h { padding-bottom: 4px; }
+  .ns-q p, .ns-side .ns-q p { font-size: 13px; line-height: 1.2; }
+  .ns-acts { gap: 6px; }
+  .ns-c { min-height: 40px; padding: 3px 12px; }
+  .ns-hint { font-size: 11.5px; line-height: 1.2; }
+}

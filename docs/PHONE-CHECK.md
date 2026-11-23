@@ -58,3 +58,14 @@ moved to the top right corner (44x44); the ship's status steps 44 px left on tou
   at the rim. `wayward.stick`.
 - Checked in touch emulation at 568x320 and 844x390: the Roll button rolls, the fixed stick steers, the
   settings fit the pause card. Not checked: real thumbs, and real vibration.
+
+## Small phones and performance (2026-11-23)
+
+- Compact HUD is on by default on a touch screen (still a setting; `wayward.compact` = '0' turns it off).
+- At 568x320 and 640x360 (`max-height: 380px` in `neon.css`) cards take one more step of tighter padding, gaps
+  and text (13 px question, 11.5 px hint). Cards taller than 568x320: 15 of 182 before, 3 after (Calloway's
+  first call, story_crew, story_tollgate, 7 to 21 px over; they scroll, answers reachable).
+- Scope: looked at and left where it is. It sits above the stick's resting ring, and the hand comes from below.
+- Docked screens, the bay, the course screen and the chart were not re-checked in this pass (last checked
+  2026-11-05, unchanged since apart from art).
+- Performance: lean meshes and a breathing governor, docs/PERF.md pass 15.
