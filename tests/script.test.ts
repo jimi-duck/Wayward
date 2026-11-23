@@ -134,7 +134,9 @@ describe('Northfold plays from data', () => {
       for (const e of w.events) { if (e.type === 'ping' && e.from === 'Sam Okoro') heard.push(e.text); if (e.type === 'storyNotice') types.push(e.headline); }
       w.events.length = 0;
     }
-    expect(types).toContain('Northfold');
+    // the arrival notice is the title card's line now (world.arrivalLine), never a second notice
+    expect(types).not.toContain('Northfold');
+    expect(w.arrivalLine?.reason).toBeTruthy();
     expect(heard.length).toBeGreaterThanOrEqual(1);
     expect(w.storyObjective?.main).toContain('Halden');
     expect(w.carry().seen).toContain('nf_notice');

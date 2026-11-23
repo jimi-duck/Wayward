@@ -539,6 +539,9 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 #title-card.on { animation: tc-run var(--tc-secs, 5.2s) linear forwards; }
 @keyframes tc-run { 0% { opacity: 0; } 18% { opacity: 1; } 78% { opacity: 1; } 100% { opacity: 0; } }
 #tc-k { font: 600 calc(var(--fs) * 1.0)/1 var(--font-rail); letter-spacing: .3em; text-transform: uppercase; color: var(--cy); }
+#tc-k[data-tone="amber"] { color: var(--caution); }
+#tc-k[data-tone="red"] { color: var(--alert); }
+#tc-k[data-tone="white"] { color: var(--ink); }
 #tc-t { font: 300 clamp(30px, 3.6vw, 54px)/1.05 var(--font-display); letter-spacing: .4em; text-indent: .4em; text-transform: uppercase; color: var(--ink); }
 #title-card.on #tc-t { animation: tc-name var(--tc-secs, 5.2s) cubic-bezier(.2, .6, .2, 1) forwards; }
 @keyframes tc-name { from { letter-spacing: .32em; text-indent: .32em; } to { letter-spacing: .5em; text-indent: .5em; } }
