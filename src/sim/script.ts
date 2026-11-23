@@ -44,7 +44,7 @@ export type Trigger =
   | { on: 'place'; place: string };
 
 export type Output =
-  | { radio: { from: string; caller: string; text: string; /** Said in step with what she is doing (talked in to a place): it goes ahead of the gap, or not at all if it waited 6 s (sim/floor.ts). */ live?: boolean } }
+  | { radio: { from: string; caller: string; text: string; /** Said in step with what she is doing (talked in to a place): it goes ahead of the gap, or not at all if it waited 6 s (sim/floor.ts). */ live?: boolean; /** One turn of a conversation: it follows the line before it as soon as that line is read, not after the radio's gap (sim/floor.ts). */ scene?: boolean } }
   | { notice: { tone: Tone; headline: string; reason?: string } }
   | { objective: { main?: string; quiet?: string; /** The trigger of the row that set it (filled in by the runner). */ from?: Trigger['on'] } }
   | { card: string; /** Opens in a fight (an urgent row): the gate waits on it. */ urgent?: boolean; /** Earned at a story place: it opens there and then, not when the desk next has a quiet moment (by then she has flown off). */ now?: boolean }
@@ -100,6 +100,8 @@ export interface Ctx {
 
 /** Seconds between two lines, and how near the gate "leave" is. */
 export const GAP = 2;
+/** Seconds: a radio row `after` a radio row by no more than this is the next turn of one conversation (`scene`). */
+export const SCENE_GAP = 3;
 export const LEAVE_R = 900;
 /** "Leave" fires within this of the gate: LEAVE_R, or under half the lane on a short one. */
 export function leaveR(lane?: number): number { return lane ? Math.min(LEAVE_R, lane * 0.45) : LEAVE_R; }
@@ -297,7 +299,11 @@ export class Script {
     play(row.id, !card);
     this.last = c.t;
     if (card) this.holding = { row: row.id, card };
-    out.push('card' in row.do && row.urgent ? { ...row.do, urgent: true } : earned ? { ...row.do, now: true } : row.do);
+    // a line that answers the one before it (a radio row `after` a radio row, within SCENE_GAP) is a turn in a conversation: it is said
+    // when that line has been read, not after the radio's gap, so a moot reads as a moot and not as four calls (23 November 2026)
+    const prev = row.on.on === 'after' ? this.all.get(row.on.row) : undefined;
+    const scene = 'radio' in row.do && !row.do.radio.live && row.on.on === 'after' && (row.on.delay ?? 0) <= SCENE_GAP && !!prev && 'radio' in prev.do;
+    out.push('card' in row.do && row.urgent ? { ...row.do, urgent: true } : earned ? { ...row.do, now: true } : scene && 'radio' in row.do ? { radio: { ...row.do.radio, scene: true } } : row.do);
     return out;
   }
 }

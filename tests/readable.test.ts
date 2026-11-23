@@ -75,3 +75,30 @@ describe('every Reach stop reads', () => {
     });
   }
 });
+
+// Every stop on the road (23 November 2026): a call that is only waiting its turn opens on its own as she comes to the gate; the gate
+// says "holding" (then "open") round it only where a scene really keeps her there: a handshake, a reboot, the Slow Door, a moot, the end.
+describe('a gate that waits on a call', () => {
+  /** Stops whose gate holds her for a scene, by design. */
+  const SCENES = new Set(['narrows', 'm_kessel', 'rift', 'slowdoor', 'breaker', 'f_gilt', 'seam', 'l_wane']);
+  it('only says it is holding at a scene stop', () => {
+    const told: string[] = [];
+    const n = newJourney(5, false, 'road').chart.systems.length;
+    for (let i = 2; i < n; i++) {
+      const j = newJourney(5, false, 'road');
+      const line = [...j.chart.systems].sort((a, b) => a.col - b.col);
+      j.trail = line.slice(0, i + 1).map((s) => s.id); j.at = line[i]!.id; j.status = 'sortie'; j.dest = null;
+      j.carry.flags.push('archive_woke', 'ship_stolen', 'on_road', 'lock_lifted', 'dead_gate_seen'); j.carry.cyrite = 60; j.carry.fuel = 60;
+      const w = new World(j.seed * 31 + 7, { mode: 'breakout', sortie: { ...sortieDef(j), pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, situation: null, place: null, thren: 0, calloway: Infinity }, carry: j.carry });
+      for (let k = 0; k < 120 / STEP && w.phase !== 'over' && w.bk!.jumpT < 0; k++) {
+        if (w.comms) { const c = w.comms; w.answer(c.def.choices[0]!.id); if (w.comms === c) break; continue; }
+        if (w.call) { w.answer(0); continue; }
+        const g = guideTarget(w);
+        if (g && w.runTime > START) { const d = Math.hypot(g.x - w.ship.x, g.z - w.ship.z); if (d > g.r * 0.5) { const v = Math.min(CRUISE * STEP, d); w.ship.x += (g.x - w.ship.x) / d * v; w.ship.z += (g.z - w.ship.z) / d * v; } }
+        w.ship.invuln = 99; w.step(STEP, NO); w.events.length = 0;
+      }
+      if (w.floor.log.some((l) => l.kind === 'signal' && l.id === 'Jump Gate holding')) told.push(w.bk!.def.script ?? '');
+    }
+    expect(told.filter((s) => !SCENES.has(s))).toEqual([]);
+  }, 60000);
+});

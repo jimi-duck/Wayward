@@ -22,7 +22,7 @@ export const RESISTANCE_ROWS: Row[] = [
   radio('rs_moot_val', 'm_kessel', after('rs_moot_pike', 2), VAL, 'gutter', '“Lovely. Three ideas, no ships. Call me when one of you wins.”'),
 
   // ── Tamsin Field: the Saints' operation ──
-  main('rs_saints', 'm_tamsin', free(40), 'saints_relay'),
+  main('rs_saints', 'm_tamsin', free(20), 'saints_relay'),
   radio('rs_saints_helped', 'm_tamsin', flag('saints_helped'), SAINTS, 'gutter', '“Eleven. We’ll carry their names too. Nobody said this would be clean.”'),
   radio('rs_saints_saved', 'm_tamsin', flag('saints_stopped'), 'A conscript on the relay', 'custody', '“We’re in the pods. Whoever you are, my sister’s in Cerro. Thank you.”'),
   radio('rs_saints_cps', 'm_tamsin', after('rs_saints', 20), CPS, 'office', '“Terrorists destroyed a public relay at Tamsin Field. Eleven contract residents died. Report anyone with Saint ties.”', { if: { not: ['saints_stopped'] }, stale: 200 }),

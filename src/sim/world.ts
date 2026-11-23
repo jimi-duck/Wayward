@@ -164,6 +164,8 @@ export const PLACE_AT = 30;
 
 /** Seconds a road gate holds a stop's main beats once the player is near it (the Narrows rule, #384, for every stop): the HUD counts it down, so the wait always has an end (owner, 14 November 2026). */
 const GATE_HOLD = 90;
+/** Seconds from her coming near a gate that waits on a call only waiting its turn, before it says it is holding (the HUD gate line says so all along). */
+const CALL_QUIET = 20;
 /** Units from the gate at which a hold is told and its clock starts: she is waiting at the gate, not only in the ring. */
 const HOLD_NEAR = 900; // or 0.6 of a short lane, so the hold's clock never runs from the arrival
 /** Seconds after arriving on the road that the scan is said. */
@@ -1951,7 +1953,11 @@ export class World implements EncounterHost {
     // a gate that waits on a story place says so once she makes for it, not while she is at the place itself (the HUD shows it from afar)
     const b = this.bk!, dl = Math.hypot(b.lane.x - this.ship.x, b.lane.z - this.ship.z);
     const early = h.why === '{who} first' && dl > APPROACH * 1.5;
-    if (this.holdNoted !== kind && h.why !== 'the gate is rebooting' && !early) {
+    // a call that is only waiting its turn is told on the HUD's gate line; the notice comes only if it keeps her waiting, so a card due at
+    // the gate opens on its own and not after "holding", then "open" (23 November 2026: every place-less stop said both round its card)
+    if (this.holdAt === Infinity && !h.paint && !h.handshake) this.holdAt = this.runTime;
+    const due = kind === 'a call is due' && /^wait for the call/.test(h.why) && this.runTime - this.holdAt < CALL_QUIET;
+    if (this.holdNoted !== kind && h.why !== 'the gate is rebooting' && !early && !due) {
       this.holdNoted = kind;
       // with the Warden key in, the gate is resetting: say so, so a gate that will not take her yet is never a mystery (the owner, 31 October 2026)
       this.events.push(h.resetting
@@ -2215,7 +2221,7 @@ export class World implements EncounterHost {
     const name = this.bk?.def.name ?? '';
     // a line may carry what the flags add up to: the debt left, the relays lit
     const vars = { debt: debtLeft(this.flags), relays: relaysLit(this.flags) };
-    if ('radio' in o) this.events.push({ type: 'ping', id: `${o.radio.live ? 'say' : 'story'}_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text, vars), moment: 'calm', system: name });
+    if ('radio' in o) this.events.push({ type: 'ping', id: `${o.radio.live ? 'say' : o.radio.scene ? 'scene' : 'story'}_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text, vars), moment: 'calm', system: name });
     else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason && (o.notice.reason.includes('{') ? tr(o.notice.reason, vars) : o.notice.reason) });
     else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet), from: o.objective.from };
     else if ('card' in o) {

@@ -335,3 +335,17 @@ beacon, `render/lead.ts`), the act, then the payoff and one exit line. Sam speak
 - **Copperline**: Sam's one line carries the Narrows warning ("My signal dies there"); then Brook's transport.
 
 Not playtested; the owner plays the Reach before the other legs change.
+
+### Every leg, measured (23 November 2026)
+
+`tests/readable.test.ts` flies every road stop at cruise toward what the HUD leads to. Two fixes came from it:
+
+- A gate that waits on a call only waiting its turn says so on its HUD line; its "Jump Gate holding" notice comes only if
+  she has waited 20 s near it (`world.ts` CALL_QUIET). Before, seven place-less stops said "holding" then "open" round a
+  card that came 5 s later, and the notice itself held the card back. The test allows the notice only at scene stops
+  (the Narrows, Kessel Hold, the Rift, the Slow Door, the Breaker, Gilt Market, the Seam, Wane Rest).
+- Tamsin Field: the debt clause at 10 s, the Saints' plea at 20 s (were 30 s and 40 s, so the plea opened at the gate).
+
+The objective's marker is a small navigation lamp now, not a shaft (owner, 23 November 2026: "too prominent"): a soft
+point a little above the place, the same size on screen at any range, blinking slowly like a buoy; a faint ring opens on
+the plane round it now and then between 300 m and 2.2 km. It steps back in a fight, in a lesson and once she is there.

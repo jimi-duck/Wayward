@@ -47,12 +47,14 @@ export function lineSecs(text: string): number {
 
 export type Kind = 'voice' | 'signal';
 type Held = Extract<GameEvent, { type: 'ping' }> | Extract<GameEvent, { type: 'storyNotice' }>;
-interface Line { ev: Held; kind: Kind; at: number; keep: boolean; reply: boolean; live: boolean; hot: boolean; calm: boolean }
+interface Line { ev: Held; kind: Kind; at: number; keep: boolean; reply: boolean; live: boolean; hot: boolean; calm: boolean; scene: boolean }
 
 /** Lines said because something just happened (sim/traffic, stage, mission, den, gantry, claim rules), not because the story reached them. */
 const REACTIVE = /^(relay_|patrol|traffic_|say_|warn_|mis_|gantry_|den_|claim_|seed_studied)/;
 /** The opening lesson's lines (sim/tutor.ts, `train_`): each is said when the lesson reaches its step or the raiders strike, so it goes ahead of the gap; a story line is never dropped. A later beat of the same voice (`_1`) waits its turn. */
 const LESSON = /^train_.*[^\d]$/;
+/** A turn in a conversation (sim/script.ts `scene`): it follows the line before it once that is read, without the gap. */
+const SCENE = /^scene_/;
 const reactive = (e: Held): boolean => e.type === 'ping' && REACTIVE.test(e.id);
 
 const CHATTER_IDS = new Set(CHATTER.map((c) => c.id));
@@ -82,7 +84,7 @@ export class Floor {
       if (!kind || this.out.has(e)) continue;
       const ev = e as Held;
       const reply = kind === 'voice' && !this.momentOpen && now - this.momentClosed < FLOOR.reply;
-      this.q.push({ ev, kind, at: now, keep: kind === 'signal' || !(ev.type === 'ping' && (CHATTER_IDS.has(ev.id) || reactive(ev))), reply, live: reactive(ev), hot: reactive(ev) || (ev.type === 'ping' && LESSON.test(ev.id)), calm: !this.fight });
+      this.q.push({ ev, kind, at: now, keep: kind === 'signal' || !(ev.type === 'ping' && (CHATTER_IDS.has(ev.id) || reactive(ev))), reply, live: reactive(ev), hot: reactive(ev) || (ev.type === 'ping' && LESSON.test(ev.id)), calm: !this.fight, scene: ev.type === 'ping' && SCENE.test(ev.id) });
       events.splice(i--, 1);
     }
   }
@@ -98,7 +100,7 @@ export class Floor {
     const waits = (l: Line) => this.fight && l.kind === 'voice' && l.keep && l.calm && !l.reply && now - l.at < FLOOR.fight;
     const pick = hot ?? (this.hush ? this.q.find((l) => l.ev.type === 'storyNotice' && l.ev.headline === SCAN_LINE) : this.q.find((l) => !waits(l)));
     if (!pick) return null;
-    if (pick.kind === 'voice' && !pick.reply && (now < this.quietUntil || (!pick.hot && now - this.lastVoice < FLOOR.gap))) return null;
+    if (pick.kind === 'voice' && !pick.reply && (now < this.quietUntil || (!pick.hot && !pick.scene && now - this.lastVoice < FLOOR.gap))) return null;
     this.q.splice(this.q.indexOf(pick), 1);
     if (pick.kind === 'voice') { this.lastVoice = now; this.floorUntil = now + lineSecs((pick.ev as Extract<Held, { type: 'ping' }>).text) + FLOOR.hold; }
     else this.floorUntil = now + FLOOR.signal;
