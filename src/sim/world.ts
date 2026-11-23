@@ -2182,7 +2182,9 @@ export class World implements EncounterHost {
   private scriptFree(busy: Busy, t: number): boolean {
     // waiting at a shut gate, she is waiting for this: a job she has taken, mining or flying among rocks no longer hold the story back (owner,
     // 14 November 2026: a taken job kept the stop's call from ever coming while the HUD said to wait for it); only a fight does
-    const waiting = this.holdAt < Infinity;
+    // (a gate held for a handshake, a story place's beat, has no clock: being at it, in its ring, is waiting too, or a card she flew
+    // away from before it opened would never come there, and the gate would hold her for good: found 23 November 2026)
+    const waiting = this.holdAt < Infinity || (this.safe === 'lane' && !!this.gateWhy);
     return (busy === 'free' || (waiting && (busy === 'mining' || busy === 'tight'))) && !this.call && !this.comms && !this.desk.eagerWaiting() && !this.floor.busy(t) && (!this.safe || this.bk?.def.script === 'narrows' || !!this.bk?.def.relay || waiting) && (!this.stage?.taken || waiting) && t - this.desk.lastThreat >= DESK.settle.major && (waiting || t - this.desk.lastMine >= DESK.mineSettle);
   }
 
@@ -2213,13 +2215,15 @@ export class World implements EncounterHost {
     const name = this.bk?.def.name ?? '';
     // a line may carry what the flags add up to: the debt left, the relays lit
     const vars = { debt: debtLeft(this.flags), relays: relaysLit(this.flags) };
-    if ('radio' in o) this.events.push({ type: 'ping', id: `story_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text, vars), moment: 'calm', system: name });
+    if ('radio' in o) this.events.push({ type: 'ping', id: `${o.radio.live ? 'say' : 'story'}_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text, vars), moment: 'calm', system: name });
     else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason && (o.notice.reason.includes('{') ? tr(o.notice.reason, vars) : o.notice.reason) });
     else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet), from: o.objective.from };
     else if ('card' in o) {
       const def = CARD_BY_ID[o.card];
       // an urgent card opens now in a fight, where the desk would hold it (the Narrows' note: the gate's reboot waits on it); otherwise the desk
       if (def && o.urgent && this.busy() === 'fight' && !this.comms && !this.call && this.phase === 'play') this.openComms(def);
+      // a card earned at a story place opens as she finishes there (sim/script.ts `now`)
+      else if (def && o.now && !this.comms && !this.call && this.phase === 'play' && this.busy() !== 'fight') this.openComms(def);
       else if (def) this.desk.offer(def, 'major', this.runTime, false, true);
     }
     else if ('wall' in o) this.flags.add(o.wall);

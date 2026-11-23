@@ -64,8 +64,9 @@ describe('the script', () => {
 describe('Halden’s Reach, and Ilse’s buoy at Tallyhouse', () => {
   it('Ilse sends the order, then her name, in that order', () => {
     const j = at(2);
-    const p = fly(j, { story_handwriting: 'grandmother' });
-    expect(p.cards).toEqual(['story_order', 'story_handwriting']);
+    const p = fly(j);
+    // one card: Ilse names Ada on the radio after it
+    expect(p.cards).toEqual(['story_order']);
     expect(j.carry.flags).toEqual(expect.arrayContaining(['frag_order', 'clue_order_sig', 'ada_named']));
     expect(p.notices).toContain('The Wall · the closing order, signed L. C.');
     expect(p.pings.some((t) => t.includes('Ada left it listening'))).toBe(true);

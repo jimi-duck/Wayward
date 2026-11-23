@@ -41,7 +41,8 @@ describe('the Reach, from the pilot flights', () => {
       if (open) w.answer(open.def.id === 'story_warden' ? 'hear' : open.def.choices[0]!.id);
     }
     // Ilse sends the order itself, her account beside it: no choice to make (the owner, 31 October 2026)
-    expect(cards.slice(0, 2)).toEqual(['story_order', 'story_handwriting']);
+    // one card a stop: Ilse names Ada on the radio after the order (owner, 23 November 2026)
+    expect(cards.slice(0, 2)).toEqual(['story_order']);
   });
 
   it('no Reach beat comes back as a missed one past the Narrows', () => {

@@ -37,7 +37,7 @@ export const REACH_DE: Record<string, string> = {
   'unknown contact logged': 'unbekannter Kontakt vermerkt',
   // radio
   '“Wayward, this is Ilse Marrow, off the hospice ring. Come alongside. Slowly. Kellern listens on the open band.”': '„Wayward, hier ist Ilse Marrow, am Hospizring. Komm längsseits. Langsam. Kellern hört auf dem offenen Band mit.“',
-  '“Closer. Hold there. Let me read your hull.”': '„Näher. Halt da. Lass mich deinen Rumpf lesen.“',
+  '“Your archive thinks like Ada Aster. She stood watch with me. Aster’s your name too. Ada left it listening.”': '„Dein Archiv denkt wie Ada Aster. Sie hatte Wache mit mir. Aster heißt du auch. Ada hat es lauschen lassen.“',
   '“The spike’s off my stern. If anyone asks, I was never here. They’ll ask.”': '„Der Spike treibt hinter meinem Heck. Wenn jemand fragt: Ich war nie hier. Sie werden fragen.“',
   '“L. C. again, on the order and on the money. Whoever that is signed both.”': '„Schon wieder L. C., auf dem Befehl und auf dem Geld. Wer das auch ist, hat beides unterschrieben.“',
   '“Whoever that is, they signed both.”': '„Wer das auch ist, hat beides unterschrieben.“',
