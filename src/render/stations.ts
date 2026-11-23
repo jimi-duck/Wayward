@@ -1,8 +1,9 @@
 import {
-  AdditiveBlending, CanvasTexture, Color, CylinderGeometry, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace,
+  AdditiveBlending, BufferAttribute, CanvasTexture, Color, CylinderGeometry, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace,
   type Material, type Object3D, type Texture,
 } from 'three';
 import { Kit, metal, seeded, type V3 } from './kit';
+import { lavaRock, rockGeometry } from './rocks';
 import { cable, crate, lump, materials, stoneOf, stripes, strut, tank, truss, windowMaterial } from './breakout';
 import { GUILD_SKIFFS, GUILD_TENTS, HOLDFAST_ROCK, KELLERN_ARCH, PORT_TANKS } from '../sim/solids';
 import type { PortStyle } from '../sim/site';
@@ -38,10 +39,10 @@ interface Livery {
 const LIVERY: Record<PortStyle, Livery> = {
   // dark gunmetal and oiled steel, a weathered amber-yellow kept for hazards and guides, every glow under the bloom line
   frontier: { hull: 0x24272c, trim: 0x16181b, accent: 0xd99818, deck: 0x1c1e22, win: new Color(0.45, 0.38, 0.22), strip: new Color(0.55, 0.42, 0.15), board: '#181a1d', ink: '#c9c2b0', neon: false, shaded: true },
-  kellern: { hull: 0x4e5a68, trim: 0x1c2738, accent: 0x34557f, deck: 0x363e48, win: new Color(0.95, 1.15, 1.35), strip: new Color(0.25, 1.15, 1.35), board: '#e8ecf0', ink: '#1c2a3d', neon: false },
-  gutter: { hull: 0x70492f, trim: 0x2c2724, accent: 0x4c7464, deck: 0x463d35, win: new Color(1.7, 0.9, 0.36), strip: new Color(1.7, 0.85, 0.28), board: '#101615', ink: '#5ee6d4', neon: true },
-  holdfast: { hull: 0x6a5b42, trim: 0x2e2d27, accent: 0x6e7c48, deck: 0x4a4338, win: new Color(1.6, 1.12, 0.6), strip: new Color(0.55, 1.25, 0.55), board: '#1b1a16', ink: '#f2e3bf', neon: true },
-  guild: { hull: 0x3e7174, trim: 0x2a2a31, accent: 0xd49a2e, deck: 0x5e4a38, win: new Color(1.65, 1.15, 0.55), strip: new Color(1.6, 1.05, 0.35), board: '#1a140c', ink: '#f0b24a', neon: true },
+  kellern: { hull: 0x4e5a68, trim: 0x1c2738, accent: 0x34557f, deck: 0x363e48, win: new Color(0.42, 0.52, 0.62), strip: new Color(0.12, 0.5, 0.6), board: '#a9b2bd', ink: '#1c2a3d', neon: false, shaded: true },
+  gutter: { hull: 0x70492f, trim: 0x2c2724, accent: 0x4c7464, deck: 0x463d35, win: new Color(0.78, 0.42, 0.17), strip: new Color(0.75, 0.38, 0.12), board: '#101615', ink: '#5ee6d4', neon: true, shaded: true },
+  holdfast: { hull: 0x6a5b42, trim: 0x2e2d27, accent: 0x6e7c48, deck: 0x4a4338, win: new Color(0.72, 0.5, 0.27), strip: new Color(0.25, 0.56, 0.25), board: '#1b1a16', ink: '#f2e3bf', neon: true, shaded: true },
+  guild: { hull: 0x3e7174, trim: 0x2a2a31, accent: 0xd49a2e, deck: 0x5e4a38, win: new Color(0.75, 0.52, 0.25), strip: new Color(0.72, 0.47, 0.16), board: '#1a140c', ink: '#f0b24a', neon: true, shaded: true },
 };
 
 /** The guild's tent cloths, and the Gutter's patch plates: a few colours each, all muted. */
@@ -69,8 +70,9 @@ function matsOf(st: PortStyle): Record<string, Material> {
     glass: new MeshStandardMaterial({ color: 0x0b1418, roughness: 0.1, metalness: 0.85, envMapIntensity: 1.8 }),
     cool: new MeshBasicMaterial({ color: L.win, toneMapped: false, fog: false }),
     edge: new MeshBasicMaterial({ color: L.strip, toneMapped: false, fog: false }),
-    // greenhouse light: plants under lamps, dim, never a glow
-    green: new MeshBasicMaterial({ color: new Color(0.15, 0.36, 0.17), toneMapped: false, fog: false }),
+    // greenhouse glass: dark, catching the sky like the bridge glass, with the plants under their lamps a dim green
+    // behind it (was a flat lit mint that read as a toy)
+    green: new MeshStandardMaterial({ color: 0x0a140d, roughness: 0.12, metalness: 0.7, envMapIntensity: 1.6, emissive: new Color(0.016, 0.042, 0.014) }),
     stone: stoneOf(),
     // oxidised bronze for the fuel spheres; docking pips, teal for the way in and amber for the joints, never HDR
     bronze: metal({ tint: 0x6e5532, roughness: 0.42, metalness: 0.65, worn: 0.5 }),
@@ -731,13 +733,26 @@ function gutter(k: Kit, g: Group, rnd: () => number, L: Livery, a: StationAnim):
   return [-4, 8.6, -2.5];
 }
 
+
+let rockMat: MeshStandardMaterial | null = null;
+/** A rock a port is dug into: the field's own stone (rocks.ts shape and material), cold, `r` across, squashed by `sq`. */
+function fieldRock(seed: number, r: number, sq: V3, at: V3, detail: number): Mesh {
+  const geo = rockGeometry(seed, detail, 3, 0.42, 2, sq);
+  geo.scale(r, r, r);
+  geo.setAttribute('aHit', new BufferAttribute(new Float32Array(geo.attributes.position!.count), 1));
+  rockMat ??= lavaRock(1.2, 0, 0.1, undefined, false);
+  const m = new Mesh(geo, rockMat);
+  m.position.set(...at);
+  m.castShadow = m.receiveShadow = true;
+  return m;
+}
+
 // ── a Holdfast: a hub dug into a rock, greenhouses on top, flak on the ridge ──
 
 function holdfast(k: Kit, g: Group, rnd: () => number, L: Livery, a: StationAnim): V3 {
   const [rx, rz, rr] = HOLDFAST_ROCK;
-  k.add('stone', lump(rr, 11, [1.15, 0.62, 1]), [rx, -1.8, rz]);
-  k.add('stone', lump(6.2, 12, [1, 0.7, 1]), [-4, -1.6, -12]);
-  k.add('stone', lump(3, 13), [rx + 9, -1.2, rz - 7]);
+  // the rocks are real field stone (rocks.ts), cratered and broken, not faceted lumps in plating
+  g.add(fieldRock(11, rr, [1.15, 0.62, 1], [rx, -1.8, rz], 5), fieldRock(12, 6.2, [1, 0.7, 1], [-4, -1.6, -12], 4), fieldRock(13, 3, [1, 0.8, 1], [rx + 9, -1.2, rz - 7], 4));
   // the hub: a squat drum in olive with a band of warm windows, and a glass roof garden on it
   k.cyl('hull', 6.4, 7.0, 3.2, [0, 0.4, 0], 'y', 14);
   k.cyl('accent', 6.46, 6.46, 0.5, [0, 1.6, 0], 'y', 14);
@@ -754,9 +769,12 @@ function holdfast(k: Kit, g: Group, rnd: () => number, L: Livery, a: StationAnim
   for (let i = 0; i < 10; i++) { const t = i / 9; k.box('edge', [0.2, 0.12, 0.2], [2 + t * (rx - 4), 2.3 + t * 3.0, 5 + t * (rz - 6)]); }
   // greenhouses: glass domes on the rock's crown and the hub roof, a dim green inside, ribbed frames
   for (const [x, y, z, r] of [[rx - 1, 4.0, rz + 1, 3.2], [rx + 4, 3.0, rz - 4, 2.2], [rx - 5, 2.6, rz + 5, 2.0], [0, 2.3, 0, 3.6]] as const) {
-    k.add('green', new SphereGeometry(r, 18, 9, 0, TAU, 0, Math.PI / 2), [x, y, z]);
-    for (let j = 0; j < 6; j++) k.add('trim', new SphereGeometry(r * 1.01, 18, 9, (j / 6) * TAU, 0.06, 0, Math.PI / 2), [x, y, z]);
-    k.ring('trim', r * 1.01, 0.1, [x, y + 0.05, z], 'y', 24);
+    k.add('green', new SphereGeometry(r, 24, 12, 0, TAU, 0, Math.PI / 2), [x, y, z]);
+    // a geodesic cage: ribs over the top, two rings round it, a footing ring of plate, a lit hatch at its foot
+    for (let j = 0; j < 12; j++) k.add('trim', new SphereGeometry(r * 1.012, 24, 12, (j / 12) * TAU, 0.035, 0, Math.PI / 2), [x, y, z]);
+    for (const h of [0.38, 0.72]) k.ring('trim', r * Math.cos(Math.asin(h)) * 1.012, 0.05, [x, y + r * h, z], 'y', 32);
+    k.cyl('trim', r * 1.04, r * 1.08, 0.3, [x, y + 0.05, z], 'y', 24);
+    k.box('win', [0.6, 0.5, 0.08], [x, y + 0.45, z + r * 1.02]);
   }
   // flak turrets on the ridge and at the berth: a ring base, a turret that turns, twin barrels
   for (const [x, y, z, w] of [[rx + 6, 3.4, rz + 3, 0.5], [-4, 2.8, -12, -0.4], [-9, 0.6, -2, 0.7], [rx - 7, 3.0, rz - 4, -0.6]] as const) {
