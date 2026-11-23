@@ -131,6 +131,11 @@ function boot(review: typeof import('./review') | null): void {
     || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;
   const iphoneBrowser = /iPhone|iPod/.test(navigator.userAgent) && !homeScreen;
   el('ios-tip').hidden = !iphoneBrowser;
+  // a built game keeps itself on the device (public/sw.js): it starts and plays on without a signal once played.
+  // Never in development or the review world, where a kept copy would hide a change.
+  if (import.meta.env.PROD && 'serviceWorker' in navigator && !params.has('dev')) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => { /* plays without it */ }); });
+  }
   const fit = () => {
     const dpr = fitRenderer(renderer, quality.tier, (sector.off.has('half') ? 0.5 : 1) * quality.scale);
     const lift = hud.layout();
@@ -1016,7 +1021,17 @@ function boot(review: typeof import('./review') | null): void {
   // the canvas stays black for good; with it, three.js rebuilds on restore.
   canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); away(); });
   canvas.addEventListener('webglcontextrestored', fit);
-  document.addEventListener('visibilitychange', () => { if (document.hidden) away(); });
+  // A phone closes background tabs often (a call, a few other apps), and a journey saves at gates and ports: when the
+  // page is hidden mid-system, the hold and everything else carried is saved as a port would (2026-11-23), so a closed
+  // tab costs the system's flight, never its Cyrite. Not in the opening, which starts again from the top by design.
+  const keepPlace = () => {
+    if (!coarse || !started || !journey || world.mode !== 'breakout' || journey.status !== 'sortie') return;
+    if (!world.alive || world.phase === 'over' || world.sortie.home) return;
+    checkpoint(journey, world.carry());
+    saveJourney(journey);
+  };
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { keepPlace(); away(); } });
+  window.addEventListener('pagehide', keepPlace);
   window.addEventListener('blur', away);
   // so does a swipe out of fullscreen, and the tap that resumes takes it back
   document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) away(); });

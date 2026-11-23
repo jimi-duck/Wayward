@@ -1,0 +1,4 @@
+# Built files carry a content hash in their name, so they never change: a phone keeps them for a year and never
+# asks again. index.html and the rest stay revalidated (Cloudflare's default), so a new build is seen at once.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

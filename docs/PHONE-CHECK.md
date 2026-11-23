@@ -35,8 +35,7 @@ Every answer is reachable, but they are not glanceable.
 - Settings: the title's list scrolls on a 320px screen; the pause card's settings fit in two columns.
 - Numbers from a real phone: open the game with `?debug=1` for the fps, frame time, tier and draw-call readout.
 
-Not done on purpose: mid-flight resume (a run is saved at the gates, and the game already pauses when the
-page is left) and a time-to-next-stop line (no honest estimate until the pacing is playtested).
+Not done on purpose (2026-11-06): mid-flight resume (since 2026-11-23 a phone saves the hold when the page is hidden; see below) and a time-to-next-stop line (no honest estimate until the pacing is playtested).
 
 ## Pause on a phone (2026-11-23)
 
@@ -69,3 +68,16 @@ moved to the top right corner (44x44); the ship's status steps 44 px left on tou
 - Docked screens, the bay, the course screen and the chart were not re-checked in this pass (last checked
   2026-11-05, unchanged since apart from art).
 - Performance: lean meshes and a breathing governor, docs/PERF.md pass 15.
+
+## Offline and keeping your place (2026-11-23)
+
+- **Offline:** `public/sw.js` (built games only, never `?dev` or the dev server). The page comes from the network
+  first, so a new build is seen at once; built files under `assets/` are kept and served from the phone; entries
+  unused for 30 days are dropped. Checked: after one visit, the title and an Arcade run start with the network off.
+- `public/_headers`: built files are cached for a year (`immutable`), so a phone stops asking for each one again.
+- **Keeping your place:** on a touch screen, when the page is hidden mid-system (a call, another app), the hold and
+  everything carried is saved as a port would (`checkpoint`), so a tab the phone closes costs the system's flight,
+  never its Cyrite. Not in the opening, which starts again from the top by design. No change to the save's shape.
+- Phone-size card art: not done. Phones draw at 2-3 device pixels per CSS pixel, so a card's picture needs about
+  the desktop file anyway, and with the files now kept on the phone each is fetched once.
+- The iPhone "add to Home Screen" tip was already on the title for iPhone browsers.
