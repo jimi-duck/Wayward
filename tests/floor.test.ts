@@ -202,3 +202,20 @@ describe('a fight', () => {
     expect(lineSecs('one two three four five six seven eight nine ten')).toBeCloseTo(6.5);
   });
 });
+
+describe('notices stay current', () => {
+  it('a notice replaces one of its own kind still waiting, and a status notice that waited too long is dropped', () => {
+    const f = new Floor();
+    const ev: GameEvent[] = [
+      { type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: 'a call is waiting' },
+      { type: 'storyNotice', tone: 'teal', headline: 'Jump Gate open' },
+      { type: 'storyNotice', tone: 'teal', headline: 'Relay found', main: true },
+    ];
+    f.take(ev, 0);
+    const told: string[] = [];
+    for (let t = 0; t < 60; t += 0.5) { const e = f.step(t, true); if (e?.type === 'storyNotice') told.push(e.headline); }
+    expect(told).not.toContain('Jump Gate holding');
+    expect(told).toContain('Jump Gate open');
+    expect(told).toContain('Relay found');
+  });
+});

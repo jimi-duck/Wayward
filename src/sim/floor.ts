@@ -29,6 +29,8 @@ export const FLOOR = {
   moments: 20,
   /** Seconds a line of chatter (not story) may wait before it is dropped. */
   stale: 25,
+  /** Seconds a notice may wait: it says what is true now, so one that waited longer is out of date and is dropped (owner, 23 November 2026: "messages often outdated, stacked"). A notice the story tells is kept. */
+  signalStale: 12,
   /** Seconds a line tied to an event (a patrol's challenge, a warning, a wave inbound) may wait: it is said in step with the event or not at all. */
   live: 6,
   /** Seconds after a road arrival that nothing is said but the scan: the camera's sweep over the new system and its title (render/sector.ts) play first. */
@@ -55,6 +57,8 @@ const REACTIVE = /^(relay_|patrol|traffic_|say_|warn_|mis_|gantry_|den_|claim_|s
 const LESSON = /^train_.*[^\d]$/;
 /** A turn in a conversation (sim/script.ts `scene`): it follows the line before it once that is read, without the gap. */
 const SCENE = /^scene_/;
+/** A notice's kind, for replacing one still waiting: its first two words ("Jump Gate holding" and "Jump Gate open" are one kind). */
+const family = (headline: string): string => headline.split(/\s+/).slice(0, 2).join(' ').toLowerCase();
 const reactive = (e: Held): boolean => e.type === 'ping' && REACTIVE.test(e.id);
 
 const CHATTER_IDS = new Set(CHATTER.map((c) => c.id));
@@ -84,14 +88,16 @@ export class Floor {
       if (!kind || this.out.has(e)) continue;
       const ev = e as Held;
       const reply = kind === 'voice' && !this.momentOpen && now - this.momentClosed < FLOOR.reply;
-      this.q.push({ ev, kind, at: now, keep: kind === 'signal' || !(ev.type === 'ping' && (CHATTER_IDS.has(ev.id) || reactive(ev))), reply, live: reactive(ev), hot: reactive(ev) || (ev.type === 'ping' && LESSON.test(ev.id)), calm: !this.fight, scene: ev.type === 'ping' && SCENE.test(ev.id) });
+      // a notice replaces one of its own kind still waiting ("Jump Gate holding", then "Jump Gate open"): only the news is told
+      if (ev.type === 'storyNotice') { const k = family(ev.headline); this.q = this.q.filter((l) => !(l.ev.type === 'storyNotice' && !l.ev.main && family(l.ev.headline) === k)); }
+      this.q.push({ ev, kind, at: now, keep: ev.type === 'storyNotice' ? !!ev.main || ev.headline === SCAN_LINE : !(ev.type === 'ping' && (CHATTER_IDS.has(ev.id) || reactive(ev))), reply, live: reactive(ev), hot: reactive(ev) || (ev.type === 'ping' && LESSON.test(ev.id)), calm: !this.fight, scene: ev.type === 'ping' && SCENE.test(ev.id) });
       events.splice(i--, 1);
     }
   }
 
   /** Let the next line out if the floor is free. Lines keep the order they were made in: the story is told in order. */
   step(now: number, free: boolean): Held | null {
-    this.q = this.q.filter((l) => (l.live ? now - l.at < FLOOR.live : l.keep || now - l.at < FLOOR.stale));
+    this.q = this.q.filter((l) => (l.live ? now - l.at < FLOOR.live : l.keep || now - l.at < (l.kind === 'signal' ? FLOOR.signalStale : FLOOR.stale)));
     if (!free || this.momentOpen || now < this.floorUntil || !this.q.length) return null;
     // a line tied to an event goes ahead of the queue, and ahead of the gap: it names what is happening now
     const hot = this.hush ? undefined : this.q.find((l) => l.hot && now >= this.quietUntil);

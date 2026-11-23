@@ -104,7 +104,7 @@ describe('arriving in a system on the road', () => {
 });
 
 describe('a road gate after the Warden key', () => {
-  it('says the gate is resetting while it holds, then that it is open', () => {
+  it('says the gate is open once it opens, never a resetting notice after it', () => {
     const j = at(14);
     j.carry.fuel = 40;
     const w = new World(5, { mode: 'breakout', sortie: { ...quiet(j), blockade: false }, carry: j.carry });
@@ -120,9 +120,11 @@ describe('a road gate after the Warden key', () => {
       if (w.bk!.jumpT >= 0) break;
     }
     expect(notices).toContain('Warden key accepted');
+    const open = notices.indexOf('Jump Gate open');
+    expect(open).toBeGreaterThan(notices.indexOf('Warden key accepted'));
+    // "resetting" is told only if it is still true: once the gate is open, the waiting notice is replaced by the news
     const reset = notices.indexOf('Jump Gate resetting');
-    expect(reset).toBeGreaterThan(notices.indexOf('Warden key accepted'));
-    expect(notices.indexOf('Jump Gate open')).toBeGreaterThan(reset);
+    if (reset >= 0) expect(reset).toBeLessThan(open);
   });
 
   it('says nothing but the scan, and opens nothing, while the arrival sweep plays', () => {

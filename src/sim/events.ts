@@ -116,7 +116,7 @@ export type GameEvent =
   /** A line on the radio: no answer asked. */
   | { type: 'ping'; id: string; from: string; caller: string; text: string; moment: string; system: string }
   /** A story row's notice, low centre (ui/notify.ts): teal, amber, red or white. */
-  | { type: 'storyNotice'; tone: 'teal' | 'amber' | 'red' | 'white'; headline: string; reason?: string }
+  | { type: 'storyNotice'; tone: 'teal' | 'amber' | 'red' | 'white'; headline: string; reason?: string; /** Told by the story script: never dropped as out of date (only the ship's own status notices are). */ main?: boolean }
   /** Ned's yard, the beats of the work done (outside the floor: the moment is timed by the work): 0 reprogrammed, 1 repainted, 2 the name as a title card. */
   | { type: 'yardDone'; n: 0 | 1 | 2 }
   | { type: 'commsAnswer'; id: string; choice: string; text: string; won: boolean }
