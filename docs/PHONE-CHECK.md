@@ -82,4 +82,4 @@ moved to the top right corner (44x44); the ship's status steps 44 px left on tou
   the desktop file anyway, and with the files now kept on the phone each is fetched once.
 - The iPhone "add to Home Screen" tip was already on the title for iPhone browsers.
 
-- Icons, not words, on the thumb buttons (owner, 2026-11-23): solid, minimal glyphs in the Material Symbols style, `tb-laser` (a bolt), `tb-torp` (a slim finned torpedo), `tb-roll` (two turning arrows), `tb-reverse` (a U-turn) in `index.html`; each button keeps its name as `aria-label`. The first line icons were turned down as too fussy.
+- Icons, not words, on the thumb buttons (owner, 2026-11-23): solid, minimal glyphs in the Material Symbols style, `tb-laser` (a bolt), `tb-torp` (a plain torpedo: pointed body, one flared tail), `tb-roll` (two turning arrows), `tb-reverse` (a U-turn) in `index.html`; each button keeps its name as `aria-label`. The first line icons were turned down as too fussy.
