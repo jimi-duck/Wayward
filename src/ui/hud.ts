@@ -22,7 +22,6 @@ import { heard } from './heard';
 import { damageWord } from './panels';
 import { Notifier, NoticePlates, type Notice } from './notify';
 import { blockOf, cheapest, quickPicks } from '../sim/bay';
-import { BREAK_COOLDOWN, ROLL_COOLDOWN } from '../sim/tuning';
 import { lockLifted, paintAt, PAINT_NOTICE, refuelAt, YARD_REPAINT } from '../sim/postjump';
 import { recovering } from '../sim/recovery';
 import { wantedPips } from '../sim/pressure';
@@ -562,13 +561,8 @@ export class Hud {
     const cKey = `${!!line}`;
     if (cKey !== this.centreKey) { this.centreKey = cKey; this.measure(); }
 
-    // touch: the break's recharge fills the button's gauge back up
-    const brkReady = 1 - world.ship.breakCooldown / BREAK_COOLDOWN;
-    ticks($('t-brk'), brkReady, 5);
+    // touch: Reverse and Roll dim while they recharge (no gauge, owner 2026-11-23)
     $('brk').classList.toggle('wait', world.ship.breakCooldown > 0);
-    // and the roll's, so a thumb can see when the next dodge is ready
-    const rollFull = world.hull.rollCooldown ?? ROLL_COOLDOWN;
-    ticks($('t-roll'), 1 - world.ship.rollCooldown / rollFull, 5);
     $('roll').classList.toggle('wait', world.ship.rollCooldown > 0);
   }
 

@@ -201,11 +201,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #roll { right: calc(var(--in-r) + var(--fw) / 2 + var(--fd) * .78 - var(--bw) / 2); bottom: calc(var(--pb) + var(--fw) / 2 + var(--fd) * .78 - var(--bw) / 2); width: var(--bw); }
 #roll.on { animation: tap-flash .22s var(--ez); }
 #roll.wait, #brk.wait { --fill: rgba(var(--glass-ink-rgb), .4); opacity: .7; }
-#t-roll { --n: 5; width: 56%; height: 4px; }
-/* break and reverse: straight above the trigger; the gauge refills over the cooldown */
+/* break and reverse: straight above the trigger; dims while it recharges */
 #brk { right: calc(var(--in-r) + var(--fw) / 2 - var(--bw) / 2); bottom: calc(var(--pb) + var(--fw) / 2 + var(--fd) - var(--bw) / 2); width: var(--bw); --edge: var(--hud-mid); }
 #brk.on { animation: tap-flash .22s var(--ez); }
-#t-brk { --n: 5; width: 56%; height: 4px; }
 @keyframes tap-flash { from { scale: .88; } }
 /* the thumb buttons show an icon, not a word (owner, 23 November 2026): the trigger's large, the fan's a step smaller */
 #touch .tb-i { width: 44%; height: auto; aspect-ratio: 1; flex: none; fill: currentColor; stroke: none; }
