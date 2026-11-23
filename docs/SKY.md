@@ -246,5 +246,14 @@ works and the sky's events already lean by palette in `farworks.ts` LEAN and `ph
 - the Free Ports: thicker banks, lane lamps teal and amber in turn;
 - the Last Lanes: rubble pulled one way in long, quick streams, faint inner glow.
 
-Not built from the plan's ideas: holdfast greenhouses, searchlights, salvage cutters, Thren scars. They would be new
-far works rather than tuning; ask if they are wanted.
+Each of five regions also always shows its own far work (`farworks.ts` SIGNATURE), so it is known at a glance:
+
+- the Marches: a holdfast, a farmed rock rowed with greenhouse tubes and domes lit warm from inside;
+- the Hollows: a Voice foundry, rock grown through with dark crystal, its cracks lit from a heat inside (no strobes);
+- the Salvage Belt: two small cutters on a hulk, torches spitting at the hull;
+- the Breaker Yards: a breaker's yard, a gantry round a hull half cut to ribs, torches at the cut, two searchlights sweeping;
+- the Last Lanes: a Thren cut, a long hairline of cold light torn across the sky with a soft glow round it (no strobes).
+
+The far mine now works too: a cutting beam into the pit face and sparks where it bites. The moving parts (sparks,
+beams, searchlights) stay out of the bake and run in their own shaders on the beacons' clock, so they cost no script a
+frame and hold still under reduced motion.
