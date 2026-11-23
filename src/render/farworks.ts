@@ -1,4 +1,4 @@
-import { AdditiveBlending, Box3, BoxGeometry, BufferAttribute, Color, CylinderGeometry, Float32BufferAttribute, BufferGeometry, Group, Points, ShaderMaterial, IcosahedronGeometry, Matrix4, Mesh, MeshBasicMaterial, Quaternion, Vector3, type Material } from 'three';
+import { AdditiveBlending, Box3, BoxGeometry, BufferAttribute, Color, CylinderGeometry, Float32BufferAttribute, BufferGeometry, DoubleSide, Group, Points, ShaderMaterial, IcosahedronGeometry, Matrix4, Mesh, MeshBasicMaterial, Quaternion, Vector3, type Material } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { dirOf, type Sky } from './sky';
 import { Kit, metal, seeded, type V3 } from './kit';
@@ -19,7 +19,7 @@ function merged(all: Group): Group {
   all.updateMatrixWorld(true);
   const by = new Map<Material, BufferGeometry[]>();
   all.traverse((o) => {
-    if (!(o instanceof Mesh)) return;
+    if (!(o instanceof Mesh) || o.userData.live) return;
     const g = o.geometry.clone().applyMatrix4(o.matrixWorld);
     for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv', 'wear', 'kitOcc'].includes(k)) g.deleteAttribute(k);
     const list = by.get(o.material as Material);
@@ -55,8 +55,16 @@ function materials(sky: Sky, grain: number): Mats {
   const cold = new MeshBasicMaterial({ color: new Color(0.5, 0.16, 0.06), toneMapped: false, fog: false });
   // the light in the joints of a thing nobody built: cold, pale, well under the bloom line
   const seam = new MeshBasicMaterial({ color: sky.accent.clone().lerp(new Color(0.4, 0.75, 0.95), 0.6).multiplyScalar(0.7), toneMapped: false, fog: false });
-  return { body, mid, dark, lamp, cold, seam, keys: { body, mid, hull: mid, paint: body, patch: body, dark, trim: body, glow: cold, lamp, cold, seam, crystal: dark, violet: dark } };
+  // greenhouse glass: lamplight through leaves, warm and a little green, under the bloom line
+  const glass = new MeshBasicMaterial({ color: new Color(0.34, 0.31, 0.12), toneMapped: false, fog: false });
+  // the heat in a cut, or in a foundry's rock: a dull molten amber, never red
+  const ember = new MeshBasicMaterial({ color: new Color(1.1, 0.52, 0.16), toneMapped: false, fog: false });
+  return { body, mid, dark, lamp, cold, seam, keys: { body, mid, hull: mid, paint: body, patch: body, dark, trim: body, glow: cold, lamp, cold, seam, crystal: dark, violet: dark, glass, ember, tear: TEAR, tearGlow: TEAR_GLOW } };
 }
+
+// a Thren cut: a hairline of hard cold light, and round it a soft additive glow, both the same in every sky
+const TEAR = new MeshBasicMaterial({ color: new Color(1.25, 1.2, 1.55), toneMapped: false, fog: false });
+const TEAR_GLOW = new MeshBasicMaterial({ color: new Color(0.16, 0.14, 0.3), toneMapped: false, fog: false, transparent: true, blending: AdditiveBlending, depthWrite: false });
 
 /** Both sets for a sky: plain-unit builds (the station) and hull-unit builds (fleets, hulks). */
 interface Skins { station: Mats; hull: Mats }
@@ -255,7 +263,7 @@ function relayKit(): Kit {
 function mineKit(): Kit {
   return once('mine', () => {
     const k = new Kit(), rnd = seeded(2357);
-    const rock = new IcosahedronGeometry(1, 2);
+    const rock = new IcosahedronGeometry(1, 3);
     const p = rock.attributes.position!;
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
@@ -306,6 +314,273 @@ function spireKit(): Kit {
   });
 }
 
+
+/** A lumpy rock, about unit radius: the bones of a holdfast, a foundry, a yard's anchor. */
+function lump(seed: number, detail = 2): IcosahedronGeometry {
+  const rock = new IcosahedronGeometry(1, detail);
+  const p = rock.attributes.position!;
+  const a = 2 + (seed % 3), b = 1.3 + (seed % 5) * 0.3;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    const n = 0.82 + 0.22 * Math.sin(x * a + z * b + seed) * Math.cos(y * 2.3 - x * 1.1) + 0.08 * Math.sin(z * 8.0 + y * 5.0);
+    p.setXYZ(i, x * n, y * n * 0.8, z * n);
+  }
+  rock.computeVertexNormals();
+  return rock;
+}
+
+/** A holdfast (the Marches): a farmed rock, its sunward face rowed with long greenhouse tubes and domes lit warm from inside. */
+function holdfastKit(): Kit {
+  return once('holdfast', () => {
+    const k = new Kit(), rnd = seeded(2383);
+    k.add('dark', lump(3, 3), [0, 0, 0], [0.2, 0.4, 0.1], [80, 56, 70]);
+    // terraced shelves cut into the top, and on them the tubes: dark ribs over warm glass
+    for (let row = 0; row < 5; row++) {
+      const z = -34 + row * 17, y = 40 - Math.abs(row - 2) * 4, len = 70 - Math.abs(row - 2) * 14;
+      k.add('mid', new BoxGeometry(len + 8, 3, 13), [0, y - 3, z]);
+      k.cyl('glass', 4.2, 4.2, len, [0, y + 0.6, z], 'x', 10);
+      for (let r = 0; r <= len / 4; r++) k.ring('dark', 4.4, 0.32, [-len / 2 + r * 4, y + 0.6, z], 'x', 10);
+      for (let q = -1; q <= 1; q++) k.box('dark', [len, 0.35, 0.35], [0, y + 0.6 + 4.3 * Math.cos(q * 0.9), z + 4.3 * Math.sin(q * 0.9)]);
+      k.box('dark', [len, 0.8, 1.2], [0, y + 4.8, z]);
+    }
+    // the domes: half-spheres of the same glass in cages
+    for (const [x, z, r] of [[-48, 10, 13], [44, -18, 11], [30, 36, 9]] as V3[]) {
+      k.cyl('mid', r + 2, r + 2, 3, [x, 34, z], 'y', 16);
+      k.add('glass', new IcosahedronGeometry(1, 2), [x, 36, z], [0, 0, 0], [r, r * 0.8, r]);
+      for (let i = 0; i < 4; i++) k.ring('dark', r + 0.4, 0.5, [x, 36, z], 'y', 16, Math.PI, [0, (i / 4) * Math.PI, Math.PI / 2]);
+    }
+    // the hab: a squat block with lit windows, a mast, a landing pad off the rock's flank
+    k.box('body', [22, 14, 16], [-10, 46, -46]);
+    for (let i = 0; i < 6; i++) if (rnd() < 0.7) k.box('lamp', [2, 1.2, 0.3], [-18 + i * 3.2, 47, -37.8]);
+    k.cyl('dark', 0.8, 1.2, 40, [-14, 72, -46], 'y', 6);
+    k.box('lamp', [1.6, 1.6, 1.6], [-14, 93, -46]);
+    spar(k, 'dark', [60, 0, -20], [98, -6, -30], 2.4, 2.4);
+    k.cyl('mid', 14, 14, 2.2, [102, -6, -30], 'y', 16);
+    for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; k.box('lamp', [1, 1, 1], [102 + Math.cos(a) * 13, -4.6, -30 + Math.sin(a) * 13]); }
+    k.bakeOcclusion(3);
+    return k;
+  });
+}
+
+/** A breaker's yard (the Breaker Yards): a gantry the size of a hull, a hull inside it half cut to ribs, plates drifting off. */
+function yardKit(): Kit {
+  return once('yard', () => {
+    const k = new Kit(), rnd = seeded(2389);
+    // the gantry: four towers and the bridges between them, braced
+    for (const x of [-90, 90]) for (const z of [-34, 34]) {
+      spar(k, 'dark', [x, -50, z], [x, 50, z], 6, 6);
+      for (let y = -40; y <= 40; y += 20) k.box('mid', [7.4, 1.6, 7.4], [x, y, z]);
+    }
+    for (const y of [-50, 50]) for (const z of [-34, 34]) spar(k, 'body', [-94, y, z], [94, y, z], 5, 8);
+    for (const x of [-90, 0, 90]) spar(k, 'body', [x, 50, -36], [x, 50, 36], 4, 6);
+    for (const z of [-34, 34]) for (let i = 0; i < 6; i++) spar(k, 'dark', [-90 + i * 30, 50, z], [-60 + i * 30, -50, z], 1.2, 1.2);
+    // the travelling crane on the top bridge, its cable down to the hull
+    k.box('mid', [16, 8, 76], [20, 56, 0]);
+    k.cyl('dark', 0.5, 0.5, 46, [20, 30, 0], 'y', 4);
+    // the hull: the bow still plated, the rest cut back to its ribs and keel
+    k.add('body', new CylinderGeometry(22, 24, 60, 14, 1).rotateZ(Math.PI / 2), [-52, 0, 0], [0, 0, 0], [1, 1, 0.8]);
+    k.add('mid', new CylinderGeometry(0.1, 22, 26, 14, 1).rotateZ(Math.PI / 2), [-95, 0, 0], [0, 0, 0], [1, 1, 0.8]);
+    spar(k, 'dark', [-22, -21, 0], [78, -19, 0], 4, 6);
+    for (let i = 0; i < 9; i++) {
+      const x = -18 + i * 11, cut = i / 8;
+      k.ring('dark', 22 * (1 - cut * 0.15), 1.1, [x, 0, 0], 'x', 16, Math.PI * 2 * (1 - cut * 0.55), [0, 0, 0]);
+      // a few plates still on the nearer ribs
+      if (i < 4) k.add('mid', new BoxGeometry(9, 0.8, 16), [x + 4, 18, (rnd() - 0.5) * 8], [0.3, 0, 0.2]);
+    }
+    // the cut edge glowing where the torches have just been
+    k.add('ember', new BoxGeometry(1, 30, 1.2), [-21, 4, 15], [0.2, 0, 0]);
+    k.add('ember', new BoxGeometry(1, 16, 1.2), [-21, 12, -14], [-0.4, 0, 0]);
+    // plates and sections cut free, drifting off the yard
+    for (let i = 0; i < 14; i++) k.add(i % 3 ? 'mid' : 'body', new BoxGeometry(4 + rnd() * 10, 0.8, 3 + rnd() * 10), [60 + rnd() * 90, (rnd() - 0.5) * 80, (rnd() - 0.5) * 90], [rnd() * 3, rnd() * 3, rnd() * 3]);
+    // work lamps on the towers
+    for (const x of [-90, 90]) for (const z of [-34, 34]) k.box('lamp', [2, 2, 2], [x, 53, z]);
+    k.bakeOcclusion(3);
+    return k;
+  });
+}
+
+/** A foundry of the Voice (the Hollows): a rock grown through with dark crystal, its cracks lit from a heat inside. */
+function foundryKit(): Kit {
+  return once('foundry', () => {
+    const k = new Kit(), rnd = seeded(2393);
+    k.add('dark', lump(7, 3), [0, 0, 0], [0.4, 0.2, 0.3], [70, 64, 66]);
+    // the cracks: thin lines of ember running over the rock's face
+    for (let i = 0; i < 9; i++) {
+      const a = rnd() * Math.PI * 2, e = (rnd() - 0.3) * 1.1, r = 60;
+      const at: V3 = [Math.cos(a) * Math.cos(e) * r, Math.sin(e) * r * 0.8, Math.sin(a) * Math.cos(e) * r];
+      k.add('ember', new BoxGeometry(1.1, 18 + rnd() * 26, 1.1), at, [rnd() * 3, rnd() * 3, rnd() * 3]);
+    }
+    // crystal growths breaking out of it, seams lit cold
+    for (let i = 0; i < 11; i++) {
+      const a = rnd() * Math.PI * 2, e = rnd() * 1.2 - 0.2, r = 50;
+      const at: V3 = [Math.cos(a) * Math.cos(e) * r, Math.sin(e) * r * 0.8, Math.sin(a) * Math.cos(e) * r];
+      const h = 20 + rnd() * 46, lean: V3 = [Math.sin(a) * (0.6 + e), 0, -Math.cos(a) * (0.6 + e)];
+      k.add('dark', new CylinderGeometry(0.1, 1, 1, 5, 1), at, lean, [6 + rnd() * 6, h, 6]);
+      if (i % 3 === 0) k.add('seam', new BoxGeometry(0.5, h * 0.6, 0.5), at, lean);
+    }
+    k.bakeOcclusion(4);
+    return k;
+  });
+}
+
+/** A Thren cut (the Last Lanes): a thin bright scar torn across the sky, jagged, with lesser tears off it. Nothing solid. */
+function scarKit(): Kit {
+  return once('scar', () => {
+    const k = new Kit(), rnd = seeded(2399);
+    const pts: V3[] = [];
+    let x = -260, y = 0, z = 0;
+    // a long slow curve with a fine tremor in it, not a bolt: torn, not struck
+    while (x < 260) { pts.push([x, y + (rnd() - 0.5) * 3, z]); x += 10 + rnd() * 14; y = 0.0011 * x * x - 30 + Math.sin(x * 0.03) * 6; z += (rnd() - 0.5) * 4; }
+    for (let i = 1; i < pts.length; i++) {
+      // widest in the middle, a hair at each end
+      const t = i / pts.length, w = 0.15 + 0.9 * Math.sin(t * Math.PI);
+      spar(k, 'tear', pts[i - 1]!, pts[i]!, w, w * 0.6);
+      spar(k, 'tearGlow', pts[i - 1]!, pts[i]!, w * 9, w * 0.5);
+      if (rnd() < 0.12) {
+        const [px, py, pz] = pts[i]!, len = 8 + rnd() * 18, up = rnd() < 0.5 ? 1 : -1;
+        spar(k, 'tear', pts[i]!, [px + (rnd() - 0.5) * len, py + up * len * 0.7, pz], w * 0.35, w * 0.25);
+      }
+    }
+    return k;
+  });
+}
+
+
+// ── live parts: what still moves at the horizon ───────────────────────────
+// A few things on a far work are kept out of the bake, because they move on the beacons' clock in their own shader:
+// torch sparks that spit and die, and searchlights that sweep. Nothing here costs a frame of script.
+
+let sparkMat: ShaderMaterial | null = null;
+/** A cluster of torch sparks round `at` (work units): each point spits on its own beat, white-gold, never red. */
+function sparks(at: V3, spread: number, n: number, rnd: () => number): Points {
+  const pos: number[] = [], beat: number[] = [];
+  for (let i = 0; i < n; i++) {
+    pos.push(at[0] + (rnd() - 0.5) * spread, at[1] + (rnd() - 0.5) * spread, at[2] + (rnd() - 0.5) * spread);
+    beat.push(rnd() * 100, 0.7 + rnd() * 2.4);
+  }
+  const g = new BufferGeometry();
+  g.setAttribute('position', new Float32BufferAttribute(pos, 3));
+  g.setAttribute('beat', new Float32BufferAttribute(beat, 2));
+  sparkMat ??= new ShaderMaterial({
+    transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false, toneMapped: false,
+    uniforms: BEACON_UNIFORMS,
+    vertexShader: /* glsl */ `
+      attribute vec2 beat;
+      uniform float uTime; varying float vA;
+      float h(float n) { return fract(sin(n) * 43758.5453); }
+      void main() {
+        // a torch works in bursts: on for a while, off for a while; inside a burst each spark flickers fast
+        float burst = step(0.45, h(floor(uTime * 0.25 + beat.x)));
+        float f = h(floor(uTime * 14.0 * beat.y) + beat.x * 7.0);
+        vA = burst * smoothstep(0.55, 1.0, f);
+        gl_PointSize = 1.5 + 3.0 * vA;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
+    fragmentShader: /* glsl */ `
+      varying float vA;
+      void main() {
+        float d = length(gl_PointCoord - 0.5) * 2.0;
+        float a = vA * smoothstep(1.0, 0.0, d);
+        if (a < 0.004) discard;
+        gl_FragColor = vec4(vec3(1.5, 1.25, 0.85) * a, 1.0);
+      }`,
+  });
+  const p = new Points(g, sparkMat);
+  p.frustumCulled = false;
+  p.userData.live = true;
+  return p;
+}
+
+let lightMat: ShaderMaterial | null = null;
+/** A searchlight from `at` (work units), `len` long, sweeping slowly about its mast: a pale cool beam, faint, fading out. */
+function searchlight(at: V3, len: number, aim: number, rnd: () => number): Mesh {
+  // a cone from its foot at the origin up +y; the sweep and the phase ride in the vertex colour channel's place
+  const geo = new CylinderGeometry(len * 0.09, 0.6, len, 12, 6, true).translate(0, len / 2, 0);
+  const ph = rnd() * 6.28, n = geo.attributes.position!.count;
+  geo.setAttribute('sweep', new Float32BufferAttribute(Array.from({ length: n * 2 }, (_, i) => (i % 2 ? 0.1 + rnd() * 0.05 : ph)), 2));
+  lightMat ??= new ShaderMaterial({
+    transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false, toneMapped: false, side: DoubleSide,
+    uniforms: { uTime: BEACON_CLOCK, uLen: { value: 1 } },
+    vertexShader: /* glsl */ `
+      attribute vec2 sweep;
+      uniform float uTime; varying float vAlong; varying vec3 vN; varying vec3 vV;
+      void main() {
+        vec3 p = position;
+        vAlong = uv.y;
+        // swing about the foot: a slow search back and forth, and a little nod
+        float a = sin(uTime * sweep.y + sweep.x) * 0.9, b = sin(uTime * sweep.y * 0.7 + sweep.x * 1.3) * 0.25;
+        mat3 rz = mat3(cos(a), sin(a), 0.0, -sin(a), cos(a), 0.0, 0.0, 0.0, 1.0);
+        mat3 rx = mat3(1.0, 0.0, 0.0, 0.0, cos(b), sin(b), 0.0, -sin(b), cos(b));
+        p = rx * rz * p;
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        vN = normalize(normalMatrix * (rx * rz * normal));
+        vV = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: /* glsl */ `
+      varying float vAlong; varying vec3 vN; varying vec3 vV;
+      void main() {
+        // brightest down the middle of the beam as seen (where the cone's wall faces the eye), fading out with length
+        float core = pow(abs(dot(vN, vV)), 1.5);
+        float a = core * pow(max(1.0 - vAlong, 0.0), 1.6) * smoothstep(0.0, 0.04, vAlong) * 0.1;
+        if (a < 0.002) discard;
+        gl_FragColor = vec4(vec3(0.85, 0.95, 1.05) * a, 1.0);
+      }`,
+  });
+  const m = new Mesh(geo, lightMat);
+  m.position.set(...at);
+  m.rotation.z = aim;
+  m.frustumCulled = false;
+  m.userData.live = true;
+  return m;
+}
+
+
+let beamMat: ShaderMaterial | null = null;
+/** A cutting beam from `a` to `b` (work units): a hard thin line of light that works in the same bursts as the sparks it throws. */
+function beam(a: V3, b: V3, rnd: () => number): Mesh {
+  const from = new Vector3(...a), to = new Vector3(...b), len = from.distanceTo(to);
+  const geo = new CylinderGeometry(0.35, 0.35, len, 5, 1, true);
+  const ph = rnd() * 100;
+  geo.setAttribute('beat', new Float32BufferAttribute(Array.from({ length: geo.attributes.position!.count }, () => ph), 1));
+  beamMat ??= new ShaderMaterial({
+    transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false, toneMapped: false,
+    uniforms: BEACON_UNIFORMS,
+    vertexShader: /* glsl */ `
+      attribute float beat;
+      uniform float uTime; varying float vA;
+      float h(float n) { return fract(sin(n) * 43758.5453); }
+      void main() {
+        float burst = step(0.45, h(floor(uTime * 0.25 + beat)));
+        vA = burst * (0.75 + 0.25 * h(floor(uTime * 20.0) + beat));
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
+    fragmentShader: /* glsl */ `
+      varying float vA;
+      void main() {
+        if (vA < 0.01) discard;
+        gl_FragColor = vec4(vec3(1.4, 1.2, 0.8) * vA, 1.0);
+      }`,
+  });
+  const m = new Mesh(geo, beamMat);
+  m.position.copy(from).add(to).multiplyScalar(0.5);
+  m.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), to.sub(from).normalize());
+  m.frustumCulled = false;
+  m.userData.live = true;
+  return m;
+}
+
+/** Take a merged set's live parts out of the tree they were built in and hang them on `out`, where they were. */
+function lift(all: Group, out: Group): void {
+  const live: Array<Mesh | Points> = [];
+  all.traverse((o) => { if (o.userData.live) live.push(o as Mesh | Points); });
+  for (const o of live) {
+    o.matrixWorld.decompose(o.position, o.quaternion, o.scale);
+    o.removeFromParent();
+    out.add(o);
+  }
+}
+
 // ── the works ─────────────────────────────────────────────────────────────
 function ringStation(m: Skins, rnd: () => number): Group {
   const g = once('station', stationKit).build(m.station.keys);
@@ -354,6 +629,8 @@ function relay(m: Skins, rnd: () => number): Group {
 
 function mine(m: Skins, rnd: () => number): Group {
   const g = mineKit().build(m.station.keys);
+  // the rig still works: a cutting beam from the gantry's head down into the pit face, throwing sparks where it bites
+  g.add(beam([8, 59, 30], [2, 34, 40], rnd), sparks([2, 34, 41], 7, 12, rnd));
   g.rotation.set(0.2, rnd() * 6, 0.1);
   g.scale.setScalar(0.6);
   return g;
@@ -365,14 +642,71 @@ function spire(m: Skins, rnd: () => number): Group {
   return g;
 }
 
-const MAKERS = [ringStation, fleet, hulk, brokenRing, relay, mine, spire];
+
+/** A holdfast in the Marches: the farmed rock, lit greenhouses on its back. */
+function holdfast(m: Skins, rnd: () => number): Group {
+  const g = holdfastKit().build(m.station.keys);
+  g.rotation.set(0.35 + rnd() * 0.2, rnd() * 6, 0.1);
+  g.scale.setScalar(0.75);
+  return g;
+}
+
+/** A breaker's yard: the gantry and its hull, torches working the cut, two searchlights sweeping the dark round it. */
+function yard(m: Skins, rnd: () => number): Group {
+  const g = yardKit().build(m.station.keys);
+  g.add(sparks([-21, 8, 14], 10, 14, rnd), sparks([-21, 14, -13], 8, 10, rnd), sparks([40, -18, 6], 9, 8, rnd));
+  g.add(searchlight([-90, 53, 34], 260, 0.6, rnd), searchlight([90, 53, -34], 240, -0.7, rnd));
+  g.rotation.set(0.25, rnd() * 6, 0.12);
+  g.scale.setScalar(0.62);
+  return g;
+}
+
+/** Salvage cutters on a hulk (the Salvage Belt): the wreck, two small cutters alongside, torches spitting at the hull. */
+function salvage(m: Skins, rnd: () => number): Group {
+  const g = hulk(m, rnd);
+  const hull = g.children[0]!;
+  for (const [i, at] of ([[0.25, 0.2, 0.35], [-0.2, -0.15, -0.4]] as V3[]).entries()) {
+    const cutter = shipKit('freighter', 'custody').build(m.hull.keys);
+    cutter.scale.setScalar(0.09);
+    cutter.position.set(...at);
+    cutter.rotation.set(0.3 * i, 2 + i, 0.2);
+    hull.add(cutter);
+    hull.add(sparks([at[0] * 0.8, at[1] * 0.8, at[2] * 0.7], 0.05, 10, rnd));
+  }
+  return g;
+}
+
+/** A Thren cut in the Last Lanes: a scar across the sky. */
+function scar(m: Skins, rnd: () => number): Group {
+  const g = scarKit().build(m.station.keys);
+  g.rotation.set(rnd() * 0.4 - 0.2, rnd() * 6, rnd() * 0.8 - 0.4);
+  g.scale.setScalar(1.1);
+  g.userData.unlit = true;
+  return g;
+}
+
+/** A Voice foundry in the Hollows: crystal through rock, lit from inside. */
+function foundry(m: Skins, rnd: () => number): Group {
+  const g = foundryKit().build(m.station.keys);
+  g.rotation.set(rnd(), rnd() * 6, rnd());
+  g.scale.setScalar(0.85);
+  g.userData.unlit = true;
+  return g;
+}
+
+const MAKERS = [ringStation, fleet, hulk, brokenRing, relay, mine, spire, holdfast, yard, salvage, scar, foundry];
 /** The names of the works, by index, for the bench. */
-const FAR_WORKS = ['station', 'fleet', 'hulk', 'broken ring', 'relay', 'mine', 'spire'] as const;
+const FAR_WORKS = ['station', 'fleet', 'hulk', 'broken ring', 'relay', 'mine', 'spire', 'holdfast', 'yard', 'salvage', 'scar', 'foundry'] as const;
 
 /** One far work by index (see FAR_WORKS), merged, at the origin: the bench's way to look at one. */
 export function farWork(sky: Sky, which: number): Group {
   const rnd = seeded(sky.seed * 7 + 3 + which);
-  return merged(MAKERS[which % MAKERS.length]!(skins(sky), rnd));
+  const all = new Group();
+  all.add(MAKERS[which % MAKERS.length]!(skins(sky), rnd));
+  all.updateMatrixWorld(true);
+  const out = merged(all);
+  lift(all, out);
+  return out;
 }
 
 /**
@@ -382,6 +716,11 @@ export function farWork(sky: Sky, which: number): Group {
 const LEAN: Record<number, number[]> = {
   0: [0, 4, 1, 3], 1: [3, 5, 2, 4], 2: [6, 2, 3], 5: [5, 2, 3, 4], 6: [2, 4, 6], 7: [2, 1, 3, 5], 8: [0, 5, 4, 1], 9: [6, 3, 2],
 };
+/**
+ * The one work a region always shows, so it is known at a glance (space plan step 6): the Marches their holdfasts, the
+ * Hollows a foundry, the Salvage Belt cutters on a wreck, the Breaker Yards a yard, the Last Lanes a Thren cut.
+ */
+const SIGNATURE: Record<number, number> = { 1: 7, 2: 11, 5: 9, 7: 8, 9: 10 };
 
 /** The beacons' clock: FarBodies.tick sets it (seconds; reduced motion holds it, so they sit at a dim steady glow). */
 export const BEACON_CLOCK = { value: 0 };
@@ -401,7 +740,7 @@ function beacons(works: Group[], rnd: () => number): Points {
     const centre = new Box3().setFromObject(w).getCenter(new Vector3());
     const score = [-Infinity, -Infinity, -Infinity];
     w.traverse((o) => {
-      if (!(o instanceof Mesh)) return;
+      if (!(o instanceof Mesh) || o.userData.live) return;
       const a = (o.geometry as BufferGeometry).attributes.position as BufferAttribute;
       for (let i = 0; i < a.count; i += 3) {
         v.fromBufferAttribute(a, i).applyMatrix4(o.matrixWorld).sub(centre);
@@ -457,8 +796,10 @@ export function farWorks(sky: Sky, D: number): Group {
   const pool = LEAN[sky.palette ?? -1] ?? [0, 1, 2, 3, 4, 5, 6];
   const n = 2;
   const start = Math.floor(rnd() * pool.length);
+  const sig = SIGNATURE[sky.palette ?? -1];
   for (let i = 0; i < n; i++) {
-    const work = MAKERS[pool[(start + i) % pool.length]!]!(m, rnd);
+    const which = i === 0 && sig !== undefined ? sig : pool[(start + i) % pool.length]!;
+    const work = MAKERS[which]!(m, rnd);
     const avoid = sky.planet ? sky.planet.az : 0;
     const az = avoid + 70 + rnd() * 100 + i * 120, el = -4 + rnd() * 16;
     work.position.copy(dirOf(az, el).multiplyScalar(D * (0.7 + rnd() * 0.15)));
@@ -466,8 +807,10 @@ export function farWorks(sky: Sky, D: number): Group {
     all.add(work);
   }
   all.updateMatrixWorld(true);
-  const lights = beacons(all.children as Group[], rnd);
+  // nobody hangs strobes on a scar in space, or on what the Voice grew
+  const lights = beacons((all.children as Group[]).filter((w) => !w.userData.unlit), rnd);
   const out = merged(all);
+  lift(all, out);
   out.add(lights);
   return out;
 }
