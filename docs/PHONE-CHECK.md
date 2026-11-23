@@ -37,3 +37,11 @@ Every answer is reachable, but they are not glanceable.
 
 Not done on purpose: mid-flight resume (a run is saved at the gates, and the game already pauses when the
 page is left) and a time-to-next-stop line (no honest estimate until the pacing is playtested).
+
+## Pause on a phone (2026-11-23)
+
+Tapping Pause opened the pause card as the finger landed, and the same tap's click then landed on
+Save & exit, which saved at the last gate and went back to the title. Reproduced in a touch browser.
+Now the button pauses as the finger lifts, and `ui/tapguard.ts` swallows taps outside the touch controls
+for 0.35 s after the pause card or any panel opens (cards already had their own 0.4 s guard). The button
+moved to the top right corner (44x44); the ship's status steps 44 px left on touch screens.
