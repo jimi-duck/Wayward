@@ -3,6 +3,7 @@ import { BEACON_CLOCK, farWorks } from './farworks';
 import { hulkModel } from './space';
 import { lavaRock, rockGeometry as stoneGeometry } from './rocks';
 import { glowTexture } from './textures';
+import { detail } from './lean';
 
 // ── the sky ───────────────────────────────────────────────────────────────
 // What lies beyond the field, back to front:
@@ -1000,7 +1001,7 @@ export class Parallax {
     // lit by the sun like the near rock (flat facets), and lifted toward the sky's own haze so they sit back in it
     const farMat = lavaRock(1.2, 0, 0.15);
     farMat.fog = false;
-    this.far = new InstancedMesh(stoneGeometry(23.9, 7, 2, 0.42, 6, [1.15, 0.85, 1]), farMat, FAR_ROCKS);
+    this.far = new InstancedMesh(stoneGeometry(23.9, detail(7, 3), 2, 0.42, 6, [1.15, 0.85, 1]), farMat, FAR_ROCKS);
     this.far.instanceColor = new InstancedBufferAttribute(new Float32Array(FAR_ROCKS * 3).fill(1), 3);
     this.far.frustumCulled = false;
     this.far.renderOrder = -4;

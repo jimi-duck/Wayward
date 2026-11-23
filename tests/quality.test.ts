@@ -130,3 +130,44 @@ describe('QualityGovernor', () => {
     expect(q.tier.name).toBe('low');
   });
 });
+
+describe('QualityGovernor on a phone (breathe)', () => {
+  const PHONE = tierIndex('phone');
+
+  it('draws smaller twice before it gives up a tier', () => {
+    const q = new QualityGovernor(PHONE, false, undefined, true);
+    feed(q, 1 / 40, 180);
+    expect(q.tier.name).toBe('phone');
+    expect(q.scale).toBe(0.85);
+    feed(q, 1 / 40, 180);
+    expect(q.scale).toBe(0.75);
+    feed(q, 1 / 40, 180);
+    expect(q.tier.name).toBe('low');
+    expect(q.scale).toBe(1);
+  });
+
+  it('holds an even 30 once nothing is left to give, and stops judging', () => {
+    const q = new QualityGovernor(0, false, undefined, true);
+    feed(q, 1 / 40, 180 * 3);
+    expect(q.thirty).toBe(true);
+    expect(feed(q, 1 / 40, 600)).toBe(0);
+  });
+
+  it('gives the drawing size back first when there is room', () => {
+    const q = new QualityGovernor(PHONE, false, PHONE, true);
+    feed(q, 1 / 40, 180);
+    expect(q.scale).toBe(0.85);
+    feed(q, 1 / 60, 2100);
+    expect(q.wantsUp).toBe(true);
+    expect(q.stepUp()).toBe(true);
+    expect(q.scale).toBe(1);
+    expect(q.tier.name).toBe('phone');
+  });
+
+  it('a computer never breathes: it drops a tier as before', () => {
+    const q = new QualityGovernor(PHONE);
+    feed(q, 1 / 40, 180);
+    expect(q.tier.name).toBe('low');
+    expect(q.scale).toBe(1);
+  });
+});

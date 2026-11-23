@@ -80,8 +80,15 @@ export function saveTier(key: string, tier: TierName, ceil: number): void {
   try { localStorage.setItem(key, JSON.stringify({ tier, ceil, at: Date.now() })); } catch { /* not kept */ }
 }
 
+/** The drawing scales a phone steps through before it gives up a tier (docs/PERF.md pass 15). */
+export const SCALES = [1, 0.85, 0.75] as const;
+
 export class QualityGovernor {
   private index: number;
+  /** Where in SCALES the drawing size stands (phones only: `breathe`). */
+  private step = 0;
+  /** Out of steps at the lowest tier: hold an even 30 rather than judder. Kept for the session. */
+  thirty = false;
   private avg = 0;
   private jitter = 0;
   private samples = 0;
@@ -91,7 +98,7 @@ export class QualityGovernor {
   /** The highest tier this device may try (a tier that proved too slow is never tried again). */
   private ceil: number;
 
-  constructor(start: number, locked = false, ceiling = TIERS.length - 1) {
+  constructor(start: number, locked = false, ceiling = TIERS.length - 1, private readonly breathe = false) {
     this.ceil = Math.max(0, Math.min(TIERS.length - 1, ceiling));
     this.index = Math.max(0, Math.min(this.ceil, start));
     this.locked = locked;
@@ -101,12 +108,19 @@ export class QualityGovernor {
   pin(index: number | null): void {
     if (index !== null) this.index = Math.max(0, Math.min(TIERS.length - 1, index));
     this.locked = index !== null;
+    this.step = 0;
+    this.thirty = false;
     this.samples = 0;
     this.steady = 0;
   }
 
   get tier(): QualityTier {
     return TIERS[this.index]!;
+  }
+
+  /** The share of the tier's drawing size in use: 1, or a step down on a phone that is short of time. */
+  get scale(): number {
+    return SCALES[this.step]!;
   }
 
   get ceiling(): number {
@@ -118,14 +132,20 @@ export class QualityGovernor {
     return this.avg;
   }
 
-  /** Half a minute with room to spare: the tier above may be tried at the next quiet moment. */
+  /** Half a minute with room to spare: the drawing size back up, or the tier above, may be tried at the next quiet moment. */
   get wantsUp(): boolean {
-    return !this.locked && this.index < this.ceil && this.steady >= UP_AFTER;
+    return !this.locked && (this.step > 0 || this.index < this.ceil) && this.steady >= UP_AFTER;
   }
 
-  /** Try the tier above (the page calls this at a quiet moment). Returns true when it moved. */
+  /** Try the size or tier above (the page calls this at a quiet moment). Returns true when it moved. */
   stepUp(): boolean {
     if (!this.wantsUp) return false;
+    if (this.step > 0) {
+      this.step--;
+      this.samples = 0;
+      this.steady = 0;
+      return true;
+    }
     this.index++;
     this.samples = 0;
     this.steady = 0;
@@ -152,8 +172,21 @@ export class QualityGovernor {
     // room to spare: keeping up with the display, steadily (a 30fps cap is not room)
     if (this.samples >= SETTLE && this.avg <= ROOM && this.jitter < CALM) this.steady++;
     else this.steady = 0;
-    if (this.locked || this.index === 0 || this.samples < SETTLE) return false;
+    if (this.locked || this.thirty || this.samples < SETTLE) return false;
     if (this.avg <= SLOW || this.cappedAt30()) return false;
+    // a phone first draws a little smaller, which nobody sees, before it gives up the look of a tier
+    if (this.breathe && this.step < SCALES.length - 1) {
+      this.step++;
+      this.samples = 0;
+      this.steady = 0;
+      return true;
+    }
+    if (this.index === 0) {
+      // nothing left to give: an even 30 reads smoother than a ragged 40
+      if (this.breathe) { this.thirty = true; return true; }
+      return false;
+    }
+    this.step = 0;
     this.index--;
     // too slow here: never try this tier again on this device
     this.ceil = Math.min(this.ceil, this.index);
