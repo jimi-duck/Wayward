@@ -460,6 +460,7 @@ const NEAR_FX = 95;
 const DAMAGE_SMOKE: [number, number, number] = [0.36, 0.35, 0.33];
 
 const MAX_BATCH = 48;
+const WHITE = new Color(1, 1, 1), SOOT = new Color();
 
 /**
  * Every plain hull of one model (kind and faction) in one set of draws: an
@@ -480,6 +481,8 @@ class HullBatch {
       im.visible = false;
       // drawn from the origin's bounding sphere otherwise: cull nothing, as the streaks do
       im.frustumCulled = false;
+      // each hull its own soot: the colour per instance darkens a hull as its armour goes (set in add)
+      im.setColorAt(0, WHITE);
       scene.add(im);
       return im;
     }));
@@ -489,11 +492,16 @@ class HullBatch {
     this.counts[0] = this.counts[1] = 0;
   }
 
-  /** Place one hull. False when the batch is full (the hull is simply not drawn). */
-  add(m: Matrix4, flash: boolean): boolean {
+  /**
+   * Place one hull. False when the batch is full (the hull is simply not drawn). `left` is its armour left (0 to 1): a
+   * hull that has taken a beating is blackened with soot and scorch, the paint and plating dulled toward char.
+   */
+  add(m: Matrix4, flash: boolean, left = 1): boolean {
     const k = flash ? 1 : 0, i = this.counts[k]!;
     if (i >= MAX_BATCH) return false;
-    for (const im of this.sets[k]!) im.setMatrixAt(i, m);
+    const t = Math.min(1, Math.max(0, (0.9 - left) / 0.7));
+    SOOT.setScalar(1 - 0.55 * t * t * (3 - 2 * t));
+    for (const im of this.sets[k]!) { im.setMatrixAt(i, m); im.setColorAt(i, SOOT); }
     this.counts[k] = i + 1;
     return true;
   }
@@ -504,6 +512,7 @@ class HullBatch {
         im.count = this.counts[k]!;
         im.visible = im.count > 0;
         im.instanceMatrix.needsUpdate = true;
+        if (im.instanceColor) im.instanceColor.needsUpdate = true;
       }
     }
   }
@@ -512,6 +521,7 @@ class HullBatch {
   gallery(): InstancedMesh[] {
     return this.sets.flat().map((im) => {
       const w = new InstancedMesh(im.geometry, im.material, 1);
+      w.setColorAt(0, WHITE);
       w.frustumCulled = false;
       return w;
     });
@@ -720,7 +730,7 @@ export class EnemyView {
       if (plain) {
         const batch = this.batch(al.kind, al.faction);
         this.m.compose(this.p, this.q.setFromEuler(this.e), this.sc.setScalar(al.r));
-        batch.add(this.m, al.hitT > 0);
+        batch.add(this.m, al.hitT > 0, al.maxHp > 1 ? al.hp / al.maxHp : 1);
         lights(this.streaks, this.m, batch.model, batch.colour, al.r, burn, this.time, al.id, far, sync);
         continue;
       }

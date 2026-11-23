@@ -289,7 +289,10 @@ export class SpaceView {
         for (let i = 0; i < n; i++) {
           const u = (i / (n - 1) - 0.5) * 2;
           add(this.glow, tint.clone().multiplyScalar(7), 11, 11, Math.cos(along) * u * f.r, 5, Math.sin(along) * u * f.r, 0.9);
-          pieces[pieces.length - 1]!.b = 0.9 + r() * 0.5;
+          const beat = (pieces[pieces.length - 1]!.b = 0.9 + r() * 0.5);
+          // the lamp's throw in the dust round it: a wide faint pool on the same beat, so a lantern lights its own patch of space
+          add(this.glow, tint.clone().multiplyScalar(0.9), 70, 70, Math.cos(along) * u * f.r, 5, Math.sin(along) * u * f.r, 0.16);
+          pieces[pieces.length - 1]!.b = beat;
         }
         break;
       }

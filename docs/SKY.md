@@ -257,3 +257,10 @@ Each of five regions also always shows its own far work (`farworks.ts` SIGNATURE
 The far mine now works too: a cutting beam into the pit face and sparks where it bites. The moving parts (sparks,
 beams, searchlights) stay out of the bake and run in their own shaders on the beacons' clock, so they cost no script a
 frame and hold still under reduced motion.
+
+## Lamps, soot and the holdfast port (2026-11-23)
+
+- A lantern buoy lights its own patch of dust: a wide faint pool round each lamp, on the lamp's beat (`space.ts`).
+- Enemy hulls blacken with soot as their armour goes, each its own (a colour per instance in the hull batch, `enemies.ts`).
+- The holdfast port sits in real field stone (`rocks.ts` shape and material) instead of faceted plated lumps, and its
+  greenhouses are dark glass in a geodesic cage with the plants a dim green behind it (they were a flat lit mint).
