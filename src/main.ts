@@ -41,6 +41,7 @@ import { showConsole } from './ui/briefing';
 import { forget, showHeard } from './ui/heard';
 import type { RegionSet } from './content/regions';
 import { installCrashCard, onCrashKeep } from './ui/crash';
+import { TapGuard } from './ui/tapguard';
 import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18n';
 
 /** New Story journeys run the eight regions; ?short plays the old three, for testing. */
@@ -182,6 +183,9 @@ function boot(review: typeof import('./review') | null): void {
   const bay = new BayPanel();
   const padNav = new PadNav();
   let reported = false;
+  /** Swallows the taps that land in the first moment after a card or the pause card opens (ui/tapguard.ts). */
+  const tapGuard = new TapGuard(el('touch'));
+  let wasOpen = false;
   const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || course.open || ending.open || jobDone.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
   // the radio's calls ride along while the ship flies: answered by key or tap, banked in the journey like any card
   /** A call that asks for an answer holds the world still, like every other pop-up; it lets go when it is answered or lapses. */
@@ -511,7 +515,10 @@ function boot(review: typeof import('./review') | null): void {
       else summary.padInput(p);
     }
     // a panel that stops the run takes the screen: the HUD steps back
-    document.documentElement.classList.toggle('panel-open', panelOpen());
+    const open = panelOpen();
+    if (open && !wasOpen) tapGuard.arm();
+    wasOpen = open;
+    document.documentElement.classList.toggle('panel-open', open);
   };
 
   // ── the refit bay ──────────────────────────────────────────────────────
@@ -548,6 +555,7 @@ function boot(review: typeof import('./review') | null): void {
   let carded = false;
   document.documentElement.classList.add('prelaunch');
   const setPaused = (on: boolean) => {
+    if (on && !loop.paused && started) tapGuard.arm();
     // the first stop of the first run is the briefing; once read, it is the pause card
     if (!on && loop.paused && started && carded && !profile.briefed) { profile.briefed = true; persist(profile); }
     if (on && started) carded = true;
@@ -981,11 +989,18 @@ function boot(review: typeof import('./review') | null): void {
   // so does a swipe out of fullscreen, and the tap that resumes takes it back
   document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) away(); });
   // touch has no key to pause with: a small button, out of both thumbs' way
+  // It pauses as the finger lifts, not as it lands: a card opened on the landing put Save & exit under the
+  // same tap's click (phones, 2026-11-23). The tap guard below swallows that click whatever lies under it.
   el('pause-b').addEventListener('pointerdown', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (started && !panelOpen()) setPaused(true);
   });
+  el('pause-b').addEventListener('pointerup', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (started && !loop.paused && !panelOpen()) setPaused(true);
+  });
+  el('pause-b').addEventListener('click', (e) => e.stopPropagation());
   el('pause').addEventListener('pointerdown', (e) => {
     e.preventDefault();
     if (settingsOpen()) showSettings(false);

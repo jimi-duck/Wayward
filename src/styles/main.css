@@ -208,10 +208,13 @@ html.btn-small #touch { --sw: clamp(90px, 26vh, 116px); --fw: clamp(68px, 20vh, 
 .lefty #fire { right: auto; left: var(--in-r); }
 .lefty #torp { right: auto; left: calc(var(--in-r) + var(--fw) + 10px); }
 .lefty #brk { right: auto; left: calc(var(--in-r) + var(--fw) * .22); }
-/* pause: small, low and in the middle, out of both thumbs' way */
-#pause-b { position: absolute; left: 50%; bottom: calc(var(--safe-b) + 6px); translate: -50% 0; width: 48px; height: 40px;
-  place-content: center; grid-auto-flow: column; gap: 5px; border: 0; padding: 0; background: none; opacity: .55; pointer-events: auto; touch-action: none; }
-#pause-b i { width: 3px; height: 12px; background: var(--ink-2); }
+/* pause: the top right corner, where phone games keep it, clear of both thumbs and of the flight path.
+   (It sat low in the middle until 2026-11-23, right where the pause card puts Save & exit.) */
+#pause-b { position: absolute; right: max(var(--safe-r), 6px); top: calc(var(--safe-t) + 6px); width: 44px; height: 44px;
+  place-content: center; grid-auto-flow: column; gap: 5px; border: 0; padding: 0; background: none; opacity: .7; pointer-events: auto; touch-action: none; }
+#pause-b i { width: 3px; height: 14px; background: var(--ink-2); }
+/* the ship's status steps left to give the button its corner */
+.touch-ui #hud { --right: calc(var(--pad) + var(--safe-r) + 44px); }
 
 /* ── panels: comms, run report, logbook ──────────────────────────────── */
 .sheet { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; place-items: safe center; padding: max(12px, var(--safe-t)) max(12px, var(--safe-r)) max(12px, var(--safe-b)) max(12px, var(--safe-l));
