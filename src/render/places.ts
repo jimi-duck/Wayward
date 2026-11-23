@@ -419,6 +419,8 @@ const BUILD: Record<PlaceLook, () => Group> = { skiff, ferry, wreck, canister, b
 export class PlaceView {
   private readonly root = new Group();
   private readonly looks = new Map<PlaceLook, Group>();
+  /** The hull that came alongside, after the meeting (World.escort): its own copy, so the next place can show beside it. */
+  private readonly escorts = new Map<PlaceLook, Group>();
   private readonly ring: Mesh;
   private readonly fill: Mesh;
   private readonly beacon: Mesh;
@@ -449,7 +451,23 @@ export class PlaceView {
     return g;
   }
 
+  /** The hull alongside after its meeting: it flies with her, then peels away nose first. */
+  private escort(world: World, dt: number): void {
+    const e = world.escort;
+    for (const [l, g] of this.escorts) g.visible = !!e && l === e.look;
+    if (!e) return;
+    let g = this.escorts.get(e.look);
+    if (!g) { g = BUILD[e.look](); this.escorts.set(e.look, g); this.scene.add(g); }
+    g.visible = true;
+    g.position.set(e.x, 0.15 * Math.sin(this.time * 0.6), e.z);
+    if (Math.hypot(e.vx, e.vz) > 0.5) {
+      const h = Math.atan2(-e.vz, e.vx), d = Math.atan2(Math.sin(h - g.rotation.y), Math.cos(h - g.rotation.y));
+      g.rotation.y += d * Math.min(1, dt * 3);
+    }
+  }
+
   update(world: World, dt: number): void {
+    this.escort(world, dt);
     const sp = world.storyPlace;
     if (!sp) { this.root.visible = false; this.shown = ''; return; }
     this.time += dt;
@@ -459,11 +477,16 @@ export class PlaceView {
     for (const [l, m] of this.looks) m.visible = l === sp.def.look;
     if (this.shown !== sp.def.id) {
       this.shown = sp.def.id;
-      // each place sits at its own angle, so two of the same look never read as one
-      g.rotation.y = (sp.def.id.length * 1.7) % (Math.PI * 2);
+      // each place sits at its own angle, so two of the same look never read as one; a hull coming to her starts nose toward her
+      g.rotation.y = sp.heading !== undefined ? Math.atan2(sp.z - world.ship.z, world.ship.x - sp.x) : (sp.def.id.length * 1.7) % (Math.PI * 2);
     }
     // a set piece's own motion: charges blinking, a light running round a ring, shards turning
     (g.userData.tick as ((t: number) => void) | undefined)?.(this.time);
+    // a hull coming alongside flies nose first (sim/places.ts stepMeet): it turns toward where it is going
+    if (sp.heading !== undefined) {
+      const d = Math.atan2(Math.sin(sp.heading - g.rotation.y), Math.cos(sp.heading - g.rotation.y));
+      g.rotation.y += d * Math.min(1, dt * 4);
+    }
     // a slow drift, so a dead hull still reads as adrift
     g.position.y = 0.15 * Math.sin(this.time * 0.6);
     g.rotation.z = 0.04 * Math.sin(this.time * 0.4);
@@ -498,5 +521,5 @@ export class PlaceView {
     if (pickup) fx.burst(x, 0.4, z, 10, [0.5, 1.8, 2], 5, 0.12, 0.35);
   }
 
-  dispose(): void { this.scene.remove(this.root); }
+  dispose(): void { this.scene.remove(this.root); for (const g of this.escorts.values()) this.scene.remove(g); }
 }

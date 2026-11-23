@@ -127,9 +127,9 @@ stop before a cut one. One past the Narrows keeps its chart. `tests/shortreach.t
 - **Every system on the road has a fixed name.** The audit dock's system was the one stop the chart named from the seed, so the
   map and the story disagreed from the first jump (owner, 22 November 2026). It is **Ringhold** now. A v25 road save keeps its
   dealt name until it loads, then takes Ringhold (save v26, `nameAudit` in `meta/save.ts`). `tests/roadnames.test.ts`.
-- **Story places are close.** `StoryPlaceDef.along` is units ahead of the arrival now, not a share of the lane: a skiff or a
-  buoy about 650 m out, a ferry or a wreck about 900 m, a pickup just beyond its partner (owner: Ilse's skiff "too far away").
-  Never past half the way to the gate.
+- **The story comes to her** (23 November 2026, replaces "story places are close"). A skiff or ferry flies out to meet her and
+  keeps pace alongside; what it hands over flies across; a wreck, buoy or set piece stands on her line to the gate, a third of the way
+  (`sim/places.ts`). The owner had seen a place 19.6 km away with the gate at 6 km, "out of the direction of the game".
 - **The gates are close too.** A road stop's Jump Gate stands 5.5 to 6.5 km from the arrival (`ROAD_LANE` in `sim/chart.ts`,
   was 9 to 28 km; save v29 moves an old road save's gates in). The owner saw "25 km" after the jump in: that was the gate, and
   the HUD set the gate's range beside story lines that were not about the gate. The objective shows a range only when it is

@@ -58,13 +58,14 @@ function fly(i: number) {
 
 describe('every Reach stop reads', () => {
   for (const [i, name] of [[2, 'Halden’s Reach'], [3, 'Tallyhouse']] as const) {
-    it(`${name}: the place is there from the arrival, under 1 km off, and its card opens there`, () => {
+    it(`${name}: the place is there from the arrival, close and on her way, and its card opens there`, () => {
       const r = fly(i);
       expect(r.place.at).toBeLessThan(1);
-      expect(r.place.dist).toBeLessThan(100);
+      expect(r.place.dist).toBeLessThan(250);
       expect(r.card).toBeGreaterThan(0);
       // the card comes as she finishes at the place, not when she has flown on to the gate
-      expect(r.card - r.place.done).toBeLessThan(3);
+      // (a hull comes alongside within the arrival's quiet, so its card may wait for that to end)
+      expect(r.card - r.place.done).toBeLessThan(8);
       expect(r.cardGate).toBeGreaterThan(r.lane * 0.5);
     });
   }

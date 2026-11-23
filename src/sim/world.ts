@@ -86,7 +86,7 @@ import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
 import { discounted, effects, type Effects } from './modules';
 import { Pack } from './tactics';
 import { scarsOf, type Scars } from './scars';
-import { livePlace, placeAt, placeDone, PLACE_CLEAR, stepPlace, stopPlaces, type StoryPlaceDef } from './places';
+import { ALONGSIDE, alongside, handed, livePlace, meets, placeAt, placeDone, PLACE_CLEAR, stepHanded, stepMeet, stepPlace, stopPlaces, ESCORT_STAY, stepLeave, type Mover, type PlaceLook, type StoryPlaceDef } from './places';
 import { STORY_PLACES } from '../content/script/places';
 import {
   acquire, fireWeapons, launchTorpedo, moveBolts, moveTorpedoes, newArms, type Arms, type Bolt, type FireMods, type Targets, type Torpedo,
@@ -389,6 +389,12 @@ export class World implements EncounterHost {
   /** Seconds held at the live story place (sim/places.ts); and which place they count for. */
   placeHold = 0;
   private placeHoldOf = '';
+  /** A story place that moves (sim/places.ts): a hull coming alongside, or a canister handed across. Not saved: it starts again. */
+  private mover: (Mover & { id: string }) | null = null;
+  /** The hull that came alongside, once the meeting is made: it keeps pace while it hands anything across, then peels away. Seen, not saved. */
+  escort: (Mover & { look: PlaceLook; t: number; leaving: boolean }) | null = null;
+  /** Where a fixed place stands this visit: on her line to the gate, ahead of her when it comes up. */
+  private anchor: { id: string; x: number; z: number } | null = null;
   /** Radio lines waiting their turn, by run time: a voice's beats one after another (`radioLines`). */
   private radioQ: Array<{ at: number; id: string; from: string; caller: string; text: string }> = [];
   /** One voice at a time (sim/floor.ts): the radio lines and notices wait here for their turn. */
@@ -498,7 +504,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.placeHold = 0; this.placeHoldOf = '';
+    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null;
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
@@ -2037,15 +2043,37 @@ export class World implements EncounterHost {
   }
 
   /** The stop's story place waiting for her now, where it stands, and how far through its hold she is (0 to 1). Null where none waits. */
-  get storyPlace(): { def: StoryPlaceDef; x: number; z: number; held: number } | null {
+  get storyPlace(): { def: StoryPlaceDef; x: number; z: number; held: number; heading?: number } | null {
     const b = this.bk;
     if (!b || !this.script) return null;
     const sc = this.script;
     const def = livePlace(STORY_PLACES, b.def.script, this.flags, (row) => sc.played(row), (id) => sc.placeSpent(id));
     if (!def) return null;
-    const at = placeAt(def, b);
     const held = 'hold' in def.act && this.placeHoldOf === def.id ? Math.min(1, this.placeHold / def.act.hold) : 0;
-    return { def, ...at, held };
+    const m = this.mover;
+    if (m && m.id === def.id) return { def, x: m.x, z: m.z, held, heading: Math.atan2(-m.vz, m.vx) };
+    const a = this.anchor;
+    if (a && a.id === def.id) return { def, x: a.x, z: a.z, held };
+    return { def, ...this.placeStart(def, b), held };
+  }
+
+  /** Where a place starts: a hull coming to her ahead of her, toward the gate; a canister at the hull that hands it across; a fixed one on her line to the gate, ahead of her if she is already past its spot. */
+  private placeStart(def: StoryPlaceDef, b: Breakout): { x: number; z: number } {
+    const s = this.ship, e = this.escort;
+    if (handed(def)) return e ? { x: e.x, z: e.z } : { x: s.x - Math.sin(s.heading) * ALONGSIDE, z: s.z - Math.cos(s.heading) * ALONGSIDE };
+    const at = placeAt(def, b);
+    const d = Math.hypot(b.lane.x, b.lane.z) || 1, fx = b.lane.x / d, fz = b.lane.z / d;
+    const her = s.x * fx + s.z * fz, its = at.x * fx + at.z * fz;
+    if (meets(def)) {
+      if (Math.hypot(s.x, s.z) < 60) return at;
+      // she has flown on: it comes out from ahead of her, between her and the gate
+      const dx = b.lane.x - s.x, dz = b.lane.z - s.z, dd = Math.hypot(dx, dz) || 1, a = Math.min(160, dd * 0.6);
+      return { x: s.x + (dx / dd) * a + (dz / dd) * 30, z: s.z + (dz / dd) * a - (dx / dd) * 30 };
+    }
+    if (def.trail || her < its - 30) return at;
+    // she is past its spot: it stands ahead of her instead, never behind
+    const side = at.x * -fz + at.z * fx, on = her + Math.min(150, Math.max(40, (d - her) * 0.5));
+    return { x: fx * on - fz * side, z: fz * on + fx * side };
   }
 
   /** The Severance where she can see it (sim/scars.ts): the dead gate, the work lane, the billboard. */
@@ -2065,25 +2093,51 @@ export class World implements EncounterHost {
 
   /** The live story place: hold at it or take it aboard; done, its flag is set and the stop's script goes on (sim/places.ts). */
   private stepStoryPlace(dt: number): void {
+    if (this.phase !== 'play') return;
+    this.stepEscort(dt);
     const sp = this.storyPlace;
-    if (!sp || this.phase !== 'play') return;
+    if (!sp) return;
     if (this.placeHoldOf !== sp.def.id) { this.placeHoldOf = sp.def.id; this.placeHold = 0; }
-    // room to hold there: no rock or bulwark in the ring
-    const clear = sp.def.r + PLACE_CLEAR;
-    for (const o of [...this.field.rocks, ...this.field.bulwarks]) {
-      const dx = o.x - sp.x, dz = o.z - sp.z, d = Math.hypot(dx, dz) || 1, min = clear + o.r;
-      if (d < min) { o.x = sp.x + (dx / d) * min; o.z = sp.z + (dz / d) * min; }
+    const moving = meets(sp.def) || handed(sp.def);
+    if (moving) {
+      // the story comes to her: the hull flies out and keeps pace off her port side; what it hands across flies to her
+      if (this.mover?.id !== sp.def.id) this.mover = { id: sp.def.id, x: sp.x, z: sp.z, vx: 0, vz: 0 };
+      if (meets(sp.def)) stepMeet(this.mover, this.ship, topSpeed(this.hull), dt, alongside(sp.def));
+      else stepHanded(this.mover, this.ship, dt);
+      sp.x = this.mover.x; sp.z = this.mover.z;
+    } else {
+      if (this.anchor?.id !== sp.def.id) this.anchor = { id: sp.def.id, x: sp.x, z: sp.z };
+      // room at a fixed place: no rock or bulwark in the ring
+      const clear = sp.def.r + PLACE_CLEAR;
+      for (const o of [...this.field.rocks, ...this.field.bulwarks]) {
+        const dx = o.x - sp.x, dz = o.z - sp.z, d = Math.hypot(dx, dz) || 1, min = clear + o.r;
+        if (d < min) { o.x = sp.x + (dx / d) * min; o.z = sp.z + (dz / d) * min; }
+      }
     }
-    // the hold counts once the arrival is over; a fight does not stop it (a hunted pilot must still be able to hold, slow, under fire)
-    const free = !this.floor.hush;
+    // a fixed place counts once the arrival is over (a hull alongside counts at once: it has come to talk); a fight does not stop either
+    const free = meets(sp.def) || !this.floor.hush;
     const r = stepPlace(sp.def, sp, this.ship, this.placeHold, dt, free);
     this.placeHold = r.hold;
     if (!r.done) return;
     this.flags.add(sp.def.done);
     this.placeHold = 0; this.placeHoldOf = '';
+    // the hull stays alongside while it hands anything across, then peels away
+    if (meets(sp.def) && this.mover) this.escort = { ...this.mover, look: sp.def.look, t: 0, leaving: false };
+    this.mover = null;
     const pickup = 'pickup' in sp.def.act;
     this.events.push({ type: 'placeDone', x: sp.x, z: sp.z, look: sp.def.look, pickup });
     if (pickup) this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Taken aboard', reason: sp.def.name });
+  }
+
+  /** The hull that came alongside: it keeps pace while it has anything to hand across, a few seconds more, then peels off to port and away. */
+  private stepEscort(dt: number): void {
+    const e = this.escort;
+    if (!e) return;
+    const sp = this.storyPlace, handing = !!sp && handed(sp.def);
+    e.t = handing ? 0 : e.t + dt;
+    if (!e.leaving && e.t > ESCORT_STAY) e.leaving = true;
+    if (!e.leaving) stepMeet(e, this.ship, topSpeed(this.hull), dt, e.look === 'ferry' ? 9.5 : ALONGSIDE);
+    else if (stepLeave(e, this.ship, topSpeed(this.hull), dt)) this.escort = null;
   }
 
   /** Where the relay mast stands that the gate waits on, while it waits on it (the HUD names its range). */

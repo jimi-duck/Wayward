@@ -6,9 +6,16 @@ import type { Breakout } from './breakout';
 // canister to take aboard. Each place is a mark on the scope and the HUD, set
 // out along the course of its stop, with one thing to do there:
 //
-//   hold    · stay inside its ring, slow, for a few seconds (the ring fills)
-//   pickup  · fly over it: it comes aboard
-//   pass    · come close, at any speed: a set piece she flies by
+//   hold    · a hull that comes to her (a skiff, a ferry): it flies out from
+//             ahead, pulls alongside and keeps pace while they talk (the ring fills)
+//   pickup  · handed across: the canister flies over from the hull alongside.
+//             On a trail (Yard Nine), she flies close and it comes aboard
+//   pass    · come close, at any speed: a set piece she flies by, on her line
+//             to the Jump Gate
+//
+// The story comes to her (owner, 23 November 2026: "fly to this ship, then
+// that ship, wait, pick up the paper"): she never stops, turns back or goes
+// out of her way. A fixed place stands between her and the gate.
 //
 // Done, it sets its flag and goes off the scope; the stop's script rows
 // trigger on that flag (content/script/). A main beat that waits on a place
@@ -52,11 +59,68 @@ export const PICK_R = 6;
 /** Rock and bulwarks are kept this far outside a live place's ring, so she can hold there. */
 export const PLACE_CLEAR = 18;
 
-/** Where a place stands in a sortie: laid out from the start (0, 0) toward the Jump Gate, never past half the way there. */
+/** Where a place stands in a sortie: on the way from the start (0, 0) to the Jump Gate, about a third of the way, close enough to
+ * the line that flying at the gate passes through its ring. A trail keeps its own spacing. A hull that comes to her starts here. */
 export function placeAt(def: StoryPlaceDef, b: Pick<Breakout, 'lane'>): { x: number; z: number } {
   const d = Math.hypot(b.lane.x, b.lane.z) || 1, fx = b.lane.x / d, fz = b.lane.z / d, rx = -fz, rz = fx;
-  const a = Math.min(def.along, d / 2);
-  return { x: fx * a + rx * def.off, z: fz * a + rz * def.off };
+  const a = def.trail ? Math.min(def.along, d / 2) : Math.min(d / 2, Math.max(ON_LINE[0], Math.min(ON_LINE[1], d * 0.32)));
+  const off = Math.sign(def.off) * Math.min(Math.abs(def.off), def.trail ? TRAIL_R * 0.5 : Math.max(8, def.r * 0.5));
+  return { x: fx * a + rx * off, z: fz * a + rz * off };
+}
+
+/** How far along her line to the gate a fixed place stands (units). */
+export const ON_LINE: readonly [number, number] = [150, 210];
+
+/** A hull that comes to her: it flies out, pulls alongside and keeps pace (owner, 23 November 2026: "the story comes to you"). */
+export const meets = (p: StoryPlaceDef): boolean => 'hold' in p.act && (p.look === 'skiff' || p.look === 'ferry');
+/** Handed across from the hull alongside: it flies to her. */
+export const handed = (p: StoryPlaceDef): boolean => 'pickup' in p.act && !p.trail;
+/** Units off her port side a hull keeps while alongside: a ferry is twice a skiff. */
+export const ALONGSIDE = 6;
+export const alongside = (p: StoryPlaceDef): number => (p.look === 'ferry' ? 9.5 : ALONGSIDE);
+/** And this far ahead of her, so the chase camera has it in view. */
+const LEAD = 2.5;
+/** A work order on a trail comes aboard this close (units): she flies near it, not over it. */
+export const TRAIL_R = 22;
+
+/** A moving place: where it is and how it moves (units a second). */
+export interface Mover { x: number; z: number; vx: number; vz: number }
+
+/**
+ * One step of a hull coming to her: it closes on a spot off her port side and matches her speed there. `s` is the ship; `top` is her
+ * top speed (units a second), so it can always catch her.
+ */
+export function stepMeet(m: Mover, s: { x: number; z: number; vx: number; vz: number; heading: number }, top: number, dt: number, gap = ALONGSIDE): void {
+  const tx = s.x - Math.sin(s.heading) * gap + Math.cos(s.heading) * LEAD, tz = s.z - Math.cos(s.heading) * gap - Math.sin(s.heading) * LEAD;
+  const svx = s.vx, svz = s.vz;
+  let wx = svx + (tx - m.x) * 0.9, wz = svz + (tz - m.z) * 0.9;
+  const cap = top * 1.5, w = Math.hypot(wx, wz);
+  if (w > cap) { wx *= cap / w; wz *= cap / w; }
+  const k = Math.min(1, dt * 2.5);
+  m.vx += (wx - m.vx) * k; m.vz += (wz - m.vz) * k;
+  m.x += m.vx * dt; m.z += m.vz * dt;
+}
+
+/** Seconds a hull stays alongside once it has nothing more to hand across. */
+export const ESCORT_STAY = 4;
+
+/** One step of a hull peeling away: it turns off to port and opens the throttle. True once it is far enough to drop. */
+export function stepLeave(m: Mover, s: { x: number; z: number; heading: number }, top: number, dt: number): boolean {
+  const fx = Math.cos(s.heading), fz = -Math.sin(s.heading), px = -Math.sin(s.heading), pz = -Math.cos(s.heading);
+  const v = top * 1.6, wx = (fx * 0.5 + px) * v * 0.9, wz = (fz * 0.5 + pz) * v * 0.9;
+  const k = Math.min(1, dt * 0.8);
+  m.vx += (wx - m.vx) * k; m.vz += (wz - m.vz) * k;
+  m.x += m.vx * dt; m.z += m.vz * dt;
+  return Math.hypot(m.x - s.x, m.z - s.z) > 450;
+}
+
+/** One step of a canister handed across: it flies straight to her, a little faster than she goes. */
+export function stepHanded(m: Mover, s: { x: number; z: number; vx: number; vz: number }, dt: number): void {
+  const dx = s.x - m.x, dz = s.z - m.z, d = Math.hypot(dx, dz) || 1;
+  const v = Math.hypot(s.vx, s.vz) + 18;
+  m.vx = (dx / d) * v; m.vz = (dz / d) * v;
+  const g = Math.min(d, v * dt);
+  m.x += (dx / d) * g; m.z += (dz / d) * g;
 }
 
 /**
@@ -77,14 +141,15 @@ export function stopPlaces(defs: readonly StoryPlaceDef[], stop: string | undefi
 }
 
 /**
- * One step at a live place. `hold` is the seconds held so far; returns the new hold and whether it is done now. A hold drains
+ * One step at a live place. `hold` is the seconds held (or alongside) so far; returns the new hold and whether it is done now. A hold drains
  * slowly when she leaves the ring or speeds up, so a brush past does not count but a short drift out costs little.
  */
 export function stepPlace(def: StoryPlaceDef, at: { x: number; z: number }, s: { x: number; z: number; vx: number; vz: number }, hold: number, dt: number, free: boolean): { hold: number; done: boolean } {
   const d = Math.hypot(s.x - at.x, s.z - at.z);
-  if ('pickup' in def.act) return { hold: 0, done: d <= PICK_R };
+  if ('pickup' in def.act) return { hold: 0, done: d <= (def.trail ? TRAIL_R : PICK_R) };
   if ('pass' in def.act) return { hold: 0, done: d <= def.r && free };
-  const inside = d <= def.r && Math.hypot(s.vx, s.vz) <= HOLD_SLOW && free;
+  // alongside, at any speed: the hull keeps pace with her
+  const inside = d <= def.r && (meets(def) || Math.hypot(s.vx, s.vz) <= HOLD_SLOW) && free;
   const h = inside ? hold + dt : Math.max(0, hold - dt * 0.5);
   return { hold: h, done: h >= def.act.hold };
 }
