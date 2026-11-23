@@ -44,10 +44,10 @@ export type Trigger =
   | { on: 'place'; place: string };
 
 export type Output =
-  | { radio: { from: string; caller: string; text: string } }
+  | { radio: { from: string; caller: string; text: string; /** Said in step with what she is doing (talked in to a place): it goes ahead of the gap, or not at all if it waited 6 s (sim/floor.ts). */ live?: boolean } }
   | { notice: { tone: Tone; headline: string; reason?: string } }
   | { objective: { main?: string; quiet?: string; /** The trigger of the row that set it (filled in by the runner). */ from?: Trigger['on'] } }
-  | { card: string; /** Opens in a fight (an urgent row): the gate waits on it. */ urgent?: boolean }
+  | { card: string; /** Opens in a fight (an urgent row): the gate waits on it. */ urgent?: boolean; /** Earned at a story place: it opens there and then, not when the desk next has a quiet moment (by then she has flown off). */ now?: boolean }
   | { wall: string }
   | { pursuit: string }
   /** Hunters come now (the stop's pursuit starts, its heat up): yard security after the work orders. */
@@ -288,14 +288,16 @@ export class Script {
     const quiet = c.busy !== 'transit' && (c.busy !== 'fight' || !!row.urgent);
     // a carried row waits for a free moment, as does any card
     // (an urgent row does not wait for a free moment in a fight, which may never end; out of one, it waits like the rest)
-    if (!quiet || ((head.carried || 'card' in row.do) && !c.free && !(row.urgent && c.busy === 'fight'))) return out;
+    // a card earned at a story place opens there, at once: the player has just done the thing, and is waiting for it
+    const earned = 'card' in row.do && row.on.on === 'place' && !head.carried;
+    if (!quiet || ((head.carried || 'card' in row.do) && !c.free && !earned && !(row.urgent && c.busy === 'fight'))) return out;
     this.queue.shift();
     // a card counts as played once it is answered, so a jump before then carries it
     const card = 'card' in row.do ? row.do.card : null;
     play(row.id, !card);
     this.last = c.t;
     if (card) this.holding = { row: row.id, card };
-    out.push('card' in row.do && row.urgent ? { ...row.do, urgent: true } : row.do);
+    out.push('card' in row.do && row.urgent ? { ...row.do, urgent: true } : earned ? { ...row.do, now: true } : row.do);
     return out;
   }
 }

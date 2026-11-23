@@ -42,10 +42,9 @@ export const REACH: Row[] = [
   // ── Stop 2 · Halden's Reach (hub) ──
   notice('hr_notice', 'halden', { on: 'arrive' }, 'teal', 'Halden’s Reach', 'Kellern port, hospice ring'),
   // the model scene (owner, 22 November 2026, "Make every stop readable"): the arrival looks at the skiff, Ilse speaks first and
-  // alone, she talks Juno in, the card, the paper, and Sam once, at the end
+  // alone, the card, the paper, and Sam once, at the end
   objective('hr_objective', 'halden', { on: 'arrive' }, 'Ilse’s skiff · hold alongside', 'Frontier port · refit bay open'),
   { id: 'hr_ilse', stop: 'halden', on: { on: 'arrive' }, do: { radio: { from: ILSE, caller: 'miners', text: '“Wayward, this is Ilse Marrow, off the hospice ring. Come alongside. Slowly. Kellern listens on the open band.”' } } },
-  { id: 'hr_ilse_near', stop: 'halden', on: { on: 'near', site: 'hr_skiff', within: 40 }, if: { not: ['ilse_met'] }, do: { radio: { from: ILSE, caller: 'miners', text: '“Closer. Hold there. Let me read your hull.”' } } },
   // Ilse's skiff off the hospice ring (content/script/places.ts): she reads the order once Juno holds alongside (no choice: the owner,
   // 31 October 2026), then puts the paper out in a canister to be taken aboard. The gate waits for both, and names the place.
   // The name follows the order wherever it is taken (it can be carried on)
@@ -53,7 +52,9 @@ export const REACH: Row[] = [
   { id: 'hr_canister', stop: 'halden', on: { on: 'flag', flag: 'frag_order' }, do: { radio: { from: ILSE, caller: 'miners', text: '“It’s in the canister off my bow. Paper can’t be wiped.”' } } },
   sam('hr_paper', 'halden', { on: 'place', place: 'hr_paper' }, '“Paper, signed L. C. Tallyhouse keeps Kellern’s books. Someone there will know the hand.”', { main: true }),
   card('hr_order', '*', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] }, holdsJob: true }),
-  card('hr_hand', '*', { on: 'flag', flag: 'clue_order_sig' }, 'story_handwriting', { if: { not: ['ada_named'] }, holdsJob: true }),
+  // at Halden, Ilse names Ada on the radio after the order: one card a stop (owner, 23 November 2026); the card is for an order found elsewhere
+  { id: 'hr_ada', stop: 'halden', on: { on: 'flag', flag: 'frag_order' }, if: { has: ['ilse_met'], not: ['ada_named'] }, wall: 'ada_named', do: { radio: { from: ILSE, caller: 'miners', text: '“Your archive thinks like Ada Aster. She stood watch with me. Aster’s your name too. Ada left it listening.”' } } },
+  card('hr_hand', '*', { on: 'flag', flag: 'clue_order_sig' }, 'story_handwriting', { if: { not: ['ada_named', 'ilse_met'] }, holdsJob: true }),
   objective('hr_gate', 'halden', { on: 'leave' }, 'Jump to Tallyhouse'),
 
   // ── Stop 3 · Tallyhouse (turn) ──

@@ -133,8 +133,9 @@ export class Floor {
     this.q = this.q.filter((l) => !test(l.ev));
   }
 
-  /** Story lines still to be said: a card waits for them, so the story keeps its order. */
-  get holding(): boolean { return this.q.some((l) => l.keep); }
+  /** Story lines still to be said: a card waits for them, so the story keeps its order. A notice never holds a card back: it can follow it
+   * (a stream of notices kept Halden's card waiting until she was at the gate, 23 November 2026). */
+  get holding(): boolean { return this.q.some((l) => l.keep && l.kind === 'voice'); }
 
   /** A card waits while a story line is queued or any line is still on screen: it never cuts a voice off. A job's call (`job`) waits only for the arrival's hush and the line on screen: queued notices and radio lines follow it, so a job never waits behind a chain of notices (owner, 13 November 2026: jobs rang 20 s and more after arrival at stops with a zone notice and a story line). */
   busy(now: number, job = false): boolean { return this.hush || (!job && this.holding) || now < this.floorUntil; }
