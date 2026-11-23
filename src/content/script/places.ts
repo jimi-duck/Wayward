@@ -40,6 +40,17 @@ export const STORY_PLACES: StoryPlaceDef[] = [
   { id: 'fm_mirren', stop: 'f_mirren', name: 'Old Mirren’s boat', look: 'skiff', along: 60, off: -32, act: { hold: 5 }, r: 16, done: 'mirren_alongside', skip: ['frag_witnesses'], verb: 'Hold alongside Old Mirren’s boat' },
   // Palecairn: the hulk where Echo sleeps and Sable hides
   { id: 'hc_hulk', stop: 'h_cairn', name: 'The Palecairn hulk', look: 'wreck', along: 78, off: -42, act: { hold: 6 }, r: 18, done: 'hulk_reached', skip: ['echo_trust', 'sable_trust'], verb: 'Hold by the Palecairn hulk' },
+  // ── set pieces, one of a kind (owner, 23 November 2026: "distinctive, unique and interesting to look at") ──
+  // Kessel Hold: the moot, the holdings' rigs moored round their hall; it speaks once she is among them
+  { id: 'mk_moot', stop: 'm_kessel', name: 'The moot', look: 'moot', along: 82, off: -44, act: { hold: 5 }, r: 22, done: 'moot_reached', verb: 'Hold among the moot’s rigs' },
+  // Tamsin Field: Custody's relay, the Saints' charges already on it
+  { id: 'mt_relay', stop: 'm_tamsin', name: 'Custody relay', look: 'relay', along: 82, off: -44, act: { pass: true }, r: 26, done: 'relay_seen', verb: 'Fly by the Custody relay' },
+  // Torchwall: the crews' picket across the yard crossing
+  { id: 'yt_picket', stop: 'y_torch', name: 'The picket line', look: 'picket', along: 82, off: -44, act: { hold: 4 }, r: 20, done: 'picket_reached', verb: 'Hold at the picket line' },
+  // Ninehaven: an old relay ring, broken open, that still speaks
+  { id: 'fn_relay', stop: 'f_nine', name: 'The singing relay', look: 'chorus', along: 82, off: -44, act: { pass: true }, r: 22, done: 'chorus_heard', verb: 'Fly by the singing relay' },
+  // Hollowforge: the pattern on the scope, hung in space
+  { id: 'hf_pattern', stop: 'h_forge', name: 'The pattern', look: 'spiral', along: 82, off: -44, act: { pass: true }, r: 24, done: 'pattern_seen', verb: 'Fly by the pattern' },
   // Oren's three lights: one question at each
   { id: 'lg_light', stop: 'l_gap', name: 'Oren’s light', look: 'buoy', along: 58, off: -32, act: { hold: 5 }, r: 14, done: 'light_1', verb: 'Hold by Oren’s light' },
   { id: 'ld_light', stop: 'l_dimrim', name: 'Oren’s light', look: 'buoy', along: 58, off: -32, act: { hold: 5 }, r: 14, done: 'light_2', verb: 'Hold by Oren’s light' },

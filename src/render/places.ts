@@ -1,10 +1,11 @@
-import { AdditiveBlending, Color, CylinderGeometry, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, RingGeometry, DoubleSide, type Material, type Scene } from 'three';
+import { AdditiveBlending, BoxGeometry, Color, CylinderGeometry, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, RingGeometry, DoubleSide, type Material, type Scene } from 'three';
 import type { World } from '../sim/world';
 import type { PlaceLook } from '../sim/places';
 import { windowMaterial, windowRow } from './breakout';
 import { block, bracket, frameRing, hatch, lamp, oct, octFaces, panel, pipeRun, vent, type Face } from './parts';
 import type { Effects } from './fx';
 import { Kit, metal, seeded } from './kit';
+import { crystalMaterial } from './enemies';
 
 // ── the story's places ────────────────────────────────────────────────────
 // What she can see where a beat happens (sim/places.ts): a small hull to hold
@@ -16,7 +17,7 @@ import { Kit, metal, seeded } from './kit';
 const TEAL = new Color(0.25, 1.1, 1.25);
 /** The rings' width (units), and their radius round each look. */
 const RING_W = 0.14;
-const SNUG: Record<PlaceLook, number> = { skiff: 6.5, ferry: 11, wreck: 9, canister: 2.4, buoy: 3.6 };
+const SNUG: Record<PlaceLook, number> = { skiff: 6.5, ferry: 11, wreck: 9, canister: 2.4, buoy: 3.6, moot: 15, relay: 13, picket: 10, chorus: 11, spiral: 12 };
 const BEACON = new Color(0.4, 1.6, 1.8);
 
 let placeMats: Record<string, Material> | null = null;
@@ -220,10 +221,200 @@ function buoy(): Group {
   return scaled(k.build(mats(), 0.04), 2.6);
 }
 
+// ── set pieces: one of each, never repeated ───────────────────────────────
+// The stops whose story had nowhere to stand (owner, 23 November 2026: "distinctive, unique and interesting to look at, rather
+// than the same repeated elements"): each gets a thing of its own, built once, with something in it that moves.
+
+/** A work tug, a little different each time: an octagonal plated body, a cab fore or aft, a push bumper, a drive. Built along +X. */
+function tug(rnd: () => number, len: number): Group {
+  const k = new Kit();
+  const W = 0.5 + rnd() * 0.12, H = 0.42 + rnd() * 0.1, f = octFaces(W, H), x0 = -len / 2, x1 = len / 2;
+  oct(k, 'dark', x0, x1 - 0.18, W - 0.03, H - 0.03, 0, 0);
+  plating(k, rnd, f, [0, 1, 2, 6, 7], x0 + 0.03, x1 - 0.21, 3 + Math.floor(rnd() * 3), rnd() < 0.5 ? 1 : -1);
+  oct(k, rnd() < 0.5 ? 'paint' : 'primer', x1 - 0.18, x1, W - 0.03, H - 0.03, 0, 0, 0.7);
+  frameRing(k, x0 + 0.04, 0.06, W, H, 0, 0);
+  frameRing(k, x1 - 0.18, 0.06, W, H, 0, 0);
+  // the cab, fore or aft, glazed on three sides
+  const cx = rnd() < 0.5 ? x1 - 0.42 : x0 + 0.38;
+  oct(k, 'paint', cx - 0.16, cx + 0.16, W * 0.62, 0.22, H * 0.5 + 0.08, 0);
+  k.box('window', [0.02, 0.06, W * 0.4], [cx + 0.165, H * 0.5 + 0.1, 0]);
+  for (const sz of [-1, 1]) k.box('window', [0.2, 0.05, 0.015], [cx, H * 0.5 + 0.1, sz * W * 0.31]);
+  lamp(k, 'lamp', [cx, H * 0.5 + 0.21, 0], 0.025);
+  // a push bumper at the bow, a drive at the stern, a hose reel or a crane on the back
+  k.box('rubber', [0.1, H * 0.75, W * 1.02], [x1 + 0.04, 0, 0]);
+  drive(k, x0 - 0.06, 0, 0, 0.13);
+  if (rnd() < 0.5) k.cyl('pipe', 0.09, 0.09, W * 0.6, [(x0 + cx) / 2, H * 0.5 + 0.06, 0], 'z', 12);
+  else { k.cyl('pipe', 0.02, 0.02, 0.3, [(x0 + cx) / 2, H * 0.5 + 0.15, 0], 'y', 6); k.pipeTo('pipe', [(x0 + cx) / 2, H * 0.5 + 0.3, 0], [(x0 + cx) / 2 + 0.35, H * 0.5 + 0.18, 0.1], 0.012); }
+  for (const sz of [-1, 1]) lamp(k, 'nav', [x1 - 0.1, 0.05, sz * W * 0.5], 0.018);
+  return k.build(mats(), 0.05);
+}
+
+/** Puts a part built along +X at (x, z), facing `yaw` (0 is +X), into a group. */
+function moor(into: Group, g: Group, x: number, z: number, yaw: number): void { g.position.set(x, 0, z); g.rotation.y = -yaw; into.add(g); }
+
+/** Kessel Hold's moot: the meeting hall on its spindle, the rigs of every holding moored nose-in round it, lamps strung between. */
+function moot(): Group {
+  const k = new Kit(), rnd = seeded(41);
+  // the hall: a squat turned drum, a gallery of lit ports all round, a crown of aerials
+  k.lathe('dark', [[0, -0.7], [1.0, -0.62], [1.25, -0.2], [1.3, 0.25], [1.05, 0.55], [0.5, 0.7], [0, 0.72]], [0, 0, 0], 40);
+  k.ring('band', 1.31, 0.05, [0, 0.05, 0], 'y', 40);
+  // ribs down the hall's shoulders, and a docking deck round its waist
+  for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; k.box('hull', [0.05, 0.9, 0.06], [Math.cos(a) * 1.18, 0.05, Math.sin(a) * 1.18], [0, -a, Math.cos(1) * 0.3]); }
+  k.cyl('hull', 1.55, 1.55, 0.06, [0, -0.15, 0], 'y', 40);
+  k.ring('pipe', 1.55, 0.03, [0, -0.11, 0], 'y', 40);
+  for (let i = 0; i < 28; i++) { const a = (i / 28) * Math.PI * 2; if (rnd() < 0.8) k.box(rnd() < 0.85 ? 'win' : 'window', [0.1, 0.07, 0.03], [Math.cos(a) * 1.3, 0.22, Math.sin(a) * 1.3], [0, -a + Math.PI / 2, 0]); }
+  k.cyl('pipe', 0.06, 0.08, 1.6, [0, -1.3, 0], 'y', 10);
+  for (let i = 0; i < 5; i++) { const a = rnd() * Math.PI * 2, r = 0.2 + rnd() * 0.4; k.cyl('pipe', 0.01, 0.01, 0.4 + rnd() * 0.5, [Math.cos(a) * r, 0.95, Math.sin(a) * r], 'y', 4); }
+  lamp(k, 'orange', [0, 0.78, 0], 0.05);
+  // the holdings' rigs, moored nose-in on booms, no two alike
+  const n = 7, rigs: Array<[Group, number, number, number]> = [];
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + rnd() * 0.25, r = 3.0 + rnd() * 0.5, len = 1.0 + rnd() * 0.7;
+    const cx = Math.cos(a), cz = Math.sin(a);
+    rigs.push([tug(rnd, len), cx * (r + len / 2), cz * (r + len / 2), Math.atan2(cz, cx) + Math.PI]);
+    k.pipeTo('pipe', [cx * 1.25, -0.05, cz * 1.25], [cx * r, -0.05, cz * r], 0.03);
+    // a string of work lamps sagging along the boom
+    for (let j = 1; j < 4; j++) { const u = 1.25 + (r - 1.25) * (j / 4); lamp(k, 'lamp', [cx * u, -0.22 - 0.06 * Math.sin((j / 4) * Math.PI), cz * u], 0.022); }
+  }
+  const root = k.build(mats(), 0.08);
+  for (const [g, x, z, yaw] of rigs) moor(root, g, x, z, yaw);
+  return scaled(root, 2.7);
+}
+
+/** Custody's relay at Tamsin Field: a long truss with three dishes and the conscripts' pod, the Saints' charges clamped along it. */
+function relay(): Group {
+  const k = new Kit(), rnd = seeded(53);
+  const L = 4.2, h = 0.22;
+  // the truss: four chords and a zigzag of braces down each face
+  for (const [y, z] of [[h, h], [h, -h], [-h, h], [-h, -h]] as const) k.pipeTo('hull', [-L, y, z], [L, y, z], 0.03);
+  for (let i = 0; i < 16; i++) {
+    const x0 = -L + (i / 16) * 2 * L, x1 = x0 + (2 * L) / 16;
+    k.pipeTo('pipe', [x0, h, h], [x1, -h, h], 0.013); k.pipeTo('pipe', [x0, h, -h], [x1, -h, -h], 0.013);
+    k.pipeTo('pipe', [x0, h, h], [x1, h, -h], 0.013);
+    if (i % 4 === 0) k.box('dark', [0.06, h * 2.3, h * 2.3], [x0, 0, 0]);
+  }
+  // three dishes on short masts, each turned its own way
+  const dishes: Group[] = [];
+  for (const [x, yaw] of [[-3.1, 0.4], [0.2, -0.3], [3.3, 0.9]] as const) {
+    k.cyl('dark', 0.05, 0.06, 0.5, [x, h + 0.25, 0], 'y', 8);
+    const g = new Kit();
+    g.lathe('hull', [[0.02, 0], [0.35, 0.08], [0.62, 0.24], [0.66, 0.27]], [0, 0, 0], 32);
+    g.cyl('pipe', 0.012, 0.012, 0.5, [0, 0.25, 0], 'y', 4);
+    const dish = g.build(mats(), 0); dish.position.set(x, h + 0.55, 0); dish.rotation.set(0, yaw, 1.1);
+    dishes.push(dish);
+  }
+  // the pod where the eleven conscripts live: plated in Custody grey, lit
+  oct(k, 'primer', -0.9, 0.9, 0.9, 0.75, -0.62, 0);
+  frameRing(k, -0.9, 0.08, 0.9, 0.75, -0.62, 0); frameRing(k, 0.9, 0.08, 0.9, 0.75, -0.62, 0);
+  windowRow(k, rnd, [-0.7, -0.6, 0.47], [0.7, -0.6, 0.47], 8, [0.08, 0.06, 0.02], [0, 0, 0], 0.15);
+  windowRow(k, rnd, [-0.7, -0.6, -0.47], [0.7, -0.6, -0.47], 8, [0.08, 0.06, 0.02], [0, 0, 0], 0.15);
+  // solar wings at the far ends
+  for (const x of [-L - 0.05, L + 0.05]) for (const sz of [-1, 1]) {
+    k.box('dark', [0.9, 0.012, 0.7], [x, 0, sz * 0.75], [0.15 * sz, 0, 0]);
+    for (let i = 0; i < 4; i++) k.box('pipe', [0.012, 0.02, 0.7], [x - 0.34 + i * 0.226, 0.005, sz * 0.75], [0.15 * sz, 0, 0]);
+    k.box('pipe', [0.92, 0.02, 0.014], [x, 0.005 + sz * 0.05, sz * 0.75 + sz * 0.35], [0.15 * sz, 0, 0]);
+    k.pipeTo('pipe', [x, 0, 0], [x, 0, sz * 0.42], 0.02);
+  }
+  lamp(k, 'nav', [L + 0.1, h + 0.1, 0], 0.03); lamp(k, 'nav', [-L - 0.1, h + 0.1, 0], 0.03);
+  const root = k.build(mats(), 0.06);
+  for (const d of dishes) root.add(d);
+  // the Saints' charges: small packs clamped to the chords, their arming lights blinking out of step
+  const charges = new Group();
+  const armed = new MeshBasicMaterial({ color: new Color(2.4, 1.3, 0.25), toneMapped: false, transparent: true });
+  const c = new Kit();
+  for (const x of [-2.6, -1.4, 1.4, 2.6, 3.7, -3.7]) { c.box('pack', [0.16, 0.12, 0.1], [x, -h - 0.06, h + 0.02]); }
+  const packs = c.build({ pack: mats().dark! }, 0); charges.add(packs);
+  const lights: Mesh[] = [];
+  for (const [i, x] of [-2.6, -1.4, 1.4, 2.6, 3.7, -3.7].entries()) {
+    const m = new Mesh(new BoxGeometry(0.04, 0.04, 0.04), armed.clone()); m.position.set(x, -h - 0.06, h + 0.08); m.userData.phase = i * 0.37; lights.push(m); charges.add(m);
+  }
+  root.add(charges);
+  root.userData.tick = (t: number) => { for (const m of lights) (m.material as MeshBasicMaterial).opacity = ((t + m.userData.phase) % 1.4) < 0.18 ? 1 : 0.12; };
+  return scaled(root, 2.4);
+}
+
+/** Torchwall's picket: the yard's tugs nose to tail across the crossing, cables and work lamps slung between, the crews' boards hung on them. */
+function picket(): Group {
+  const k = new Kit(), rnd = seeded(67);
+  const n = 6, gap = 1.55;
+  const xs: Array<[number, number]> = [], rigs: Array<[Group, number, number, number]> = [];
+  for (let i = 0; i < n; i++) {
+    const z = (i - (n - 1) / 2) * gap, x = (rnd() - 0.5) * 0.5, len = 1.0 + rnd() * 0.5;
+    // each tug faces the way she comes, a little out of line: a picket, not a parade
+    rigs.push([tug(rnd, len), x, z, Math.PI + (rnd() - 0.5) * 0.5]);
+    xs.push([x, z]);
+  }
+  for (let i = 0; i < n - 1; i++) {
+    const [x0, z0] = xs[i]!, [x1, z1] = xs[i + 1]!;
+    // two cables, sagging, a lamp at each low point; between them a board, ochre, with the yard's mark
+    for (const y of [0.32, -0.05]) {
+      const mid: [number, number, number] = [(x0 + x1) / 2, y - 0.18, (z0 + z1) / 2];
+      k.pipeTo('pipe', [x0, y, z0 + 0.28], mid, 0.012); k.pipeTo('pipe', mid, [x1, y, z1 - 0.28], 0.012);
+      lamp(k, 'lamp', [mid[0], mid[1] - 0.04, mid[2]], 0.02);
+    }
+    if (i % 2 === 0 || rnd() < 0.4) {
+      const bx = (x0 + x1) / 2, bz = (z0 + z1) / 2;
+      block(k, 'board', [0.02, 0.28, 0.62], [bx, 0.08, bz], [0, 0, (rnd() - 0.5) * 0.2], 0.01);
+      k.box('dark', [0.025, 0.05, 0.42], [bx + 0.005, 0.12, bz]);
+    }
+  }
+  const root = k.build({ ...mats(), board: BOARD }, 0.06);
+  for (const [g, x, z, yaw] of rigs) moor(root, g, x, z, yaw);
+  return scaled(root, 2.3);
+}
+const BOARD = metal({ tint: 0x9c7a34, roughness: 0.7, metalness: 0.15, scale: 1.2, painted: true, worn: 0.9 });
+
+/** Ninehaven's singing relay: an old relay ring, broken open, its aerials splayed; a light runs round what is left of it as it speaks. */
+function chorus(): Group {
+  const k = new Kit(), rnd = seeded(79);
+  const R = 3.0, arc = Math.PI * 1.55;
+  k.ring('hull', R, 0.2, [0, 0, 0], 'y', 64, arc);
+  k.ring('dark', R, 0.24, [0, 0, 0], 'y', 64, arc * 0.98, [0, 0.02, 0]);
+  for (let i = 0; i < 22; i++) {
+    const a = (i / 22) * arc, c = Math.cos(a), s = Math.sin(a);
+    k.box('band', [0.18, 0.5, 0.5], [c * R, 0, s * R], [0, -a, 0]);
+    // aerials, bent every way the years left them
+    if (rnd() < 0.8) { const len = 0.5 + rnd() * 1.3, tilt = (rnd() - 0.5) * 1.2; k.pipeTo('pipe', [c * R, 0.2, s * R], [c * (R + len * Math.sin(0.6 + tilt)), 0.2 + len * Math.cos(0.6 + tilt), s * (R + len * Math.sin(0.6 + tilt))], 0.012, 4); }
+  }
+  // the break: two torn ends, plates peeled
+  for (const a of [0, arc]) for (let j = 0; j < 3; j++) k.box('burnt', [0.3, 0.03, 0.25], [Math.cos(a) * (R + (rnd() - 0.5) * 0.3), (rnd() - 0.5) * 0.4, Math.sin(a) * (R + (rnd() - 0.5) * 0.3)], [rnd(), rnd() * 2, rnd()]);
+  // the core it hung from, dark, on three spokes
+  k.lathe('dark', [[0, -0.4], [0.5, -0.3], [0.6, 0], [0.5, 0.3], [0, 0.4]], [0, 0, 0], 24);
+  for (const a of [0.4, 2.3, 4.0]) k.pipeTo('hull', [Math.cos(a) * 0.55, 0, Math.sin(a) * 0.55], [Math.cos(a) * R, 0, Math.sin(a) * R], 0.04);
+  const root = k.build(mats(), 0.08);
+  // the voice: a pale light running round the ring and back, and the core answering it
+  const pulse = new Mesh(new BoxGeometry(0.22, 0.06, 0.42), new MeshBasicMaterial({ color: new Color(0.7, 1.05, 1.15), toneMapped: false, transparent: true, blending: AdditiveBlending, depthWrite: false }));
+  const core = new Mesh(new CylinderGeometry(0.12, 0.12, 0.84, 12), new MeshBasicMaterial({ color: new Color(1.2, 1.5, 1.7), toneMapped: false, transparent: true, blending: AdditiveBlending, depthWrite: false }));
+  root.add(pulse, core);
+  root.userData.tick = (t: number) => {
+    const p = (Math.sin(t * 0.7) * 0.5 + 0.5) * arc;
+    pulse.position.set(Math.cos(p) * R, 0.28, Math.sin(p) * R); pulse.rotation.y = -p;
+    (pulse.material as MeshBasicMaterial).opacity = 0.35 + 0.4 * Math.abs(Math.sin(t * 3.1));
+    (core.material as MeshBasicMaterial).opacity = 0.15 + 0.35 * Math.max(0, Math.sin(t * 1.9));
+  };
+  return scaled(root, 2.5);
+}
+
+/** Hollowforge's pattern: Thren shards hung in a slow spiral, grown not built, turning as she nears. */
+function spiral(): Group {
+  const k = new Kit(), rnd = seeded(97);
+  const n = 34;
+  for (let i = 0; i < n; i++) {
+    const u = i / n, a = u * Math.PI * 4.2, r = 0.5 + u * 3.6, len = 0.35 + (1 - u) * 0.9 + rnd() * 0.3, w = 0.07 + (1 - u) * 0.12;
+    k.shard(i % 4 === 3 ? 'violet' : 'crystal', [[0, 0], [w, len * 0.2], [w * 0.8, len * 0.8], [0, len]], [Math.cos(a) * r, (rnd() - 0.5) * 0.5 + Math.sin(u * 9) * 0.25, Math.sin(a) * r], [Math.PI / 2 + (rnd() - 0.5) * 0.6, 0, -a + (rnd() - 0.5) * 0.8]);
+  }
+  k.crystal('violet', 0.35, [0, 0, 0], [1, 1.8, 1]);
+  const g = k.build(SHARD, 0);
+  const root = new Group(); root.add(g);
+  root.userData.tick = (t: number) => { g.rotation.y = t * 0.12; g.position.y = 0.2 * Math.sin(t * 0.5); };
+  return scaled(root, 2.6);
+}
+const SHARD = { crystal: crystalMaterial(0x6a4a20, 0xd09040, 0.04, 'place-crystal'), violet: crystalMaterial(0x2a1040, 0xd030e0, 0.5, 'place-violet') };
+
 /** A look at its size in the world: the skiff about her length, the ferry twice it, a canister she could fit in her hold. */
 function scaled(g: Group, k: number): Group { g.scale.setScalar(k); return g; }
 
-const BUILD: Record<PlaceLook, () => Group> = { skiff, ferry, wreck, canister, buoy };
+const BUILD: Record<PlaceLook, () => Group> = { skiff, ferry, wreck, canister, buoy, moot, relay, picket, chorus, spiral };
 
 export class PlaceView {
   private readonly root = new Group();
@@ -271,6 +462,8 @@ export class PlaceView {
       // each place sits at its own angle, so two of the same look never read as one
       g.rotation.y = (sp.def.id.length * 1.7) % (Math.PI * 2);
     }
+    // a set piece's own motion: charges blinking, a light running round a ring, shards turning
+    (g.userData.tick as ((t: number) => void) | undefined)?.(this.time);
     // a slow drift, so a dead hull still reads as adrift
     g.position.y = 0.15 * Math.sin(this.time * 0.6);
     g.rotation.z = 0.04 * Math.sin(this.time * 0.4);

@@ -54,7 +54,8 @@ describe('a shut Jump Gate', () => {
   }, 60000);
 
   it('says to clear the hostiles while one keeps the call from coming, counts down, and lets her go short of the ring', () => {
-    const j = at('Kessel Hold');
+    // (Kessel Hold's call waits on its moot now, a place with no clock: Stillwater's is a call alone)
+    const j = at('Stillwater');
     const def = { ...sortieDef(j), pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, situation: null, place: null, thren: 0, calloway: Infinity };
     const w = new World(5, { mode: 'breakout', sortie: def, carry: j.carry });
     const seen = new Set<string>();
@@ -97,6 +98,8 @@ describe('a shut Jump Gate', () => {
       w.step(STEP, NO_INPUT);
       w.events.length = 0;
       if (W.call) { w.answer(0); }
+      // the moot is a place now: she goes among its rigs, as a player would
+      if (w.gateWhy === '{who} first') atPlace(w);
       took = took || !!W.stage?.taken;
       if (w.comms) { if (w.comms.def.id === 'story_moot' && moot < 0) moot = w.runTime; w.answer(w.comms.def.choices[0]!.id); }
       if (i > Math.round(41 / STEP) && !w.gateWhy && open < 0) open = w.runTime;

@@ -292,7 +292,7 @@ export function wreck(): Group {
  * with amber, and every facet takes a slightly different depth, so a hull
  * reads as a cut stone with a light in it, not a painted shape.
  */
-function crystalMaterial(body: number, glow: number, core = 0.01, name = 'thren-crystal'): MeshStandardMaterial {
+export function crystalMaterial(body: number, glow: number, core = 0.01, name = 'thren-crystal'): MeshStandardMaterial {
   const m = new MeshStandardMaterial({ color: new Color(body).multiplyScalar(0.16), roughness: 0.2, metalness: 0.7, flatShading: true, envMapIntensity: 0.8 });
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uInner = { value: new Color(glow).multiplyScalar(1.5) };

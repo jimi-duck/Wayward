@@ -580,6 +580,7 @@ export class World implements EncounterHost {
     this.gateLet = false;
     this.holdNoted = '';
     this.arrivalLine = null;
+    this.nowCard = null;
     this.storyObjective = null;
     this.stock();
     this.fitAboard();
@@ -839,6 +840,7 @@ export class World implements EncounterHost {
     if (held) this.recoverT += dt;
     if (this.bk?.def.first && this.alive) this.stepFirst();
     if (this.bk && this.alive) { this.stepStoryPlace(dt); this.stepScars(); }
+    if (this.nowCard && !this.comms && !this.call && this.phase === 'play' && this.busy() !== 'fight' && !this.floor.holding && this.floor.mayMoment(this.runTime, 0)) { const d = this.nowCard; this.nowCard = null; this.openComms(d); }
     this.flushRadio();
     if (this.space) this.stepSpace(dt, s);
     const rolling = s.rollT >= 0;
@@ -2126,6 +2128,8 @@ export class World implements EncounterHost {
 
   /** When the gate first held her (Infinity: not yet), whether it has let go, and whether she was told. */
   private holdAt = Infinity;
+  /** A card earned at a place, waiting only for the scene's queued voices (sim/script.ts `now`). */
+  private nowCard: CardDef | null = null;
   /** The stop's own arrival line (its zone notice's reason), told by the jump's title card, not as a second notice under it. */
   arrivalLine: { tone: 'teal' | 'amber' | 'red' | 'white'; reason: string } | null = null;
   private gateLet = false;
@@ -2234,7 +2238,8 @@ export class World implements EncounterHost {
       // an urgent card opens now in a fight, where the desk would hold it (the Narrows' note: the gate's reboot waits on it); otherwise the desk
       if (def && o.urgent && this.busy() === 'fight' && !this.comms && !this.call && this.phase === 'play') this.openComms(def);
       // a card earned at a story place opens as she finishes there (sim/script.ts `now`)
-      else if (def && o.now && !this.comms && !this.call && this.phase === 'play' && this.busy() !== 'fight') this.openComms(def);
+      // (a voice of the scene still queued goes first: the card waits for it here, not on the desk, so it still opens at the place)
+      else if (def && o.now) this.nowCard = def;
       else if (def) this.desk.offer(def, 'major', this.runTime, false, true);
     }
     else if ('wall' in o) this.flags.add(o.wall);
