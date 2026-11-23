@@ -171,6 +171,8 @@ export class Hud {
   /** The run that ended in a jump: the next run's first frame shows the new system's title card. Seconds the card has left. */
   private jumpedRun: unknown = null;
   private titleT = 0;
+  /** The arrival line the title card's kicker shows. */
+  private kicker: object | null = null;
 
   constructor() {
     // the refit bay's badge opens it, by tap or click; the flight controls behind never see the touch
@@ -421,6 +423,12 @@ export class Hud {
     this.guide.update(world, sector.shipNow.heading, dt);
     if (this.bannerT > 0 && (this.bannerT -= dt) <= 0) $('banner').classList.remove('on');
     if (this.jumpedRun && world.run !== this.jumpedRun) { this.jumpedRun = null; if (world.bk) this.titleCard(world.bk.def); }
+    // the stop's own line, once the script has it: the title card's kicker, in its tone
+    if (this.titleT > 0 && world.arrivalLine && this.kicker !== world.arrivalLine) {
+      this.kicker = world.arrivalLine;
+      text($('tc-k'), t(world.arrivalLine.reason));
+      $('tc-k').dataset.tone = world.arrivalLine.tone;
+    }
     if (this.titleT > 0 && (this.titleT -= dt) <= 0) $('title-card').classList.remove('on');
     this.notifier.step(dt);
     if (this.gainT > 0 && (this.gainT -= dt) <= 0) this.gain = 0;
@@ -1004,6 +1012,8 @@ export class Hud {
   /** A jump arrival: the new system's name, like a film's title, while the camera sweeps over it (render/sector.ts). */
   private titleCard(d: { name: string; kind: SystemKind; netted?: boolean; escaped?: string | null; log?: string | null }): void {
     text($('tc-k'), t(d.netted ? 'Netted · Custody control' : KIND_NAME[d.kind]));
+    delete $('tc-k').dataset.tone;
+    this.kicker = null;
     text($('tc-t'), d.name);
     // what she got away from on the jump in (sim/journey.ts ESCAPED_LINES)
     text($('tc-s'), d.escaped ? t(d.escaped) : '');

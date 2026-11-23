@@ -579,6 +579,7 @@ export class World implements EncounterHost {
     this.holdAt = Infinity;
     this.gateLet = false;
     this.holdNoted = '';
+    this.arrivalLine = null;
     this.storyObjective = null;
     this.stock();
     this.fitAboard();
@@ -2125,6 +2126,8 @@ export class World implements EncounterHost {
 
   /** When the gate first held her (Infinity: not yet), whether it has let go, and whether she was told. */
   private holdAt = Infinity;
+  /** The stop's own arrival line (its zone notice's reason), told by the jump's title card, not as a second notice under it. */
+  arrivalLine: { tone: 'teal' | 'amber' | 'red' | 'white'; reason: string } | null = null;
   private gateLet = false;
   /** The hold's reason last told to her ('' when none): a new reason is told again, and the gate opening is told once. */
   private holdNoted = '';
@@ -2222,6 +2225,8 @@ export class World implements EncounterHost {
     // a line may carry what the flags add up to: the debt left, the relays lit
     const vars = { debt: debtLeft(this.flags), relays: relaysLit(this.flags) };
     if ('radio' in o) this.events.push({ type: 'ping', id: `${o.radio.live ? 'say' : o.radio.scene ? 'scene' : 'story'}_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text, vars), moment: 'calm', system: name });
+    // a stop's arrival notice names the system: the jump's title card names it already, so its reason becomes the card's kicker (23 November 2026)
+    else if ('notice' in o && this.bk && o.notice.headline === this.bk.def.name && o.notice.reason && this.runTime - this.desk.arrived < 3) this.arrivalLine = { tone: o.notice.tone, reason: o.notice.reason };
     else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason && (o.notice.reason.includes('{') ? tr(o.notice.reason, vars) : o.notice.reason) });
     else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet), from: o.objective.from };
     else if ('card' in o) {

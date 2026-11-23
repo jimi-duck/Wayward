@@ -69,7 +69,7 @@ describe('the Narrows', () => {
     return { w, log, seen };
   }
 
-  const ORDER = ['notice:The Narrows', 'say:The Narrows g', 'say:That’s the re', 'notice:Warden key accepted', 'card:warden_note_1', 'notice:Jump Gate rebooting', 'say:I’ll remember', 'notice:CCV Patience inbound', 'card:story_calloway_narrows', 'say:Kind Regard', 'notice:Jump Gate open', 'say:This is wher', 'notice:Signal lost'];
+  const ORDER = ['say:The Narrows g', 'say:That’s the re', 'notice:Warden key accepted', 'card:warden_note_1', 'notice:Jump Gate rebooting', 'say:I’ll remember', 'notice:CCV Patience inbound', 'card:story_calloway_narrows', 'say:Kind Regard', 'notice:Jump Gate open', 'say:This is wher', 'notice:Signal lost'];
   const inOrder = (log: string[]) => {
     const at = (s: string) => log.findIndex((l) => l.startsWith(s));
     for (const o of ORDER) expect(at(o), `${o} in ${log.join(' | ')}`).toBeGreaterThanOrEqual(0);
@@ -80,6 +80,8 @@ describe('the Narrows', () => {
   it('plays one scene in order: locked, the key, the gate down, the Patience, the way out', () => {
     const { w, log, seen } = play(7);
     inOrder(log);
+    // the stop's own line is the jump's title card's, not a notice under it
+    expect(w.arrivalLine?.reason).toBeTruthy();
     expect(seen.lockedAtGate).toBe('locked by Custody');
     expect(w.flags.has('relay_broadcast')).toBe(true);
     expect(w.flags.has('sam_silent')).toBe(true);
