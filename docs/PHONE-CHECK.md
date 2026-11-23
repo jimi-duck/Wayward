@@ -47,7 +47,7 @@ moved to the top right corner (44x44); the ship's status steps 44 px left on tou
 
 ## Controls you can see (2026-11-23)
 
-- **Roll** is a button now: Torpedo, Roll and Reverse fan round Laser (`--fd` in `main.css`), each with its
+  own gauge at first; since 2026-11-23 Roll and Reverse have none and only dim while they recharge (owner). The second-finger tap and flick still work but are no longer taught.
   gauge; Roll's shows its cooldown. The second-finger tap and flick still work but are no longer taught.
 - "Turn" is now **Reverse** (German still "Wende"); the pause card's control list names the buttons.
 - A lesson's button glows (`.teach`) while its lesson runs: Laser, Torpedo, Roll.
@@ -82,4 +82,4 @@ moved to the top right corner (44x44); the ship's status steps 44 px left on tou
   the desktop file anyway, and with the files now kept on the phone each is fetched once.
 - The iPhone "add to Home Screen" tip was already on the title for iPhone browsers.
 
-- Icons, not words, on the thumb buttons (owner, 2026-11-23): solid, minimal glyphs in the Material Symbols style, `tb-laser` (a bolt), `tb-torp` (a rocket), `tb-roll` (two turning arrows), `tb-reverse` (a U-turn) in `index.html`; each button keeps its name as `aria-label`. The first line icons were turned down as too fussy.
+- Icons, not words, on the thumb buttons (owner, 2026-11-23): solid, minimal glyphs in the Material Symbols style, `tb-laser` (a bolt), `tb-torp` (a slim finned torpedo), `tb-roll` (two turning arrows), `tb-reverse` (a U-turn) in `index.html`; each button keeps its name as `aria-label`. The first line icons were turned down as too fussy.
