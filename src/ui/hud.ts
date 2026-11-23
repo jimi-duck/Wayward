@@ -22,7 +22,7 @@ import { heard } from './heard';
 import { damageWord } from './panels';
 import { Notifier, NoticePlates, type Notice } from './notify';
 import { blockOf, cheapest, quickPicks } from '../sim/bay';
-import { BREAK_COOLDOWN } from '../sim/tuning';
+import { BREAK_COOLDOWN, ROLL_COOLDOWN } from '../sim/tuning';
 import { lockLifted, paintAt, PAINT_NOTICE, refuelAt, YARD_REPAINT } from '../sim/postjump';
 import { recovering } from '../sim/recovery';
 import { wantedPips } from '../sim/pressure';
@@ -56,7 +56,7 @@ const LESSON_HINT: Record<string, Array<[string, string]>> = {
   dock: [['h-keys', 'Fly in slowly to dock'], ['h-touch', 'Fly in slowly to dock'], ['h-pad', 'Fly in slowly to dock']],
   fit: [['h-keys', 'Open the bay and pick the torpedo bay'], ['h-touch', 'Open the bay and pick the torpedo bay'], ['h-pad', 'Open the bay and pick the torpedo bay']],
   guns: [['h-keys', 'Hold Space for lasers · press 2 for a torpedo'], ['h-touch', 'Hold the fire control for lasers · tap Torpedo'], ['h-pad', 'Hold A for lasers · press X for a torpedo']],
-  roll: [['h-keys', 'Press Shift to barrel roll'], ['h-touch', 'Tap a second finger to barrel roll'], ['h-pad', 'Press B to barrel roll']],
+  roll: [['h-keys', 'Press Shift to barrel roll'], ['h-touch', 'Tap Roll to barrel roll'], ['h-pad', 'Press B to barrel roll']],
   none: [],
 };
 
@@ -566,6 +566,10 @@ export class Hud {
     const brkReady = 1 - world.ship.breakCooldown / BREAK_COOLDOWN;
     ticks($('t-brk'), brkReady, 5);
     $('brk').classList.toggle('wait', world.ship.breakCooldown > 0);
+    // and the roll's, so a thumb can see when the next dodge is ready
+    const rollFull = world.hull.rollCooldown ?? ROLL_COOLDOWN;
+    ticks($('t-roll'), 1 - world.ship.rollCooldown / rollFull, 5);
+    $('roll').classList.toggle('wait', world.ship.rollCooldown > 0);
   }
 
   // ── top right: ship systems ─────────────────────────────────────────────
@@ -739,6 +743,11 @@ export class Hud {
     obj.classList.toggle('event', event && !course);
     const les = world.alive ? lessonOf(world) : null;
     obj.classList.toggle('lesson', !!les);
+    // on a touch screen the lesson's button glows, so the hint points at something you can see
+    const teach = les?.hint;
+    $('fire').classList.toggle('teach', teach === 'fire' || teach === 'guns');
+    $('torp').classList.toggle('teach', teach === 'torpedo' || teach === 'guns');
+    $('roll').classList.toggle('teach', teach === 'roll');
     text($('obj-k'), les ? (cargoOf(world) ? t('Contract {id}', { id: CONTRACT_ID }) : t('Training {n}/{m}', { n: les.n, m: les.of })) : t('Objective'));
     if (les) {
       // the first minutes: one thing to do, where it is, and how to do it on this device
@@ -960,7 +969,7 @@ export class Hud {
   private measure(): void {
     const h = $('systems').offsetHeight;
     if (h) $('hud').style.setProperty('--sys-h', `${h}px`);
-    this.aim.layout([$('systems'), $('sensors'), $('objective'), $('log'), $('centre'), $('fire'), $('torp')]);
+    this.aim.layout([$('systems'), $('sensors'), $('objective'), $('log'), $('centre'), $('fire'), $('torp'), $('roll'), $('brk')]);
   }
 
   private retrigger(el: HTMLElement, cls: string): void {

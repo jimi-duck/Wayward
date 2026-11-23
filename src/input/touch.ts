@@ -13,8 +13,9 @@ import type { Press } from './types';
 // lasers. A thumb that misses a button still fires, rather than doing
 // nothing or, worse, anchoring the stick under the wrong thumb.
 //
-// Break and reverse has a small button of its own above the trigger, and the
-// flick below stays for a second finger.
+// Torpedo, Roll and Reverse (break and reverse) fan round the trigger, each a
+// short reach for the same thumb. The second finger's tap (roll) and flick
+// (reverse) below stay as quiet extras; nothing teaches them any more.
 //
 // Steering drives like a racing game: across turns the nose, any push away
 // from the centre opens the throttle, and pulling back coasts. A second
@@ -38,6 +39,8 @@ export interface TouchElements {
   torpedo: HTMLElement;
   /** Break and reverse, a tap. */
   brk: HTMLElement;
+  /** The barrel roll, a tap. */
+  roll: HTMLElement;
 }
 
 /**
@@ -64,7 +67,7 @@ export function flickedDown(dx: number, dy: number): boolean {
   return dy >= FLICK && dy > Math.abs(dx) * 1.2;
 }
 
-type Role = 'stick' | 'fire' | 'torpedo' | 'roll' | 'brk';
+type Role = 'stick' | 'fire' | 'torpedo' | 'roll' | 'rollb' | 'brk';
 
 export class TouchStick {
   /** The helm, -1 to 1, and the throttle, 0 to 1, from the stick. */
@@ -77,6 +80,7 @@ export class TouchStick {
   /** Second fingers on the stick's side: where each landed, and whether it has already broken. */
   private readonly seconds = new Map<number, { x: number; y: number; done: boolean }>();
   private stickId: number | null = null;
+  private fixed = false;
   private ox = 0;
   private oy = 0;
   private travel = 50;
@@ -120,6 +124,7 @@ export class TouchStick {
       case 'fire': this.firing = true; this.el.fire.classList.add('on'); break;
       case 'torpedo': this.onPress('torpedo'); this.blink(this.el.torpedo); break;
       case 'brk': this.onPress('brk'); this.blink(this.el.brk); break;
+      case 'rollb': this.onPress('roll'); this.blink(this.el.roll); break;
     }
   };
 
@@ -156,7 +161,7 @@ export class TouchStick {
     if (stickSide) return this.stickId === null ? 'stick' : 'roll';
     if (inside(this.el.fire, x, y, 0)) return 'fire';
     let best: Role = 'fire', bestD = SLACK;
-    for (const [node, role] of [[this.el.torpedo, 'torpedo'], [this.el.brk, 'brk']] as const) {
+    for (const [node, role] of [[this.el.torpedo, 'torpedo'], [this.el.roll, 'rollb'], [this.el.brk, 'brk']] as const) {
       const d = edgeDistance(node, x, y);
       if (d < bestD) { bestD = d; best = role; }
     }
@@ -167,8 +172,11 @@ export class TouchStick {
     const { stick } = this.el;
     this.stickId = e.pointerId;
     this.travel = (stick.offsetWidth || 120) * TRAVEL;
-    this.ox = e.clientX;
-    this.oy = e.clientY;
+    // a fixed stick (Settings) stays where it rests and steers from its own centre; the floating one comes to the thumb
+    this.fixed = document.documentElement.classList.contains('stick-fixed');
+    const rest = stick.getBoundingClientRect();
+    this.ox = this.fixed && rest.width ? rest.left + rest.width / 2 : e.clientX;
+    this.oy = this.fixed && rest.width ? rest.top + rest.height / 2 : e.clientY;
     stick.classList.add('free', 'on');
     this.track(e.clientX, e.clientY);
   }
@@ -176,8 +184,11 @@ export class TouchStick {
   private track(x: number, y: number): void {
     let dx = x - this.ox, dy = y - this.oy;
     const d = Math.hypot(dx, dy), r = this.travel;
-    // past the rim the ring is dragged along behind the thumb
-    if (d > r) {
+    // past the rim the floating ring is dragged along behind the thumb; the fixed one holds the knob at its rim
+    if (d > r && this.fixed) {
+      dx *= r / d;
+      dy *= r / d;
+    } else if (d > r) {
       const k = (d - r) / d;
       this.ox += dx * k;
       this.oy += dy * k;
