@@ -264,3 +264,6 @@ frame and hold still under reduced motion.
 - Enemy hulls blacken with soot as their armour goes, each its own (a colour per instance in the hull batch, `enemies.ts`).
 - The holdfast port sits in real field stone (`rocks.ts` shape and material) instead of faceted plated lumps, and its
   greenhouses are dark glass in a geodesic cage with the plants a dim green behind it (they were a flat lit mint).
+- Every port now follows Frontier Supply's standard (`shaded` livery): bare worked metal, its own dim windows, lamps and
+  quiet teal edge lights under the bloom line, a painted name board. Kellern's white-blue window rows, the Gutter's and
+  the holdfast's sodium, and the Dust Traders' lanterns were all well over the bloom line and read as arcade neon.

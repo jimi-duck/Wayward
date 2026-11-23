@@ -39,10 +39,10 @@ interface Livery {
 const LIVERY: Record<PortStyle, Livery> = {
   // dark gunmetal and oiled steel, a weathered amber-yellow kept for hazards and guides, every glow under the bloom line
   frontier: { hull: 0x24272c, trim: 0x16181b, accent: 0xd99818, deck: 0x1c1e22, win: new Color(0.45, 0.38, 0.22), strip: new Color(0.55, 0.42, 0.15), board: '#181a1d', ink: '#c9c2b0', neon: false, shaded: true },
-  kellern: { hull: 0x4e5a68, trim: 0x1c2738, accent: 0x34557f, deck: 0x363e48, win: new Color(0.95, 1.15, 1.35), strip: new Color(0.25, 1.15, 1.35), board: '#e8ecf0', ink: '#1c2a3d', neon: false },
-  gutter: { hull: 0x70492f, trim: 0x2c2724, accent: 0x4c7464, deck: 0x463d35, win: new Color(1.7, 0.9, 0.36), strip: new Color(1.7, 0.85, 0.28), board: '#101615', ink: '#5ee6d4', neon: true },
-  holdfast: { hull: 0x6a5b42, trim: 0x2e2d27, accent: 0x6e7c48, deck: 0x4a4338, win: new Color(1.6, 1.12, 0.6), strip: new Color(0.55, 1.25, 0.55), board: '#1b1a16', ink: '#f2e3bf', neon: true },
-  guild: { hull: 0x3e7174, trim: 0x2a2a31, accent: 0xd49a2e, deck: 0x5e4a38, win: new Color(1.65, 1.15, 0.55), strip: new Color(1.6, 1.05, 0.35), board: '#1a140c', ink: '#f0b24a', neon: true },
+  kellern: { hull: 0x4e5a68, trim: 0x1c2738, accent: 0x34557f, deck: 0x363e48, win: new Color(0.42, 0.52, 0.62), strip: new Color(0.12, 0.5, 0.6), board: '#a9b2bd', ink: '#1c2a3d', neon: false, shaded: true },
+  gutter: { hull: 0x70492f, trim: 0x2c2724, accent: 0x4c7464, deck: 0x463d35, win: new Color(0.78, 0.42, 0.17), strip: new Color(0.75, 0.38, 0.12), board: '#101615', ink: '#5ee6d4', neon: true, shaded: true },
+  holdfast: { hull: 0x6a5b42, trim: 0x2e2d27, accent: 0x6e7c48, deck: 0x4a4338, win: new Color(0.72, 0.5, 0.27), strip: new Color(0.25, 0.56, 0.25), board: '#1b1a16', ink: '#f2e3bf', neon: true, shaded: true },
+  guild: { hull: 0x3e7174, trim: 0x2a2a31, accent: 0xd49a2e, deck: 0x5e4a38, win: new Color(0.75, 0.52, 0.25), strip: new Color(0.72, 0.47, 0.16), board: '#1a140c', ink: '#f0b24a', neon: true, shaded: true },
 };
 
 /** The guild's tent cloths, and the Gutter's patch plates: a few colours each, all muted. */
