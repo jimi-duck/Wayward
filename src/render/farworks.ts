@@ -44,7 +44,9 @@ function materials(sky: Sky, grain: number): Mats {
   const haze = new Color(0.045, 0.047, 0.052).lerp(sky.neb[0], 0.06);
   // a faint cool lift on the shaded side, so a hull turned from the sun keeps its outline against the sky
   const lift = sky.neb[0].clone().lerp(sky.neb[1], 0.3).multiplyScalar(0.03);
-  const coat = { painted: true, worn: 0.15, roughness: 0.7, metalness: 0.16, scale: grain, emissive: lift };
+  // only a breath of the sky's rim: at full strength it lit every face a kilometre off in the sky's colour, so a hull in a
+  // warm sky read as a flat pale beige whatever its paint (owner 2026-11-21)
+  const coat = { painted: true, worn: 0.15, roughness: 0.7, metalness: 0.16, scale: grain, emissive: lift, rim: 0.2 };
   const body = metal({ ...coat, tint: haze.clone().multiplyScalar(1.05) });
   const mid = metal({ ...coat, tint: haze.clone().multiplyScalar(0.66) });
   const dark = metal({ ...coat, tint: haze.clone().multiplyScalar(0.4), scale: grain * 1.3 });
