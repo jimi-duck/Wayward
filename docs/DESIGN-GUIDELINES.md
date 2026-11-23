@@ -25,6 +25,12 @@ is one of four kinds.
   queued or on screen. A reply to the answer just given (a voice made within
   3 s of the card closing: the raiders to a refusal, Sam to a fitted
   launcher) skips the quiet and the gap and waits only for the line on screen.
+- A conversation is one scene: a radio row `after` another radio row by 3 s
+  or less (the moot at Kessel Hold, the vote at Torchwall) follows as soon as
+  the line before it is read, without the 10 s gap (`scene_` lines).
+- A radio line rises into place in its speaker's colour, with their face when
+  a card already carries it (`ui/radio.ts` FACE_OF), and fades only at the end
+  of its own time.
 - A radio line stays on screen 3 s plus 0.35 s a word (`lineSecs`); a notice
   5 s, one at a time. A story line queued before a fight waits it out (up to
   30 s) so it is not missed under fire; a line the fight itself makes goes.

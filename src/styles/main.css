@@ -1477,9 +1477,18 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .rd-call.prio .rd-timer i { background: var(--amber); }
 /* a line of chatter: a subtitle under the ship */
 .rd-line { position: absolute; left: 50%; bottom: calc(var(--safe-b) + 46px); translate: -50% 0; max-width: min(520px, 44vw); pointer-events: none;
-  display: flex; align-items: baseline; flex-wrap: wrap; gap: 3px 10px; padding: 5px 12px; background: rgba(var(--void-rgb), .6); border-left: 2px solid var(--cy-dim); text-shadow: 0 1px 4px var(--black); }
-.rd-line.in { animation: rd-line 7s linear forwards; }
-@keyframes rd-line { 0% { opacity: 0; } 5% { opacity: 1; } 88% { opacity: 1; } 100% { opacity: 0; } }
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 3px 10px; padding: 5px 12px; background: rgba(var(--void-rgb), .6); border-left: 2px solid var(--rdl-c, var(--cy-dim)); text-shadow: 0 1px 4px var(--black); }
+/* a line arrives: it rises a little into place as it lights, and fades only at the end of its own time (sim/floor.ts lineSecs) */
+.rd-line.in { animation: rd-rise .34s var(--ez) both, rd-line var(--rdl-secs, 7s) linear forwards; }
+@keyframes rd-rise { from { transform: translateY(10px); } }
+@keyframes rd-line { 0% { opacity: 0; } 4% { opacity: 1; } 92% { opacity: 1; } 100% { opacity: 0; } }
+/* a speaker the cards know: their face beside the line, name above the words */
+.rd-line.faced { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 2px 10px; }
+.rd-line.faced .rdl-face { grid-row: 1 / span 2; }
+.rd-line.faced #rdl-text { grid-column: 2 / span 2; }
+.rd-line.faced .tx-wave { grid-column: 2; grid-row: 1; }
+.rd-line.faced b { grid-column: 3; grid-row: 1; }
+@media (prefers-reduced-motion: reduce) { .rd-line.in { animation: none; } }
 .rd-line .tx-wave { align-self: center; width: 22px; height: 9px; }
 .rd-line b { font: 700 12px/1.1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; }
 .rd-line span { font: 400 13.5px/1.35 var(--font-display); color: var(--ink); }
@@ -1536,7 +1545,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 /* Calloway's lines on the radio: her portrait and name, in the Office's colour, never at the Wanted bar */
 .rd-line.her { --her: var(--faction-office); border-left-color: var(--her); align-items: center; gap: 3px 10px; }
 .rd-line.her b { color: var(--her); }
-.rd-line .rdl-face { width: 40px; height: 40px; flex: none; object-fit: cover; border: 1px solid var(--her, var(--cy-dim)); }
+.rd-line .rdl-face { width: 40px; height: 40px; flex: none; object-fit: cover; object-position: 50% 22%; border: 1px solid var(--her, var(--rdl-c, var(--cy-dim))); }
 @media (max-height: 520px) { .rd-line .rdl-face { width: 30px; height: 30px; } }
 /* the chart's chip on a stop her read expects */
 .chip.her { color: var(--faction-office); border-color: var(--faction-office); }

@@ -406,7 +406,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 #marks .m.dia.side { width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; opacity: .7; }
 /* the lead's arrow breathes, so it is the one the eye finds */
 .ptr.pri i { animation: ptr-lead 1.6s ease-in-out infinite; }
-@keyframes ptr-lead { 50% { opacity: .55; } }
+@keyframes ptr-lead { 50% { opacity: .72; } }
 @media (prefers-reduced-motion: reduce) { .ptr.pri i { animation: none; } }
 .ptr[data-crowd] span { display: none; }
 /* hulls off screen: a smaller chevron each, in the faction's colour, brighter the closer; it blinks when one is close behind */

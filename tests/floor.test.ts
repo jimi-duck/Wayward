@@ -38,6 +38,15 @@ describe('the floor', () => {
     expect(out[3]![0] - out[2]![0]).toBeGreaterThanOrEqual(FLOOR.gap);
   });
 
+  it('lets the next turn of a conversation follow as soon as the line before it is read', () => {
+    const f = new Floor();
+    f.take([voice('story_1'), voice('scene_2'), voice('scene_3')], 0);
+    const out = play(f, 0, 30);
+    expect(out.map(([, id]) => id)).toEqual(['story_1', 'scene_2', 'scene_3']);
+    expect(out[1]![0] - out[0]![0]).toBeCloseTo(HOLD, 1);
+    expect(out[2]![0] - out[1]![0]).toBeLessThan(FLOOR.gap);
+  });
+
   it('says nothing while a card is up, then keeps the quiet window for voices', () => {
     const f = new Floor();
     f.opened(0, 'card');

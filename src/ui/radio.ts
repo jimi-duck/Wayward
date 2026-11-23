@@ -39,6 +39,14 @@ const CALLER_CSS: Record<Caller, string> = {
 const KIND_WORD: Record<string, string> = {
   trade: 'Trade', plea: 'Plea', job: 'Job offer', warning: 'Warning', distress: 'Distress call', rumour: 'Rumour',
 };
+/** The people of the road whose faces the cards already carry (src/art/contacts): their radio lines show the same face, small. */
+const FACE_OF: Record<string, string> = {
+  'Sam Okoro': 'story_sam', 'Ilse Marrow': 'story_warden', 'Adam Brook': 'story_ledger', 'Councillor Oduya': 'story_moot', 'Marit Voss': 'story_crew',
+  'Ma Saffi': 'story_drift', 'Val': 'story_broker', 'Noor Haddad': 'story_aide', 'Ossie Raine': 'story_ferry', 'Ines Duarte': 'story_harbour',
+  'Kesh': 'story_kesh', 'Dov Kessler': 'story_salvor', 'Oren Lisle': 'story_toll', 'Tarik Silva': 'story_charts', 'Old Mirren': 'story_witnesses',
+  'Ben Anand': 'story_workorder', 'Director Draper': 'foreman',
+};
+
 /** The keys of a call's answers: the first, a middle one, the last. */
 const KEY_OF = ['Y', 'U', 'N'];
 
@@ -160,7 +168,10 @@ export class Radio {
     this.line({ type: 'ping', id: 'calloway_route', from: 'Calloway', caller: 'calloway', text, moment: 'calm', system: '' });
     box.classList.add('her');
     $('rdl-from').style.color = '';
+    box.style.removeProperty('--rdl-c');
+    box.querySelector('.rdl-face')?.remove();
     const face = artImg('captain', CALLOWAY_ID, 'rdl-face');
+    box.classList.toggle('faced', !!face);
     if (face) box.prepend(face);
   }
 
@@ -170,9 +181,17 @@ export class Radio {
     box.classList.remove('her');
     box.querySelector('.rdl-face')?.remove();
     if (!e) { box.hidden = true; return; }
+    const colour = CALLER_CSS[e.caller as Caller] ?? INK.white2;
     $('rdl-from').textContent = t(e.from);
-    $('rdl-from').style.color = CALLER_CSS[e.caller as Caller] ?? INK.white2;
+    $('rdl-from').style.color = colour;
     $('rdl-text').textContent = t(e.text);
+    // the line arrives: it rises in, its bar in the speaker's colour, with their face when the cards know it; it stays as long as it reads
+    box.style.setProperty('--rdl-c', colour);
+    box.style.setProperty('--rdl-secs', `${lineSecs(e.text)}s`);
+    const who = FACE_OF[e.from.split(' · ')[0]!.trim()];
+    const face = who ? artImg('contact', who, 'rdl-face') : null;
+    box.classList.toggle('faced', !!face);
+    if (face) box.prepend(face);
     box.hidden = false;
     box.classList.remove('in');
     void box.offsetWidth;
