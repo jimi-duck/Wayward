@@ -207,6 +207,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #brk.on { animation: tap-flash .22s var(--ez); }
 #t-brk { --n: 5; width: 56%; height: 4px; }
 @keyframes tap-flash { from { scale: .88; } }
+/* the thumb buttons show an icon, not a word (owner, 23 November 2026): the trigger's large, the fan's a step smaller */
+#touch .tb-i { width: 46%; height: auto; aspect-ratio: 1; stroke-width: 1.6; }
+#fire .tb-i { width: 42%; }
 /* the button a lesson is about: its edge breathes until the lesson moves on (still, with reduced motion) */
 :is(#fire, #torp, #roll).teach { --edge: var(--hud-hi); animation: teach 1.4s var(--ez) infinite; }
 @keyframes teach { 50% { filter: brightness(1.6); } }

@@ -59,6 +59,8 @@
       <symbol id="i-reg-info" viewBox="0 0 48 48"><circle cx="24" cy="24" r="19"/><path d="M24 21v13 M24 14v2"/></symbol>
       <symbol id="i-reg-go" viewBox="0 0 48 48"><path d="M6 24h32 M26 12l12 12-12 12"/></symbol>
       <symbol id="i-laser" viewBox="0 0 24 24"><path d="M3 9h5v6H3z M8 12h13 M13 7.5l2 2.5 M13 16.5l2-2.5"/></symbol>
+      <symbol id="i-roll" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3 M18 2.5v4.5h-4.5 M12 8.5l3 6.5h-6z"/></symbol>
+      <symbol id="i-reverse" viewBox="0 0 24 24"><path d="M7 21V10a5 5 0 0 1 10 0v9 M13 15.5l4 4 4-4"/></symbol>
       <symbol id="i-torp" viewBox="0 0 24 24"><path d="M7 9h9l5 3-5 3H7z M7 9L3 5 M7 15l-4 4 M11 9v6"/></symbol>
       <symbol id="i-mine" viewBox="0 0 24 24"><path d="M12 7l4.3 2.5v5L12 17l-4.3-2.5v-5z M12 2v5 M12 17v5 M3.3 7l4.4 2.5 M16.3 14.5l4.4 2.5 M3.3 17l4.4-2.5 M16.3 9.5l4.4-2.5"/></symbol>
       <symbol id="i-core" viewBox="0 0 24 24"><path d="M13 2L5 13.5h6L10 22l8-11.5h-6z"/></symbol>
@@ -215,10 +217,10 @@
          its own gauge. -->
     <div id="touch" aria-hidden="true">
       <div id="stick"><div id="knob"></div></div>
-      <button type="button" id="fire" tabindex="-1"><span>Laser</span><i class="ticks" id="t-bank"></i></button>
-      <button type="button" id="torp" tabindex="-1"><span>Torpedo</span><span class="rack" id="t-rack"></span></button>
-      <button type="button" id="roll" tabindex="-1"><span>Roll</span><i class="ticks" id="t-roll"></i></button>
-      <button type="button" id="brk" tabindex="-1"><span>Reverse</span><i class="ticks" id="t-brk"></i></button>
+      <button type="button" id="fire" tabindex="-1" aria-label="Laser"><svg class="ico tb-i" aria-hidden="true"><use href="#i-laser"/></svg><i class="ticks" id="t-bank"></i></button>
+      <button type="button" id="torp" tabindex="-1" aria-label="Torpedo"><svg class="ico tb-i" aria-hidden="true"><use href="#i-torp"/></svg><span class="rack" id="t-rack"></span></button>
+      <button type="button" id="roll" tabindex="-1" aria-label="Roll"><svg class="ico tb-i" aria-hidden="true"><use href="#i-roll"/></svg><i class="ticks" id="t-roll"></i></button>
+      <button type="button" id="brk" tabindex="-1" aria-label="Reverse"><svg class="ico tb-i" aria-hidden="true"><use href="#i-reverse"/></svg><i class="ticks" id="t-brk"></i></button>
       <button type="button" id="pause-b" tabindex="-1" aria-label="Pause"><i></i><i></i></button>
     </div>
 
