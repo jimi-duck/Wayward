@@ -1,5 +1,6 @@
 import { atPlace } from './paint';
 import { describe, expect, it } from 'vitest';
+import { relayOf } from '../src/sim/breakout';
 import { STEP } from '../src/core/loop';
 import { newJourney, sortieDef, type Journey } from '../src/sim/journey';
 import { dueBeat } from '../src/sim/story';
@@ -110,7 +111,9 @@ describe('a road gate after the Warden key', () => {
     const w = new World(5, { mode: 'breakout', sortie: { ...quiet(j), blockade: false }, carry: j.carry });
     const notices: string[] = [];
     for (let i = 0; i < 240 / STEP; i++) {
-      if (i === 5) { w.ship.x = w.bk!.lane.x; w.ship.z = w.bk!.lane.z + 60; }
+      // she wakes the relay herself (sim/uplink.ts): in its ring until it is awake, then at the gate
+      const rl = relayOf(w.bk!);
+      if (rl && w.uplink < 1) { w.ship.x = rl.x; w.ship.z = rl.z; w.ship.vx = w.ship.vz = 0; } else if (w.uplink >= 1 && i % 60 === 0) { w.ship.x = w.bk!.lane.x; w.ship.z = w.bk!.lane.z + 60; }
       w.ship.invuln = 99;
       w.step(STEP, NO);
       for (const e of w.events) if (e.type === 'storyNotice') notices.push(e.headline);
@@ -142,5 +145,46 @@ describe('a road gate after the Warden key', () => {
     const early = said.filter((x) => x.t < FLOOR.arrival);
     expect(early.map((x) => x.what)).toEqual(['Scanning for transmissions']);
     expect(said.some((x) => x.t >= FLOOR.arrival)).toBe(true);
+  });
+});
+
+describe('waking a relay (the uplink, plan "Reopen the spaceways")', () => {
+  it('charges in three stages only inside its ring, pauses outside, and sends a wave at each of the first two', () => {
+    const j = at(14);
+    j.carry.fuel = 40;
+    const w = new World(5, { mode: 'breakout', sortie: { ...quiet(j), blockade: false }, carry: j.carry });
+    const rl = relayOf(w.bk!)!;
+    const notices: string[] = [];
+    const step = (secs: number, x: number, z: number) => {
+      for (let i = 0; i < Math.round(secs / STEP); i++) {
+        w.ship.invuln = 99; w.ship.x = x; w.ship.z = z; w.ship.vx = w.ship.vz = 0;
+        w.step(STEP, NO);
+        for (const e of w.events) if (e.type === 'storyNotice') notices.push(e.headline);
+        w.events.length = 0;
+        const open = w.comms ?? w.call;
+        if (open) w.answer(open.def.choices[0]!.id);
+      }
+    };
+    // near the gate, outside the ring: nothing charges, and the gate waits on the relay
+    step(20, w.bk!.lane.x, w.bk!.lane.z + 60);
+    expect(w.uplink).toBe(0);
+    expect(w.gateWhy).toBe('wake the relay');
+    // in the ring for a while: the first stage, and Custody comes
+    const before = w.aliens.length;
+    step(15, rl.x, rl.z);
+    expect(w.uplink).toBeGreaterThan(1 / 3);
+    expect(notices).toContain('Relay waking');
+    expect(w.aliens.length).toBeGreaterThan(before);
+    // out of it: the charge holds where it was
+    const held = w.uplink;
+    step(5, rl.x + 200, rl.z);
+    expect(w.uplink).toBeCloseTo(held, 5);
+    // back in until it is awake: the second stage, then the key
+    step(30, rl.x, rl.z);
+    expect(notices).toContain('Relay dish turning');
+    expect(w.uplink).toBe(1);
+    step(15, rl.x, rl.z);
+    expect(w.flags.has('relay_' + w.bk!.def.script)).toBe(true);
+    expect(notices.indexOf('Warden key accepted')).toBeGreaterThan(notices.indexOf('Relay dish turning'));
   });
 });

@@ -2,6 +2,14 @@
 export const PLACES_DE: Record<string, string> = {
   '{who} first': 'erst {who}',
   'the radio first': 'erst der Funk',
+  // the uplink (sim/uplink.ts): she wakes a Warden relay herself
+  'Wake the relay': 'Weck das Relais',
+  'Waking the relay': 'Relais wird geweckt',
+  'wake the relay': 'weck das Relais',
+  'Relay waking': 'Relais erwacht',
+  'Custody traced the uplink': 'Custody hat den Uplink geortet',
+  'Relay dish turning': 'Relaisschüssel dreht sich',
+  'more Custody inbound': 'mehr Custody im Anflug',
   Place: 'Ort',
   'Taken aboard': 'An Bord genommen',
   'The moot': 'Die Versammlung',

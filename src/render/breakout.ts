@@ -553,6 +553,8 @@ export class BreakoutView {
   private readonly barge = new Group();
   private readonly bargeLamp = (materials().lamp as MeshBasicMaterial).clone();
   private readonly tether: Line;
+  /** The uplink line from her keel to a relay she is waking (sim/uplink.ts). */
+  private readonly uplinkLine: Line;
   /** The repair gantry (sim/gantry.ts) and its lamp. */
   private readonly gantry = new Group();
   private readonly gantryLamp = (materials().lamp as MeshBasicMaterial).clone();
@@ -663,6 +665,12 @@ export class BreakoutView {
     this.tether = new Line(tg, new LineBasicMaterial({ color: new Color(0.1, 0.5, 0.62), transparent: true, opacity: 0.5, toneMapped: false, fog: false }));
     this.tether.frustumCulled = false;
     this.tether.visible = false;
+    const ug = new BufferGeometry();
+    ug.setAttribute('position', new Float32BufferAttribute(new Float32Array(6), 3));
+    this.uplinkLine = new Line(ug, new LineBasicMaterial({ color: new Color(0.25, 1.4, 1.6), transparent: true, opacity: 0.6, toneMapped: false, fog: false, blending: AdditiveBlending, depthWrite: false }));
+    this.uplinkLine.frustumCulled = false;
+    this.uplinkLine.visible = false;
+    scene.add(this.uplinkLine);
     this.lane.visible = this.port.visible = this.audit.visible = false;
     this.sweeps.add(this.shadow);
     scene.add(this.sweeps, this.lane, this.port, this.audit, this.mast, this.relay, this.barge, this.tether, this.gantry, this.market, this.den, this.seedG);
@@ -771,6 +779,16 @@ export class BreakoutView {
     const bg = world.barge;
     this.barge.visible = !!b && !!bg;
     this.tether.visible = false;
+    // the uplink's line from her keel to the mast, while it charges: it flickers, brighter as the relay wakes
+    const wr = world.wakeRelay;
+    this.uplinkLine.visible = !!b && world.uplinking && !!wr;
+    if (this.uplinkLine.visible && wr) {
+      const pos = this.uplinkLine.geometry.attributes.position as Float32BufferAttribute;
+      pos.setXYZ(0, world.ship.x, 0.3, world.ship.z);
+      pos.setXYZ(1, wr.x, 12 + this.mastLit * 26, wr.z);
+      pos.needsUpdate = true;
+      (this.uplinkLine.material as LineBasicMaterial).opacity = 0.35 + 0.4 * world.uplink + 0.2 * Math.sin(this.time * 23);
+    }
     if (b && bg) {
       this.barge.position.set(bg.x, -2, bg.z);
       this.barge.rotation.y = bg.face;
@@ -806,7 +824,10 @@ export class BreakoutView {
     this.mast.visible = !!relay;
     if (relay) {
       this.mast.position.set(relay.x, -2, relay.z);
-      this.mastLit = world.flags.has(`relay_${b.def.script}`) || (b.def.script === 'narrows' && world.flags.has('relay_broadcast')) ? Math.min(1, this.mastLit + dt / 4) : 0;
+      const lit = world.flags.has(`relay_${b.def.script}`) || (b.def.script === 'narrows' && world.flags.has('relay_broadcast'));
+      // a relay she wakes herself lights as the uplink charges (sim/uplink.ts): a section at a time, the top at the core
+      const goal = lit ? 1 : b.def.script === 'narrows' ? 0 : world.uplink;
+      this.mastLit = goal > this.mastLit ? Math.min(goal, this.mastLit + dt / 2) : goal;
       this.mastLamps.forEach((l, i) => {
         const on = this.mastLit * this.mastLamps.length > i;
         l.visible = on;
