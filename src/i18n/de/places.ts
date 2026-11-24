@@ -1,6 +1,7 @@
 // The story's places (sim/places.ts, content/script/places.ts): their names, what to do there, and the lines that go with them.
 export const PLACES_DE: Record<string, string> = {
   '{who} first': 'erst {who}',
+  'the radio first': 'erst der Funk',
   Place: 'Ort',
   'Taken aboard': 'An Bord genommen',
   'The moot': 'Die Versammlung',

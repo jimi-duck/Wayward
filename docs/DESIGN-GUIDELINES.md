@@ -62,6 +62,16 @@ dimmed, with what it needs as its chip. A Signal is always the one alert
 plate (`ui/notify.ts`). The opening's sheets (A to J) keep their own layout,
 and a job offer keeps its approved card.
 
+**In step with what is happening** (owner, 24 November 2026). A line is said
+before the thing it talks about, never after. A hull keeps station ahead of
+her until its hail is heard (`StoryPlaceDef.hail`), then comes alongside. A
+line a place waits on is a cue (`sim/script.ts` `CUES`): it goes next, ahead
+of the queue and a card's quiet. What it says is coming comes once the line
+has been heard for 2 s (`World.rowHeard`). The drive waits at the gate while
+the story is talking (12 s, 40 s for a main beat; the HUD says "the radio
+first"), so a jump never leaves a line unsaid. A notice raised by coming near
+somewhere goes out of date like the ship's own. `tests/insync.test.ts`.
+
 ## The look in one line
 
 Clean code edges on an Apple-glass body: a dark teal glass that blurs the

@@ -48,6 +48,8 @@ export interface StoryPlaceDef {
   skip?: string[];
   /** What to do there, for the HUD (English, for t()). */
   verb: string;
+  /** A hull's hail (a script row): it keeps station ahead of her until the line is heard, then comes alongside. */
+  hail?: string;
   /** A pickup on a trail toward the gate (Yard Nine's breaker line): it may stand further out than the first beat. */
   trail?: boolean;
 }
@@ -78,6 +80,8 @@ export const handed = (p: StoryPlaceDef): boolean => 'pickup' in p.act && !p.tra
 /** Units off her port side a hull keeps while alongside: a ferry is twice a skiff. */
 export const ALONGSIDE = 6;
 export const alongside = (p: StoryPlaceDef): number => (p.look === 'ferry' ? 9.5 : ALONGSIDE);
+/** Units ahead of her a hull keeps station until its hail is heard: in sight, not yet alongside. */
+export const STATION = 90;
 /** And this far ahead of her, so the chase camera has it in view. */
 const LEAD = 2.5;
 /** A work order on a trail comes aboard this close (units): she flies near it, not over it. */
@@ -90,8 +94,9 @@ export interface Mover { x: number; z: number; vx: number; vz: number }
  * One step of a hull coming to her: it closes on a spot off her port side and matches her speed there. `s` is the ship; `top` is her
  * top speed (units a second), so it can always catch her.
  */
-export function stepMeet(m: Mover, s: { x: number; z: number; vx: number; vz: number; heading: number }, top: number, dt: number, gap = ALONGSIDE): void {
-  const tx = s.x - Math.sin(s.heading) * gap + Math.cos(s.heading) * LEAD, tz = s.z - Math.cos(s.heading) * gap - Math.sin(s.heading) * LEAD;
+export function stepMeet(m: Mover, s: { x: number; z: number; vx: number; vz: number; heading: number }, top: number, dt: number, gap = ALONGSIDE, ahead = 0): void {
+  const side = ahead ? gap * 4 : gap, lead = ahead || LEAD;
+  const tx = s.x - Math.sin(s.heading) * side + Math.cos(s.heading) * lead, tz = s.z - Math.cos(s.heading) * side - Math.sin(s.heading) * lead;
   const svx = s.vx, svz = s.vz;
   let wx = svx + (tx - m.x) * 0.9, wz = svz + (tz - m.z) * 0.9;
   const cap = top * 1.5, w = Math.hypot(wx, wz);
