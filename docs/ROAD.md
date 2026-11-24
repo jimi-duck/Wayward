@@ -64,7 +64,7 @@ code carries it.
   Warden core charges it over 36 s in three stages, and she may move and fight inside. Leaving pauses
   the charge. Stages 1 and 2 are told ("Relay waking", "Relay dish turning") and each sends a
   Custody wave from the gate side, bigger further down the road (`uplinkWave`). Awake, the stop's
-  "Warden key accepted" row plays even in a fight. The mast lights with the charge, a line runs from
+  "Warden key accepted" row plays even in a fight. The first system past Cerro has one too (docs/POSTJUMP.md). The mast lights with the charge, a line runs from
   her keel to it, and the HUD reads "Waking the relay" with the percentage. The Narrows keeps its scene.
 
 ## Continuance Public Service

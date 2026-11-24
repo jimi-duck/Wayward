@@ -30,7 +30,7 @@ const HEARD = 2;
 import { GATHERING } from '../content/script/threshold';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
 import { ledgerFor, type LedgerRow } from './contract';
-import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, SPOOL_KNOCK, JAM_SPOOL, SWARM_WEAVER, SWARM_DRAWN, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, RELAY_MARK_R, SAFE_R, SAFE_HOLD, HOLD_MAX, holdMax, ROLL_SECRET, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
+import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, SPOOL_KNOCK, JAM_SPOOL, SWARM_WEAVER, SWARM_DRAWN, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, relayKey, RELAY_MARK_R, SAFE_R, SAFE_HOLD, HOLD_MAX, holdMax, ROLL_SECRET, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, RADIO_GAP, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
   type Outcome, type Standing,
@@ -39,7 +39,7 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { ARCADE_EDGE, STORY_EDGE, EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_LINE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR, NED_DONE, NED_DONE_AT, NED_PARTITION, NED_PARTITION_AT, PARTITION } from './postjump';
+import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_LINE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR, SAM_RELAY, NED_DONE, NED_DONE_AT, NED_PARTITION, NED_PARTITION_AT, PARTITION } from './postjump';
 import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
 import { Cordon, HEARING_IN, HEARING_LAUNCH } from './cordon';
@@ -802,7 +802,8 @@ export class World implements EncounterHost {
     const all = places(b).filter((w) => w.kind !== 'yard' || paintDue(this.flags));
     // a Warden relay not yet answered (and the Narrows' mast): a place on the scope and the HUD, so it is clear where to go
     const rl = relayOf(b);
-    if (rl && !this.flags.has(relayFlag(b.def.script ?? ''))) all.push({ kind: 'relay', name: b.def.script === 'narrows' ? 'Relay mast' : 'Warden relay', x: rl.x, z: rl.z, r: RELAY_MARK_R });
+    // (the first system's relay shows once the hull is hers: it is the archive's to point at)
+    if (rl && !this.flags.has(relayKey(b.def)) && (!b.def.first || painted(this.flags))) all.push({ kind: 'relay', name: b.def.script === 'narrows' ? 'Relay mast' : 'Warden relay', x: rl.x, z: rl.z, r: RELAY_MARK_R });
     // the stop's story place, while it waits for her (sim/places.ts)
     const sp = this.storyPlace;
     if (sp) all.push({ kind: 'story', name: sp.def.name, x: sp.x, z: sp.z, r: sp.def.r });
@@ -2003,6 +2004,8 @@ export class World implements EncounterHost {
     const sc = this.script, b = this.bk;
     // the hull is still the company's grey (owner, 5 November 2026): the gate waits for the paint bay
     if (b?.def.first && b.yard && paintDue(this.flags)) return { why: 'Ned’s yard first', paint: true, handshake: false, slow: false, resetting: false };
+    // the first system past Cerro: her gate is locked to Kellern's ID; the Warden relay by it opens it on her own key (the archive says so)
+    if (b?.def.first && painted(this.flags) && !this.flags.has(relayKey(b.def))) return { why: 'wake the relay', paint: false, handshake: true, slow: false, resetting: false };
     if (!sc || !b || this.gateLet) return null;
     // the Narrows: locked by Custody until Ada's key is in, then down while it reboots under her key (sim/narrows.ts)
     if (b.def.script === 'narrows' && this.narrows !== 'done') {
@@ -2194,7 +2197,7 @@ export class World implements EncounterHost {
   /** A road gate's relay that she wakes herself (sim/uplink.ts): every relay but the Narrows', until it is awake. */
   get wakeRelay(): { x: number; z: number } | null {
     const b = this.bk;
-    if (!b || b.def.script === 'narrows' || this.uplink >= 1 || this.flags.has(relayFlag(b.def.script ?? ''))) return null;
+    if (!b || b.def.script === 'narrows' || this.uplink >= 1 || this.flags.has(relayKey(b.def)) || (b.def.first && !painted(this.flags))) return null;
     return relayOf(b);
   }
 
@@ -2211,8 +2214,16 @@ export class World implements EncounterHost {
     const r = stepUplink(this.uplink, this.uplinking, true, dt);
     this.uplink = r.charge;
     if (!r.stage) return;
-    const gate = Math.max(0, GATES.findIndex((g) => g.script === b.def.script) - 1);
-    // (the last stage is told by the stop's own row: "Warden key accepted", content/script/arrivals.ts)
+    const gate = b.def.first ? -1 : Math.max(0, GATES.findIndex((g) => g.script === b.def.script) - 1);
+    // the first system has no stop script: the woken relay is told here, and Sam follows it
+    if (r.stage === 3 && b.def.first) {
+      this.flags.add(relayKey(b.def));
+      // (its own notice says the gate is open: the gate's "open · fly through" would say it twice)
+      this.holdNoted = 'open';
+      this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Warden key accepted', reason: 'Jump Gate open', main: true });
+      this.radioLines('sam_relay', tr('Sam Okoro'), 'miners', [tr(SAM_RELAY)]);
+    }
+    // (elsewhere the last stage is told by the stop's own row: "Warden key accepted", content/script/arrivals.ts)
     if (r.stage < 3) this.events.push(r.stage === 1
       ? { type: 'storyNotice', tone: 'amber', headline: 'Relay waking', reason: 'Custody traced the uplink', main: true }
       : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: 'more Custody inbound', main: true });

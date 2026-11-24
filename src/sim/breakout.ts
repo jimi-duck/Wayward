@@ -427,7 +427,9 @@ const RELAY_OFF = { x: 80, z: -70 };
 /** The relay's ring on the scope (the script hears it within 200, content/script/kit.ts relay()). */
 export const RELAY_MARK_R = 30;
 /** The relay mast of a road gate (the Narrows and every arrival after it), if this sortie has one. */
-export const relayOf = (b: Breakout): { x: number; z: number } | null => (b.def.script === 'narrows' || b.def.relay ? { x: b.lane.x + RELAY_OFF.x, z: b.lane.z + RELAY_OFF.z } : null);
+export const relayOf = (b: Breakout): { x: number; z: number } | null => (b.def.script === 'narrows' || b.def.relay || b.def.first ? { x: b.lane.x + RELAY_OFF.x, z: b.lane.z + RELAY_OFF.z } : null);
+/** The flag a woken relay leaves: the first system past Cerro has its own (it has no stop script), every road gate its script's. */
+export const relayKey = (def: { first?: boolean; script?: string }): string => (def.first ? 'relay_first' : `relay_${def.script ?? ''}`);
 
 /** The places in a sortie: the Jump Gate, the port if there is one, and the audit dock where the system has it. */
 export const places = (b: Breakout): Waypoint[] => [b.lane, ...(b.port ? [b.port] : []), ...(b.audit ? [b.audit] : []), ...(b.yard ? [b.yard] : [])];

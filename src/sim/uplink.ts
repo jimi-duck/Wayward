@@ -23,9 +23,10 @@ export function stepUplink(charge: number, inRing: boolean, free: boolean, dt: n
   return { charge: next, stage: after > before ? after : 0 };
 }
 
-/** The wave a stage sends, by how far down the road the gate is (0: the first after the Narrows). Bigger later; none at the core. */
+/** The wave a stage sends, by how far down the road the gate is (0: the first after the Narrows; -1: the first system past Cerro, two patrol fighters a stage). Bigger later; none at the core. */
 export function uplinkWave(stage: number, gate: number): Array<{ variant: 'picket' | 'lancer' | 'enforcer'; n: number }> {
   if (stage >= UPLINK_STAGES) return [];
+  if (gate < 0) return [{ variant: 'picket', n: 2 }];
   const pickets = Math.min(4, 2 + Math.floor(gate / 2));
   return stage === 1 ? [{ variant: 'picket', n: pickets }] : [{ variant: 'picket', n: pickets - 1 }, { variant: gate >= 3 ? 'enforcer' : 'lancer', n: 1 }];
 }

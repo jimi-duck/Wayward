@@ -120,6 +120,8 @@ export const STOLEN_SAM_POOR = '“One more thing, your tank’s nearly dry and 
 /** The amber notice that tells her the pursuit has started, and why. */
 /** The depot's word on the approach, on the radio (no card): what it sells, and how to dock. */
 export const DEPOT_LINE = '“Depot control. Fuel, plating and stores at posted prices. Slow into the ring to dock.”';
+/** Sam, once the relay in the first system has opened her gate on the Warden key (sim/uplink.ts). */
+export const SAM_RELAY = '“That gate just opened on a key Kellern doesn’t own. Whatever she is, Juno, she isn’t theirs. Go.”';
 export const STOLEN_NOTICE = ['Hull reported stolen', 'Kellern has called in Custody'] as const;
 
 /** The objective is the paint bay: the first system past Cerro, the lock lifted, the hull not yet repainted. */
@@ -128,7 +130,8 @@ export function paintAt(w: { bk: { yard: unknown } | null; flags: ReadonlySet<st
 }
 
 /** The objective is the tank, bought at the depot or mined: the first system past Cerro, the lock lifted, a tank short of the jump, not docked yet, and Cyrite to buy with. */
-export function refuelAt(w: { bk: { def: { first?: boolean }; port: unknown; docks: number } | null; flags: ReadonlySet<string>; fuel: number; jumpCost: number; cyrite: number; fluidPrice: number }): boolean {
+export function refuelAt(w: { bk: { def: { first?: boolean }; port: unknown; docks: number } | null; flags: ReadonlySet<string>; fuel: number; jumpCost: number; cyrite: number; fluidPrice: number; gateWhy?: string }): boolean {
   const b = w.bk;
-  return !!b?.def.first && !!b.port && b.docks === 0 && painted(w.flags) && w.fuel < w.jumpCost && w.cyrite >= w.fluidPrice;
+  // the relay by the gate comes first (the archive points at it); the tank after
+  return w.gateWhy !== 'wake the relay' && !!b?.def.first && !!b.port && b.docks === 0 && painted(w.flags) && w.fuel < w.jumpCost && w.cyrite >= w.fluidPrice;
 }

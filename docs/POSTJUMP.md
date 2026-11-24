@@ -51,7 +51,7 @@ banks `paint_due`, and Sam's message says what to do: fly into Ned Varga's ring 
 renames her, free. The yard is a site of its own (`yard` in `sim/breakout.ts`, `FIRST_YARD`), 0.58 of the way to the Jump Gate and 170
 units off the line, opposite the depot. It is a docking place like the depot, with no fly-by and no building to enter. Its own scope
 mark, edge pointer and objective ("Reach Ned's yard", "Make her yours · free") show only while the hull waits for it, and the Jump
-Gate holds ("Jump Gate holding · Ned's yard first") until she has been. The depot is untouched: fuel, plating and stores.
+Gate holds ("Jump Gate holding · Ned's yard first") until she has been, and then on the Warden relay (below). The depot is untouched: fuel, plating and stores.
 
 1. She comes within 150 units: Ned's radio line ("ease her into the ring, I'll take the helm").
 2. She flies into the teal ring (`YARD_R`, no fight on) and the autopilot takes the helm (owner 2026-11-06: the whole yard is on autopilot, no
@@ -84,6 +84,17 @@ never changes while it plays (a change recompiles every lit material).
 `painted(flags)` is `hull_repainted`, or the lock lifted with no `paint_due` (a save from before the paint bay is painted already, so
 no save version bump). From the code to the paint nothing hunts her: no pursuit, no Thren swarm, no jam, and the system is `calm`
 anyway. Every line takes its turn on the floor.
+
+## The Warden relay (owner, 24 November 2026)
+
+From the paint on, the Jump Gate holds ("wake the relay") until she wakes the Warden relay that stands beside it
+(`relayOf`, the same mast and spot as a road gate's; flag `relay_first`, `relayKey` in `sim/breakout.ts`). The archive's letter
+says why: she was built as a Warden tender, her core still holds a Warden key, and Kellern locked her gate. It is the uplink
+of every road relay (`sim/uplink.ts`, docs/ROAD.md): 36 s inside its 45-unit ring in three stages, each of the first two
+sending two Custody patrol fighters (`uplinkWave(stage, -1)`), the first fight after Cerro's raiders. This lifts the quiet
+rule below for this fight only. The third stage is told here (there is no stop script): "Warden key accepted · Jump Gate
+open", then Sam (`SAM_RELAY`). The relay comes before the tank on the HUD (`refuelAt` waits for it); the relay's mark shows
+only once she is painted.
 
 ## After the paint
 

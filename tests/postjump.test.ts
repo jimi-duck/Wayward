@@ -106,6 +106,10 @@ describe('the objective follows the owner lock', () => {
     expect(goalOf(w).goal).toMatch(/Ned/);
     paintHull(w);
     expect(w.flags.has('hull_repainted')).toBe(true);
+    // her gate is locked to Kellern's ID: the Warden relay by it is the course until she wakes it
+    expect(guideTarget(w)).toMatchObject({ kind: 'relay', name: 'Warden relay' });
+    w.flags.add('relay_first');
+    play(w, 0.1);
     expect(guideTarget(w)).toMatchObject({ kind: 'lane', name: 'Jump Gate' });
   });
 

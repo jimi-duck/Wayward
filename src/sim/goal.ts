@@ -25,6 +25,8 @@ export function goalOf(w: World): Goal {
   // the HUD's rule: an empty tank comes before the stop's line
   if (story && (!w.bk || w.fuel >= w.jumpCost)) return { goal: story, jobs, scope };
   if (w.bk && !lockLifted(w.flags) && w.seenPlaces().some((p) => p.kind === 'audit')) return { goal: 'Dock at the company port', jobs, scope };
+  // the first system's gate waits on its Warden relay (the archive points at it)
+  if (w.bk?.def.first && w.gateWhy === 'wake the relay') return { goal: 'Wake the Warden relay by the Jump Gate', jobs, scope };
   if (refuelAt(w)) return { goal: 'Fill the tank: buy fluid at the depot or mine Cyrite', jobs, scope };
   if (w.bk) return { goal: w.fuel >= w.jumpCost ? 'Head for the Jump Gate and jump' : 'Mine Cyrite to fill the jump tank', jobs, scope };
   if (e && !e.done && !e.dormant) return { goal: ENCOUNTERS[e.id].name, jobs };
