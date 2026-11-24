@@ -1086,7 +1086,7 @@ export class World implements EncounterHost {
       this.events.push({ type: 'storyNotice', tone: 'teal', headline: SCAN_LINE, reason: this.sortie.name });
     }
 
-    // in the first system past Cerro the archive waits in the partition for a full tank (stepFirst)
+    // in the first system past Cerro the archive opens once Ned has said the reboot woke it (stepFirst)
     const placed = b.def.first && beat === WAKE_BEAT;
     if (beat && !this.storyMade && !placed && !(beat === WAKE_BEAT && paintDue(this.flags)) && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.storyMade = true;
@@ -1262,17 +1262,18 @@ export class World implements EncounterHost {
   /** Ned's words after the work: 1 what he did, 2 what he found. */
   private nedSaid = 0;
 
-  /** The first system past Cerro, after the work: Ned says what he did and what he found, and the partition opens on a full tank. */
+  /** The first system past Cerro, after the work: Ned says what he did and what he found, and the partition the reboot woke opens. */
   private stepFirst(): void {
     const t = this.runTime;
-    // Ned, after the work: what he did, then what he found (the partition, whose message waits on a full tank)
+    // Ned, after the work: what he did, then what he found (the partition the reboot woke)
     if (this.yardAt !== Infinity && this.phase === 'play') {
       const e = t - this.yardAt;
       if (this.nedSaid === 0 && e >= NED_DONE_AT) { this.nedSaid = 1; this.radioLines('ned_done', tr(PAINTER), 'frontier', [tr(NED_DONE)]); }
       if (this.nedSaid === 1 && e >= NED_PARTITION_AT) { this.nedSaid = 2; this.flags.add(PARTITION); this.radioLines('ned_partition', tr(PAINTER), 'frontier', [tr(NED_PARTITION)]); }
     }
-    // the partition opens on drive power: once the tank holds a jump, at a free moment, the stored message comes
-    if (painted(this.flags) && !this.flags.has('archive_woke') && !this.cardsSeen.has(WAKE_BEAT) && !this.wakeHerald && !this.follows.some((f) => f.card === WAKE_BEAT) && this.fuel >= this.jumpCost
+    // the yard's reboot woke the partition: once Ned has said so, at a free moment, the stored message comes (owner, 24 November 2026:
+    // straight after the yard, not after filling the tank, for the story's sake)
+    if (painted(this.flags) && !this.flags.has('archive_woke') && !this.cardsSeen.has(WAKE_BEAT) && !this.wakeHerald && !this.follows.some((f) => f.card === WAKE_BEAT)
       && (this.flags.has(PARTITION) || this.yardAt === Infinity) && !this.docked && this.phase === 'play' && this.scriptFree(this.busy(), t)) {
       this.follows.push({ card: WAKE_BEAT, at: t });
     }
@@ -1358,7 +1359,7 @@ export class World implements EncounterHost {
     this.flags.add(PAINTED);
     this.flags.add(RENAMED);
     this.events.push({ type: 'yardDone', n: 0 });
-    // Ned says what he did and what he found (stepFirst); the archive waits in the partition for a tank that holds a jump
+    // Ned says what he did and what he found (stepFirst); the archive in the partition follows
   }
 
   /** The way out of Ned's yard: the unit vector from the yard toward the company's dock, which its open front faces. */

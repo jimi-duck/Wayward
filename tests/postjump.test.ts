@@ -390,7 +390,7 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(w.stage?.rangAt ?? null).toBeNull();
   });
 
-  it('Ned finds a sealed partition after the work, and it opens with the stored message once the tank holds a jump (owner 2026-11-21)', () => {
+  it('Ned finds a sealed partition after the work, and the reboot opens it with the stored message, tank or no tank (owner 2026-11-24)', () => {
     const w = level();
     w.flags.add('ship_stolen'); w.flags.add('paint_due');
     paintHull(w);
@@ -410,14 +410,9 @@ describe('the paint bay (owner 2026-11-05)', () => {
         w.events.length = 0;
       }
     };
-    // an empty tank: Ned finds it, and it stays shut
-    watch(60);
-    expect(log).toEqual(['partition']);
+    // an empty tank: Ned finds it, it opens, and the message follows its notice
+    watch(90);
     expect(w.flags.has(PARTITION)).toBe(true);
-    expect(w.comms).toBeNull();
-    // fuelled to leave: it opens, and the message follows its notice
-    w.fuel = w.jumpCost;
-    watch(30);
     expect(log).toEqual(['partition', 'open', 'archive']);
   });
 
