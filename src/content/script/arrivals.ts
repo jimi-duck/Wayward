@@ -7,9 +7,11 @@ import { after, arrive, flag, free, main, notice, objective, radio, relay, SAM, 
 // on. The handshake and the note are main beats: the gate holds for them
 // (sim/world.ts `gateHeld`). The handshake lights the relay (`relay_<gate>`,
 // counted by sim/evidence.ts). The Narrows, the first, is in narrows.ts.
+// She wakes the relay herself under fire (sim/uplink.ts), so the key is told in
+// a fight too (`urgent`): the gate opens while Custody is still on her.
 
 const handshake = (id: string, stop: string, reason: string): Row[] => [
-  { id: `${id}_lit`, stop, on: relay(), wall: `relay_${stop}`, do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason } }, main: true },
+  { id: `${id}_lit`, stop, on: relay(), wall: `relay_${stop}`, do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason } }, main: true, urgent: true },
 ];
 
 export const ARRIVAL_ROWS: Row[] = [

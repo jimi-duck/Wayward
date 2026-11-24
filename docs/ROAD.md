@@ -59,6 +59,13 @@ code carries it.
 - Every arrival has the same steps: approach, handshake at the relay mast
   (`relay_<gate>`), Ada's note, the answer, the way on. The gate's own card
   comes from `gateCheck` in `sim/journey.ts`.
+- **She wakes the relay herself** (plan "Reopen the spaceways", 24 November 2026; `sim/uplink.ts`).
+  At every arrival after the Narrows the relay is dark until she sits in its ring (45 units): the
+  Warden core charges it over 36 s in three stages, and she may move and fight inside. Leaving pauses
+  the charge. Stages 1 and 2 are told ("Relay waking", "Relay dish turning") and each sends a
+  Custody wave from the gate side, bigger further down the road (`uplinkWave`). Awake, the stop's
+  "Warden key accepted" row plays even in a fight. The mast lights with the charge, a line runs from
+  her keel to it, and the HUD reads "Waking the relay" with the percentage. The Narrows keeps its scene.
 
 ## Continuance Public Service
 

@@ -11,9 +11,10 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Floor, FLOOR, SCAN_LINE } from './floor';
+import { stepUplink, uplinkWave, UPLINK_R } from './uplink';
 import { Script, type Output } from './script';
 import { derive, SIG_CLUES, relaysLit, relayFlag } from './evidence';
-import { ON_ROAD } from '../content/road';
+import { GATES, ON_ROAD } from '../content/road';
 import { debtLeft } from './threads';
 import { GHOST_AFTER, GHOST_STOP, spawnGhost, stepGhost, type Ghost } from './ghost';
 import { DAY_SECONDS, halfDays } from './hunt';
@@ -394,6 +395,8 @@ export class World implements EncounterHost {
   auditCalled = false;
   /** Seconds of play since Lane Control took the ship (sim/recovery.ts); counts only while it has her. */
   recoverT = 0;
+  /** How far the stop's Warden relay is woken (sim/uplink.ts), 0 to 1. */
+  uplink = 0;
   /** Seconds held at the live story place (sim/places.ts); and which place they count for. */
   placeHold = 0;
   private placeHoldOf = '';
@@ -512,7 +515,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.mainLines = new Set(); this.listenAt = Infinity;
+    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.mainLines = new Set(); this.listenAt = Infinity;
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
@@ -853,7 +856,7 @@ export class World implements EncounterHost {
     } else stepShip(s, c, this.hull, dt);
     if (held) this.recoverT += dt;
     if (this.bk?.def.first && this.alive) this.stepFirst();
-    if (this.bk && this.alive) { this.stepStoryPlace(dt); this.stepScars(); }
+    if (this.bk && this.alive) { this.stepStoryPlace(dt); this.stepScars(); this.stepRelay(dt); }
     if (this.nowCard && !this.comms && !this.call && this.phase === 'play' && this.busy() !== 'fight' && !this.floor.holding && this.floor.mayMoment(this.runTime, 0)) { const d = this.nowCard; this.nowCard = null; this.openComms(d); }
     this.flushRadio();
     if (this.space) this.stepSpace(dt, s);
@@ -2018,7 +2021,7 @@ export class World implements EncounterHost {
     const at = o.handshake ? sc.owedPlace(this.flags, this.tankCap ? this.fuel / this.tankCap : 0) : null;
     const place = at ? STORY_PLACES.find((p) => p.id === at) : undefined;
     if (place) { this.gateWho = tr(place.name); return { why: '{who} first', paint: false, handshake: true, slow: false, resetting: false }; }
-    return { why: o.handshake ? 'reach the relay mast' : slow ? 'the gate is opening' : lit ? 'resetting after the key' : call!.why, paint: false, handshake: o.handshake, slow, resetting };
+    return { why: o.handshake ? (this.wakeRelay ? 'wake the relay' : 'reach the relay mast') : slow ? 'the gate is opening' : lit ? 'resetting after the key' : call!.why, paint: false, handshake: o.handshake, slow, resetting };
   }
 
   /**
@@ -2188,10 +2191,39 @@ export class World implements EncounterHost {
   private mainLines = new Set<string>();
   private listenAt = Infinity;
 
+  /** A road gate's relay that she wakes herself (sim/uplink.ts): every relay but the Narrows', until it is awake. */
+  get wakeRelay(): { x: number; z: number } | null {
+    const b = this.bk;
+    if (!b || b.def.script === 'narrows' || this.uplink >= 1 || this.flags.has(relayFlag(b.def.script ?? ''))) return null;
+    return relayOf(b);
+  }
+
+  /** She is in the relay's ring and the charge is running. */
+  get uplinking(): boolean {
+    const rl = this.wakeRelay;
+    return !!rl && this.phase === 'play' && !this.floor.hush && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < UPLINK_R;
+  }
+
+  /** The uplink: inside the relay's ring the charge runs; each stage is told, and the first two send a wave. */
+  private stepRelay(dt: number): void {
+    const rl = this.wakeRelay, b = this.bk;
+    if (!rl || !b || this.phase !== 'play') return;
+    const r = stepUplink(this.uplink, this.uplinking, true, dt);
+    this.uplink = r.charge;
+    if (!r.stage) return;
+    const gate = Math.max(0, GATES.findIndex((g) => g.script === b.def.script) - 1);
+    // (the last stage is told by the stop's own row: "Warden key accepted", content/script/arrivals.ts)
+    if (r.stage < 3) this.events.push(r.stage === 1
+      ? { type: 'storyNotice', tone: 'amber', headline: 'Relay waking', reason: 'Custody traced the uplink', main: true }
+      : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: 'more Custody inbound', main: true });
+    const spawn = uplinkWave(r.stage, gate).map((w) => ({ ...w, from: 'ahead' as const }));
+    if (spawn.length) this.applyOutcome({ text: '', spawn }, 0, []);
+  }
+
   /** Where the relay mast stands that the gate waits on, while it waits on it (the HUD names its range). */
   get gateRelay(): { x: number; z: number } | null {
     const b = this.bk;
-    return b && (this.gateWhy === 'reach the relay mast' || this.gateWhy === 'locked by Custody') ? relayOf(b) : null;
+    return b && (this.gateWhy === 'reach the relay mast' || this.gateWhy === 'wake the relay' || this.gateWhy === 'locked by Custody') ? relayOf(b) : null;
   }
 
   /** Why the Jump Gate is holding her now, in English for t() ('' when it is not): the HUD's sub-line. */
@@ -2312,7 +2344,8 @@ export class World implements EncounterHost {
 
   private scriptCtx(busy: Busy, t: number) {
     const b = this.bk!, s = this.ship;
-    const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit, relay: relayOf(b) };
+    // a relay she wakes herself is reached when it is awake (sim/uplink.ts); the Narrows' when she comes near
+    const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit, relay: b.def.script === 'narrows' || this.uplink >= 1 ? relayOf(b) : null };
     for (const p of stopPlaces(STORY_PLACES, b.def.script, this.flags)) sites[p.id] = placeAt(p, b);
     return {
       t, arrived: this.desk.arrived, busy, free: this.scriptFree(busy, t), slow: this.stageSlow(), tank: this.tankCap ? this.fuel / this.tankCap : 0, flags: this.flags,
