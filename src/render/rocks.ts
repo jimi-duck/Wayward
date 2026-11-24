@@ -27,7 +27,7 @@ const PER_VARIANT = 48;
 /** Icosphere subdivisions: a field rock, and a bulwark (few on screen, seen up close). */
 const FIELD_DETAIL = 11, BULWARK_DETAIL = 22;
 /** The same on a phone (render/lean.ts): about half the triangles, the outline kept. */
-const FIELD_LEAN = 8, BULWARK_LEAN = 14, BACKDROP_LEAN = 2;
+const FIELD_LEAN = 8, BULWARK_LEAN = 14, BACKDROP_LEAN = 3;
 /** Bulwarks are lumpy potatoes, not spheres: each shape stretched its own way. */
 const BULWARK_STRETCH: ReadonlyArray<[number, number, number]> = [[1.12, 0.9, 0.94], [0.94, 1, 1.1], [1.18, 0.86, 1]];
 const BACKDROP = 150;

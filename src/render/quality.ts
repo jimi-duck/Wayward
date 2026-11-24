@@ -24,7 +24,7 @@ export interface QualityTier {
   name: TierName;
   /** Ceiling on devicePixelRatio. The original capped at 1.5 everywhere. */
   dprCap: number;
-  /** Hardware multisampling on the direct canvas (unused: no tier asks for it; SMAA below is what smooths edges). */
+  /** Hardware multisampling on the direct canvas. Only Low draws straight to the canvas, so only Low uses it; the post chain's SMAA or FXAA smooths every other tier. */
   msaa: boolean;
   /** Post-chain edge smoothing: a light SMAA on Medium, the full one on High, none on Low. */
   smaa: 'low' | 'high' | null;
@@ -38,11 +38,13 @@ export interface QualityTier {
 
 // Bloom resolution, shadow map size and particle budgets join these as the
 // effects that use them land (M3, M4).
-// Phone sits between Low and Medium (docs/PERF.md pass 14): the look of Medium (bloom, grade, mood, shadows) at
-// one pixel per CSS pixel, without the sky's detail tile and with fewer chips. Phones start there and climb.
+// Phone sits between Low and Medium (docs/PERF.md pass 14): the look of Medium (bloom, grade, mood, shadows)
+// without the sky's detail tile and with fewer chips. Phones start there and climb. It draws at up to 1.5 pixels per
+// CSS pixel (pass 16): at 1 a 3x phone stretched every pixel three times, which read as blocky; a slow phone breathes
+// back down to about 1 (SCALES) before it gives up the tier.
 export const TIERS: readonly QualityTier[] = [
-  { name: 'low', dprCap: 1, msaa: false, smaa: null, shadow: 0, debris: 160, skyDetail: false },
-  { name: 'phone', dprCap: 1, msaa: false, smaa: 'low', shadow: 512, debris: 320, skyDetail: false },
+  { name: 'low', dprCap: 1, msaa: true, smaa: null, shadow: 0, debris: 160, skyDetail: false },
+  { name: 'phone', dprCap: 1.5, msaa: false, smaa: 'low', shadow: 1024, debris: 320, skyDetail: false },
   { name: 'medium', dprCap: 1.5, msaa: false, smaa: 'low', shadow: 1024, debris: 480, skyDetail: true },
   { name: 'high', dprCap: 2, msaa: true, smaa: 'high', shadow: 4096, debris: 800, skyDetail: true },
 ];
@@ -81,7 +83,7 @@ export function saveTier(key: string, tier: TierName, ceil: number): void {
 }
 
 /** The drawing scales a phone steps through before it gives up a tier (docs/PERF.md pass 15). */
-export const SCALES = [1, 0.85, 0.75] as const;
+export const SCALES = [1, 0.85, 0.75, 0.67] as const;
 
 export class QualityGovernor {
   private index: number;
