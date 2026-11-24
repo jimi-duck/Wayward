@@ -125,7 +125,7 @@ describe('the bay’s rules', () => {
     expect(blockOf('tech_gutter', ctx({ techs: new Set(['gutter']) }))).toBeNull();
   });
 
-  it('lets a ship draw past its power (the warning light, not a wall), and never fits twice past the top level', () => {
+  it('lets a ship draw past its power (the warning light, not a wall), and never fits a part past its top level', () => {
     let levels = stockLevels();
     // fill the power with whatever draws it
     for (const w of WEB.filter((x) => (x.draw.power ?? 0) > 0)) {
@@ -138,7 +138,9 @@ describe('the bay’s rules', () => {
     const { use, cap } = budgets(levels);
     expect(use.power).toBeGreaterThan(cap.power);
     expect(overRatings(levels).power).toBe(true);
-    for (const w of WEB) expect(levels[w.id] ?? 0).toBeLessThanOrEqual(maxLevel(w.id));
+    // the core, cooling and frame have no top in the Arcade (a long run can always buy its speed back); every other part has
+    for (const w of WEB) if (!FITTING[w.id]) expect(levels[w.id] ?? 0).toBeLessThanOrEqual(maxLevel(w.id));
+    expect(blockOf('rx_core', ctx({ levels: { ...levels, rx_core: maxLevel('rx_core') + 4 } }))).toBeNull();
   });
 
   it('keeps the reactor core open while it has room: there is no refund', () => {
@@ -293,6 +295,17 @@ describe('the Arcade’s three picks', () => {
     }
     const flat = { ...stockLevels(), df_shield: 1, df_armour: 1, df_repair: 1 }; // out of power
     expect(quickPicks(ctx({ levels: flat })).map((p) => p.id)).toContain('rx_core');
+  });
+
+  it('offers the fix for a load run well over at every opening, passed over or not, so a long run never stays slow', () => {
+    // hot: well past the cooling, with the frame and core already past their written tops
+    const hot = { ...stockLevels(), ph_emitters: 5, ph_capacitors: 4, ph_pierce: 3, ph_lenses: 3, tp_yield: 4, rx_sinks: 3, rx_core: 3, hl_frame: 3, pl_vent: 1, pl_heat: 3 };
+    const { use, cap } = budgets(hot);
+    expect(use.heat).toBeGreaterThan(cap.heat * 1.25);
+    for (let deal = 0; deal < 6; deal++) {
+      const ids = quickPicks(ctx({ levels: hot, deal, passed: ['rx_sinks'] })).map((p) => p.id);
+      expect(ids, `deal ${deal}`).toContain('rx_sinks');
+    }
   });
 
   it('is slower to deal a card again that was passed over', () => {

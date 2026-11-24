@@ -1,7 +1,7 @@
 import { LOG, STAMP } from '../content/papers';
 import { UPGRADE } from '../content/upgrades';
 import { NODE, STOCK, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
-import { blockOf, budgets, cost, endless, maxLevel, nodeName, nodeText, quickPicks, roleOf, type Block, type PickRole } from '../sim/bay';
+import { blockOf, budgets, cost, limitOf, maxLevel, nodeName, nodeText, quickPicks, roleOf, type Block, type PickRole } from '../sim/bay';
 import type { Advice } from '../sim/advice';
 import { felt, upgradeFigures, type Fig } from '../sim/build';
 import { MARK_GLYPH, MARK_WORD, originOf, papersOf, tabMark, worn, type Mark } from '../sim/papers';
@@ -92,7 +92,7 @@ const textOf = (id: string, lv: number) => t(nodeText(id, lv));
 const priceOf = (w: World, id: string): number => cost(id, (w.levels[id] ?? 0) + 1, !w.bk, w.levels);
 
 /** Does this node's ladder go on for ever here (the Story's stat upgrades and balance parts)? Its level reads "Mk 7", with no top. */
-const endlessIn = (w: World, id: string): boolean => !!w.bk && endless(id);
+const endlessIn = (w: World, id: string): boolean => limitOf(id, !w.bk) === Infinity;
 
 /** A level as the bay writes it: "Lv 2/5", or "Mk 7" on a ladder with no top. */
 const levelWord = (w: World, id: string, lv: number): string => (endlessIn(w, id) ? `${t('Mk')} ${lv}` : `${t('Lv')} ${lv}/${maxLevel(id)}`);

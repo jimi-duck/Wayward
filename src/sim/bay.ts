@@ -1,7 +1,7 @@
 import { MODULE_BY_ID } from '../content/modules';
 import { UPGRADE, upgradeText } from '../content/upgrades';
 import { ARCADE_PRICE, FITTING, NODE, STOCK, STORY_PRICE, WEB, type WebNode } from '../content/web';
-import { budgets } from './budgets';
+import { budgets, overBy } from './budgets';
 import { available, branchLevels, gains, type Levels } from './build';
 
 // ── the refit bay: what can be fitted, what it costs, what it leaves ──────
@@ -51,8 +51,12 @@ export const maxLevel = (id: string): number => UPGRADE[id]?.max ?? FITTING[id]?
 /** Does the Story keep this node's ladder going past its written top? The stat upgrades, the yard modules that change the stat block, and the three balance parts. */
 export const endless = (id: string): boolean => FITTING[id] !== undefined || UPGRADE[id]?.kind === 'stat' || !!MODULE_BY_ID[id]?.stats;
 
-/** The most levels of a node this mode lets you fit: as written in the Arcade, no end in the Story where the ladder is endless. */
-export const limitOf = (id: string, arcade: boolean): number => (!arcade && endless(id) ? Infinity : maxLevel(id));
+/**
+ * The most levels of a node this mode lets you fit: no end in the Story where the ladder is endless; as written in the
+ * Arcade, except the three balance parts (core, cooling, frame), which never run out, so a long run can always buy
+ * back the speed and cooldown its parts cost.
+ */
+export const limitOf = (id: string, arcade: boolean): number => ((arcade ? FITTING[id] !== undefined : endless(id)) ? Infinity : maxLevel(id));
 
 /** A node's name, and what its level `lv` does, in English (the caller translates). */
 export const nodeName = (id: string): string => UPGRADE[id]?.name ?? FITTING[id]?.name ?? MODULE_BY_ID[id]?.name ?? id;
@@ -219,11 +223,19 @@ function shuffle(id: string, deal: number, progress: number): number {
   return ((h >>> 0) % 1000) / 1000;
 }
 
+/** How far over a rating (a share of it) before its fitting is offered at every opening in the Arcade. */
+export const SAG = 0.25;
+
 /** The fitting a ship has run short of, if any: it takes the ship's slot, being the thing that stops the rest. */
 function shortOf(ctx: BayCtx): string | null {
   const { use, cap } = budgets(ctx.levels);
   // a reactor at its limit asks first; heat and mass only count once they are over, and then every other opening, so the ship's slot is not always the same card
   // (one that was passed over waits a few openings before it asks again)
+  // A ship run well over (a quarter past a rating, where the guns and the drive are felt to sag) is offered the fix of its
+  // worst load at every opening, passed over or not: the late run must never be left slow with no way out.
+  const over = ([['rx_core', use.power, cap.power], ['rx_sinks', use.heat, cap.heat], ['hl_frame', use.mass, cap.mass]] as const)
+    .map(([id, u, c]) => ({ id, by: overBy(u, c) })).filter((o) => o.by >= SAG).sort((a, b) => b.by - a.by);
+  if (over[0]) return over[0].id;
   const deal = ctx.deal ?? 0, asked = (id: string) => !ctx.passed?.includes(id) || deal % 3 === 0;
   if (cap.power - use.power < 1) return asked('rx_core') ? 'rx_core' : null;
   if (deal % 2) return null;

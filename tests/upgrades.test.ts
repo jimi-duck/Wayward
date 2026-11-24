@@ -42,12 +42,13 @@ describe('the Story’s prices', () => {
 });
 
 describe('endless ladders', () => {
-  it('end nowhere for a stat upgrade, a balance part or a module that moves the stat block, and keep the Arcade’s tops', () => {
+  it('end nowhere for a stat upgrade, a balance part or a module that moves the stat block, and keep the Arcade’s tops but for the balance parts', () => {
     for (const id of ['ph_emitters', 'tp_yield', 'rx_core', 'rx_sinks', 'hl_frame', 'md_hardpoints']) {
       expect(endless(id), id).toBe(true);
       expect(limitOf(id, false), id).toBe(Infinity);
-      expect(limitOf(id, true), id).toBe(maxLevel(id));
     }
+    for (const id of ['ph_emitters', 'tp_yield']) expect(limitOf(id, true), id).toBe(maxLevel(id));
+    for (const id of ['rx_core', 'rx_sinks', 'hl_frame']) expect(limitOf(id, true), id).toBe(Infinity);
     // a one-off, a system and a module that only sets a flag are written to their top
     for (const id of ['tp_bay', 'ph_cone', 'md_spoofer', 'md_racks']) expect(limitOf(id, false), id).toBe(maxLevel(id));
   });
