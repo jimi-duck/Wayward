@@ -57,6 +57,8 @@ const REACTIVE = /^(relay_|patrol|traffic_|say_|warn_|mis_|gantry_|den_|claim_|s
 const LESSON = /^train_.*[^\d]$/;
 /** A turn in a conversation (sim/script.ts `scene`): it follows the line before it once that is read, without the gap. */
 const SCENE = /^scene_/;
+/** A line the scene she is in waits on (sim/script.ts CUES): next on the floor, ahead of the queue, the gap and a card's quiet. */
+const CUE = /^cue_/;
 /** A notice's kind, for replacing one still waiting: its first two words ("Jump Gate holding" and "Jump Gate open" are one kind). */
 const family = (headline: string): string => headline.split(/\s+/).slice(0, 2).join(' ').toLowerCase();
 const reactive = (e: Held): boolean => e.type === 'ping' && REACTIVE.test(e.id);
@@ -104,9 +106,10 @@ export class Floor {
     // a story line made in calm waits out a fight that began after it, so it is heard, not missed under fire (the script holds its
     // own rows in a fight: sim/script.ts); the lines after it go on. A reply is said at once, and no line waits longer than FLOOR.fight
     const waits = (l: Line) => this.fight && l.kind === 'voice' && l.keep && l.calm && !l.reply && now - l.at < FLOOR.fight;
-    const pick = hot ?? (this.hush ? this.q.find((l) => l.ev.type === 'storyNotice' && l.ev.headline === SCAN_LINE) : this.q.find((l) => !waits(l)));
+    const cue = this.hush ? undefined : this.q.find((l) => l.ev.type === 'ping' && CUE.test(l.ev.id));
+    const pick = cue ?? hot ?? (this.hush ? this.q.find((l) => l.ev.type === 'storyNotice' && l.ev.headline === SCAN_LINE) : this.q.find((l) => !waits(l)));
     if (!pick) return null;
-    if (pick.kind === 'voice' && !pick.reply && (now < this.quietUntil || (!pick.hot && !pick.scene && now - this.lastVoice < FLOOR.gap))) return null;
+    if (pick.kind === 'voice' && !pick.reply && pick !== cue && (now < this.quietUntil || (!pick.hot && !pick.scene && now - this.lastVoice < FLOOR.gap))) return null;
     this.q.splice(this.q.indexOf(pick), 1);
     if (pick.kind === 'voice') { this.lastVoice = now; this.floorUntil = now + lineSecs((pick.ev as Extract<Held, { type: 'ping' }>).text) + FLOOR.hold; }
     else this.floorUntil = now + FLOOR.signal;

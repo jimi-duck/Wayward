@@ -18,6 +18,14 @@ import { debtLeft } from './threads';
 import { GHOST_AFTER, GHOST_STOP, spawnGhost, stepGhost, type Ghost } from './ghost';
 import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
+
+const SCRIPT_BY_ID = new Map(SCRIPT.map((r) => [r.id, r]));
+/** Seconds the drive waits at the gate for the story to finish a line (World.listening). */
+const LISTEN = 12;
+/** ...and for a main beat's line still to be said. */
+const LISTEN_MAIN = 40;
+/** Seconds into a line before it counts as heard (World.rowHeard). */
+const HEARD = 2;
 import { GATHERING } from '../content/script/threshold';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
 import { ledgerFor, type LedgerRow } from './contract';
@@ -86,7 +94,7 @@ import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
 import { discounted, effects, type Effects } from './modules';
 import { Pack } from './tactics';
 import { scarsOf, type Scars } from './scars';
-import { ALONGSIDE, alongside, handed, livePlace, meets, placeAt, placeDone, PLACE_CLEAR, stepHanded, stepMeet, stepPlace, stopPlaces, ESCORT_STAY, stepLeave, type Mover, type PlaceLook, type StoryPlaceDef } from './places';
+import { ALONGSIDE, alongside, handed, STATION, livePlace, meets, placeAt, placeDone, PLACE_CLEAR, stepHanded, stepMeet, stepPlace, stopPlaces, ESCORT_STAY, stepLeave, type Mover, type PlaceLook, type StoryPlaceDef } from './places';
 import { STORY_PLACES } from '../content/script/places';
 import {
   acquire, fireWeapons, launchTorpedo, moveBolts, moveTorpedoes, newArms, type Arms, type Bolt, type FireMods, type Targets, type Torpedo,
@@ -504,7 +512,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null;
+    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.mainLines = new Set(); this.listenAt = Infinity;
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
@@ -1144,7 +1152,10 @@ export class World implements EncounterHost {
       this.holdNoted = 'open';
       this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Jump Gate open', reason: 'fly through' });
     }
-    const near = inReach && !gateHeld;
+    // the story is still talking: the drive waits for the line, and the HUD says why
+    const listen = inReach && !gateHeld && this.listening();
+    if (listen) this.gateWhy = 'the radio first';
+    const near = inReach && !gateHeld && !listen;
     if (near && this.fuel >= this.jumpCost && this.phase === 'play') {
       if (b.spool === 0) this.events.push({ type: 'spool' });
       b.spool += dt * (1 - JAM_SPOOL * this.navNoise);
@@ -2047,7 +2058,7 @@ export class World implements EncounterHost {
     const b = this.bk;
     if (!b || !this.script) return null;
     const sc = this.script;
-    const def = livePlace(STORY_PLACES, b.def.script, this.flags, (row) => sc.played(row), (id) => sc.placeSpent(id));
+    const def = livePlace(STORY_PLACES, b.def.script, this.flags, (row) => this.rowHeard(row), (id) => sc.placeSpent(id));
     if (!def) return null;
     const held = 'hold' in def.act && this.placeHoldOf === def.id ? Math.min(1, this.placeHold / def.act.hold) : 0;
     const m = this.mover;
@@ -2102,7 +2113,8 @@ export class World implements EncounterHost {
     if (moving) {
       // the story comes to her: the hull flies out and keeps pace off her port side; what it hands across flies to her
       if (this.mover?.id !== sp.def.id) this.mover = { id: sp.def.id, x: sp.x, z: sp.z, vx: 0, vz: 0 };
-      if (meets(sp.def)) stepMeet(this.mover, this.ship, topSpeed(this.hull), dt, alongside(sp.def));
+      // a hull keeps station ahead of her, in sight, until its hail is heard; then it comes alongside
+      if (meets(sp.def)) stepMeet(this.mover, this.ship, topSpeed(this.hull), dt, alongside(sp.def), this.hailed(sp.def) ? 0 : STATION);
       else stepHanded(this.mover, this.ship, dt);
       sp.x = this.mover.x; sp.z = this.mover.z;
     } else {
@@ -2115,7 +2127,7 @@ export class World implements EncounterHost {
       }
     }
     // a fixed place counts once the arrival is over (a hull alongside counts at once: it has come to talk); a fight does not stop either
-    const free = meets(sp.def) || !this.floor.hush;
+    const free = meets(sp.def) ? this.hailed(sp.def) : !this.floor.hush;
     const r = stepPlace(sp.def, sp, this.ship, this.placeHold, dt, free);
     this.placeHold = r.hold;
     if (!r.done) return;
@@ -2139,6 +2151,41 @@ export class World implements EncounterHost {
     if (!e.leaving) stepMeet(e, this.ship, topSpeed(this.hull), dt, e.look === 'ferry' ? 9.5 : ALONGSIDE);
     else if (stepLeave(e, this.ship, topSpeed(this.hull), dt)) this.escort = null;
   }
+
+  /**
+   * A script row has been heard: a radio line once the floor has let it out (not just queued), anything else once it has played. The
+   * story waits on what she has heard, so a hull never pulls alongside before its hail, nor a canister flies across before the line
+   * that says it is coming (owner, 24 November 2026: "Ilse's line is shown after she meets").
+   */
+  rowHeard(row: string): boolean {
+    const sc = this.script;
+    if (!sc || !sc.played(row)) return false;
+    const r = SCRIPT_BY_ID.get(row);
+    if (!r || !('radio' in r.do)) return true;
+    // heard, not just begun: a moment into the line, so what it says is coming comes after it
+    return this.floor.log.some((l) => (l.id === `story_${row}` || l.id === `scene_${row}` || l.id === `say_${row}` || l.id === `cue_${row}`) && this.runTime - l.t >= HEARD);
+  }
+
+  /** A hull's hail has been heard, or is not coming (its row never triggered once the arrival was over and a little more). */
+  private hailed(def: StoryPlaceDef): boolean {
+    if (!def.hail) return true;
+    if (this.rowHeard(def.hail)) return true;
+    return !this.script?.triggered(def.hail) && this.runTime - this.desk.arrived > FLOOR.arrival + 4;
+  }
+
+  /** The story is still talking at the gate: a radio line queued or on screen. The drive waits (silently, at most LISTEN s) so a jump never cuts a line off or leaves it unsaid. */
+  private listening(): boolean {
+    for (const r of this.mainLines) if (this.rowHeard(r)) this.mainLines.delete(r);
+    // only on the road's stops, where the script speaks: the opening's jump keeps its own timing
+    const talking = !!this.script && (this.script.talking || this.floor.holding || this.floor.busy(this.runTime));
+    if (!talking || this.floor.hush) { this.listenAt = Infinity; return false; }
+    if (this.listenAt === Infinity) this.listenAt = this.runTime;
+    // a main beat still to be said holds her longer than a passing line
+    return this.runTime - this.listenAt < (this.mainLines.size ? LISTEN_MAIN : LISTEN);
+  }
+  /** Main beats' radio lines played but not yet heard (World.listening). */
+  private mainLines = new Set<string>();
+  private listenAt = Infinity;
 
   /** Where the relay mast stands that the gate waits on, while it waits on it (the HUD names its range). */
   get gateRelay(): { x: number; z: number } | null {
@@ -2282,10 +2329,11 @@ export class World implements EncounterHost {
     const name = this.bk?.def.name ?? '';
     // a line may carry what the flags add up to: the debt left, the relays lit
     const vars = { debt: debtLeft(this.flags), relays: relaysLit(this.flags) };
-    if ('radio' in o) this.events.push({ type: 'ping', id: `${o.radio.live ? 'say' : o.radio.scene ? 'scene' : 'story'}_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text, vars), moment: 'calm', system: name });
+    if ('radio' in o && o.radio.main && o.radio.row) this.mainLines.add(o.radio.row);
+    if ('radio' in o) this.events.push({ type: 'ping', id: `${o.radio.live ? 'say' : o.radio.cue ? 'cue' : o.radio.scene ? 'scene' : 'story'}_${o.radio.row ?? this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text, vars), moment: 'calm', system: name });
     // a stop's arrival notice names the system: the jump's title card names it already, so its reason becomes the card's kicker (23 November 2026)
     else if ('notice' in o && this.bk && o.notice.headline === this.bk.def.name && o.notice.reason && this.runTime - this.desk.arrived < 3) this.arrivalLine = { tone: o.notice.tone, reason: o.notice.reason };
-    else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason && (o.notice.reason.includes('{') ? tr(o.notice.reason, vars) : o.notice.reason), main: true });
+    else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason && (o.notice.reason.includes('{') ? tr(o.notice.reason, vars) : o.notice.reason), ...(o.notice.near ? {} : { main: true }) });
     else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet), from: o.objective.from };
     else if ('card' in o) {
       const def = CARD_BY_ID[o.card];

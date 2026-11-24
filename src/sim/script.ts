@@ -1,4 +1,9 @@
 import type { Busy } from './desk';
+import { STORY_PLACES } from '../content/script/places';
+
+/** Lines a story place waits on (a hull's hail, the line that says something is coming across): cues. They go ahead of the queue, so
+ * the scene she is in is never kept waiting behind news from elsewhere (owner, 24 November 2026: voice messages out of sync). */
+export const CUES: ReadonlySet<string> = new Set(STORY_PLACES.flatMap((p) => [p.hail, p.after]).filter((x): x is string => !!x));
 
 // ── a stop's script ───────────────────────────────────────────────────────
 // The story's lines at a stop (content/script/), played at a safe moment and
@@ -44,8 +49,8 @@ export type Trigger =
   | { on: 'place'; place: string };
 
 export type Output =
-  | { radio: { from: string; caller: string; text: string; /** Said in step with what she is doing (talked in to a place): it goes ahead of the gap, or not at all if it waited 6 s (sim/floor.ts). */ live?: boolean; /** One turn of a conversation: it follows the line before it as soon as that line is read, not after the radio's gap (sim/floor.ts). */ scene?: boolean } }
-  | { notice: { tone: Tone; headline: string; reason?: string } }
+  | { radio: { from: string; caller: string; text: string; /** Said in step with what she is doing (talked in to a place): it goes ahead of the gap, or not at all if it waited 6 s (sim/floor.ts). */ live?: boolean; /** One turn of a conversation: it follows the line before it as soon as that line is read, not after the radio's gap (sim/floor.ts). */ scene?: boolean; /** The row it comes from (filled in by the runner), so the world can tell when it is heard. */ row?: string; /** A line a story place waits on (CUES): told next, ahead of the queue and its quiet. */ cue?: boolean; /** A main beat: the gate waits for it to be heard. */ main?: boolean } }
+  | { notice: { tone: Tone; headline: string; reason?: string; /** Raised by coming near somewhere: it says where she is, so it goes out of date like the ship's own notices. */ near?: boolean } }
   | { objective: { main?: string; quiet?: string; /** The trigger of the row that set it (filled in by the runner). */ from?: Trigger['on'] } }
   | { card: string; /** Opens in a fight (an urgent row): the gate waits on it. */ urgent?: boolean; /** Earned at a story place: it opens there and then, not when the desk next has a quiet moment (by then she has flown off). */ now?: boolean }
   | { wall: string }
@@ -240,6 +245,12 @@ export class Script {
   }
 
   played(id: string): boolean { return this.playedAt.has(id) || this.seen.has(id); }
+
+  /** A radio row of this stop is waiting its turn: the story is still talking. */
+  get talking(): boolean { return this.queue.some((q) => { const r = this.all.get(q.id); return !!r && 'radio' in r.do; }); }
+
+  /** A row has triggered (it is queued or has played). */
+  triggered(id: string): boolean { return this.fired.has(id); }
   /** A place's beat has played, triggered or been let go: the place is not needed any more. */
   placeSpent(place: string): boolean {
     for (const r of this.atPlace) if (r.on.on === 'place' && r.on.place === place && (this.seen.has(r.id) || this.fired.has(r.id) || this.released.includes(r.id))) return true;
@@ -283,8 +294,11 @@ export class Script {
     this.queue = this.queue.filter((q) => { const s = this.all.get(q.id)?.stale; return s === undefined || c.t - q.at < s; });
     // the queue, one at a time
     if (this.holding) { if (!c.cardDone(this.holding.card)) return out; this.seen.add(this.holding.row); this.holding = null; this.last = c.t; }
+    // a cue goes first, without the gap
+    const cue = this.queue.findIndex((q) => CUES.has(q.id));
+    if (cue > 0) this.queue.unshift(...this.queue.splice(cue, 1));
     const head = this.queue[0];
-    if (!head || c.t - this.last < GAP) return out;
+    if (!head || (c.t - this.last < GAP && !CUES.has(head.id))) return out;
     const row = this.all.get(head.id);
     if (!row) { this.queue.shift(); return out; }
     const quiet = c.busy !== 'transit' && (c.busy !== 'fight' || !!row.urgent);
@@ -303,7 +317,7 @@ export class Script {
     // when that line has been read, not after the radio's gap, so a moot reads as a moot and not as four calls (23 November 2026)
     const prev = row.on.on === 'after' ? this.all.get(row.on.row) : undefined;
     const scene = 'radio' in row.do && !row.do.radio.live && row.on.on === 'after' && (row.on.delay ?? 0) <= SCENE_GAP && !!prev && 'radio' in prev.do;
-    out.push('card' in row.do && row.urgent ? { ...row.do, urgent: true } : earned ? { ...row.do, now: true } : scene && 'radio' in row.do ? { radio: { ...row.do.radio, scene: true } } : row.do);
+    out.push('card' in row.do && row.urgent ? { ...row.do, urgent: true } : earned ? { ...row.do, now: true } : 'radio' in row.do ? { radio: { ...row.do.radio, ...(scene ? { scene: true } : {}), ...(CUES.has(row.id) ? { cue: true } : {}), ...(row.main ? { main: true } : {}), row: row.id } } : 'notice' in row.do && row.on.on === 'near' && !row.urgent ? { notice: { ...row.do.notice, near: true } } : row.do);
     return out;
   }
 }
