@@ -70,9 +70,9 @@ Gate holds ("Jump Gate holding · Ned's yard first") until she has been. The dep
    `NED_DONE_AT` (8 s) Ned says on the radio that she is done, and the paint won't pass a close scan.
    The first system stays quiet from the breach (the recovery autopilot) to the jump (owner 2026-11-06): no situation (a distress call and its raider, a patrol, a toll), no distress signal, skirmish or
    other chance event, as well as no pursuit, swarm or jam.
-6. The partition: at `NED_PARTITION_AT` (17 s) Ned says he found a sealed partition in her core, wired to the jump drive, and to fill
-   the tank (flag `partition_found`). Once the tank holds a jump, at a free moment and not docked, the herald "Partition open · it woke
-   on drive power" shows and the stored message (`story_wake`) follows it; the card waits for its herald to be out.
+6. The partition: at `NED_PARTITION_AT` (17 s) Ned says he found a sealed partition in her core, woken by the reboot
+   (flag `partition_found`). At the next free moment after Ned's line, not docked, the herald "Partition open · it woke
+   on the reboot" shows (owner, 24 November 2026: straight after the yard, not after the tank) and the stored message (`story_wake`) follows it; the card waits for its herald to be out.
 
 The yard (`render/yard.ts`) is a deck and a few works set into a large asteroid: the game's own cratered basalt (`rockGeometry`,
 `lavaRock`), a pad ringed in yellow, post lamps and a hazard edge, the three arches and two spray masts, a shack, silo and conveyor,
@@ -93,7 +93,7 @@ One thing at a time, in seconds of play after the paint is on (`STOLEN`):
 2. **+20 s:** Sam names the short tank: the depot if she can pay, the veined rock if not
    (`STOLEN_SAM`, `STOLEN_SAM_POOR`). Only when the tank is short.
 3. **+38 s:** an amber notice, "Hull reported stolen · Kellern has called in Custody".
-   The archive opens once the tank holds a jump, at a free moment.
+   The archive opens right after Ned's line about the partition, at a free moment.
 4. **+70 s:** the first Custody hull, from behind.
 
 The depot's call is a radio line, not a card: flying into its ring docks. No lane toll is dealt at this

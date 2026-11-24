@@ -82,10 +82,10 @@ export const POSTJUMP: Record<string, string> = {
   'Reprogrammed · Repainted · Renamed': 'Umprogrammiert · Lackiert · Umbenannt',
   'Ned Varga': 'Ned Varga',
   'Partition open': 'Partition offen',
-  'it woke on drive power': 'mit Antriebsstrom aufgewacht',
-  // the partition (owner 2026-11-21): Ned finds it after the work, and it opens on a full tank
+  'it woke on the reboot': 'beim Neustart aufgewacht',
+  // the partition (owner 2026-11-21): Ned finds it after the work, and the reboot opens it (owner 2026-11-24)
   '“Done. She’s yours. The paint won’t pass a close scan, so keep Custody at a distance.”': '„Fertig. Sie gehört dir. Die Farbe hält keinem nahen Scan stand, also halt Custody auf Abstand.“',
-  '“Something else. A sealed partition in her core, wired to the jump drive. Fill the tank, it might wake.”': '„Und noch was. Eine versiegelte Partition in ihrem Kern, am Sprungantrieb verdrahtet. Mach den Tank voll, vielleicht wacht sie auf.“',
+  '“Something else. A sealed partition in her core. The reboot woke it. Something’s coming through.”': '„Und noch was. Eine versiegelte Partition in ihrem Kern. Der Neustart hat sie geweckt. Da kommt was durch.“',
   'Sealed partition': 'Versiegelte Partition',
   'Sealed partition · stored message': 'Versiegelte Partition · gespeicherte Nachricht',
   'The Wayward · a sealed partition in her core': 'Die Wayward · eine versiegelte Partition in ihrem Kern',

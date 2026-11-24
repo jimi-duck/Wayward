@@ -62,13 +62,13 @@ export const YARD_BOOT = 1.2;
 export const YARD_REBOOT = 2.8;
 /**
  * After the work, Ned says what he did (owner 2026-11-21: his words in place of the card that explained it), and a little later what he
- * found: a sealed partition in her core. The archive's message is in it, and it opens once the tank holds a jump (the partition wakes on
- * drive power), so the lead comes just before the jump it points to. Seconds after the work.
+ * found: a sealed partition in her core, woken by the yard's reboot. The archive's message is in it and comes straight after (owner,
+ * 24 November 2026: the yard, the reboot, then the archive tells a better story than waiting on a full tank). Seconds after the work.
  */
 export const NED_DONE_AT = 8;
 export const NED_PARTITION_AT = 17;
 export const NED_DONE = '“Done. She’s yours. The paint won’t pass a close scan, so keep Custody at a distance.”';
-export const NED_PARTITION = '“Something else. A sealed partition in her core, wired to the jump drive. Fill the tank, it might wake.”';
+export const NED_PARTITION = '“Something else. A sealed partition in her core. The reboot woke it. Something’s coming through.”';
 /** Set when Ned has found the partition: the stores list it until the archive is open. */
 export const PARTITION = 'partition_found';
 

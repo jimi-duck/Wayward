@@ -144,11 +144,8 @@ describe('the story beats', () => {
     run(60);
     expect(w.comms).toBeNull();
     paintHull(w);
-    // no card says what the yard did: Ned does, on the radio, and finds the partition; it opens on a tank that holds a jump
-    run(60);
-    expect(w.comms).toBeNull();
-    w.fuel = w.jumpCost;
-    run(60);
+    // no card says what the yard did: Ned does, on the radio, and finds the partition the reboot woke; the archive follows
+    run(90);
     expect(w.comms?.def.id).toBe(WAKE_BEAT);
     const after = w.result().carry;
     expect(after.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour']));

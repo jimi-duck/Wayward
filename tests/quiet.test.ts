@@ -29,6 +29,8 @@ function fly(j: Journey, seconds: number) {
   const w = new World(j.seed * 31 + 1, { mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
   // the hull is already repainted: the first system's errand to Ned's yard keeps it free of chance events (owner 2026-11-06), which is not what this asks
   w.flags.add('hull_repainted');
+  // ...and the archive already read (it follows the yard at once, owner 2026-11-24), which is not what this asks either
+  w.flags.add('archive_woke');
   let hostiles = 0, stopped = 0;
   for (let i = 0; i < Math.round(seconds / STEP); i++) {
     // kept alive: an idle hull in a rock field can be wrecked before the pursuit is due, which is not what this asks
