@@ -828,7 +828,7 @@ export class Hud {
           // two ways to fill it, on one line (a phone shows only the first): buy, or mine
           const pt = bk.port!;
           lines.push(`${t('Buy fluid at {port}', { port: pt.name })} · <b>${range(Math.hypot(pt.x - s.x, pt.z - s.z))}</b> · ${t('or mine Cyrite')}`);
-        } else if (!ready && !aud && !paintAt(world)) lines.push(world.storyPlace ? `${t('Jump fluid')} · <b>${Math.floor(world.fuel)}/${world.jumpCost}</b>` : `${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
+        } else if (!ready && !aud && !paintAt(world)) lines.push(world.storyPlace || world.wakeRelay ? `${t('Jump fluid')} · <b>${Math.floor(world.fuel)}/${world.jumpCost}</b>` : `${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
         lines.push(...goal.quiet);
         // first, so a phone (which shows one line) shows it while it lasts
         if (this.hintOn(world)) lines.unshift(`<span class="hint">${this.hintLine!.text}</span>`);

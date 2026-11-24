@@ -333,7 +333,7 @@ export const STORY_CARDS: CardDef[] = [
     herald: { headline: 'Partition open', reason: 'it woke on the reboot' },
     from: 'Sealed partition · stored message', title: 'For whoever flies her next',
     letter: { head: [], sign: '' },
-    text: 'If you’re reading this, the lock’s off and you’ve fuelled her to leave. I hid this where the company’s auditors never bother looking.\nSeventy years ago the gates to the outer worlds went dark. They said the Krail had run out, and everyone left outside became the Scatter.\nBut the reserve log for that day says Krail reserves: 94%. The same day someone signed the order to shut the gates.\nI don’t know the whole story. I know it’s not the one they told us.\nTake the quiet lane through Northfold to Halden’s Reach. The old Warden families retire there. Someone will remember.',
+    text: 'If you’re reading this, the lock’s off. I hid this where Kellern’s auditors never look.\nSeventy years ago the gates to the outer worlds went dark. They said the Krail had run out, and everyone left outside became the Scatter.\nBut the reserve log for that day says Krail reserves: 94%. The same day someone signed the order to shut the gates. It’s not the story they told us.\nShe was built as a Warden tender, and her core still holds a Warden key. Kellern locked your gate. Wake the relay beside it.\nThen take the quiet lane through Northfold to Halden’s Reach. Someone there will remember.',
     cargo: 'The Wayward · a sealed partition in her core',
     choices: [
       { id: 'lead', label: 'Set course: Northfold', tone: 'help', hint: '',

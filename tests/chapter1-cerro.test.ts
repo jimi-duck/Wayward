@@ -173,7 +173,7 @@ describe('chapter one: the way out of the first system', () => {
     run(w0, 25, () => w0.phase === 'over');
     endSortie(j, w0.result());
     autoCourse(j);
-    j.carry.flags.push('archive_woke', 'ship_stolen');
+    j.carry.flags.push('archive_woke', 'ship_stolen', 'relay_first');
     const w = new World(5, { mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
     w.skipTraining();
     expect(w.fuel).toBeLessThan(w.jumpCost);

@@ -3,7 +3,7 @@ import {
   type Material, type Scene, type Texture,
 } from 'three';
 import type { World } from '../sim/world';
-import { AUDIT_R, SAFE_R, relayOf } from '../sim/breakout';
+import { AUDIT_R, SAFE_R, relayOf, relayKey } from '../sim/breakout';
 import { RELAY_JAM_R, RELAY_R } from '../sim/traffic';
 import { setBuoyMood } from './monuments';
 import { GANTRY_R } from '../sim/gantry';
@@ -824,7 +824,7 @@ export class BreakoutView {
     this.mast.visible = !!relay;
     if (relay) {
       this.mast.position.set(relay.x, -2, relay.z);
-      const lit = world.flags.has(`relay_${b.def.script}`) || (b.def.script === 'narrows' && world.flags.has('relay_broadcast'));
+      const lit = world.flags.has(relayKey(b.def)) || (b.def.script === 'narrows' && world.flags.has('relay_broadcast'));
       // a relay she wakes herself lights as the uplink charges (sim/uplink.ts): a section at a time, the top at the core
       const goal = lit ? 1 : b.def.script === 'narrows' ? 0 : world.uplink;
       this.mastLit = goal > this.mastLit ? Math.min(goal, this.mastLit + dt / 2) : goal;

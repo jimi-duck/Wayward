@@ -33,6 +33,8 @@ export const POSTJUMP: Record<string, string> = {
   'Buy fluid at {port}': 'Fluid kaufen bei {port}',
   'or mine Cyrite': 'oder Cyrit abbauen',
   'Fill the tank: buy fluid at the depot or mine Cyrite': 'Tank füllen: Fluid am Depot kaufen oder Cyrit abbauen',
+  'Wake the Warden relay by the Jump Gate': 'Weck das Warden-Relais am Sprungtor',
+  '“That gate just opened on a key Kellern doesn’t own. Whatever she is, Juno, she isn’t theirs. Go.”': '„Das Tor ist gerade auf einen Schlüssel aufgegangen, der nicht Kellern gehört. Was sie auch ist, Juno, ihnen gehört sie nicht. Flieg.“',
   // one voice at a time (owner 2026-10-31): the Wanted explainer as a hint line
   'Wanted rises while you fight or linger · bottom right': 'Die Fahndung steigt, wenn du kämpfst oder trödelst · unten rechts',
   '“Depot control. Fuel, plating and stores at posted prices. Slow into the ring to dock.”': '„Depotkontrolle. Fluid, Panzerung und Vorräte zu festen Preisen. Langsam in den Ring, dann docken wir dich an.“',
