@@ -134,7 +134,7 @@ describe('QualityGovernor', () => {
 describe('QualityGovernor on a phone (breathe)', () => {
   const PHONE = tierIndex('phone');
 
-  it('draws smaller twice before it gives up a tier', () => {
+  it('draws smaller three times (back to about one pixel per CSS pixel) before it gives up a tier', () => {
     const q = new QualityGovernor(PHONE, false, undefined, true);
     feed(q, 1 / 40, 180);
     expect(q.tier.name).toBe('phone');
@@ -142,13 +142,15 @@ describe('QualityGovernor on a phone (breathe)', () => {
     feed(q, 1 / 40, 180);
     expect(q.scale).toBe(0.75);
     feed(q, 1 / 40, 180);
+    expect(q.scale).toBe(0.67);
+    feed(q, 1 / 40, 180);
     expect(q.tier.name).toBe('low');
     expect(q.scale).toBe(1);
   });
 
   it('holds an even 30 once nothing is left to give, and stops judging', () => {
     const q = new QualityGovernor(0, false, undefined, true);
-    feed(q, 1 / 40, 180 * 3);
+    feed(q, 1 / 40, 180 * 4);
     expect(q.thirty).toBe(true);
     expect(feed(q, 1 / 40, 600)).toBe(0);
   });

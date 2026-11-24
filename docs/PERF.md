@@ -462,3 +462,36 @@ The Story's first system on Phone, after: 190 draws, 400k triangles; the rest is
 `node tools/phone-bench.mjs` (with the preview on :4179) prints this table for Arcade and the Story; run it before and after any change to what a frame draws. Already true and checked: shaders for the starting tier compile behind the title (`Sector.warm`); scene textures are about 16 MB, so memory is not a phone risk.
 
 **Not measured:** a real phone. Triangles and draws are what a phone pays for and what this cloud can count; frame times here are software rendering.
+
+## Pass 16: blocky on phones (2026-11-24)
+
+The user said the game looked blocky. Audit, in order of the brief:
+
+- **Resize.** Fine. A ResizeObserver on the canvas refits the renderer, the camera's aspect and the composer
+  (`main.ts` → `fitRenderer` → `sector.resize` → `post.setSize`, which sizes to the drawing buffer).
+- **Drawing size.** The cause. Phones (coarse pointer) start on the Phone tier, whose `dprCap` was 1: on a 3x
+  iPhone in landscape the scene drew at 750×342 and the browser stretched each pixel three times, with only FXAA
+  to soften it. The breathing governor could take it to 0.75 of that. Desktop High draws at dpr 2 and was fine.
+- **Post.** Fine. The composer's targets follow the drawing buffer; only the bloom runs at half size, which its
+  mipmap blur hides.
+- **Antialiasing.** Low had none at all (`msaa: false`, and Low skips the post chain).
+- **Textures.** Fine: mipmapped, linear, anisotropy 4–8 on the plating; the sky bake is 4096. Nothing to gain.
+- **Geometry.** Lean meshes on phones: the backdrop rocks at icosphere detail 2 (about 180 faces each) and the
+  sky's far rocks at 3 showed facets on their outlines. Near rocks and hulls are dense enough.
+- **Shadows.** The Phone tier's 512 map over a 76-unit window stepped visibly along the hull.
+
+Fixes, kept small:
+
+| Change | Before | After |
+|---|---|---|
+| Phone `dprCap` | 1 | 1.5 (3x iPhone: 750×342 → 1125×513) |
+| `SCALES` (phones breathe down) | 1, 0.85, 0.75 | 1, 0.85, 0.75, 0.67 (1.5 × 0.67 ≈ 1, the old size, before a tier goes) |
+| Phone shadow map | 512 | 1024 |
+| Low canvas MSAA | off | on |
+| Backdrop rocks, lean | detail 2 | 3 |
+| Sky far rocks, lean | detail 3 | 4 |
+
+A phone that can't keep up still ends where it was before (about one pixel per CSS pixel) by breathing, then
+drops a tier as before. Measured in the cloud (software WebGL, iPhone 13 landscape emulation): buffer 1125×513
+@1.50, 451k triangles. Not measured: the real GPU cost on a phone; 2.25x the pixels is the main cost and the
+governor is what pays for it. Shots: `/mnt/project-files/vfx/blocky/`.
