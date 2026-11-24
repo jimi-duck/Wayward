@@ -509,7 +509,10 @@ level, each one a tenth less than the one before (`overhaul`, `applyLevel`),
 until the ship's own limits (`CAPS` in `sim/stats.ts`) leave a further level
 nothing to change; then it reads "At its limit" (`gains`). The bay shows what
 the next level costs and the one after. The Arcade's levels stop where they
-are written. The bay shows it all before an
+are written, except the three balance parts, which have no top there either;
+and once a load runs a quarter past its rating (`SAG` in `sim/bay.ts`), the
+Arcade's ship card offers its fix at every opening, so a long run can always
+buy back its speed and cooldown. The bay shows it all before an
 install: the three felt stats after, the figures that would suffer in gold, and a line
 saying what running over costs. A capital ship destroyed opens her faction's
 tech in Synergies. The HUD's "[B] Open bay" lights once a module can be

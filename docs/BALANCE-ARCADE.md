@@ -33,6 +33,25 @@ self-repair put back; *hit→plate*: mean seconds from a plate lost to the hull 
 
 ## History
 
+**24 November 2026: balance parts never run out** (owner: "past a certain level the ship becomes very slow and
+difficult to handle, as you can no longer upgrade certain elements or they show up very rarely"). Every part adds
+power, heat or mass; the core, cooling and frame were the only way to raise the ratings, stopped at level 3, and were
+dealt every other opening. A long run sat on the floors (speed 0.60, acceleration 0.55, guns cycling at half rate).
+Now they have no top in the Arcade (`limitOf`), and a load a quarter past its rating (`SAG`) puts its fix in the
+ship slot at every opening. 24 runs a strategy, capped at 25:00, before / after:
+
+| Strategy | Mean time | Refits | Survived |
+|---|---|---|---|
+| random | 6:53 / 7:35 | 13.1 / 20.8 | 0 / 1 |
+| laser+defence | 9:27 / 8:07 | 30.2 / 24.8 | 3 / 1 |
+| torpedo+laser | 6:47 / 6:48 | 15.6 / 15.8 | 0 / 0 |
+| mine+mobility | 8:24 / 8:14 | 18.8 / 18.3 | 0 / 0 |
+
+The pilot's runs split early (a different card dealt), so a few long laser+defence runs fall either way; the
+survivors are the point. Before, all three laser+defence survivors ended at the floors with loads of 74/17 power and
+60/20 heat; after, the survivor ended at full speed and cooldown (fitted 50 cores, 51 coolant loops, 38 frames by
+25:00, the only parts left). Real-device feel not measured.
+
 **17 November 2026: a livelier opening** (owner: "too slow and easy at the start, the enemy ships feel dumb and
 always miss"). Arcade only (`ARCADE_EDGE` in `sim/director.ts`, `World.approachAhead`): fans of fire lead the ship by
 0.6 of the shot's flight (the hunter's lead from 0.55 to 0.75); the hulls commit from the start instead of looking
