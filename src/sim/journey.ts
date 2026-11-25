@@ -34,7 +34,7 @@ import { actLine, dueBeat } from './story';
 import { postJump } from './postjump';
 import { ON_ROAD } from '../content/road';
 import { legOf, roadRegion, scriptKey } from './road';
-import { LEG_CHASES, type LegChase } from '../content/road';
+import { LEG_CHASES, REACH_RELAYS, type LegChase } from '../content/road';
 
 // ── the journey ───────────────────────────────────────────────────────────
 // The layer above the world: everything that lasts longer than one system.
@@ -263,6 +263,9 @@ export function sortieDef(j: Journey): SortieDef {
     const check = gateCheck(def.script, j.carry.flags);
     if (check) { def.blockade = true; def.checkpoint = check; }
   }
+  // the Reach: a relay she wakes by each gate, some with a twist (content/road.ts REACH_RELAYS)
+  const reach = leg >= 0 && def.script ? REACH_RELAYS[def.script] : undefined;
+  if (reach) { def.relay = true; if (reach.twist) def.twist = reach.twist; }
   // the leg's chase (content/road.ts LEG_CHASES): one pressure stop a leg is hunted, two in the Belt (Val sold her heading)
   const chase = leg >= 0 ? chaseAt(def.script, j.carry.flags) : null;
   if (chase) {

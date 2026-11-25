@@ -810,7 +810,7 @@ export class Hud {
           const gt = world.gateTimer;
           // a relay she wakes herself (sim/uplink.ts): the uplink is the objective, ahead of the stop's own line, and its charge the bar
           const wake = mast && world.wakeRelay ? world.uplink : -1;
-          text($('obj-t'), wake >= 0 ? t(world.uplinking ? 'Waking the relay' : 'Wake the relay') : mast ? named ?? t('Reach the relay mast') : named ?? t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
+          text($('obj-t'), wake >= 0 ? t(world.uplinkBlock || (world.uplinking ? 'Waking the relay' : 'Wake the relay')) : mast ? named ?? t('Reach the relay mast') : named ?? t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
           // the gate's range only beside a line about the gate: a story line ("find the Warden's record") never borrows it (the owner read 25 km as a story place's)
           const gateLine = !named || goal.out;
           text($('obj-left'), gt ? clock(gt.left) : wake >= 0 && (world.uplinking || wake > 0) ? `${Math.floor(wake * 100)}%` : mast ? range(Math.hypot(mast.x - s.x, mast.z - s.z)) : !ready ? `${Math.floor(world.fuel)}/${world.jumpCost}` : gateLine ? range(dl) : '');

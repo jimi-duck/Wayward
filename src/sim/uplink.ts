@@ -12,6 +12,13 @@
 export const UPLINK_R = 45;
 /** Seconds in the ring to wake a relay. */
 export const UPLINK_TIME = 36;
+/** A buried relay's rock: its radius and hull (a bulwark that sits on the mast until she mines it away). */
+export const BURIED_R = 10;
+export const BURIED_HP = 150;
+/** A guarded relay: how many hulls sit on it, how near she comes before they move, and how near the mast a hostile holds the charge. */
+export const GUARDS = 2;
+export const GUARD_WAKE = 450;
+export const GUARD_HOLD = 65;
 /** Stages of the wake: lamps, the dish, the core. */
 export const UPLINK_STAGES = 3;
 
@@ -23,9 +30,11 @@ export function stepUplink(charge: number, inRing: boolean, free: boolean, dt: n
   return { charge: next, stage: after > before ? after : 0 };
 }
 
-/** The wave a stage sends, by how far down the road the gate is (0: the first after the Narrows; -1: the first system past Cerro, two patrol fighters a stage). Bigger later; none at the core. */
-export function uplinkWave(stage: number, gate: number): Array<{ variant: 'picket' | 'lancer' | 'enforcer'; n: number }> {
+/** The wave a stage sends, by how far down the road the gate is (0: the first after the Narrows; -1: the first system past Cerro, two patrol fighters a stage; `reach`: a Reach relay). Bigger later; none at the core. */
+export function uplinkWave(stage: number, gate: number, reach = false): Array<{ variant: 'picket' | 'lancer' | 'enforcer'; n: number }> {
   if (stage >= UPLINK_STAGES) return [];
+  // the Reach: one wave of two, at the first stage (the plan's table)
+  if (reach) return stage === 1 ? [{ variant: 'picket', n: 2 }] : [];
   if (gate < 0) return [{ variant: 'picket', n: 2 }];
   const pickets = Math.min(4, 2 + Math.floor(gate / 2));
   return stage === 1 ? [{ variant: 'picket', n: pickets }] : [{ variant: 'picket', n: pickets - 1 }, { variant: gate >= 3 ? 'enforcer' : 'lancer', n: 1 }];

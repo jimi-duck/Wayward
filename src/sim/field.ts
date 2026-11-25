@@ -95,6 +95,8 @@ export interface Bulwark {
   age: number;
   hp: number;
   maxHp: number;
+  /** Held where it is (a buried relay's rock, sim/uplink.ts): no drift, never wrapped round the ship. */
+  pinned?: boolean;
 }
 
 export const ROCK_VARIANTS = 4;
@@ -260,6 +262,13 @@ export class Field {
     return b;
   }
 
+  /** A rock that sits on a buried relay (sim/uplink.ts): a bulwark at rest, with no drift or check for room. */
+  bury(x: number, z: number, r: number, hp: number): Bulwark {
+    const b: Bulwark = { id: newId(), x, z, vx: 0, vz: 0, r, variant: this.rng.int(BULWARK_VARIANTS), ax: 0, ay: 1, az: 0, spin: 0.02, age: 0, hp, maxHp: hp, pinned: true };
+    this.bulwarks.push(b);
+    return b;
+  }
+
   /** True if a circle at (x, z) overlaps a bulwark. */
   insideBulwark(x: number, z: number, r: number): boolean {
     return this.bulwarks.some((b) => Math.hypot(b.x - x, b.z - z) < b.r + r);
@@ -268,6 +277,7 @@ export class Field {
   step(dt: number, cx: number, cz: number, p: FieldParams = CALM): void {
     const half = FIELD_BAND / 2;
     for (const b of this.bulwarks) {
+      if (b.pinned) { b.age += dt; continue; }
       b.x += b.vx * dt;
       b.z += b.vz * dt;
       b.age += dt;

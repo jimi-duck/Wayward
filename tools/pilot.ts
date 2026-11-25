@@ -556,6 +556,14 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
     thrust = d > stop + 4 ? (v < Math.min(0.6, d / 160) ? 1 : 0) : 0;
     if (!pickup && d < sp.def.r + 30 && v > 0.08) f.brk = true;
   }
+  // a relay to wake (sim/uplink.ts): fly into its ring and sit there while it charges, fighting what comes; a buried one's rock is shot away
+  const rl = !job && bk && !bk.chase && !paint && !sp ? w.wakeRelay : null;
+  if (rl && !targets.boss) {
+    const dx = rl.x - s.x, dz = rl.z - s.z, d = Math.hypot(dx, dz) || 1;
+    want = Math.atan2(-dz, dx);
+    thrust = d > 24 ? (v < Math.min(0.6, d / 160) ? 1 : 0) : 0;
+    if (d < 70 && v > 0.1) f.brk = true;
+  }
   // a hold at the site (a wreck's log, a drop): come in and sit still
   if (job && kind !== 'follow' && kind !== 'sneak' && kind !== 'survey' && kind !== 'recover' && kind !== 'race' && (w.stage!.def.goal.hold ?? 0) > 0) {
     const dx = job.x - s.x, dz = job.z - s.z, d = Math.hypot(dx, dz) || 1;
@@ -584,6 +592,8 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   };
   f.fire = targets.ships.some((a) => inFront(a.x, a.z, a.r, reach)) || (!!targets.boss && inFront(targets.boss.x, targets.boss.z, targets.boss.r, reach))
     || w.field.rocks.some((r) => inFront(r.x, r.z, r.r, bk ? 9 : reach * 0.7));
+  // a buried relay's rock: fire on it from the ring
+  if (rl && w.uplinkBlock === 'Mine the relay clear' && inFront(rl.x, rl.z, 10, reach)) f.fire = true;
   // the lasers mine: fire on the rock it is working once in reach
   if (bk && mining && inFront(mining.x, mining.z, mining.r, reach * 0.8)) f.fire = true;
   if (w.arms.bank < st.bankShot * 2 && !f.fire) f.fire = false;

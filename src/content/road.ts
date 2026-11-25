@@ -140,6 +140,18 @@ const LAST: RoadStop[] = [
 export const LEGS: RoadStop[][] = [ROAD, MARCHES, BELT, DEEP, YARDS, PORTS, HOLLOWS, LAST];
 
 /** Each leg's gate: its script key, and what the Course says of it. The last is the Threshold. */
+/**
+ * The Reach's relays (spaceways plan, step 4, owner 24 November 2026): a Warden relay by each stop's gate, woken by her own key.
+ * Their flags (`relay_<script>`) are not the road's gates (GATES), so the lit-relay count Ada's notes speak of is unchanged.
+ * `twist`: buried (a rock sits on the mast, she mines it clear first), guarded (a Custody picket sits on it).
+ */
+export const REACH_RELAYS: Record<string, { twist?: 'buried' | 'guarded' }> = {
+  halden: {},
+  marlow: {},
+  branford: { twist: 'buried' },
+  copperline: { twist: 'guarded' },
+};
+
 export const GATES: Array<{ script: string; purpose: string; /** What is going on at this gate, for the pause card (as RoadStop.brief). */ brief?: string }> = [
   { script: 'narrows', purpose: NARROWS.purpose, brief: 'Custody has locked the gate. Ada’s relay still answers to her key and will knock the gate offline for ninety seconds. The Governor is on her way.' },
   { script: 'rift', purpose: 'a broken relay, no beacons', brief: 'A broken relay with no beacons, the gate between the Marches and the Belt. A Custody inspector, Ashgrove, runs a checkpoint here and wants your registry.' },
