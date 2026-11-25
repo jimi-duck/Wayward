@@ -179,9 +179,13 @@ describe('waking a relay (the uplink, plan "Reopen the spaceways")', () => {
     const held = w.uplink;
     step(5, rl.x + 200, rl.z);
     expect(w.uplink).toBeCloseTo(held, 5);
-    // back in until it is awake: the second stage, then the key
+    // back in until it is awake: the second stage brings a tether hunter (content/waves.ts); driven off the mast, the key
     step(30, rl.x, rl.z);
     expect(notices).toContain('Relay dish turning');
+    const hunters = (w as unknown as { hunters: Set<number> }).hunters;
+    expect(hunters.size).toBe(1);
+    for (let i = w.aliens.length - 1; i >= 0; i--) if (hunters.has(w.aliens[i]!.id)) w.aliens.splice(i, 1);
+    step(15, rl.x, rl.z);
     expect(w.uplink).toBe(1);
     step(15, rl.x, rl.z);
     expect(w.flags.has('relay_' + w.bk!.def.script)).toBe(true);

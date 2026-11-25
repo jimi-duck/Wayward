@@ -83,6 +83,8 @@ export type GameEvent =
   | { type: 'flak'; x: number; y: number; z: number }
   /** A torpedo left a singularity well. */
   | { type: 'well'; x: number; z: number; r: number }
+  /** A relay's damping pulse throws hulls out of its ring (content/waves.ts). */
+  | { type: 'relayPulse'; x: number; z: number; r: number }
   | { type: 'chain'; count: number; mult: number }
   | { type: 'strike'; x: number; z: number; r: number; kind: string }
   | { type: 'sectorEvent'; id: string; name: string; text: string }
