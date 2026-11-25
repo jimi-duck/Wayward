@@ -1,4 +1,4 @@
-import { GATES } from '../content/road';
+import { GATES, LEG_RELAYS, REACH_RELAYS } from '../content/road';
 import { count, THREADS } from './threads';
 
 // ── what the flags add up to ──────────────────────────────────────────────
@@ -16,6 +16,12 @@ const RELAY_FLAGS = GATES.map((g) => relayFlag(g.script));
 /** Relays lit on the road. */
 export function relaysLit(flags: ReadonlySet<string>): number {
   return RELAY_FLAGS.filter((f, i) => flags.has(f) || (i === 0 && flags.has('relay_broadcast'))).length;
+}
+
+/** Every Warden relay she has woken anywhere: the first system's, the road's gates' and the stops' own (content/road.ts). */
+export function wardenRelays(flags: ReadonlySet<string>): number {
+  const stops = [...Object.keys(REACH_RELAYS), ...Object.keys(LEG_RELAYS)].filter((s) => flags.has(relayFlag(s))).length;
+  return relaysLit(flags) + stops + (flags.has('relay_first') ? 1 : 0);
 }
 
 /** Counted flags, rebuilt from the rest each time: `relays_<n>` and `thread_<thread>_<n>` for every n reached. */

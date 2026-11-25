@@ -153,7 +153,7 @@ export const REACH_RELAYS: Record<string, { twist?: RelayTwist }> = {
 };
 
 /** A relay's twist: what is in the way of waking it (sim/world.ts stepTwist). */
-export type RelayTwist = 'buried' | 'guarded' | 'adrift' | 'given' | 'split' | 'jammed' | 'hungry' | 'refused' | 'loud';
+export type RelayTwist = 'buried' | 'guarded' | 'adrift' | 'given' | 'split' | 'jammed' | 'hungry' | 'refused' | 'loud' | 'chorus';
 
 /**
  * The legs' relays (spaceways plan, step 6), past the Narrows: a stop that gains one, or a road gate (GATES, a relay already) that
@@ -178,6 +178,8 @@ export const LEG_RELAYS: Record<string, { twist?: RelayTwist }> = {
   f_mirren: { twist: 'refused' },
   // the Hollows: Hollowforge's relay sings as it wakes, and the Thren follow the noise; she wakes it fast and loud, or drifting and quiet
   h_forge: { twist: 'loud' },
+  // the Last Lanes: Lastlight's relay, the last before the Threshold; every relay she lit on the way answers, and it wakes the faster for each
+  l_lastlight: { twist: 'chorus' },
 };
 
 export const GATES: Array<{ script: string; purpose: string; /** What is going on at this gate, for the pause card (as RoadStop.brief). */ brief?: string }> = [
