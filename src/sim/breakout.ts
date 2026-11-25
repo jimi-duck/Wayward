@@ -2,6 +2,7 @@ import { TANK_MAX } from './purse';
 import { clamp, lerp } from '../core/math';
 import { BASE_PRICES, type Holder, type Prices, type SystemKind } from '../content/systems';
 import type { RelayTwist } from '../content/road';
+import { SPLIT_MASTS } from './uplink';
 import type { Levels } from './build';
 import type { JobDef, Standing } from './comms';
 import type { EncounterId } from './encounters';
@@ -431,6 +432,18 @@ const RELAY_OFF = { x: 80, z: -70 };
 export const RELAY_MARK_R = 30;
 /** The relay mast of a road gate (the Narrows and every arrival after it), if this sortie has one. */
 export const relayOf = (b: Breakout): { x: number; z: number } | null => (b.def.script === 'narrows' || b.def.relay || b.def.first ? { x: b.lane.x + RELAY_OFF.x + (b.drift?.x ?? 0), z: b.lane.z + RELAY_OFF.z + (b.drift?.z ?? 0) } : null);
+/** An offset from where a road gate's relay stands: `back` from the gate toward where she came in (never behind the gate), `across` square to it. */
+export function laneBack(lane: { x: number; z: number }, back: number, across: number): { x: number; z: number } {
+  const d = Math.hypot(lane.x, lane.z);
+  const ux = d ? -lane.x / d : 1, uz = d ? -lane.z / d : 0;
+  return { x: ux * back - uz * across, z: uz * back + ux * across };
+}
+
+/** A split relay's three masts (sim/uplink.ts SPLIT_MASTS), where they stand. */
+export function splitMasts(b: Breakout): Array<{ x: number; z: number }> {
+  return SPLIT_MASTS.map((m) => { const o = laneBack(b.lane, m.back, m.across); return { x: b.lane.x + RELAY_OFF.x + o.x, z: b.lane.z + RELAY_OFF.z + o.z }; });
+}
+
 /** The flag a woken relay leaves: the first system past Cerro has its own (it has no stop script), every road gate its script's. */
 export const relayKey = (def: { first?: boolean; script?: string }): string => (def.first ? 'relay_first' : `relay_${def.script ?? ''}`);
 
@@ -441,8 +454,10 @@ export const places = (b: Breakout): Waypoint[] => [b.lane, ...(b.port ? [b.port
 export interface Breakout {
   def: SortieDef;
   lane: Waypoint;
-  /** How far an adrift relay has tumbled from where it stood (sim/world.ts stepTwist); none: it stands still. */
+  /** How far an adrift relay has tumbled from where it stood, or where a split relay's mast to wake now stands (sim/world.ts stepTwist); none: where it stood. */
   drift?: { x: number; z: number };
+  /** A split relay's masts woken so far (0 to 3). */
+  split?: number;
   port: Waypoint | null;
   /** The company's audit dock (the first system past Cerro only): a mark to fly to, never a berth. */
   audit: Waypoint | null;

@@ -83,7 +83,7 @@ code carries it.
   before `LATE_FROM`: two, then a fighter and a lancer) and `late` (three, then two and an enforcer). From
   `mid` the second wave's heavy hull is a **tether hunter**: it closes on the mast (`HUNT_PULL` 16 u/s on top
   of its own flying) and holds the charge while it is within `GUARD_HOLD`; the stage notice says "a tether
-  hunter is coming" and the HUD "Drive the hunter off the relay".
+  hunter is coming" and the HUD "Drive the hunter off the relay" (it drags the charge, see below).
   - **Damping pulse**: once a wake, once the lamps are lit (a third charged), the relay throws every hostile
     within `PULSE_R` (70) past the mast's hold and snares it 3 s. It goes by itself when a guard or hunter
     sits on the mast, or when two hostiles crowd the ring while she holds the key. No button.
@@ -97,6 +97,13 @@ code carries it.
     of eight (`ADRIFT_LOOP` 110 s, 60 by 30 units, centred 70 back from where it stood, never behind the gate) and
     steadies once awake; "Relay adrift · keep in its ring as it tumbles" when she comes within 450. A woken relay's
     row is told wherever she is (the script's `relay` site).
+  - **The Salvage Belt.** Kessler's Wreck gains the Aster's relay (Dov points to it once the wreck is reached).
+    The Scrapgate's relay is **split**: three small masts (`SPLIT_MASTS`, 100 to 170 units apart, all on her
+    side of the gate), one a stage. Each woken mast sends its wave and the next is marked ("Mast awake · fly
+    to the next mast"); the gate opens on the third.
+  - A tether hunter now drags the charge to a third (`HUNTED_RATE`) instead of holding it, and the late tier
+    starts at the Tollgate (`LATE_FROM` 4): at the Breaker, whose own fight is heavy, a held charge under six
+    hulls wrecked the pilot three times running.
   The scripted pilot (`tools/pilot.ts`) flies into the ring and sits there, firing on a buried relay's rock.
 - **An awake relay opens the lane** (spaceways plan, step 3). The gate's lane is lit: a soft teal beam
   under the flight plane runs from down the course through the ring and away beyond, with motes flowing

@@ -11,7 +11,7 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Floor, FLOOR, SCAN_LINE } from './floor';
-import { ADRIFT_A, ADRIFT_B, ADRIFT_LOOP, ADRIFT_OUT, ADRIFT_TELL, BURIED_HP, BURIED_R, GIVEN_FLAG, GIVEN_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
+import { HUNTED_RATE, SPLIT_MASTS, ADRIFT_A, ADRIFT_B, ADRIFT_LOOP, ADRIFT_OUT, ADRIFT_TELL, BURIED_HP, BURIED_R, GIVEN_FLAG, GIVEN_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
 import { COVER, COVER_DMG, COVER_EVERY, COVER_R, HUNT_PULL, HUNT_SIT, PULSE_CROWD, PULSE_PUSH, PULSE_R, PULSE_SNARE, waveTier, type CoverRow } from '../content/waves';
 import { Script, type Output } from './script';
 import { derive, SIG_CLUES, relaysLit, relayFlag } from './evidence';
@@ -31,7 +31,7 @@ const HEARD = 2;
 import { GATHERING } from '../content/script/threshold';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
 import { ledgerFor, type LedgerRow } from './contract';
-import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, SPOOL_KNOCK, JAM_SPOOL, SWARM_WEAVER, SWARM_DRAWN, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, relayKey, RELAY_MARK_R, SAFE_R, SAFE_HOLD, HOLD_MAX, holdMax, ROLL_SECRET, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
+import { APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST, PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, SPOOL_KNOCK, JAM_SPOOL, SWARM_WEAVER, SWARM_DRAWN, THREN_JAM, swarmGap, swarmSize, type Waypoint, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval, rockYield, DOCK_SPEED, YARD_CLEAR, relayOf, relayKey, laneBack, RELAY_MARK_R, SAFE_R, SAFE_HOLD, HOLD_MAX, holdMax, ROLL_SECRET, SUPPLIES_MAX, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, RADIO_GAP, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
   type Outcome, type Standing,
@@ -2224,7 +2224,9 @@ export class World implements EncounterHost {
     this.stepHunters(rl, dt);
     this.stepPulse(rl);
     this.stepCover(rl, dt);
-    const r = stepUplink(this.uplink, this.uplinking, !this.uplinkBlock, dt);
+    // a rock or a guard on the mast holds the charge; a tether hunter drags it
+    const blk = this.uplinkBlock;
+    const r = stepUplink(this.uplink, this.uplinking, !blk ? 1 : blk === 'Drive the hunter off the relay' ? HUNTED_RATE : 0, dt);
     this.uplink = r.charge;
     if (!r.stage) return;
     const gate = b.def.first ? -1 : Math.max(0, GATES.findIndex((g) => g.script === b.def.script) - 1);
@@ -2240,7 +2242,14 @@ export class World implements EncounterHost {
       this.radioLines('sam_relay', tr('Sam Okoro'), 'miners', [tr(SAM_RELAY)]);
     }
     // (elsewhere the last stage is told by the stop's own row: "Warden key accepted", content/script/arrivals.ts)
-    if (r.stage < 3) this.events.push(r.stage === 1
+    // a split relay: this mast is awake, the next is marked (the core wakes on the third)
+    const split = b.def.twist === 'split';
+    if (split) {
+      b.split = r.stage;
+      if (r.stage < 3) { const m = SPLIT_MASTS[r.stage]!; b.drift = this.backFrom(m.back, m.across); }
+    }
+    if (r.stage < 3 && split) this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Mast awake', reason: hunted ? 'a tether hunter is coming' : 'fly to the next mast', main: true });
+    else if (r.stage < 3) this.events.push(r.stage === 1
       ? { type: 'storyNotice', tone: 'amber', headline: 'Relay waking', reason: 'Custody traced the uplink', main: true }
       : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: hunted ? 'a tether hunter is coming' : reach ? 'the core is warming' : 'more Custody inbound', main: true });
     const rows = (h: boolean) => wave.filter((w) => !!w.hunter === h).map((w) => ({ variant: w.variant, n: w.n, from: 'ahead' as const }));
@@ -2293,7 +2302,7 @@ export class World implements EncounterHost {
       const dx = a.x - rl.x, dz = a.z - rl.z, d = Math.hypot(dx, dz) || 1;
       a.vx = (dx / d) * PULSE_PUSH; a.vz = (dz / d) * PULSE_PUSH;
       // (thrown past the mast's hold, so the charge runs again while they come back)
-      const out = Math.max(d, GUARD_HOLD + 8);
+      const out = Math.max(d, GUARD_HOLD + 20);
       a.x = rl.x + (dx / d) * out; a.z = rl.z + (dz / d) * out;
       a.snare = Math.max(a.snare, PULSE_SNARE);
     }
@@ -2322,6 +2331,9 @@ export class World implements EncounterHost {
   private guardsSent = false;
   private adriftTold = false;
 
+  /** An offset from where the relay stands, back toward where she came in and across (sim/breakout.ts laneBack). */
+  private backFrom(back: number, across: number): { x: number; z: number } { return laneBack(this.bk!.lane, back, across); }
+
   /** A relay's twist (content/road.ts REACH_RELAYS): the rock on a buried mast, held where it sits; the picket on a guarded one, when she comes near. */
   private stepTwist(rl: { x: number; z: number }): void {
     const tw = this.bk?.def.twist;
@@ -2335,12 +2347,8 @@ export class World implements EncounterHost {
     }
     if (tw === 'adrift') {
       // the mast tumbles on a slow loop out from where it stood: she keeps in its ring as it goes (it steadies once awake)
-      const b = this.bk!, a = (this.runTime / ADRIFT_LOOP) * Math.PI * 2;
-      const ax = b.lane.x === 0 && b.lane.z === 0 ? 1 : 0, d = Math.hypot(b.lane.x, b.lane.z) || 1;
-      // along: back from the gate toward where she came in (never behind the gate); across: square to it
-      const ux = ax || -b.lane.x / d, uz = ax ? 0 : -b.lane.z / d;
-      const along = ADRIFT_OUT + ADRIFT_A * Math.sin(a), across = ADRIFT_B * Math.sin(2 * a);
-      b.drift = { x: ux * along - uz * across, z: uz * along + ux * across };
+      const a = (this.runTime / ADRIFT_LOOP) * Math.PI * 2;
+      this.bk!.drift = this.backFrom(ADRIFT_OUT + ADRIFT_A * Math.sin(a), ADRIFT_B * Math.sin(2 * a));
       if (!this.adriftTold && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < ADRIFT_TELL) {
         this.adriftTold = true;
         this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Relay adrift', reason: 'keep in its ring as it tumbles', main: true });

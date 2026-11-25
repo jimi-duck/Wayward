@@ -3,7 +3,7 @@ import {
   type Material, type Scene, type Texture,
 } from 'three';
 import type { World } from '../sim/world';
-import { AUDIT_R, SAFE_R, relayOf, relayKey } from '../sim/breakout';
+import { AUDIT_R, SAFE_R, relayOf, relayKey, splitMasts } from '../sim/breakout';
 import { RELAY_JAM_R, RELAY_R } from '../sim/traffic';
 import { setBuoyMood } from './monuments';
 import { GANTRY_R } from '../sim/gantry';
@@ -455,6 +455,9 @@ export function buildPort(style: PortStyle = 'frontier', own?: { lamp: Material;
 const MAST_SECTIONS = 6;
 
 /** The Narrows' relay mast: a dark lattice stood off the gate's ring, a band of lamp for each section, lit from the bottom when the key is answered (content/script/narrows.ts). Metres. */
+/** A split relay's masts are small (content/road.ts LEG_RELAYS). */
+const SPLIT_SCALE = 0.62;
+
 export function buildMast(): { body: Group; lamps: Mesh[] } {
   const k = new Kit(), rnd = seeded(71);
   k.cyl('dark', 3.4, 4.2, 2.2, [0, 1, 0], 'y', 12);
@@ -588,6 +591,8 @@ export class BreakoutView {
   private mastLit = 0;
   /** How far an adrift relay is tumbling (0 still, 1 tumbling). */
   private mastTumble = 0;
+  /** A split relay's masts other than the one she wakes now. */
+  private splitOthers: Array<{ g: Group; lamps: Mesh[] }> = [];
   private auditFaced: unknown = null;
   private readonly throat: Mesh;
   private readonly laneRing: Mesh;
@@ -671,6 +676,13 @@ export class BreakoutView {
     this.mast.add(m.body);
     this.mastLamps = m.lamps;
     this.mast.visible = false;
+    // a split relay's other two masts (content/road.ts LEG_RELAYS): the ones woken stay lit, the ones to come stay dark
+    for (let i = 0; i < 2; i++) {
+      const x = buildMast(), g = new Group();
+      g.add(x.body); g.scale.setScalar(SPLIT_SCALE); g.visible = false;
+      this.splitOthers.push({ g, lamps: x.lamps });
+      scene.add(g);
+    }
     this.audit.add(buildAudit());
     this.auditRing = flatRing(AUDIT_R, 0.3, AMBER, 0.3);
     this.auditRing.position.y = 0.4;
@@ -862,6 +874,7 @@ export class BreakoutView {
     // a road gate's relay (the Narrows and every arrival after it): dark until the key is answered, then lit section by section from the bottom over a few seconds
     const relay = relayOf(b);
     this.mast.visible = !!relay;
+    for (const o of this.splitOthers) o.g.visible = false;
     if (relay) {
       this.mast.position.set(relay.x, -2, relay.z);
       // an adrift relay (content/road.ts LEG_RELAYS) tumbles slowly until it is awake, then rights itself
@@ -871,7 +884,27 @@ export class BreakoutView {
       this.mast.rotation.z = this.mastTumble * 0.28 * Math.sin(this.time * 0.23 + 1.3);
       const lit = world.flags.has(relayKey(b.def)) || (b.def.script === 'narrows' && world.flags.has('relay_broadcast'));
       // a relay she wakes herself lights as the uplink charges (sim/uplink.ts): a section at a time, the top at the core
-      const goal = lit ? 1 : b.def.script === 'narrows' ? 0 : world.uplink;
+      const split = b.def.twist === 'split';
+      // (a split relay's mast lights over its own stage)
+      const goal = lit ? 1 : b.def.script === 'narrows' ? 0 : split ? Math.max(0, Math.min(1, world.uplink * 3 - (b.split ?? 0))) : world.uplink;
+      this.mast.scale.setScalar(split ? SPLIT_SCALE : 1);
+      if (split) {
+        const at = Math.min(2, b.split ?? 0), masts = splitMasts(b);
+        let k = 0;
+        masts.forEach((p, i) => {
+          // (the mast she wakes now is the main one, where the relay stands)
+          if (Math.hypot(p.x - relay.x, p.z - relay.z) < 1) return;
+          const o = this.splitOthers[k++];
+          if (!o) return;
+          o.g.visible = true;
+          o.g.position.set(p.x, -2, p.z);
+          const on = lit || i < at;
+          o.lamps.forEach((l, j) => {
+            l.visible = on;
+            if (on) (l.material as MeshBasicMaterial).color.setRGB(0.1, 0.5, 0.62).multiplyScalar(0.9 + 0.2 * Math.sin(this.time * 2 + j + i));
+          });
+        });
+      }
       this.mastLit = goal > this.mastLit ? Math.min(goal, this.mastLit + dt / 2) : goal;
       this.mastLamps.forEach((l, i) => {
         const on = this.mastLit * this.mastLamps.length > i;

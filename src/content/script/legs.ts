@@ -124,6 +124,9 @@ const BELT_ROWS: Row[] = [
   card('bk_box', 'b_kessler', flag('frag_blackbox'), 'story_ada', { holdsJob: true }),
   notice('bk_wall', 'b_kessler', after('bk_box'), 'teal', 'The Wall', 'Ada Aster · died 25 years ago', { wall: 'ada_died' }),
   radio('bk_after', 'b_kessler', after('bk_wall', 2), 'Dov Kessler', 'miners', '“Granddaughter. Hm. I’ll paint her name on the gate.”'),
+  // Aster's relay in Kessler's yard (spaceways plan, step 6): Dov points to it once the wreck has spoken
+  radio('bk_relay_say', 'b_kessler', flag('aster_reached'), 'Dov Kessler', 'miners', '“That dead relay by the gate was the Aster’s. Wake it before you go. She’d want that.”'),
+  { id: 'bk_relay', stop: 'b_kessler', on: relay(), wall: 'relay_b_kessler', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the Aster’s lane is open' } }, main: true, urgent: true },
   objective('bk_gate', 'b_kessler', leave(), 'Jump to Kiln'),
 
   // 5 · Saltmarsh (breather): the first sighting, a river of motes; it turns toward a full tank

@@ -20,8 +20,8 @@ export const RELAY_WAVES: Record<WaveTier, readonly [readonly WaveRow[], readonl
   late: [[{ variant: 'picket', n: 3 }], [{ variant: 'picket', n: 2 }, { variant: 'enforcer', n: 1, hunter: true }]],
 };
 
-/** The road's gates past the Narrows (content/road.ts GATES, counted from 0) at which the late tier starts. */
-export const LATE_FROM = 3;
+/** The road's gates past the Narrows (content/road.ts GATES, counted from 0) at which the late tier starts: the Tollgate (the Breaker has its own fight, and three wrecks there ended pilot runs). */
+export const LATE_FROM = 4;
 
 /** Which tier a relay's waves come from: the first system, a Reach relay, or a gate down the road (0: the first past the Narrows). */
 export function waveTier(first: boolean, reach: boolean, gate: number): WaveTier {
