@@ -1,6 +1,7 @@
 import { TANK_MAX } from './purse';
 import { clamp, lerp } from '../core/math';
 import { BASE_PRICES, type Holder, type Prices, type SystemKind } from '../content/systems';
+import type { RelayTwist } from '../content/road';
 import type { Levels } from './build';
 import type { JobDef, Standing } from './comms';
 import type { EncounterId } from './encounters';
@@ -249,8 +250,8 @@ export interface SortieDef {
   checkpoint?: string;
   /** A road gate: a Warden relay mast stands by the Jump Gate, where the arrival's handshake plays (content/script/arrivals.ts). */
   relay?: boolean;
-  /** A relay's twist (content/road.ts REACH_RELAYS): buried under a rock she mines clear, or guarded by a picket she drives off. */
-  twist?: 'buried' | 'guarded';
+  /** A relay's twist (content/road.ts REACH_RELAYS, LEG_RELAYS): buried under a rock she mines clear, guarded by a picket she drives off, adrift (it tumbles and she follows it), or given (locals wake it, she holds the ring). */
+  twist?: RelayTwist;
   /** The situation playing here (content/situations.ts), as the chart has it now: its tightened variant where the Net holds the system. */
   situation?: string | null;
 }
@@ -429,7 +430,7 @@ const RELAY_OFF = { x: 80, z: -70 };
 /** The relay's ring on the scope (the script hears it within 200, content/script/kit.ts relay()). */
 export const RELAY_MARK_R = 30;
 /** The relay mast of a road gate (the Narrows and every arrival after it), if this sortie has one. */
-export const relayOf = (b: Breakout): { x: number; z: number } | null => (b.def.script === 'narrows' || b.def.relay || b.def.first ? { x: b.lane.x + RELAY_OFF.x, z: b.lane.z + RELAY_OFF.z } : null);
+export const relayOf = (b: Breakout): { x: number; z: number } | null => (b.def.script === 'narrows' || b.def.relay || b.def.first ? { x: b.lane.x + RELAY_OFF.x + (b.drift?.x ?? 0), z: b.lane.z + RELAY_OFF.z + (b.drift?.z ?? 0) } : null);
 /** The flag a woken relay leaves: the first system past Cerro has its own (it has no stop script), every road gate its script's. */
 export const relayKey = (def: { first?: boolean; script?: string }): string => (def.first ? 'relay_first' : `relay_${def.script ?? ''}`);
 
@@ -440,6 +441,8 @@ export const places = (b: Breakout): Waypoint[] => [b.lane, ...(b.port ? [b.port
 export interface Breakout {
   def: SortieDef;
   lane: Waypoint;
+  /** How far an adrift relay has tumbled from where it stood (sim/world.ts stepTwist); none: it stands still. */
+  drift?: { x: number; z: number };
   port: Waypoint | null;
   /** The company's audit dock (the first system past Cerro only): a mark to fly to, never a berth. */
   audit: Waypoint | null;

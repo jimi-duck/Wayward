@@ -16,7 +16,7 @@ const handshake = (id: string, stop: string, reason: string): Row[] => [
 
 export const ARRIVAL_ROWS: Row[] = [
   // ── Arrival 2 · the Rift: flown, not read. The relay is broken; someone talks her through, or nobody does ──
-  objective('ri_obj', 'rift', arrive(), 'Cross the Rift', 'Relay broken · no beacons'),
+  objective('ri_obj', 'rift', arrive(), 'Cross the Rift', 'Relay adrift · no beacons'),
   radio('ri_wren_1', 'rift', free(4), 'Wren Saffi', 'miners', '“Juno, it’s Wren. Gran says you’re ours now. Follow my beacons, and don’t argue with the third one.”', { if: { has: ['wren_trust'] } }),
   radio('ri_wren_2', 'rift', after('ri_wren_1', 12), 'Wren Saffi', 'miners', '“Left of the big hull. That was the Ninefold. My parents flew her. Keep going.”'),
   radio('ri_wren_3', 'rift', after('ri_wren_2', 12), 'Wren Saffi', 'miners', '“Last one. Now you know the way, so you’re one of us. Sorry.”'),
