@@ -170,6 +170,9 @@ const DEEP_ROWS: Row[] = [
   notice('dm_notice', 'd_lantern', arrive(), 'teal', 'Lantern Mile', 'a claim with lamps on it'),
   objective('dm_objective', 'd_lantern', arrive(), 'Lantern Mile · a warm object, moving'),
   analyst('dm_survey', 'd_lantern', 'job_something_dark_won', '“Your warm object has moved four hundred metres since yesterday. Toward the lane. I’d like you to look again.”'),
+  // the claim's relay (spaceways plan, step 6): jammed by the warm thing's static, woken between the bursts
+  radio('dm_relay_say', 'd_lantern', after('dm_objective', 8), ANALYST[0], ANALYST[1], '“There’s a Warden relay on this claim. Whatever’s warm out there jams it in bursts. Work between them.”', { main: true }),
+  { id: 'dm_relay', stop: 'd_lantern', on: relay(), wall: 'relay_d_lantern', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'Lantern Mile’s lane is open' } }, main: true, urgent: true },
   objective('dm_gate', 'd_lantern', leave(), 'Jump to Ninth Fold'),
 
   // 4 · Ninth Fold (turn): Corin Ashe aboard the ferry; the Account's payroll, which is Hester's crews' wages

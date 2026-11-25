@@ -13,10 +13,10 @@ as it can, and does not read. Pilot numbers, not playtests.
 |---|---|---|---|---|---|---|---|
 | torpedo+defence | run | no | 28 | 3 | — | ri_hand_lit, ri_note | none |
 | torpedo+defence | run | no | 32 | 3 | — | ri_note | none |
-| torpedo+defence | bluff | no | 55 | 1 | — | none | none |
-| torpedo+defence | bluff | no | 66 | 3 | — | br_hand_lit, br_note | none |
-| torpedo+defence | fight | yes | 88 | 2 | broadcast, unite, sell, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 87 | 0 | broadcast, unite, sell, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 91 | 4 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | no | 67 | 3 | — | br_hand_lit, br_note | none |
+| torpedo+defence | fight | yes | 92 | 0 | broadcast, unite, sell, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 89 | 0 | broadcast, unite, sell, seal, vanish | none | none |
 
 ## Leg by leg
 
@@ -25,11 +25,11 @@ as it can, and does not read. Pilot numbers, not playtests.
 | The Reach | 21 | 0.0 |
 | The Marches | 10 | 1.0 |
 | The Salvage Belt | 7 | 0.0 |
-| The Drift Deep | 7 | 0.0 |
-| The Breaker Yards | 5 | 0.7 |
-| The Free Ports | 3 | 0.0 |
-| The Hollows | 3 | 0.3 |
-| The Last Lanes | 3 | 0.0 |
+| The Drift Deep | 8 | 0.0 |
+| The Breaker Yards | 7 | 0.8 |
+| The Free Ports | 4 | 0.0 |
+| The Hollows | 6 | 0.3 |
+| The Last Lanes | 4 | 0.0 |
 
 ## Jobs on the road
 
@@ -51,18 +51,18 @@ never chases a goal, so this shows what is reachable, not how often a player win
 | the_witness | 2 | 2 | 0 | 0 |
 | long_walk | 0 | 4 | 0 | 0 |
 | finders_keepers | 0 | 4 | 0 | 0 |
-| something_dark | 2 | 2 | 0 | 0 |
+| something_dark | 4 | 0 | 0 | 0 |
 | missing_payroll | 2 | 2 | 0 | 0 |
 | last_shift | 4 | 0 | 0 | 0 |
 | tarik_bend | 2 | 2 | 0 | 0 |
 | cradle_crew | 2 | 2 | 0 | 0 |
 | needle | 0 | 4 | 0 | 0 |
-| drift_cache | 0 | 3 | 0 | 0 |
-| voice_wire | 0 | 3 | 0 | 0 |
-| kill_zone | 0 | 2 | 1 | 0 |
-| dead_drop | 0 | 2 | 0 | 0 |
-| be_bait | 2 | 0 | 0 | 0 |
-| lose_prefect | 0 | 2 | 0 | 0 |
-| recovery_order | 0 | 2 | 0 | 0 |
+| drift_cache | 0 | 4 | 0 | 0 |
+| voice_wire | 0 | 4 | 0 | 0 |
+| kill_zone | 1 | 1 | 2 | 0 |
+| dead_drop | 0 | 3 | 0 | 0 |
+| be_bait | 3 | 0 | 0 | 0 |
+| lose_prefect | 0 | 3 | 0 | 0 |
+| recovery_order | 1 | 2 | 0 | 0 |
 | sables_crossing | 0 | 0 | 0 | 0 |
-| ring_centre | 0 | 2 | 0 | 0 |
+| ring_centre | 1 | 2 | 0 | 0 |

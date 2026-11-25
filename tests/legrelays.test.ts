@@ -101,3 +101,28 @@ describe('the Belt’s relays', () => {
     expect(w.flags.has('relay_scrapgate')).toBe(true);
   });
 });
+
+describe('the Drift Deep’s relay', () => {
+  it('Lantern Mile: static bursts on a cycle hold the charge, and it runs between them', () => {
+    const w = stop('d_lantern');
+    expect(w.bk!.def.twist).toBe('jammed');
+    hold(w, FLOOR.arrival + 0.5, -300, 0);
+    let ran = 0, held = 0, arcs = 0;
+    for (let i = 0; i < Math.round(28 / STEP); i++) {
+      const before = w.uplink, jam = w.jammed;
+      const m = relayOf(w.bk!)!;
+      w.ship.invuln = 99; w.ship.x = m.x - 15; w.ship.z = m.z; w.ship.vx = w.ship.vz = 0;
+      for (let k = w.aliens.length - 1; k >= 0; k--) if (!w.aliens[k]!.ward) w.aliens.splice(k, 1);
+      w.step(STEP, NO);
+      arcs += w.events.filter((e) => e.type === 'arc').length;
+      w.events.length = 0;
+      const open = w.comms ?? w.call; if (open) w.answer(open.def.choices[0]!.id);
+      if (w.phase !== 'play' || w.uplink >= 1) continue;
+      if (jam && w.jammed) { expect(w.uplink).toBe(before); held++; } else if (!jam && !w.jammed && w.uplink > before) ran++;
+    }
+    expect(held).toBeGreaterThan(60);
+    expect(ran).toBeGreaterThan(60);
+    expect(arcs).toBeGreaterThan(3);
+    expect(w.floor.log.some((l) => l.kind === 'signal' && l.id === 'Relay jammed')).toBe(true);
+  });
+});
