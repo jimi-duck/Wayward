@@ -68,7 +68,7 @@ code carries it.
   her keel to it, and the HUD reads "Waking the relay" with the percentage. The Narrows keeps its scene.
 - **The Reach's relays** (spaceways plan, step 4; `REACH_RELAYS` in `content/road.ts`). Halden's Reach,
   Tallyhouse, Miners' Gap and Copperline each have a relay by the gate, woken the same way (one wave of two
-  patrol fighters at the first stage, `uplinkWave(stage, gate, true)`). The gate holds for it after the
+  patrol fighters at the first stage, the `reach` tier in `content/waves.ts`). The gate holds for it after the
   stop's meeting ("{who} first" comes before "wake the relay"). Ilse points Halden's out once the paper is
   aboard, Brook Tallyhouse's after the spike, Hester's opener Miners' Gap's. Their flags (`relay_<script>`)
   are not GATES', so the lit-relay count in Ada's notes is unchanged. Two twists:
@@ -78,6 +78,18 @@ code carries it.
   - **Guarded** (Copperline): two patrol fighters sit on the mast and move when she comes within
     `GUARD_WAKE` (450 units), with a red "Relay guarded · drive them off the mast". The charge holds while a
     hostile is within `GUARD_HOLD` (65) of the mast; the HUD reads "Drive the guards off the relay".
+- **Waves that grow** (spaceways plan, step 5; `content/waves.ts`). Each relay's waves are rows by tier:
+  `first` (two patrol fighters a stage), `reach` (two at the first stage), `mid` (gates past the Narrows
+  before `LATE_FROM`: two, then a fighter and a lancer) and `late` (three, then two and an enforcer). From
+  `mid` the second wave's heavy hull is a **tether hunter**: it closes on the mast (`HUNT_PULL` 16 u/s on top
+  of its own flying) and holds the charge while it is within `GUARD_HOLD`; the stage notice says "a tether
+  hunter is coming" and the HUD "Drive the hunter off the relay".
+  - **Damping pulse**: once a wake, once the lamps are lit (a third charged), the relay throws every hostile
+    within `PULSE_R` (70) past the mast's hold and snares it 3 s. It goes by itself when a guard or hunter
+    sits on the mast, or when two hostiles crowd the ring while she holds the key. No button.
+  - **Local cover** (`COVER`): Hester's crews at Miners' Gap (if she broke the toll beacon) and at the
+    Breaker (if every crew stood) say so at the first wave, then shoot the nearest hostile within 160 of the
+    mast every 2.5 s for 14.
   The scripted pilot (`tools/pilot.ts`) flies into the ring and sits there, firing on a buried relay's rock.
 - **An awake relay opens the lane** (spaceways plan, step 3). The gate's lane is lit: a soft teal beam
   under the flight plane runs from down the course through the ring and away beyond, with motes flowing

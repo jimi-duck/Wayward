@@ -12,6 +12,7 @@ import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Floor, FLOOR, SCAN_LINE } from './floor';
 import { BURIED_HP, BURIED_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
+import { COVER, COVER_DMG, COVER_EVERY, COVER_R, HUNT_PULL, HUNT_SIT, PULSE_CROWD, PULSE_PUSH, PULSE_R, PULSE_SNARE, waveTier, type CoverRow } from '../content/waves';
 import { Script, type Output } from './script';
 import { derive, SIG_CLUES, relaysLit, relayFlag } from './evidence';
 import { GATES, ON_ROAD, REACH_RELAYS } from '../content/road';
@@ -515,7 +516,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.mainLines = new Set(); this.listenAt = Infinity;
+    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.hunters = new Set(); this.pulsed = false; this.cover = null; this.coverT = 0; this.mainLines = new Set(); this.listenAt = Infinity;
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
@@ -2214,11 +2215,16 @@ export class World implements EncounterHost {
     if (b && !this.laneOpened && b.def.script !== 'narrows' && relayOf(b) && this.flags.has(relayKey(b.def))) this.openLane(this.uplink >= 1);
     if (!rl || !b || this.phase !== 'play') return;
     this.stepTwist(rl);
+    this.stepHunters(rl, dt);
+    this.stepPulse(rl);
+    this.stepCover(rl, dt);
     const r = stepUplink(this.uplink, this.uplinking, !this.uplinkBlock, dt);
     this.uplink = r.charge;
     if (!r.stage) return;
     const gate = b.def.first ? -1 : Math.max(0, GATES.findIndex((g) => g.script === b.def.script) - 1);
     const reach = !!(b.def.script && REACH_RELAYS[b.def.script]);
+    const wave = uplinkWave(r.stage, waveTier(!!b.def.first, reach, gate));
+    const hunted = wave.some((w) => w.hunter);
     // the first system has no stop script: the woken relay is told here, and Sam follows it
     if (r.stage === 3 && b.def.first) {
       this.flags.add(relayKey(b.def));
@@ -2230,9 +2236,78 @@ export class World implements EncounterHost {
     // (elsewhere the last stage is told by the stop's own row: "Warden key accepted", content/script/arrivals.ts)
     if (r.stage < 3) this.events.push(r.stage === 1
       ? { type: 'storyNotice', tone: 'amber', headline: 'Relay waking', reason: 'Custody traced the uplink', main: true }
-      : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: reach ? 'the core is warming' : 'more Custody inbound', main: true });
-    const spawn = uplinkWave(r.stage, gate, reach).map((w) => ({ ...w, from: 'ahead' as const }));
-    if (spawn.length) this.applyOutcome({ text: '', spawn }, 0, []);
+      : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: hunted ? 'a tether hunter is coming' : reach ? 'the core is warming' : 'more Custody inbound', main: true });
+    const rows = (h: boolean) => wave.filter((w) => !!w.hunter === h).map((w) => ({ variant: w.variant, n: w.n, from: 'ahead' as const }));
+    if (rows(false).length) this.applyOutcome({ text: '', spawn: rows(false) }, 0, []);
+    if (hunted) for (const id of this.applyOutcome({ text: '', spawn: rows(true) }, 0, [])) this.hunters.add(id);
+    // the locals she helped come out at the first wave (content/waves.ts COVER)
+    if (r.stage === 1 && !this.cover) {
+      const c = COVER.find((x) => x.stop === b.def.script && this.flags.has(x.flag));
+      if (c) { this.cover = c; this.radioLines(`cover_${c.stop}`, tr(c.from), c.caller, [tr(c.line)], 2); }
+    }
+  }
+
+  /** Tether hunters (content/waves.ts): hulls that make for the mast and hold the charge while they sit by it. */
+  private hunters = new Set<number>();
+  /** Whether this wake's damping pulse has gone, and the locals flying cover (null: none), and their next shot. */
+  private pulsed = false;
+  private cover: CoverRow | null = null;
+  private coverT = 0;
+
+  /** Hostile hulls near the mast that hold the charge: a guard on a guarded relay, or a tether hunter. */
+  private onMast(rl: { x: number; z: number }): Alien[] {
+    const guarded = this.bk?.def.twist === 'guarded';
+    return this.aliens.filter((a) => !a.ward && !a.fleeing && (guarded || this.hunters.has(a.id)) && Math.hypot(a.x - rl.x, a.z - rl.z) < GUARD_HOLD);
+  }
+
+  /** A hunter closes on the mast on top of its own flying, and settles there. */
+  private stepHunters(rl: { x: number; z: number }, dt: number): void {
+    if (!this.hunters.size) return;
+    for (const id of this.hunters) {
+      const al = this.aliens.find((a) => a.id === id);
+      if (!al) { this.hunters.delete(id); continue; }
+      if (al.fleeing || al.snare > 0) continue;
+      const dx = rl.x - al.x, dz = rl.z - al.z, d = Math.hypot(dx, dz);
+      if (d <= HUNT_SIT) continue;
+      const v = Math.min(d - HUNT_SIT, HUNT_PULL * dt);
+      al.x += (dx / d) * v; al.z += (dz / d) * v;
+    }
+  }
+
+  /**
+   * The relay's damping pulse: once a wake, once its lamps are lit, it throws the hulls crowding its ring outward and snares them a
+   * moment. It goes by itself when a guard or a hunter sits on the mast, or when the ring is crowded while she holds the key.
+   */
+  private stepPulse(rl: { x: number; z: number }): void {
+    if (this.pulsed || this.uplink < 1 / 3 - 1e-9) return;
+    const near = this.aliens.filter((a) => !a.ward && !a.fleeing && this.committed(a) && Math.hypot(a.x - rl.x, a.z - rl.z) < PULSE_R);
+    if (!this.onMast(rl).length && !(this.uplinking && near.length >= PULSE_CROWD)) return;
+    this.pulsed = true;
+    for (const a of near) {
+      const dx = a.x - rl.x, dz = a.z - rl.z, d = Math.hypot(dx, dz) || 1;
+      a.vx = (dx / d) * PULSE_PUSH; a.vz = (dz / d) * PULSE_PUSH;
+      // (thrown past the mast's hold, so the charge runs again while they come back)
+      const out = Math.max(d, GUARD_HOLD + 8);
+      a.x = rl.x + (dx / d) * out; a.z = rl.z + (dz / d) * out;
+      a.snare = Math.max(a.snare, PULSE_SNARE);
+    }
+    this.events.push({ type: 'relayPulse', x: rl.x, z: rl.z, r: PULSE_R });
+    this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Relay pulse', reason: 'the ring is clear for now', main: true });
+  }
+
+  /** The locals' guns: a shot at the nearest hostile hull near the mast every few seconds, for the rest of the wake. */
+  private stepCover(rl: { x: number; z: number }, dt: number): void {
+    if (!this.cover || (this.coverT -= dt) > 0) return;
+    this.coverT = COVER_EVERY;
+    let best: Alien | null = null, bd = COVER_R;
+    for (const a of this.aliens) {
+      if (a.ward || a.fleeing || !this.committed(a)) continue;
+      const d = Math.hypot(a.x - rl.x, a.z - rl.z);
+      if (d < bd) { bd = d; best = a; }
+    }
+    if (!best) return;
+    this.events.push({ type: 'flak', x: best.x, y: best.y, z: best.z });
+    this.hurtAlien(best, COVER_DMG, 'hazard', best.x, best.y, best.z);
   }
 
   /** A buried relay's rock, while it sits on the mast (sim/uplink.ts); whether a guarded relay's picket has been sent. */
@@ -2266,7 +2341,8 @@ export class World implements EncounterHost {
     const rl = this.wakeRelay;
     if (!rl) return '';
     if (this.burial) return 'Mine the relay clear';
-    if (this.bk?.def.twist === 'guarded' && this.aliens.some((a) => !a.ward && !a.fleeing && Math.hypot(a.x - rl.x, a.z - rl.z) < GUARD_HOLD)) return 'Drive the guards off the relay';
+    const sit = this.onMast(rl);
+    if (sit.length) return this.bk?.def.twist === 'guarded' && !sit.some((a) => this.hunters.has(a.id)) ? 'Drive the guards off the relay' : 'Drive the hunter off the relay';
     return '';
   }
 

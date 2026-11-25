@@ -8,6 +8,8 @@
 // keeps its own scene (sim/narrows.ts). Plain data: the relay's flag is the
 // only thing saved.
 
+import { RELAY_WAVES, type WaveRow, type WaveTier } from '../content/waves';
+
 /** Units from the mast within which the uplink charges. */
 export const UPLINK_R = 45;
 /** Seconds in the ring to wake a relay. */
@@ -30,14 +32,9 @@ export function stepUplink(charge: number, inRing: boolean, free: boolean, dt: n
   return { charge: next, stage: after > before ? after : 0 };
 }
 
-/** The wave a stage sends, by how far down the road the gate is (0: the first after the Narrows; -1: the first system past Cerro, two patrol fighters a stage; `reach`: a Reach relay). Bigger later; none at the core. */
-export function uplinkWave(stage: number, gate: number, reach = false): Array<{ variant: 'picket' | 'lancer' | 'enforcer'; n: number }> {
-  if (stage >= UPLINK_STAGES) return [];
-  // the Reach: one wave of two, at the first stage (the plan's table)
-  if (reach) return stage === 1 ? [{ variant: 'picket', n: 2 }] : [];
-  if (gate < 0) return [{ variant: 'picket', n: 2 }];
-  const pickets = Math.min(4, 2 + Math.floor(gate / 2));
-  return stage === 1 ? [{ variant: 'picket', n: pickets }] : [{ variant: 'picket', n: pickets - 1 }, { variant: gate >= 3 ? 'enforcer' : 'lancer', n: 1 }];
+/** The wave a stage sends, from the relay's tier (content/waves.ts RELAY_WAVES): bigger down the road; none at the core. */
+export function uplinkWave(stage: number, tier: WaveTier): readonly WaveRow[] {
+  return stage >= 1 && stage < UPLINK_STAGES ? RELAY_WAVES[tier][stage - 1]! : [];
 }
 
 /** A hauler captain on the radio, a few seconds after a relay has opened its gate: the lane is live again (one per gate, in turn). */

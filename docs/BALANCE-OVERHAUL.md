@@ -11,25 +11,25 @@ as it can, and does not read. Pilot numbers, not playtests.
 
 | Strategy | Policy | Threshold | Minutes | Wrecks | Endings open | Dropped | Twice |
 |---|---|---|---|---|---|---|---|
-| torpedo+defence | run | yes | 168 | 2 | vanish | none | none |
-| torpedo+defence | run | yes | 158 | 0 | vanish | none | none |
-| torpedo+defence | bluff | yes | 154 | 0 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | bluff | yes | 166 | 0 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 190 | 3 | broadcast, unite, sell, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 160 | 0 | broadcast, unite, sell, trade, seal, vanish | none | none |
+| torpedo+defence | run | no | 29 | 3 | — | ri_hand_lit, ri_note | none |
+| torpedo+defence | run | no | 41 | 3 | — | sg_hand_lit, sg_note | none |
+| torpedo+defence | bluff | yes | 87 | 2 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 82 | 1 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 88 | 0 | broadcast, unite, sell, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 83 | 0 | broadcast, unite, sell, seal, vanish | none | none |
 
 ## Leg by leg
 
 | Leg | Minutes (mean) | Wrecks (mean) |
 |---|---|---|
-| The Reach | 22 | 0.3 |
-| The Marches | 18 | 0.2 |
-| The Salvage Belt | 23 | 0.3 |
-| The Drift Deep | 20 | 0.0 |
-| The Breaker Yards | 21 | 0.0 |
-| The Free Ports | 20 | 0.0 |
-| The Hollows | 24 | 0.0 |
-| The Last Lanes | 18 | 0.0 |
+| The Reach | 20 | 0.0 |
+| The Marches | 9 | 0.5 |
+| The Salvage Belt | 9 | 0.5 |
+| The Drift Deep | 7 | 0.0 |
+| The Breaker Yards | 6 | 0.2 |
+| The Free Ports | 5 | 0.0 |
+| The Hollows | 6 | 0.3 |
+| The Last Lanes | 5 | 0.0 |
 
 ## Jobs on the road
 
@@ -40,69 +40,29 @@ never chases a goal, so this shows what is reachable, not how often a player win
 |---|---|---|---|---|
 | nothing_to_declare | 2 | 2 | 2 | 0 |
 | pirate_toll | 0 | 2 | 4 | 0 |
-| lifeboat_wake | 4 | 0 | 2 | 0 |
-| keep_distance | 2 | 2 | 2 | 0 |
+| lifeboat_wake | 0 | 4 | 2 | 0 |
+| keep_distance | 4 | 0 | 2 | 0 |
 | wanted | 2 | 2 | 2 | 0 |
 | missing_shift | 2 | 2 | 2 | 0 |
 | heavy_tanker | 2 | 2 | 2 | 0 |
-| one_filter | 2 | 2 | 2 | 0 |
-| ransom_crew | 2 | 2 | 2 | 0 |
-| wreck_remembered | 2 | 2 | 2 | 0 |
-| the_witness | 4 | 0 | 2 | 0 |
-| long_walk | 0 | 4 | 2 | 0 |
-| finders_keepers | 0 | 4 | 2 | 0 |
-| something_dark | 4 | 0 | 2 | 0 |
-| missing_payroll | 2 | 2 | 2 | 0 |
-| last_shift | 4 | 0 | 2 | 0 |
-| tarik_bend | 2 | 2 | 2 | 0 |
-| cradle_crew | 2 | 2 | 2 | 0 |
-| needle | 0 | 4 | 2 | 0 |
-| drift_cache | 0 | 4 | 2 | 0 |
-| voice_wire | 0 | 4 | 2 | 0 |
-| kill_zone | 1 | 1 | 4 | 0 |
-| dead_drop | 0 | 4 | 2 | 0 |
-| be_bait | 4 | 0 | 2 | 0 |
-| lose_prefect | 0 | 4 | 2 | 0 |
-| recovery_order | 2 | 2 | 2 | 0 |
+| one_filter | 2 | 2 | 1 | 0 |
+| ransom_crew | 2 | 2 | 1 | 0 |
+| wreck_remembered | 2 | 2 | 1 | 0 |
+| the_witness | 3 | 1 | 1 | 0 |
+| long_walk | 0 | 4 | 1 | 0 |
+| finders_keepers | 0 | 4 | 0 | 0 |
+| something_dark | 3 | 1 | 0 | 0 |
+| missing_payroll | 2 | 2 | 0 | 0 |
+| last_shift | 4 | 0 | 0 | 0 |
+| tarik_bend | 2 | 2 | 0 | 0 |
+| cradle_crew | 2 | 2 | 0 | 0 |
+| needle | 0 | 4 | 0 | 0 |
+| drift_cache | 0 | 4 | 0 | 0 |
+| voice_wire | 0 | 4 | 0 | 0 |
+| kill_zone | 0 | 2 | 2 | 0 |
+| dead_drop | 0 | 4 | 0 | 0 |
+| be_bait | 4 | 0 | 0 | 0 |
+| lose_prefect | 0 | 4 | 0 | 0 |
+| recovery_order | 1 | 2 | 1 | 0 |
 | sables_crossing | 0 | 0 | 0 | 0 |
-| ring_centre | 4 | 0 | 2 | 0 |
-
-## Notes, 22 November 2026 (a shorter road, 58 stops)
-
-After the living-world cuts (#584 to #587: the Reach in five stops, the Marches in six, four Thren breathers folded, no port or chance cards on the road): all six runs reached the Threshold, in 154 to 190 minutes (about 10 minutes less than before), with 5 wrecks in all (3 in one fight run). Nothing dropped or played twice. `follow_cyrite` is off the road. No balance changes.
-
-## Notes, 17 November 2026 (make the run bite, first pass)
-
-The owner found Story a breeze. This run came after: Story hulls lead their shots (`STORY_EDGE` aim 0.5 in this run; 0.6 and a fifth more fire since), hunted stops spool the drive 1.8 times longer, a hit knocks 1.5 s off the spool, ten jobs got a twist, and twists and waves bring up to two more hulls down the road (`depthExtra`). All six runs reached the Threshold, two with a wreck; nothing dropped or played twice. The person pilot (`BALANCE-PERSON.md`) is the measure for the difficulty.
-
-## Notes, 16 November 2026 (open items: Coldvault, Lose the Prefect, Sable's Crossing)
-
-Five of six runs reached the Threshold; the sixth is the run policy stall at the Narrows, a pilot steering fault. Nothing was dropped or played twice.
-
-- **Coldvault.** A named captain who found her before a wreck, his call still waiting, was never recorded as met, so he never rested and waited at the very stop the tow brought her back to (`World.captainResult` now counts it his). The bluff run that wrecked there twice now gets through.
-- **Lose the Prefect.** Its patrol orbited at 64, inside its own scan reach of 62 plus the drop, so the drop could not be held unseen: 0 of 5 wins from the stop, 5 of 5 at a ring of 90 (as Nothing to Declare). The Free Ports chase moved from Gilt Market to Penny Cross, so no chase sits on a sneak (a test holds it). The person pilot wins it 3 of 3; this pilot never flies a goal.
-- **Sable's Crossing.** Not a bug: it rings only after "Take Sable home" at Palecairn, and these pilots take the first answer. Flown with Sable aboard it was won 5 of 5.
-
-## Notes, 16 November 2026 (a chase on every leg, echoes, no stop skipped)
-
-This run came after Part A of the story improvement plan (#526: shortcut places no longer skip a stop) and Part B: one fixed hunted stop on every leg (`LEG_CHASES` in `content/road.ts`, never a breather or the Ghostcinder crossing), and echo radio lines from earlier choices. Four of six runs reached the Threshold.
-
-No main beat was dropped or played twice on a finished run. Coldvault is now always visited, so the Recovery Order rings (2 won, 2 lost; it never rang before) and Kill Zone was won twice.
-
-The chases cost no wrecks on any leg. Legs got a little shorter because a chased stop's named captain stands down for the chase instead of stacking on it.
-
-One bluff run (seed 5017) wrecked twice at Coldvault: Vance's patrol after the Recovery Order, then Calloway, and the journey ended there. The person pilot (`docs/BALANCE-PERSON.md`) flew Coldvault three times with no wreck, so this is watched, not tuned. The run policy stall at the Narrows (seed 5017) is the same pilot steering fault as before.
-
-No balance changes.
-
-## Notes, 14 November 2026 (story direction, Phases 2 to 4 and the Belt chase)
-
-This run came after the divided resistance, the rising Thren, Thane's hearing, the Belt chase and the cuts (#506 to #510). Five of six runs reached the Threshold.
-
-No main beat was dropped or played twice on a finished run. The new main cards all played: the Saints at Tamsin Field, the knot at Stillwater and the hearing at Gilt Market.
-
-The Belt chase brings Offices pickets fast at Kiln and Tarik's Lamps. In the pilot it cost no wrecks, and the Belt still took 18 minutes. That says the chase is pressure, not a wall. A real player who lingers to mine will feel it more than the pilot, which jumps as soon as it can.
-
-One run (run policy, seed 5017) still stalls at the Narrows. It stalled there before Phase 1 as well, and the cause is the pilot's steering, not the story.
-
-No balance changes.
+| ring_centre | 2 | 2 | 0 | 0 |

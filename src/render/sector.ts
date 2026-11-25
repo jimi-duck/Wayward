@@ -560,6 +560,12 @@ export class Sector {
           this.fx.ring(e.x, 0.2, e.z, e.r * 1.6, [0.9, 0.7, 2.2], 0.9);
           this.fx.ring(e.x, 0.2, e.z, e.r * 0.8, [0.9, 0.7, 2.2], 1.5);
           break;
+        case 'relayPulse':
+          this.fx.flash(e.x, 0.4, e.z, 6, [0.6, 2.6, 2.4], 0.3);
+          this.fx.ring(e.x, 0.2, e.z, e.r, [0.6, 2.6, 2.4], 0.7);
+          this.fx.ring(e.x, 0.2, e.z, e.r * 0.6, [0.6, 2.6, 2.4], 1.1);
+          this.rig.shake(0.2);
+          break;
         case 'flak':
           this.fx.flash(e.x, e.y, e.z, 1.6, BOLT, 0.08);
           this.fx.burst(e.x, e.y, e.z, 8, LANCE_SPARK, 10, 0.18, 0.3);
