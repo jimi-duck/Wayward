@@ -10,31 +10,30 @@ Pilot numbers, not playtests.
 
 | Seed | Threshold | Flying (min) | Reading cards (min) | Total (min) | Cards | Named captains met | Wrecks |
 |---|---|---|---|---|---|---|---|
-| 5000 | yes | 204 | 34 | 239 | 113 | 15 | 1 |
-| 5017 | yes | 173 | 36 | 209 | 119 | 25 | 0 |
-| 5034 | yes | 169 | 34 | 203 | 111 | 20 | 0 |
+| 5000 | yes | 117 | 27 | 144 | 83 | 21 | 0 |
+| 5017 | yes | 122 | 29 | 151 | 91 | 26 | 2 |
+| 5034 | yes | 113 | 27 | 140 | 85 | 20 | 0 |
 
 ## Leg by leg (mean minutes, reading included)
 
 | Leg | Minutes | Of which reading |
 |---|---|---|
-| The Reach | 32 | 4 |
-| The Marches | 23 | 4 |
-| The Salvage Belt | 31 | 5 |
-| The Drift Deep | 27 | 6 |
-| The Breaker Yards | 29 | 5 |
-| The Free Ports | 26 | 5 |
-| The Hollows | 28 | 3 |
-| The Last Lanes | 20 | 3 |
+| The Reach | 26 | 2 |
+| The Marches | 16 | 4 |
+| The Salvage Belt | 21 | 4 |
+| The Drift Deep | 18 | 5 |
+| The Breaker Yards | 24 | 5 |
+| The Free Ports | 14 | 4 |
+| The Hollows | 15 | 2 |
+| The Last Lanes | 11 | 2 |
 
 ## Jobs, taken every time
 
 | Job | Won | Lost | Other |
 |---|---|---|---|
-| nothing_to_declare | 3 | 0 | 0 |
-| follow_cyrite | 3 | 0 | 0 |
+| nothing_to_declare | 2 | 1 | 0 |
 | pirate_toll | 3 | 0 | 0 |
-| lifeboat_wake | 2 | 1 | 0 |
+| lifeboat_wake | 3 | 0 | 0 |
 | keep_distance | 3 | 0 | 0 |
 | wanted | 3 | 0 | 0 |
 | missing_shift | 3 | 0 | 0 |
@@ -42,21 +41,21 @@ Pilot numbers, not playtests.
 | one_filter | 3 | 0 | 0 |
 | ransom_crew | 0 | 3 | 0 |
 | wreck_remembered | 3 | 0 | 0 |
-| the_witness | 3 | 0 | 0 |
-| long_walk | 3 | 0 | 0 |
-| finders_keepers | 3 | 0 | 0 |
+| the_witness | 0 | 3 | 0 |
+| long_walk | 2 | 1 | 0 |
+| finders_keepers | 1 | 2 | 0 |
 | something_dark | 3 | 0 | 0 |
 | missing_payroll | 3 | 0 | 0 |
-| last_shift | 2 | 1 | 0 |
-| tarik_bend | 1 | 2 | 0 |
+| last_shift | 0 | 3 | 0 |
+| tarik_bend | 3 | 0 | 0 |
 | cradle_crew | 3 | 0 | 0 |
-| needle | 3 | 0 | 0 |
+| needle | 2 | 1 | 0 |
 | drift_cache | 3 | 0 | 0 |
 | voice_wire | 3 | 0 | 0 |
-| kill_zone | 2 | 1 | 0 |
+| kill_zone | 1 | 2 | 0 |
 | dead_drop | 3 | 0 | 0 |
 | be_bait | 3 | 0 | 0 |
 | lose_prefect | 3 | 0 | 0 |
-| recovery_order | 1 | 2 | 0 |
+| recovery_order | 0 | 3 | 0 |
 | sables_crossing | 0 | 0 | 3 |
 | ring_centre | 3 | 0 | 0 |

@@ -1,7 +1,8 @@
 import type { Comer } from '../../sim/gathering';
 import type { Row } from '../../sim/script';
 import { CPS } from './broadcasts';
-import { ANALYST, PIKE, after, free, notice, objective, radio } from './kit';
+import { ALLIES } from '../waves';
+import { ANALYST, PIKE, after, free, notice, objective, radio, relay } from './kit';
 
 // ── the Threshold: the last stop as a scene ───────────────────────────────
 // Wane Rest, before the last gate (docs/STORY_DIRECTION.md, plan "The Threshold
@@ -10,7 +11,8 @@ import { ANALYST, PIKE, after, free, notice, objective, radio } from './kit';
 //   2 · they gather: the Thren close round the gate
 //   3 · who came: one line from each ally the player built, and a rival
 //   4 · Calloway holds the gate herself (her last card, sim/calloway.ts)
-//   5 · Ada's note 8, and Juno's answer (ui/ending.ts)
+//   5 · the last relay, by the gate: woken under her guns, allies on the ring (spaceways plan, step 7)
+//   · Ada's note 8, and Juno's answer (ui/ending.ts)
 //   6 · the choice: the six endings, each a political future
 // The scene's last notice is a main beat: the gate holds until it has played.
 
@@ -35,11 +37,13 @@ export const THRESHOLD_ROWS: Row[] = [
   came('th_analyst', 24, ANALYST[0], ANALYST[1], '“Unofficially: I brought the sealed reports. All of them.”', ['thread_survey_2']),
   came('th_saints', 27, 'Sister Vera Hask · the Hollow Saints', 'gutter', '“The Saints are here. Point us at something, or don’t. We came anyway.”', ['saints_helped']),
   came('th_val', 30, 'Val · a broker of the Gutter', 'gutter', '“Still buying, love. I’ll be at the back.”', ['broker']),
-  { id: 'th_alone', stop: STOP, on: after('th_gather', 8), if: { not: ['thread_line_2', 'thread_crews_3', 'job_long_walk_won', 'drift_walked', 'thread_survey_2', 'saints_helped'] }, do: { notice: { tone: 'white', headline: 'Nobody came', reason: 'just you, and them' } } },
+  { id: 'th_alone', stop: STOP, on: after('th_gather', 8), if: { not: [...ALLIES] }, do: { notice: { tone: 'white', headline: 'Nobody came', reason: 'just you, and them' } } },
 
   // 4 · Calloway: the gate is hers
   { ...notice('th_ready', STOP, after('th_gather', 40), 'teal', 'The Threshold', 'Calloway holds the gate'), main: true },
-  objective('th_go', STOP, after('th_ready', 0), 'Fly to the Threshold', 'Calloway holds the gate herself'),
+  objective('th_go', STOP, after('th_ready', 0), 'Fly to the Threshold', 'Wake the last relay · Calloway holds the gate'),
+  // 5 · the last relay (spaceways plan, step 7): woken under her guns, whoever came on the ring; the gate opens on it
+  { id: 'th_relay', stop: STOP, on: relay(), wall: 'relay_l_wane', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the Threshold is open' } }, main: true, urgent: true },
 ];
 
 /** Who came, as hulls (sim/gathering.ts): each ally's line brings them in, and they line the lane to the gate. */

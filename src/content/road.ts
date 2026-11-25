@@ -153,7 +153,7 @@ export const REACH_RELAYS: Record<string, { twist?: RelayTwist }> = {
 };
 
 /** A relay's twist: what is in the way of waking it (sim/world.ts stepTwist). */
-export type RelayTwist = 'buried' | 'guarded' | 'adrift' | 'given' | 'split' | 'jammed' | 'hungry' | 'refused' | 'loud' | 'chorus';
+export type RelayTwist = 'buried' | 'guarded' | 'adrift' | 'given' | 'split' | 'jammed' | 'hungry' | 'refused' | 'loud' | 'chorus' | 'threshold';
 
 /**
  * The legs' relays (spaceways plan, step 6), past the Narrows: a stop that gains one, or a road gate (GATES, a relay already) that
@@ -180,6 +180,8 @@ export const LEG_RELAYS: Record<string, { twist?: RelayTwist }> = {
   h_forge: { twist: 'loud' },
   // the Last Lanes: Lastlight's relay, the last before the Threshold; every relay she lit on the way answers, and it wakes the faster for each
   l_lastlight: { twist: 'chorus' },
+  // the Threshold's own relay, by Wane Rest's gate (spaceways plan, step 7): woken under Calloway's guns, with whoever came flying cover
+  l_wane: { twist: 'threshold' },
 };
 
 export const GATES: Array<{ script: string; purpose: string; /** What is going on at this gate, for the pause card (as RoadStop.brief). */ brief?: string }> = [

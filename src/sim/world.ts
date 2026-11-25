@@ -12,7 +12,7 @@ import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Floor, FLOOR, SCAN_LINE } from './floor';
 import { HUNGRY_FEED, chorusRate, LOUD_FILL, LOUD_KNOT, LOUD_MAX, LOUD_QUIET_RATE, LOUD_STILL, STARVED, JAM_CYCLE, JAM_QUIET, JAM_STRIKE, HUNTED_RATE, SPLIT_MASTS, ADRIFT_A, ADRIFT_B, ADRIFT_LOOP, ADRIFT_OUT, ADRIFT_TELL, BURIED_HP, BURIED_R, GIVEN_FLAG, GIVEN_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
-import { COVER, COVER_DMG, COVER_EVERY, COVER_R, HUNT_PULL, HUNT_SIT, PULSE_CROWD, PULSE_PUSH, PULSE_R, PULSE_SNARE, waveTier, type CoverRow } from '../content/waves';
+import { ALLIES, COVER, COVER_DMG, COVER_EVERY, COVER_R, HUNT_PULL, HUNT_SIT, PULSE_CROWD, PULSE_PUSH, PULSE_R, PULSE_SNARE, THRESHOLD_COVER, WAVE_CROWD, waveTier, type CoverRow } from '../content/waves';
 import { Script, type Output } from './script';
 import { derive, SIG_CLUES, relaysLit, relayFlag, wardenRelays } from './evidence';
 import { GATES, ON_ROAD, REACH_RELAYS } from '../content/road';
@@ -516,7 +516,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.adriftTold = false; this.jamTold = false; this.hungryTold = false; this.twistTold = false; this.noise = 0; this.knots = 0; this.jamT = 0; this.hunters = new Set(); this.waveHulls = new Set(); this.pulsed = false; this.cover = null; this.coverT = 0; this.mainLines = new Set(); this.listenAt = Infinity;
+    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.adriftTold = false; this.jamTold = false; this.hungryTold = false; this.twistTold = false; this.noise = 0; this.knots = 0; this.jamT = 0; this.hunters = new Set(); this.waveHulls = new Set(); this.pulsed = false; this.cover = null; this.coverT = 0; this.allies = 1; this.mainLines = new Set(); this.listenAt = Infinity;
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
@@ -2241,9 +2241,13 @@ export class World implements EncounterHost {
     const gate = b.def.first ? -1 : Math.max(0, GATES.findIndex((g) => g.script === b.def.script) - 1);
     const reach = !!(b.def.script && REACH_RELAYS[b.def.script]);
     // (nothing human lives in the Hollows: at a loud relay the Thren its noise draws are the whole fight, World.stepNoise)
-    const loud = b.def.twist === 'loud';
-    const wave = loud ? [] : uplinkWave(r.stage, waveTier(!!b.def.first, reach, gate));
-    const hunted = wave.some((w) => w.hunter);
+    // (and at the Threshold, Calloway's own guns are the fight: content/script/threshold.ts)
+    const loud = b.def.twist === 'loud', last = b.def.twist === 'threshold';
+    const wave = loud || last ? [] : uplinkWave(r.stage, waveTier(!!b.def.first, reach, gate));
+    // (topped up to WAVE_CROWD hostile hulls on her, hunters first: a hot system sends fewer)
+    let room = Math.max(0, WAVE_CROWD - this.aliens.filter((a) => !a.ward && !a.fleeing && this.committed(a)).length);
+    const sized = [...wave].sort((p, q) => Number(!!q.hunter) - Number(!!p.hunter)).map((w) => { const n = Math.min(w.n, room); room -= n; return { ...w, n }; }).filter((w) => w.n > 0);
+    const hunted = sized.some((w) => w.hunter);
     // the first system has no stop script: the woken relay is told here, and Sam follows it
     if (r.stage === 3 && b.def.first) {
       this.flags.add(relayKey(b.def));
@@ -2261,14 +2265,16 @@ export class World implements EncounterHost {
     }
     if (r.stage < 3 && split) this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Mast awake', reason: hunted ? 'a tether hunter is coming' : 'fly to the next mast', main: true });
     else if (r.stage < 3) this.events.push(r.stage === 1
-      ? { type: 'storyNotice', tone: 'amber', headline: 'Relay waking', reason: loud ? 'its song carries' : 'Custody traced the uplink', main: true }
-      : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: hunted ? 'a tether hunter is coming' : reach || loud ? 'the core is warming' : 'more Custody inbound', main: true });
-    const rows = (h: boolean) => wave.filter((w) => !!w.hunter === h).map((w) => ({ variant: w.variant, n: w.n, from: 'ahead' as const }));
+      ? { type: 'storyNotice', tone: 'amber', headline: 'Relay waking', reason: loud ? 'its song carries' : last ? 'the last lane stirs' : 'Custody traced the uplink', main: true }
+      : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: hunted ? 'a tether hunter is coming' : reach || loud || last ? 'the core is warming' : 'more Custody inbound', main: true });
+    const rows = (h: boolean) => sized.filter((w) => !!w.hunter === h).map((w) => ({ variant: w.variant, n: w.n, from: 'ahead' as const }));
     if (rows(false).length) for (const id of this.applyOutcome({ text: '', spawn: rows(false) }, 0, [])) this.waveHulls.add(id);
     if (hunted) for (const id of this.applyOutcome({ text: '', spawn: rows(true) }, 0, [])) { this.hunters.add(id); this.waveHulls.add(id); }
     // the locals she helped come out at the first wave (content/waves.ts COVER)
     if (r.stage === 1 && !this.cover) {
-      const c = COVER.find((x) => x.stop === b.def.script && this.flags.has(x.flag));
+      // (at the Threshold, everyone who came: their guns fire the faster for each)
+      this.allies = last ? ALLIES.filter((f) => this.flags.has(f)).length : 1;
+      const c = last ? (this.allies ? THRESHOLD_COVER : undefined) : COVER.find((x) => x.stop === b.def.script && this.flags.has(x.flag));
       if (c) { this.cover = c; this.radioLines(`cover_${c.stop}`, tr(c.from), c.caller, [tr(c.line)], 2); }
     }
   }
@@ -2281,6 +2287,8 @@ export class World implements EncounterHost {
   private pulsed = false;
   private cover: CoverRow | null = null;
   private coverT = 0;
+  /** How many guns fly the cover (the allies who came, at the Threshold; 1 elsewhere). */
+  private allies = 1;
 
   /** Hostile hulls near the mast that hold the charge: a guard on a guarded relay, or a tether hunter. */
   private onMast(rl: { x: number; z: number }): Alien[] {
@@ -2326,7 +2334,7 @@ export class World implements EncounterHost {
   /** The locals' guns: a shot at the nearest hostile hull near the mast every few seconds, for the rest of the wake. */
   private stepCover(rl: { x: number; z: number }, dt: number): void {
     if (!this.cover || (this.coverT -= dt) > 0) return;
-    this.coverT = COVER_EVERY;
+    this.coverT = COVER_EVERY / Math.max(1, this.allies);
     let best: Alien | null = null, bd = COVER_R;
     for (const a of this.aliens) {
       if (a.ward || a.fleeing || !this.committed(a)) continue;
