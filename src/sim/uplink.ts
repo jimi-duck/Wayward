@@ -31,13 +31,18 @@ export const ADRIFT_TELL = 450;
 export const GIVEN_R = 260;
 /** The flag that says the moot stood with her, so Kessel's crews wake its relay (content/road.ts LEG_RELAYS). */
 export const GIVEN_FLAG = 'pact_holdfast';
+/** A split relay's three masts, each woken in turn (one a stage): units back from the gate and across from where the first stands. */
+export const SPLIT_MASTS: ReadonlyArray<{ back: number; across: number }> = [{ back: 0, across: 0 }, { back: 130, across: -80 }, { back: 70, across: 95 }];
 /** Stages of the wake: lamps, the dish, the core. */
 export const UPLINK_STAGES = 3;
 
-/** One step of the charge: the new charge (0 to 1) and the stage just reached (1 to 3), or 0. */
-export function stepUplink(charge: number, inRing: boolean, free: boolean, dt: number): { charge: number; stage: number } {
-  if (!inRing || !free || charge >= 1) return { charge, stage: 0 };
-  const next = Math.min(1, charge + dt / UPLINK_TIME);
+/** How fast the charge runs while a tether hunter sits on the mast (content/waves.ts): it drags, it does not stop. */
+export const HUNTED_RATE = 1 / 3;
+
+/** One step of the charge at `rate` (1 free, 0 held): the new charge (0 to 1) and the stage just reached (1 to 3), or 0. */
+export function stepUplink(charge: number, inRing: boolean, rate: number, dt: number): { charge: number; stage: number } {
+  if (!inRing || rate <= 0 || charge >= 1) return { charge, stage: 0 };
+  const next = Math.min(1, charge + (dt * rate) / UPLINK_TIME);
   const before = Math.floor(charge * UPLINK_STAGES + 1e-9), after = Math.floor(next * UPLINK_STAGES + 1e-9);
   return { charge: next, stage: after > before ? after : 0 };
 }

@@ -3,7 +3,7 @@ import { STEP } from '../src/core/loop';
 import { newJourney, sortieDef } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { FLOOR } from '../src/sim/floor';
-import { uplinkWave, GUARD_HOLD } from '../src/sim/uplink';
+import { uplinkWave, GUARD_HOLD, HUNTED_RATE, UPLINK_TIME } from '../src/sim/uplink';
 import { RELAY_WAVES, waveTier } from '../src/content/waves';
 
 // Waves that grow (spaceways plan, step 5): each relay's waves are rows by tier; from the middle legs the second brings a tether hunter
@@ -63,8 +63,8 @@ describe('waves that grow', () => {
     expect(n('mid')).toBeGreaterThan(n('reach'));
   });
 
-  it('a tether hunter makes for the mast and holds the charge; the pulse throws it out once', () => {
-    const w = stop('scrapgate');
+  it('a tether hunter makes for the mast and drags the charge; the pulse throws it out once', () => {
+    const w = stop('breaker');
     const rl = w.wakeRelay;
     expect(rl).toBeTruthy();
     const notices: string[] = [];
@@ -78,9 +78,13 @@ describe('waves that grow', () => {
     (w as unknown as { pulsed: boolean }).pulsed = true;
     for (let i = 0; i < 40 && w.uplinkBlock !== 'Drive the hunter off the relay'; i++) sit(w, 0.5, rl!.x - 20, rl!.z, notices);
     expect(w.uplinkBlock).toBe('Drive the hunter off the relay');
+    // it drags the charge to a third, it does not stop it
     const held = w.uplink;
-    sit(w, 2, rl!.x - 20, rl!.z, notices);
-    expect(w.uplink).toBe(held);
+    sit(w, 3, rl!.x - 20, rl!.z, notices);
+    if (w.uplinkBlock === 'Drive the hunter off the relay') {
+      expect(w.uplink).toBeGreaterThan(held);
+      expect(w.uplink - held).toBeLessThan((3 / UPLINK_TIME) * HUNTED_RATE + 1e-6);
+    }
     // a fresh pulse throws it past the mast's hold
     (w as unknown as { pulsed: boolean }).pulsed = false;
     sit(w, STEP, rl!.x - 20, rl!.z, notices);

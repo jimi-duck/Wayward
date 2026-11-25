@@ -153,16 +153,20 @@ export const REACH_RELAYS: Record<string, { twist?: RelayTwist }> = {
 };
 
 /** A relay's twist: what is in the way of waking it (sim/world.ts stepTwist). */
-export type RelayTwist = 'buried' | 'guarded' | 'adrift' | 'given';
+export type RelayTwist = 'buried' | 'guarded' | 'adrift' | 'given' | 'split';
 
 /**
  * The legs' relays (spaceways plan, step 6), past the Narrows: a stop that gains one, or a road gate (GATES, a relay already) that
  * gains a twist. `adrift`: the mast tumbles on a slow loop and she keeps in its ring as it goes. `given`: once the moot stood with
- * her (`pact_holdfast`), Kessel's crews wake it and she holds the ring while they do; else she wakes it herself.
+ * her (`pact_holdfast`), Kessel's crews wake it and she holds the ring while they do; else she wakes it herself. `split`: three small
+ * masts, one a stage; each woken mast sends its wave, and the next is marked.
  */
 export const LEG_RELAYS: Record<string, { twist?: RelayTwist }> = {
   m_kessel: { twist: 'given' },
   rift: { twist: 'adrift' },
+  // the Belt: Aster's own relay in Kessler's yard, and the Scrapgate's, split across three masts of welded hulls
+  b_kessler: {},
+  scrapgate: { twist: 'split' },
 };
 
 export const GATES: Array<{ script: string; purpose: string; /** What is going on at this gate, for the pause card (as RoadStop.brief). */ brief?: string }> = [

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import { newJourney, sortieDef } from '../src/sim/journey';
 import { World } from '../src/sim/world';
-import { relayOf } from '../src/sim/breakout';
+import { relayOf, splitMasts } from '../src/sim/breakout';
 import { FLOOR } from '../src/sim/floor';
 import { GIVEN_R, UPLINK_R } from '../src/sim/uplink';
 
@@ -72,5 +72,32 @@ describe('the Marches’ relays', () => {
       hold(w, 10, -off, 0);
       expect(w.uplink > was, `pact ${flags.length}`).toBe(runs);
     }
+  });
+});
+
+describe('the Belt’s relays', () => {
+  it('Kessler’s Wreck has a relay, the Scrapgate a split one', () => {
+    expect(stop('b_kessler').bk!.def.relay).toBe(true);
+    expect(stop('scrapgate').bk!.def.twist).toBe('split');
+  });
+
+  it('the Scrapgate: three masts, one a stage, each marked in turn, and the gate opens on the third', () => {
+    const w = stop('scrapgate');
+    hold(w, FLOOR.arrival + 0.5, -300, 0);
+    const masts = splitMasts(w.bk!);
+    expect(masts.length).toBe(3);
+    const seen: Array<{ x: number; z: number }> = [];
+    for (let i = 0; i < 3; i++) {
+      const m = relayOf(w.bk!)!;
+      expect(Math.hypot(m.x - masts[i]!.x, m.z - masts[i]!.z)).toBeLessThan(0.01);
+      seen.push(m);
+      // a stage at this mast
+      for (let k = 0; k < 40 && (w.bk!.split ?? 0) <= i && !w.flags.has('relay_scrapgate'); k++) hold(w, 0.5, -15, 0);
+    }
+    expect(w.flags.has('relay_scrapgate') || w.uplink >= 1).toBe(true);
+    // far apart: she flies between them
+    expect(Math.hypot(seen[0]!.x - seen[1]!.x, seen[0]!.z - seen[1]!.z)).toBeGreaterThan(100);
+    hold(w, 4, -15, 0);
+    expect(w.flags.has('relay_scrapgate')).toBe(true);
   });
 });
