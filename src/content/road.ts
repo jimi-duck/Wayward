@@ -145,11 +145,24 @@ export const LEGS: RoadStop[][] = [ROAD, MARCHES, BELT, DEEP, YARDS, PORTS, HOLL
  * Their flags (`relay_<script>`) are not the road's gates (GATES), so the lit-relay count Ada's notes speak of is unchanged.
  * `twist`: buried (a rock sits on the mast, she mines it clear first), guarded (a Custody picket sits on it).
  */
-export const REACH_RELAYS: Record<string, { twist?: 'buried' | 'guarded' }> = {
+export const REACH_RELAYS: Record<string, { twist?: RelayTwist }> = {
   halden: {},
   marlow: {},
   branford: { twist: 'buried' },
   copperline: { twist: 'guarded' },
+};
+
+/** A relay's twist: what is in the way of waking it (sim/world.ts stepTwist). */
+export type RelayTwist = 'buried' | 'guarded' | 'adrift' | 'given';
+
+/**
+ * The legs' relays (spaceways plan, step 6), past the Narrows: a stop that gains one, or a road gate (GATES, a relay already) that
+ * gains a twist. `adrift`: the mast tumbles on a slow loop and she keeps in its ring as it goes. `given`: once the moot stood with
+ * her (`pact_holdfast`), Kessel's crews wake it and she holds the ring while they do; else she wakes it herself.
+ */
+export const LEG_RELAYS: Record<string, { twist?: RelayTwist }> = {
+  m_kessel: { twist: 'given' },
+  rift: { twist: 'adrift' },
 };
 
 export const GATES: Array<{ script: string; purpose: string; /** What is going on at this gate, for the pause card (as RoadStop.brief). */ brief?: string }> = [

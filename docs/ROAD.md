@@ -90,6 +90,13 @@ code carries it.
   - **Local cover** (`COVER`): Hester's crews at Miners' Gap (if she broke the toll beacon) and at the
     Breaker (if every crew stood) say so at the first wave, then shoot the nearest hostile within 160 of the
     mast every 2.5 s for 14.
+- **The legs' relays** (spaceways plan, step 6; `LEG_RELAYS` in `content/road.ts`), one leg at a time.
+  - **The Marches.** Kessel Hold gains a relay with the **given** twist: once the moot stood with her
+    (`pact_holdfast`), Oduya's crews wake it, and the charge runs while she holds within `GIVEN_R` (260) of the
+    mast; else Oduya tells her to wake it herself. The Rift's relay is **adrift**: the mast tumbles on a slow figure
+    of eight (`ADRIFT_LOOP` 110 s, 60 by 30 units, centred 70 back from where it stood, never behind the gate) and
+    steadies once awake; "Relay adrift · keep in its ring as it tumbles" when she comes within 450. A woken relay's
+    row is told wherever she is (the script's `relay` site).
   The scripted pilot (`tools/pilot.ts`) flies into the ring and sits there, firing on a buried relay's rock.
 - **An awake relay opens the lane** (spaceways plan, step 3). The gate's lane is lit: a soft teal beam
   under the flight plane runs from down the course through the ring and away beyond, with motes flowing

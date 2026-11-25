@@ -23,7 +23,7 @@ function stop(script: string, flags: string[] = []): World {
     const def = sortieDef(j);
     if (def.script !== script) continue;
     j.carry.flags.push('archive_woke', 'ship_stolen', 'on_road', 'lock_lifted', 'dead_gate_seen', ...flags);
-    return new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, situation: null, place: null, thren: 0, calloway: Infinity }, carry: j.carry });
+    return new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), blockade: false, checkpoint: undefined, pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, situation: null, place: null, thren: 0, calloway: Infinity }, carry: j.carry });
   }
   throw new Error(`no stop ${script}`);
 }
@@ -64,14 +64,14 @@ describe('waves that grow', () => {
   });
 
   it('a tether hunter makes for the mast and holds the charge; the pulse throws it out once', () => {
-    const w = stop('rift');
+    const w = stop('scrapgate');
     const rl = w.wakeRelay;
     expect(rl).toBeTruthy();
     const notices: string[] = [];
     settle(w, rl!.x, rl!.z);
     // to the second stage: the hunter comes
     w.uplink = 0.66;
-    sit(w, 1, rl!.x - 20, rl!.z, notices);
+    for (let i = 0; i < 20 && !hunters(w).size; i++) sit(w, 0.5, rl!.x - 20, rl!.z, notices);
     expect(hunters(w).size).toBe(1);
     const id = [...hunters(w)][0]!;
     // it closes on the mast (the pulse is spent first, so it may sit)

@@ -157,7 +157,9 @@ describe('waking a relay (the uplink, plan "Reopen the spaceways")', () => {
     const notices: string[] = [];
     const step = (secs: number, x: number, z: number) => {
       for (let i = 0; i < Math.round(secs / STEP); i++) {
-        w.ship.invuln = 99; w.ship.x = x; w.ship.z = z; w.ship.vx = w.ship.vz = 0;
+        // (the Rift's relay is adrift, content/road.ts LEG_RELAYS: she keeps her place against it as it tumbles)
+        const m = relayOf(w.bk!)!;
+        w.ship.invuln = 99; w.ship.x = x + m.x - rl.x; w.ship.z = z + m.z - rl.z; w.ship.vx = w.ship.vz = 0;
         w.step(STEP, NO);
         for (const e of w.events) if (e.type === 'storyNotice') notices.push(e.headline);
         w.events.length = 0;

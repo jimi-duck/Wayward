@@ -11,7 +11,7 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Floor, FLOOR, SCAN_LINE } from './floor';
-import { BURIED_HP, BURIED_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
+import { ADRIFT_A, ADRIFT_B, ADRIFT_LOOP, ADRIFT_OUT, ADRIFT_TELL, BURIED_HP, BURIED_R, GIVEN_FLAG, GIVEN_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
 import { COVER, COVER_DMG, COVER_EVERY, COVER_R, HUNT_PULL, HUNT_SIT, PULSE_CROWD, PULSE_PUSH, PULSE_R, PULSE_SNARE, waveTier, type CoverRow } from '../content/waves';
 import { Script, type Output } from './script';
 import { derive, SIG_CLUES, relaysLit, relayFlag } from './evidence';
@@ -516,7 +516,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.hunters = new Set(); this.pulsed = false; this.cover = null; this.coverT = 0; this.mainLines = new Set(); this.listenAt = Infinity;
+    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.adriftTold = false; this.hunters = new Set(); this.pulsed = false; this.cover = null; this.coverT = 0; this.mainLines = new Set(); this.listenAt = Infinity;
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
@@ -2205,7 +2205,13 @@ export class World implements EncounterHost {
   /** She is in the relay's ring and the charge is running. */
   get uplinking(): boolean {
     const rl = this.wakeRelay;
-    return !!rl && this.phase === 'play' && !this.floor.hush && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < UPLINK_R;
+    // (a given relay: the locals wake it, and she only has to hold near it)
+    return !!rl && this.phase === 'play' && !this.floor.hush && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < (this.given ? GIVEN_R : UPLINK_R);
+  }
+
+  /** A given relay (content/road.ts LEG_RELAYS) whose locals stand with her: they wake it while she holds near. */
+  get given(): boolean {
+    return this.bk?.def.twist === 'given' && this.flags.has(GIVEN_FLAG);
   }
 
   /** The uplink: inside the relay's ring the charge runs; each stage is told, and the first two send a wave. */
@@ -2314,6 +2320,7 @@ export class World implements EncounterHost {
   private burial: Bulwark | null = null;
   private buried = false;
   private guardsSent = false;
+  private adriftTold = false;
 
   /** A relay's twist (content/road.ts REACH_RELAYS): the rock on a buried mast, held where it sits; the picket on a guarded one, when she comes near. */
   private stepTwist(rl: { x: number; z: number }): void {
@@ -2324,6 +2331,19 @@ export class World implements EncounterHost {
       if (this.burial && !this.field.bulwarks.includes(this.burial)) {
         this.burial = null;
         this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Relay clear', reason: 'hold in its ring', main: true });
+      }
+    }
+    if (tw === 'adrift') {
+      // the mast tumbles on a slow loop out from where it stood: she keeps in its ring as it goes (it steadies once awake)
+      const b = this.bk!, a = (this.runTime / ADRIFT_LOOP) * Math.PI * 2;
+      const ax = b.lane.x === 0 && b.lane.z === 0 ? 1 : 0, d = Math.hypot(b.lane.x, b.lane.z) || 1;
+      // along: back from the gate toward where she came in (never behind the gate); across: square to it
+      const ux = ax || -b.lane.x / d, uz = ax ? 0 : -b.lane.z / d;
+      const along = ADRIFT_OUT + ADRIFT_A * Math.sin(a), across = ADRIFT_B * Math.sin(2 * a);
+      b.drift = { x: ux * along - uz * across, z: uz * along + ux * across };
+      if (!this.adriftTold && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < ADRIFT_TELL) {
+        this.adriftTold = true;
+        this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Relay adrift', reason: 'keep in its ring as it tumbles', main: true });
       }
     }
     if (tw === 'guarded' && !this.guardsSent && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < GUARD_WAKE) {
@@ -2484,7 +2504,8 @@ export class World implements EncounterHost {
   private scriptCtx(busy: Busy, t: number) {
     const b = this.bk!, s = this.ship;
     // a relay she wakes herself is reached when it is awake (sim/uplink.ts); the Narrows' when she comes near
-    const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit, relay: b.def.script === 'narrows' || this.uplink >= 1 ? relayOf(b) : null };
+    // (a woken relay is told wherever she is: a given one wakes while she holds further off, an adrift one tumbles away)
+    const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit, relay: b.def.script === 'narrows' ? relayOf(b) : this.uplink >= 1 ? { x: this.ship.x, z: this.ship.z } : null };
     for (const p of stopPlaces(STORY_PLACES, b.def.script, this.flags)) sites[p.id] = placeAt(p, b);
     return {
       t, arrived: this.desk.arrived, busy, free: this.scriptFree(busy, t), slow: this.stageSlow(), tank: this.tankCap ? this.fuel / this.tankCap : 0, flags: this.flags,

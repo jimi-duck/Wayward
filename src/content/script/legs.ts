@@ -1,5 +1,5 @@
 import type { Row } from '../../sim/script';
-import { ACCOUNTS, after, ANALYST, arrive, card, flag, free, HESTER, leave, main, notice, objective, PIKE, QUILL, radio, SAM, settle, wall } from './kit';
+import { ACCOUNTS, after, ANALYST, arrive, card, flag, free, HESTER, leave, main, notice, objective, PIKE, QUILL, radio, relay, SAM, settle, wall } from './kit';
 
 // ── the road past the Narrows: the legs' scripts ───────────────────────────
 // Seven legs, seven stops each, in the order of the Beat Map
@@ -42,6 +42,10 @@ const MARCHES_ROWS: Row[] = [
   main('mk_moot', 'm_kessel', after('rs_moot_val', 3), 'story_moot'),
   pike('mk_pike_won', 'm_kessel', 'job_keep_distance_won', '“Clean copy. Somebody walks home past a checkpoint tonight.”', { if: { not: ['job_keep_distance_sell'] } }),
   pike('mk_pike_sold', 'm_kessel', 'job_keep_distance_sell', '“You sold the timings. The Line will hear who to.”'),
+  // Kessel's relay (spaceways plan, step 6): given, if the moot stood with her (content/road.ts LEG_RELAYS)
+  radio('mk_relay_given', 'm_kessel', flag('story_moot'), 'Councillor Oduya', 'miners', '“Our crews are on the dead relay by your gate. Keep Custody off them while they wake it.”', { if: { has: ['pact_holdfast'] }, main: true }),
+  radio('mk_relay_own', 'm_kessel', flag('story_moot'), 'Councillor Oduya', 'miners', '“There’s a dead relay by your gate. Wake it yourself. Kessel won’t stand in your way.”', { if: { not: ['pact_holdfast'] }, main: true }),
+  { id: 'mk_relay', stop: 'm_kessel', on: relay(), wall: 'relay_m_kessel', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'Kessel’s lane is open' } }, main: true, urgent: true },
   objective('mk_gate', 'm_kessel', leave(), 'Jump to Tamsin Field'),
 
   // 3 · Tamsin Field (work): the Account's first call (Wanted: Alive); Calloway only watches here (content/script/arc.ts)

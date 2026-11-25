@@ -586,6 +586,8 @@ export class BreakoutView {
   private readonly mast = new Group();
   private readonly mastLamps: Mesh[];
   private mastLit = 0;
+  /** How far an adrift relay is tumbling (0 still, 1 tumbling). */
+  private mastTumble = 0;
   private auditFaced: unknown = null;
   private readonly throat: Mesh;
   private readonly laneRing: Mesh;
@@ -862,6 +864,11 @@ export class BreakoutView {
     this.mast.visible = !!relay;
     if (relay) {
       this.mast.position.set(relay.x, -2, relay.z);
+      // an adrift relay (content/road.ts LEG_RELAYS) tumbles slowly until it is awake, then rights itself
+      const tumble = b.def.twist === 'adrift' && !world.flags.has(relayKey(b.def)) ? 1 : 0;
+      this.mastTumble += (tumble - this.mastTumble) * Math.min(1, dt * 0.8);
+      this.mast.rotation.x = this.mastTumble * 0.35 * Math.sin(this.time * 0.31);
+      this.mast.rotation.z = this.mastTumble * 0.28 * Math.sin(this.time * 0.23 + 1.3);
       const lit = world.flags.has(relayKey(b.def)) || (b.def.script === 'narrows' && world.flags.has('relay_broadcast'));
       // a relay she wakes herself lights as the uplink charges (sim/uplink.ts): a section at a time, the top at the core
       const goal = lit ? 1 : b.def.script === 'narrows' ? 0 : world.uplink;

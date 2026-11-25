@@ -1,0 +1,76 @@
+import { describe, expect, it } from 'vitest';
+import { STEP } from '../src/core/loop';
+import { newJourney, sortieDef } from '../src/sim/journey';
+import { World } from '../src/sim/world';
+import { relayOf } from '../src/sim/breakout';
+import { FLOOR } from '../src/sim/floor';
+import { GIVEN_R, UPLINK_R } from '../src/sim/uplink';
+
+// The legs' relays (spaceways plan, step 6): the Marches. Kessel Hold gains a relay that the moot's crews wake if it stood with her
+// (given); the Rift's relay is adrift, tumbling on a slow loop, and she keeps in its ring as it goes.
+
+const NO = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' } as const;
+
+function stop(script: string, flags: string[] = []): World {
+  const n = newJourney(5, false, 'road').chart.systems.length;
+  for (let i = 1; i < n; i++) {
+    const j = newJourney(5, false, 'road');
+    const l = [...j.chart.systems].sort((a, b) => a.col - b.col);
+    j.trail = l.slice(0, i + 1).map((x) => x.id); j.at = l[i]!.id; j.status = 'sortie'; j.dest = null;
+    if (sortieDef(j).script !== script) continue;
+    j.carry.flags.push('archive_woke', 'ship_stolen', 'on_road', 'lock_lifted', 'dead_gate_seen', ...flags);
+    return new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), blockade: false, checkpoint: undefined, pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, situation: null, place: null, thren: 0, calloway: Infinity }, carry: j.carry });
+  }
+  throw new Error(`no stop ${script}`);
+}
+
+/** Hold her at an offset from the relay (where it is now) for a while, answering what comes and clearing hostiles. */
+function hold(w: World, secs: number, dx: number, dz: number): void {
+  for (let i = 0; i < Math.round(secs / STEP); i++) {
+    const m = relayOf(w.bk!)!;
+    w.ship.invuln = 99; w.ship.x = m.x + dx; w.ship.z = m.z + dz; w.ship.vx = w.ship.vz = 0;
+    for (let k = w.aliens.length - 1; k >= 0; k--) if (!w.aliens[k]!.ward) w.aliens.splice(k, 1);
+    w.step(STEP, NO);
+    w.events.length = 0;
+    const open = w.comms ?? w.call;
+    if (open) w.answer(open.def.choices[0]!.id);
+  }
+}
+
+describe('the Marches’ relays', () => {
+  it('Kessel Hold has a given relay, the Rift an adrift one', () => {
+    expect(stop('m_kessel').bk!.def.twist).toBe('given');
+    expect(stop('m_kessel').bk!.def.relay).toBe(true);
+    expect(stop('rift').bk!.def.twist).toBe('adrift');
+  });
+
+  it('the Rift: the mast tumbles away from where it stood, she keeps in its ring, and woken it steadies', () => {
+    const w = stop('rift');
+    hold(w, FLOOR.arrival + 0.5, -300, 0);
+    const a = relayOf(w.bk!)!;
+    hold(w, 20, -20, 0);
+    const b = relayOf(w.bk!)!;
+    expect(Math.hypot(a.x - b.x, a.z - b.z)).toBeGreaterThan(30);
+    expect(w.floor.log.some((l) => l.kind === 'signal' && l.id === 'Relay adrift')).toBe(true);
+    // it never drifts behind its gate: always nearer the way in than the gate is
+    const lane = w.bk!.lane;
+    expect(Math.hypot(b.x, b.z)).toBeLessThan(Math.hypot(lane.x, lane.z) + 120);
+    hold(w, 40, -20, 0);
+    expect(w.flags.has('relay_rift')).toBe(true);
+    const c = relayOf(w.bk!)!;
+    hold(w, 10, -20, 0);
+    const d = relayOf(w.bk!)!;
+    expect(Math.hypot(c.x - d.x, c.z - d.z)).toBeLessThan(0.01);
+  });
+
+  it('Kessel Hold: with the moot behind her, the crews wake it while she holds off; without, it waits for her key', () => {
+    const off = (UPLINK_R + GIVEN_R) / 2;
+    for (const [flags, runs] of [[['pact_holdfast'], true], [[], false]] as const) {
+      const w = stop('m_kessel', [...flags]);
+      hold(w, FLOOR.arrival + 0.5, -400, 0);
+      const was = w.uplink;
+      hold(w, 10, -off, 0);
+      expect(w.uplink > was, `pact ${flags.length}`).toBe(runs);
+    }
+  });
+});

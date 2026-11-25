@@ -11,25 +11,25 @@ as it can, and does not read. Pilot numbers, not playtests.
 
 | Strategy | Policy | Threshold | Minutes | Wrecks | Endings open | Dropped | Twice |
 |---|---|---|---|---|---|---|---|
-| torpedo+defence | run | no | 29 | 3 | — | ri_hand_lit, ri_note | none |
-| torpedo+defence | run | no | 41 | 3 | — | sg_hand_lit, sg_note | none |
-| torpedo+defence | bluff | yes | 87 | 2 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | bluff | yes | 82 | 1 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 88 | 0 | broadcast, unite, sell, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 83 | 0 | broadcast, unite, sell, seal, vanish | none | none |
+| torpedo+defence | run | yes | 91 | 5 | unite, vanish | none | none |
+| torpedo+defence | run | no | 44 | 4 | — | sg_hand_lit, sg_note | none |
+| torpedo+defence | bluff | yes | 87 | 0 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 86 | 1 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 89 | 0 | broadcast, unite, sell, seal, vanish | none | none |
+| torpedo+defence | fight | no | 61 | 1 | — | none | none |
 
 ## Leg by leg
 
 | Leg | Minutes (mean) | Wrecks (mean) |
 |---|---|---|
 | The Reach | 20 | 0.0 |
-| The Marches | 9 | 0.5 |
-| The Salvage Belt | 9 | 0.5 |
-| The Drift Deep | 7 | 0.0 |
-| The Breaker Yards | 6 | 0.2 |
-| The Free Ports | 5 | 0.0 |
+| The Marches | 11 | 0.3 |
+| The Salvage Belt | 11 | 0.7 |
+| The Drift Deep | 9 | 0.0 |
+| The Breaker Yards | 8 | 0.3 |
+| The Free Ports | 6 | 0.2 |
 | The Hollows | 6 | 0.3 |
-| The Last Lanes | 5 | 0.0 |
+| The Last Lanes | 6 | 0.0 |
 
 ## Jobs on the road
 
@@ -41,28 +41,28 @@ never chases a goal, so this shows what is reachable, not how often a player win
 | nothing_to_declare | 2 | 2 | 2 | 0 |
 | pirate_toll | 0 | 2 | 4 | 0 |
 | lifeboat_wake | 0 | 4 | 2 | 0 |
-| keep_distance | 4 | 0 | 2 | 0 |
+| keep_distance | 3 | 1 | 2 | 0 |
 | wanted | 2 | 2 | 2 | 0 |
 | missing_shift | 2 | 2 | 2 | 0 |
 | heavy_tanker | 2 | 2 | 2 | 0 |
-| one_filter | 2 | 2 | 1 | 0 |
-| ransom_crew | 2 | 2 | 1 | 0 |
-| wreck_remembered | 2 | 2 | 1 | 0 |
-| the_witness | 3 | 1 | 1 | 0 |
-| long_walk | 0 | 4 | 1 | 0 |
-| finders_keepers | 0 | 4 | 0 | 0 |
-| something_dark | 3 | 1 | 0 | 0 |
-| missing_payroll | 2 | 2 | 0 | 0 |
-| last_shift | 4 | 0 | 0 | 0 |
-| tarik_bend | 2 | 2 | 0 | 0 |
-| cradle_crew | 2 | 2 | 0 | 0 |
-| needle | 0 | 4 | 0 | 0 |
-| drift_cache | 0 | 4 | 0 | 0 |
-| voice_wire | 0 | 4 | 0 | 0 |
-| kill_zone | 0 | 2 | 2 | 0 |
-| dead_drop | 0 | 4 | 0 | 0 |
-| be_bait | 4 | 0 | 0 | 0 |
-| lose_prefect | 0 | 4 | 0 | 0 |
-| recovery_order | 1 | 2 | 1 | 0 |
+| one_filter | 2 | 2 | 2 | 0 |
+| ransom_crew | 2 | 2 | 2 | 0 |
+| wreck_remembered | 2 | 2 | 2 | 0 |
+| the_witness | 2 | 2 | 2 | 0 |
+| long_walk | 0 | 4 | 2 | 0 |
+| finders_keepers | 0 | 4 | 1 | 0 |
+| something_dark | 3 | 1 | 1 | 0 |
+| missing_payroll | 2 | 2 | 1 | 0 |
+| last_shift | 4 | 0 | 1 | 0 |
+| tarik_bend | 2 | 2 | 1 | 0 |
+| cradle_crew | 2 | 2 | 1 | 0 |
+| needle | 0 | 4 | 1 | 0 |
+| drift_cache | 0 | 3 | 1 | 0 |
+| voice_wire | 0 | 3 | 1 | 0 |
+| kill_zone | 0 | 1 | 3 | 0 |
+| dead_drop | 0 | 3 | 1 | 0 |
+| be_bait | 3 | 0 | 1 | 0 |
+| lose_prefect | 0 | 3 | 1 | 0 |
+| recovery_order | 1 | 1 | 2 | 0 |
 | sables_crossing | 0 | 0 | 0 | 0 |
-| ring_centre | 2 | 2 | 0 | 0 |
+| ring_centre | 2 | 1 | 1 | 0 |

@@ -21,6 +21,16 @@ export const BURIED_HP = 150;
 export const GUARDS = 2;
 export const GUARD_WAKE = 450;
 export const GUARD_HOLD = 65;
+/** An adrift relay's tumble: a slow figure of eight (seconds a loop, its half-widths along and across, and how far out from the mast's stand it is centred). */
+export const ADRIFT_LOOP = 110;
+export const ADRIFT_A = 60;
+export const ADRIFT_B = 30;
+export const ADRIFT_OUT = 70;
+/** How near she comes before an adrift relay is told, and how near the mast she holds the ring while locals wake a given one. */
+export const ADRIFT_TELL = 450;
+export const GIVEN_R = 260;
+/** The flag that says the moot stood with her, so Kessel's crews wake its relay (content/road.ts LEG_RELAYS). */
+export const GIVEN_FLAG = 'pact_holdfast';
 /** Stages of the wake: lamps, the dish, the core. */
 export const UPLINK_STAGES = 3;
 
