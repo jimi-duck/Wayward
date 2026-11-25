@@ -307,6 +307,9 @@ const PORTS_ROWS: Row[] = [
   // drawing the pickets off (standalone): the Guild gunship answers
   radio('fm_gun', 'f_mirren', flag('job_be_bait_won'), 'Guild gunship', 'guild', '“Three down. The pier is open. The Guild owes you one.”'),
   radio('fm_gun_warn', 'f_mirren', flag('job_be_bait_warn'), 'Guild gunship', 'guild', '“You warned them. We saw. Mind which Guild ports you dock at.”'),
+  // the pier's relay (spaceways plan, step 6): refused; Mirren asks her to leave it dark as she comes to it
+  card('fm_dark', 'f_mirren', { on: 'near', site: 'mast', within: 150 }, 'story_mirren_relay', { main: true }),
+  { id: 'fm_relay', stop: 'f_mirren', on: relay(), wall: 'relay_f_mirren', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the pier is charted now' } }, main: true, urgent: true, if: { not: ['relay_dark_f_mirren'] } },
   objective('fm_gate', 'f_mirren', leave(), 'Jump to Gilt Market'),
 
   // 5 · Lucky Haven (breather): people who live with them; Thren glass for sale; children in the damping field

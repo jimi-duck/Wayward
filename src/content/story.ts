@@ -186,6 +186,7 @@ const GIST: Record<string, string> = {
   "story_tollgate": "Calloway has closed the gate behind you",
   "story_voice": "The Voice kept the lane keys",
   "story_thren": "The Thren follow the Cyrite you carry",
+  "story_mirren_relay": "Waking a relay would expose a hidden pier",
   "story_echo_sable": "Echo and Sable each ask a favour",
   "story_aide": "The Governor’s aide asks your plan",
   "story_toll": "The Last Toll wants payment",
@@ -693,6 +694,16 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'A ledger-keeper’s skiff · a locked box',
     choices: [
       { id: 'swear', label: 'Take the list', tone: 'help', hint: 'The names go in the file.', win: { text: 'She lets you read it · the witnesses go in the file', flag: ['frag_witnesses', 'clue_sig_ports', 'forty_held'], standing: { guild: 1 } } },
+    ],
+  }),
+  story({
+    id: 'story_mirren_relay', kind: 'plea', caller: 'guild',
+    from: 'Old Mirren · Mirren’s Pier', title: 'A relay over a hidden pier',
+    text: '“That relay is dark on purpose, Juno. It hides the pier. Wake it and the lane is yours, and Custody finds us by morning.”',
+    cargo: 'Mirren’s Pier · off every chart since the Severance',
+    choices: [
+      { id: 'wake', label: 'Wake it', tone: 'trade', hint: 'The lane opens. The pier is on the charts.', win: { text: 'The pier will be seen · wake the relay', flag: 'relay_ok_f_mirren', standing: { guild: -1 } } },
+      { id: 'dark', label: 'Leave it dark', tone: 'help', hint: 'The long way round burns jump fluid.', win: { text: 'Dark it stays · the long way round', flag: 'relay_dark_f_mirren', fuel: -6, standing: { guild: 1 } } },
     ],
   }),
   story({

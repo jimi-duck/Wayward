@@ -13,10 +13,10 @@ as it can, and does not read. Pilot numbers, not playtests.
 |---|---|---|---|---|---|---|---|
 | torpedo+defence | run | no | 34 | 3 | — | none | none |
 | torpedo+defence | run | no | 32 | 3 | — | ri_hand_lit, ri_note | none |
-| torpedo+defence | bluff | yes | 94 | 4 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | bluff | yes | 95 | 2 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 95 | 4 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 97 | 2 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 98 | 2 | broadcast, unite, sell, seal, vanish | none | none |
 | torpedo+defence | fight | yes | 95 | 0 | broadcast, unite, sell, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 96 | 0 | broadcast, unite, sell, seal, vanish | none | none |
 
 ## Leg by leg
 
@@ -28,7 +28,7 @@ as it can, and does not read. Pilot numbers, not playtests.
 | The Drift Deep | 8 | 0.0 |
 | The Breaker Yards | 10 | 0.7 |
 | The Free Ports | 6 | 0.0 |
-| The Hollows | 6 | 0.3 |
+| The Hollows | 7 | 0.7 |
 | The Last Lanes | 5 | 0.0 |
 
 ## Jobs on the road

@@ -2199,6 +2199,8 @@ export class World implements EncounterHost {
   get wakeRelay(): { x: number; z: number } | null {
     const b = this.bk;
     if (!b || b.def.script === 'narrows' || this.uplink >= 1 || this.flags.has(relayKey(b.def)) || (b.def.first && !painted(this.flags))) return null;
+    // a refused relay she agreed to leave dark (content/road.ts LEG_RELAYS)
+    if (b.def.twist === 'refused' && this.flags.has(`relay_dark_${b.def.script}`)) return null;
     return relayOf(b);
   }
 
@@ -2402,6 +2404,7 @@ export class World implements EncounterHost {
     if (!rl) return '';
     if (this.burial) return 'Mine the relay clear';
     if (this.jammed) return 'Wait for the static to pass';
+    if (this.bk?.def.twist === 'refused' && !this.flags.has(`relay_ok_${this.bk.def.script}`)) return 'Hear the locals out first';
     if (this.bk?.def.twist === 'hungry' && this.fuel <= 0.05) return STARVED;
     const sit = this.onMast(rl);
     if (sit.length) return this.bk?.def.twist === 'guarded' && !sit.some((a) => this.hunters.has(a.id)) ? 'Drive the guards off the relay' : 'Drive the hunter off the relay';
@@ -2547,7 +2550,7 @@ export class World implements EncounterHost {
     const b = this.bk!, s = this.ship;
     // a relay she wakes herself is reached when it is awake (sim/uplink.ts); the Narrows' when she comes near
     // (a woken relay is told wherever she is: a given one wakes while she holds further off, an adrift one tumbles away)
-    const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit, relay: b.def.script === 'narrows' ? relayOf(b) : this.uplink >= 1 ? { x: this.ship.x, z: this.ship.z } : null };
+    const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit, mast: relayOf(b), relay: b.def.script === 'narrows' ? relayOf(b) : this.uplink >= 1 ? { x: this.ship.x, z: this.ship.z } : null };
     for (const p of stopPlaces(STORY_PLACES, b.def.script, this.flags)) sites[p.id] = placeAt(p, b);
     return {
       t, arrived: this.desk.arrived, busy, free: this.scriptFree(busy, t), slow: this.stageSlow(), tank: this.tankCap ? this.fuel / this.tankCap : 0, flags: this.flags,
