@@ -409,7 +409,7 @@ describe('the paint bay (owner 2026-11-05)', () => {
         w.step(STEP, input());
         for (const e of w.events) {
           if (e.type === 'ping' && e.id === 'ned_partition') log.push('partition');
-          if (e.type === 'storyNotice' && e.headline === 'Partition open') log.push('open');
+          if (e.type === 'storyNotice' && e.headline === 'Warden core open') log.push('open');
         }
         w.events.length = 0;
       }

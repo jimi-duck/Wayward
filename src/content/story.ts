@@ -151,7 +151,7 @@ const GIST: Record<string, string> = {
   "story_seized": "The raiders took everything",
   "story_breach": "Contract in breach · recovery ordered",
   "story_sam": "Sam has a code for the owner lock",
-  "story_wake": "A stored message · Krail reserves 94%",
+  "story_wake": "Gran’s letter · a gate key in her core",
   "story_registry": "Lane checkpoint · your registry decides",
   "story_warden": "A retired Warden heard the shutdown order",
   "story_ledger": "A Kellern clerk sells the real books",
@@ -331,16 +331,16 @@ export const STORY_CARDS: CardDef[] = [
   story({
     // a message someone left in a sealed partition of her core (owner, 23 October 2026; found by Ned, opened by the yard's reboot: owner 2026-11-24)
     id: 'story_wake', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Unsent', quote: true, notitle: true,
-    herald: { headline: 'Partition open', reason: 'it woke on the reboot' },
-    from: 'Sealed partition · stored message', title: 'For whoever flies her next',
-    letter: { head: [], sign: '' },
-    text: 'If you’re reading this, the lock’s off. I hid this where Kellern’s auditors never look.\nSeventy years ago the gates to the outer worlds went dark. They said the Krail had run out, and everyone left outside became the Scatter.\nBut the reserve log for that day says Krail reserves: 94%. The same day someone signed the order to shut the gates. It’s not the story they told us.\nShe was built as a Warden tender, and her core still holds a Warden key. Kellern locked your gate. Wake the relay beside it.\nThen take the quiet lane through Northfold to Halden’s Reach. Someone there will remember.',
-    cargo: 'The Wayward · a sealed partition in her core',
+    herald: { headline: 'Warden core open', reason: 'it woke on the reboot' },
+    from: 'Warden core · stored message', title: 'For Juno',
+    letter: { head: [], sign: '— Gran' },
+    text: 'Juno, if you’re reading this, Ned’s reboot opened my old core. She’s yours now.\nSeventy years ago the government shut the Jump Gates to the outer worlds. They said the Krail had run out. The reserve log says 94%. Shut lanes kept people counted and charged.\nShe’s a Warden tender. Before they took my key, I hid part of the gate network’s key in her core. Every dead relay still answers it.\nWake them and the gates open. People travel the stars again, and the government’s grip breaks.\nStart with the relay beside your gate. Then take the quiet lane to Halden’s Reach. Someone there remembers me.',
+    cargo: 'The Wayward · a Warden core under her decking',
     choices: [
-      { id: 'lead', label: 'Set course: Northfold', tone: 'help', hint: '',
-        win: { text: 'The record is on the Wall · next lead: Halden’s Reach', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'],
+      { id: 'lead', label: 'Find the relay', tone: 'help', hint: '',
+        win: { text: 'Gran’s letter is on the Wall · the relay by the gate first', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'],
           signal: { tone: 'amber', headline: 'Registry: unregistered', reason: 'Paint won’t pass a scan' },
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.5, text: '“A name of your own, and a lead. That’s more than most of us ever get. Keep moving, Juno.”' } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.5, text: '“Your gran hid a gate key in her? Then use it, Juno. Wake that relay.”' } } },
     ],
   }),
   // ── Act II, the Reach ───────────────────────────────────────────────────
@@ -380,7 +380,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_handwriting', kind: 'rumour', caller: 'miners', glass: 'cyan',
     from: 'Ilse Marrow · Ada Aster', title: 'Ada Aster',
-    text: '“The archive in your hull thinks like Ada Aster. She stood watch with me at the Narrows. Aster is your name too, isn’t it?”',
+    text: '“The key in your hull answers like Ada Aster’s. She stood watch with me at the Narrows. Aster is your name too, isn’t it?”',
     cargo: 'An old Warden’s skiff · no guns',
     choices: [
       { id: 'grandmother', label: 'She was my grandmother', tone: 'help', hint: 'Your family only said she was lost in service.',
@@ -394,7 +394,7 @@ export const STORY_CARDS: CardDef[] = [
     from: 'Ilse Marrow · recorded', title: 'The order',
     letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1']], sign: '— Authorised: L. C.' },
     text: 'Effective at once.\nThe outer relays at the Narrows and beyond are to be powered down.\nWardens on watch will surrender their keys to the attending officer.\nThe closure is to be recorded as a failure from neglect.',
-    side: { from: 'Ilse Marrow · recorded', lines: ['“You cut me off. Fair enough. I’m sending it anyway, the paper they made us sign. The archive in your hull is Ada Aster’s. Go to the Narrows.”'] },
+    side: { from: 'Ilse Marrow · recorded', lines: ['“You cut me off. Fair enough. I’m sending it anyway, the paper they made us sign. The key in your hull is Ada Aster’s. Go to the Narrows.”'] },
     cargo: 'A recorded message · no reply',
     choices: [
       { id: 'take', label: 'Take the paper', tone: 'help', hint: '', win: { text: 'The signed order · in the file · Ada Aster · the archive has a name', flag: ['frag_order', 'clue_order_sig', 'ada_named'] } },

@@ -68,7 +68,7 @@ export const YARD_REBOOT = 2.8;
 export const NED_DONE_AT = 8;
 export const NED_PARTITION_AT = 17;
 export const NED_DONE = '“Done. She’s yours. The paint won’t pass a close scan, so keep Custody at a distance.”';
-export const NED_PARTITION = '“Something else. A sealed partition in her core. The reboot woke it. Something’s coming through.”';
+export const NED_PARTITION = '“One more thing. There’s a sealed core under her decking, older than Kellern. The reboot woke it. It’s sending you something.”';
 /** Set when Ned has found the partition: the stores list it until the archive is open. */
 export const PARTITION = 'partition_found';
 
@@ -121,7 +121,7 @@ export const STOLEN_SAM_POOR = '“One more thing, your tank’s nearly dry and 
 /** The depot's word on the approach, on the radio (no card): what it sells, and how to dock. */
 export const DEPOT_LINE = '“Depot control. Fuel, plating and stores at posted prices. Slow into the ring to dock.”';
 /** Sam, once the relay in the first system has opened her gate on the Warden key (sim/uplink.ts). */
-export const SAM_RELAY = '“That gate just opened on a key Kellern doesn’t own. Whatever she is, Juno, she isn’t theirs. Go.”';
+export const SAM_RELAY = '“The gate’s open. First lane anyone’s opened in seventy years. One down, Juno. Go.”';
 export const STOLEN_NOTICE = ['Hull reported stolen', 'Kellern has called in Custody'] as const;
 
 /** The objective is the paint bay: the first system past Cerro, the lock lifted, the hull not yet repainted. */

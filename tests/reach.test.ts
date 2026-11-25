@@ -69,7 +69,7 @@ describe('Halden’s Reach, and Ilse’s buoy at Tallyhouse', () => {
     expect(p.cards).toEqual(['story_order']);
     expect(j.carry.flags).toEqual(expect.arrayContaining(['frag_order', 'clue_order_sig', 'ada_named']));
     expect(p.notices).toContain('The Wall · the closing order, signed L. C.');
-    expect(p.pings.some((t) => t.includes('Ada left it listening'))).toBe(true);
+    expect(p.pings.some((t) => t.includes('Aster’s your name too'))).toBe(true);
     expect(j.carry.pending).toEqual([]);
   });
 
