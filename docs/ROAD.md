@@ -104,6 +104,9 @@ code carries it.
   - A tether hunter now drags the charge to a third (`HUNTED_RATE`) instead of holding it, and the late tier
     starts at the Tollgate (`LATE_FROM` 4): at the Breaker, whose own fight is heavy, a held charge under six
     hulls wrecked the pilot three times running.
+  - **The Drift Deep.** Lantern Mile gains a **jammed** relay: bursts of static (5 s in every 14, `JAM_CYCLE`,
+    `JAM_QUIET`) crackle down the mast as arcs and hold the charge ("Wait for the static to pass"); it runs
+    between them. The Survey analyst points to it. The Slow Door keeps its own three-minute scene.
   The scripted pilot (`tools/pilot.ts`) flies into the ring and sits there, firing on a buried relay's rock.
 - **An awake relay opens the lane** (spaceways plan, step 3). The gate's lane is lit: a soft teal beam
   under the flight plane runs from down the course through the ring and away beyond, with motes flowing

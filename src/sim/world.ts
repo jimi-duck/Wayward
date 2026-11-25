@@ -11,7 +11,7 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Floor, FLOOR, SCAN_LINE } from './floor';
-import { HUNTED_RATE, SPLIT_MASTS, ADRIFT_A, ADRIFT_B, ADRIFT_LOOP, ADRIFT_OUT, ADRIFT_TELL, BURIED_HP, BURIED_R, GIVEN_FLAG, GIVEN_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
+import { JAM_CYCLE, JAM_QUIET, JAM_STRIKE, HUNTED_RATE, SPLIT_MASTS, ADRIFT_A, ADRIFT_B, ADRIFT_LOOP, ADRIFT_OUT, ADRIFT_TELL, BURIED_HP, BURIED_R, GIVEN_FLAG, GIVEN_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
 import { COVER, COVER_DMG, COVER_EVERY, COVER_R, HUNT_PULL, HUNT_SIT, PULSE_CROWD, PULSE_PUSH, PULSE_R, PULSE_SNARE, waveTier, type CoverRow } from '../content/waves';
 import { Script, type Output } from './script';
 import { derive, SIG_CLUES, relaysLit, relayFlag } from './evidence';
@@ -516,7 +516,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.adriftTold = false; this.hunters = new Set(); this.pulsed = false; this.cover = null; this.coverT = 0; this.mainLines = new Set(); this.listenAt = Infinity;
+    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.adriftTold = false; this.jamTold = false; this.jamT = 0; this.hunters = new Set(); this.pulsed = false; this.cover = null; this.coverT = 0; this.mainLines = new Set(); this.listenAt = Infinity;
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
@@ -2220,7 +2220,7 @@ export class World implements EncounterHost {
     // a woken relay opens the lane: the trade comes through the gate again (a reload of the system finds it open, without the voice)
     if (b && !this.laneOpened && b.def.script !== 'narrows' && relayOf(b) && this.flags.has(relayKey(b.def))) this.openLane(this.uplink >= 1);
     if (!rl || !b || this.phase !== 'play') return;
-    this.stepTwist(rl);
+    this.stepTwist(rl, dt);
     this.stepHunters(rl, dt);
     this.stepPulse(rl);
     this.stepCover(rl, dt);
@@ -2330,12 +2330,19 @@ export class World implements EncounterHost {
   private buried = false;
   private guardsSent = false;
   private adriftTold = false;
+  private jamTold = false;
+  private jamT = 0;
+
+  /** A jammed relay's static is bursting now (content/road.ts LEG_RELAYS): on a fixed cycle from the arrival. */
+  get jammed(): boolean {
+    return this.bk?.def.twist === 'jammed' && this.runTime % JAM_CYCLE >= JAM_QUIET;
+  }
 
   /** An offset from where the relay stands, back toward where she came in and across (sim/breakout.ts laneBack). */
   private backFrom(back: number, across: number): { x: number; z: number } { return laneBack(this.bk!.lane, back, across); }
 
   /** A relay's twist (content/road.ts REACH_RELAYS): the rock on a buried mast, held where it sits; the picket on a guarded one, when she comes near. */
-  private stepTwist(rl: { x: number; z: number }): void {
+  private stepTwist(rl: { x: number; z: number }, dt: number): void {
     const tw = this.bk?.def.twist;
     if (tw === 'buried') {
       if (!this.buried) { this.buried = true; this.burial = this.field.bury(rl.x, rl.z, BURIED_R, BURIED_HP); }
@@ -2354,6 +2361,20 @@ export class World implements EncounterHost {
         this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Relay adrift', reason: 'keep in its ring as it tumbles', main: true });
       }
     }
+    if (tw === 'jammed' && this.jammed) {
+      // a burst of static: lightning on the mast while it lasts (the charge waits it out, World.uplinkBlock)
+      if ((this.jamT -= dt) <= 0) {
+        this.jamT = JAM_STRIKE;
+        // a crackle down the mast, top to foot, jagged
+        const pts: number[] = [];
+        for (let k = 0; k <= 6; k++) pts.push(rl.x + this.rng.range(-2.5, 2.5), 40 - k * 7, rl.z + this.rng.range(-2.5, 2.5));
+        this.events.push({ type: 'arc', points: pts });
+      }
+      if (!this.jamTold && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < ADRIFT_TELL) {
+        this.jamTold = true;
+        this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Relay jammed', reason: 'wake it between the bursts', main: true });
+      }
+    }
     if (tw === 'guarded' && !this.guardsSent && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < GUARD_WAKE) {
       this.guardsSent = true;
       for (let i = 0; i < GUARDS; i++) {
@@ -2369,6 +2390,7 @@ export class World implements EncounterHost {
     const rl = this.wakeRelay;
     if (!rl) return '';
     if (this.burial) return 'Mine the relay clear';
+    if (this.jammed) return 'Wait for the static to pass';
     const sit = this.onMast(rl);
     if (sit.length) return this.bk?.def.twist === 'guarded' && !sit.some((a) => this.hunters.has(a.id)) ? 'Drive the guards off the relay' : 'Drive the hunter off the relay';
     return '';

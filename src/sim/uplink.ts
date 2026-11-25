@@ -33,6 +33,10 @@ export const GIVEN_R = 260;
 export const GIVEN_FLAG = 'pact_holdfast';
 /** A split relay's three masts, each woken in turn (one a stage): units back from the gate and across from where the first stands. */
 export const SPLIT_MASTS: ReadonlyArray<{ back: number; across: number }> = [{ back: 0, across: 0 }, { back: 130, across: -80 }, { back: 70, across: 95 }];
+/** A jammed relay's static: seconds a cycle, the quiet in each before the burst, and how often a burst strikes the mast. */
+export const JAM_CYCLE = 14;
+export const JAM_QUIET = 9;
+export const JAM_STRIKE = 0.35;
 /** Stages of the wake: lamps, the dish, the core. */
 export const UPLINK_STAGES = 3;
 
