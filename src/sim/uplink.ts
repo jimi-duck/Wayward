@@ -41,6 +41,13 @@ export const JAM_STRIKE = 0.35;
 export const HUNGRY_FEED = 8;
 /** What the HUD asks while a hungry relay's core is starved (English, for t()). */
 export const STARVED = 'Feed the core: fill the tank';
+/** A loud relay (the Hollows): below this share of her top speed she is quiet, and the charge runs at the quiet rate with no noise. */
+export const LOUD_STILL = 0.2;
+export const LOUD_QUIET_RATE = 0.5;
+/** Seconds of loud charging that fill the noise; each time it fills a Thren knot of this many motes comes, at most this many times a wake. */
+export const LOUD_FILL = 9;
+export const LOUD_KNOT = 3;
+export const LOUD_MAX = 3;
 /** Stages of the wake: lamps, the dish, the core. */
 export const UPLINK_STAGES = 3;
 

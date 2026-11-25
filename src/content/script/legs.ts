@@ -350,6 +350,9 @@ const HOLLOWS_ROWS: Row[] = [
   objective('hf_objective', 'h_forge', arrive(), 'Hollowforge · a pattern on the scope'),
   notice('hf_scope', 'h_forge', free(6), 'white', 'Scope pattern', 'it repeats when you move', { wall: 'saw_thren' }),
   main('hf_thren', 'h_forge', { on: 'place', place: 'hf_pattern' }, 'story_thren'),
+  // the foundry's relay (spaceways plan, step 6): loud, the Thren follow its noise; woken fast and fought, or drifting and quiet
+  radio('hf_relay_say', 'h_forge', after('hf_objective', 8), 'The Voice', 'unknown', '“This relay sings when it wakes. The Thren hear singing. Drift still, and it will whisper.”', { main: true }),
+  { id: 'hf_relay', stop: 'h_forge', on: relay(), wall: 'relay_h_forge', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the foundry’s lane is open' } }, main: true, urgent: true },
   objective('hf_gate', 'h_forge', leave(), 'Jump to Coldvault'),
 
   // 3 · Coldvault (work): Kellern's tug comes for the registry (the Account's last step)
