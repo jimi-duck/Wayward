@@ -1,4 +1,4 @@
-import { atPlace } from './paint';
+import { atPlace, atRelay } from './paint';
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import { newJourney, sortieDef } from '../src/sim/journey';
@@ -41,6 +41,8 @@ describe('a shut Jump Gate', () => {
       if (i === Math.round(40 / STEP)) { w.ship.x = w.bk!.lane.x - 300; w.ship.z = w.bk!.lane.z; }
       // a gate that names a story place: she goes there, as a player would (sim/places.ts)
       if (w.gateWhy === '{who} first') atPlace(w);
+      // a relay to wake (sim/uplink.ts): she sits in its ring until it is awake
+      if (w.gateWhy === 'wake the relay' || w.gateWhy === 'reach the relay mast') atRelay(w);
       w.step(STEP, NO_INPUT);
       w.events.length = 0;
       if (w.gateWhy) { whys.add(w.gateWhy); shut = true; }
@@ -100,6 +102,8 @@ describe('a shut Jump Gate', () => {
       if (W.call) { w.answer(0); }
       // the moot is a place now: she goes among its rigs, as a player would
       if (w.gateWhy === '{who} first') atPlace(w);
+      // a relay to wake (sim/uplink.ts): she sits in its ring until it is awake
+      if (w.gateWhy === 'wake the relay' || w.gateWhy === 'reach the relay mast') atRelay(w);
       took = took || !!W.stage?.taken;
       if (w.comms) { if (w.comms.def.id === 'story_moot' && moot < 0) moot = w.runTime; w.answer(w.comms.def.choices[0]!.id); }
       if (i > Math.round(41 / STEP) && !w.gateWhy && open < 0) open = w.runTime;

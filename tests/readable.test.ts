@@ -1,3 +1,4 @@
+import { atRelay } from './paint';
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import { guideTarget } from '../src/sim/guide';
@@ -41,6 +42,8 @@ function fly(i: number) {
     const sp = w.storyPlace;
     if (sp && place.at < 0) { place.at = w.runTime; place.dist = Math.hypot(sp.x - w.ship.x, sp.z - w.ship.z); }
     if (place.at >= 0 && place.done < 0 && !sp) place.done = w.runTime;
+    // a relay's twist is dealt with as a player would: the rock mined away, the picket driven off (tests/paint.ts)
+    if (w.uplinkBlock) atRelay(w);
     const g = guideTarget(w);
     if (g && w.runTime > START) {
       const d = Math.hypot(g.x - w.ship.x, g.z - w.ship.z);
@@ -51,7 +54,8 @@ function fly(i: number) {
     w.events.length = 0;
   }
   const log = w.floor.log;
-  const firstCard = log.findIndex((l) => l.kind === 'moment');
+  // the payoff: the stop's card, or at a relay stop the relay waking under her (spaceways plan, step 4)
+  const firstCard = log.findIndex((l) => l.kind === 'moment' || (l.kind === 'signal' && l.id === 'Relay waking'));
   const before = (firstCard < 0 ? log : log.slice(0, firstCard)).filter((l) => (l.kind === 'voice' || l.kind === 'signal') && l.id !== SCAN_LINE);
   return { place, card, cardGate, before, lane: Math.hypot(w.bk!.lane.x, w.bk!.lane.z) };
 }
@@ -80,8 +84,8 @@ describe('every Reach stop reads', () => {
 // Every stop on the road (23 November 2026): a call that is only waiting its turn opens on its own as she comes to the gate; the gate
 // says "holding" (then "open") round it only where a scene really keeps her there: a handshake, a reboot, the Slow Door, a moot, the end.
 describe('a gate that waits on a call', () => {
-  /** Stops whose gate holds her for a scene, by design. */
-  const SCENES = new Set(['narrows', 'm_kessel', 'rift', 'slowdoor', 'breaker', 'f_gilt', 'seam', 'l_wane']);
+  /** Stops whose gate holds her for a scene, by design (the Reach's relays since the spaceways plan's step 4). */
+  const SCENES = new Set(['halden', 'marlow', 'branford', 'copperline', 'narrows', 'm_kessel', 'rift', 'slowdoor', 'breaker', 'f_gilt', 'seam', 'l_wane']);
   it('only says it is holding at a scene stop', () => {
     const told: string[] = [];
     const n = newJourney(5, false, 'road').chart.systems.length;

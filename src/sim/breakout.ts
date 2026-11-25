@@ -249,6 +249,8 @@ export interface SortieDef {
   checkpoint?: string;
   /** A road gate: a Warden relay mast stands by the Jump Gate, where the arrival's handshake plays (content/script/arrivals.ts). */
   relay?: boolean;
+  /** A relay's twist (content/road.ts REACH_RELAYS): buried under a rock she mines clear, or guarded by a picket she drives off. */
+  twist?: 'buried' | 'guarded';
   /** The situation playing here (content/situations.ts), as the chart has it now: its tightened variant where the Net holds the system. */
   situation?: string | null;
 }

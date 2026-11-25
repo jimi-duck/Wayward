@@ -66,6 +66,19 @@ code carries it.
   Custody wave from the gate side, bigger further down the road (`uplinkWave`). Awake, the stop's
   "Warden key accepted" row plays even in a fight. The first system past Cerro has one too (docs/POSTJUMP.md). The mast lights with the charge, a line runs from
   her keel to it, and the HUD reads "Waking the relay" with the percentage. The Narrows keeps its scene.
+- **The Reach's relays** (spaceways plan, step 4; `REACH_RELAYS` in `content/road.ts`). Halden's Reach,
+  Tallyhouse, Miners' Gap and Copperline each have a relay by the gate, woken the same way (one wave of two
+  patrol fighters at the first stage, `uplinkWave(stage, gate, true)`). The gate holds for it after the
+  stop's meeting ("{who} first" comes before "wake the relay"). Ilse points Halden's out once the paper is
+  aboard, Brook Tallyhouse's after the spike, Hester's opener Miners' Gap's. Their flags (`relay_<script>`)
+  are not GATES', so the lit-relay count in Ada's notes is unchanged. Two twists:
+  - **Buried** (Miners' Gap): a spoil rock (a pinned bulwark, `BURIED_R` 10, `BURIED_HP` 150, `Field.bury`)
+    sits on the mast. The charge holds until it is mined away; the HUD reads "Mine the relay clear", then a
+    "Relay clear" notice.
+  - **Guarded** (Copperline): two patrol fighters sit on the mast and move when she comes within
+    `GUARD_WAKE` (450 units), with a red "Relay guarded · drive them off the mast". The charge holds while a
+    hostile is within `GUARD_HOLD` (65) of the mast; the HUD reads "Drive the guards off the relay".
+  The scripted pilot (`tools/pilot.ts`) flies into the ring and sits there, firing on a buried relay's rock.
 - **An awake relay opens the lane** (spaceways plan, step 3). The gate's lane is lit: a soft teal beam
   under the flight plane runs from down the course through the ring and away beyond, with motes flowing
   along it (`laneLight`, `laneBeam` in `render/breakout.ts`). The trade comes back: two hulls leave the

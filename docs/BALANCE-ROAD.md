@@ -9,14 +9,14 @@ pilot who keeps moving; it does not read, and it does not linger. These are pilo
 
 | Strategy | Policy | At the Narrows | Stuck | Time on the road | Wrecks |
 |---|---|---|---|---|---|
-| random | run | 6/6 | 0 | 15:45 | 0.0 |
-| random | bluff | 6/6 | 0 | 16:04 | 0.0 |
-| random | fight | 6/6 | 0 | 16:03 | 0.0 |
-| torpedo+defence | run | 6/6 | 0 | 15:40 | 0.0 |
-| torpedo+defence | bluff | 6/6 | 0 | 15:35 | 0.0 |
-| torpedo+defence | fight | 6/6 | 0 | 15:57 | 0.0 |
+| random | run | 6/6 | 0 | 21:50 | 0.2 |
+| random | bluff | 6/6 | 0 | 21:03 | 0.0 |
+| random | fight | 6/6 | 0 | 21:49 | 0.3 |
+| torpedo+defence | run | 6/6 | 0 | 21:40 | 0.0 |
+| torpedo+defence | bluff | 6/6 | 0 | 21:53 | 0.0 |
+| torpedo+defence | fight | 6/6 | 0 | 21:42 | 0.0 |
 
-Whole leg, those that arrived (36): 15:50 on average, against a target of about 40 minutes.
+Whole leg, those that arrived (36): 21:40 on average, against a target of about 40 minutes.
 
 ## Stop by stop
 
@@ -26,10 +26,10 @@ Whole leg, those that arrived (36): 15:50 on average, against a target of about 
 | Stop | Visits | Time | Cyrite in → out | Jump fluid in → out | Days | Rows | Carried | Wrecked |
 |---|---|---|---|---|---|---|---|---|
 | Cerro | 36 | 4:38 | 0.0 → 52.7 | 6.0 → 0.0 | 0.0 → — | 0.0 | 0.0 | 0% |
-| Ringhold | 36 | 3:22 | 52.7 → 59.8 | 0.0 → 0.0 | 1.5 → 0.4 | 1.0 | 0.0 | 0% |
-| Northfold | 36 | 0:42 | 59.8 → 80.3 | 0.0 → 0.0 | 0.9 → 0.4 | 4.7 | 0.1 | 0% |
-| Halden’s Reach | 36 | 1:43 | 80.3 → 17.1 | 0.0 → 0.0 | 0.9 → 0.4 | 10.4 | 0.0 | 0% |
-| Tallyhouse | 36 | 1:24 | 17.1 → 17.4 | 0.0 → 0.0 | 0.8 → 0.3 | 10.3 | 0.0 | 0% |
-| Miners’ Gap | 36 | 0:47 | 17.4 → 37.8 | 0.0 → 0.0 | 0.9 → 0.6 | 5.6 | 0.1 | 0% |
-| Copperline | 36 | 0:52 | 37.8 → 10.1 | 0.0 → 0.0 | 0.9 → 0.8 | 6.3 | 0.1 | 0% |
-| The Narrows | 36 | 2:24 | 10.1 → 9.3 | 0.0 → 0.0 | 0.9 → 0.5 | 12.0 | 1.0 | 0% |
+| Ringhold | 36 | 3:54 | 52.7 → 55.8 | 0.0 → 0.0 | 1.5 → 0.4 | 1.0 | 0.0 | 0% |
+| Northfold | 36 | 0:43 | 55.8 → 76.3 | 0.0 → 0.0 | 0.6 → 0.5 | 4.8 | 0.0 | 0% |
+| Halden’s Reach | 36 | 2:35 | 76.3 → 34.7 | 0.0 → 0.0 | 0.6 → 0.1 | 13.0 | 0.0 | 0% |
+| Tallyhouse | 36 | 2:19 | 34.7 → 21.3 | 0.0 → 0.0 | 0.6 → 0.0 | 12.8 | 0.0 | 0% |
+| Miners’ Gap | 38 | 2:02 | 20.7 → 31.4 | 0.0 → 0.1 | 0.7 → — | 7.9 | 0.0 | 5% |
+| Copperline | 37 | 2:41 | 31.8 → 31.5 | 0.2 → 0.4 | 0.6 → — | 7.8 | 0.0 | 3% |
+| The Narrows | 36 | 2:37 | 30.9 → 19.8 | 0.0 → 0.0 | 0.6 → — | 14.0 | 0.0 | 0% |

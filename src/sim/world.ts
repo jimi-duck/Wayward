@@ -11,10 +11,10 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Floor, FLOOR, SCAN_LINE } from './floor';
-import { LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
+import { BURIED_HP, BURIED_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
 import { Script, type Output } from './script';
 import { derive, SIG_CLUES, relaysLit, relayFlag } from './evidence';
-import { GATES, ON_ROAD } from '../content/road';
+import { GATES, ON_ROAD, REACH_RELAYS } from '../content/road';
 import { debtLeft } from './threads';
 import { GHOST_AFTER, GHOST_STOP, spawnGhost, stepGhost, type Ghost } from './ghost';
 import { DAY_SECONDS, halfDays } from './hunt';
@@ -515,7 +515,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.mainLines = new Set(); this.listenAt = Infinity;
+    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.mainLines = new Set(); this.listenAt = Infinity;
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
@@ -2213,10 +2213,12 @@ export class World implements EncounterHost {
     // a woken relay opens the lane: the trade comes through the gate again (a reload of the system finds it open, without the voice)
     if (b && !this.laneOpened && b.def.script !== 'narrows' && relayOf(b) && this.flags.has(relayKey(b.def))) this.openLane(this.uplink >= 1);
     if (!rl || !b || this.phase !== 'play') return;
-    const r = stepUplink(this.uplink, this.uplinking, true, dt);
+    this.stepTwist(rl);
+    const r = stepUplink(this.uplink, this.uplinking, !this.uplinkBlock, dt);
     this.uplink = r.charge;
     if (!r.stage) return;
     const gate = b.def.first ? -1 : Math.max(0, GATES.findIndex((g) => g.script === b.def.script) - 1);
+    const reach = !!(b.def.script && REACH_RELAYS[b.def.script]);
     // the first system has no stop script: the woken relay is told here, and Sam follows it
     if (r.stage === 3 && b.def.first) {
       this.flags.add(relayKey(b.def));
@@ -2228,9 +2230,44 @@ export class World implements EncounterHost {
     // (elsewhere the last stage is told by the stop's own row: "Warden key accepted", content/script/arrivals.ts)
     if (r.stage < 3) this.events.push(r.stage === 1
       ? { type: 'storyNotice', tone: 'amber', headline: 'Relay waking', reason: 'Custody traced the uplink', main: true }
-      : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: 'more Custody inbound', main: true });
-    const spawn = uplinkWave(r.stage, gate).map((w) => ({ ...w, from: 'ahead' as const }));
+      : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: reach ? 'the core is warming' : 'more Custody inbound', main: true });
+    const spawn = uplinkWave(r.stage, gate, reach).map((w) => ({ ...w, from: 'ahead' as const }));
     if (spawn.length) this.applyOutcome({ text: '', spawn }, 0, []);
+  }
+
+  /** A buried relay's rock, while it sits on the mast (sim/uplink.ts); whether a guarded relay's picket has been sent. */
+  private burial: Bulwark | null = null;
+  private buried = false;
+  private guardsSent = false;
+
+  /** A relay's twist (content/road.ts REACH_RELAYS): the rock on a buried mast, held where it sits; the picket on a guarded one, when she comes near. */
+  private stepTwist(rl: { x: number; z: number }): void {
+    const tw = this.bk?.def.twist;
+    if (tw === 'buried') {
+      if (!this.buried) { this.buried = true; this.burial = this.field.bury(rl.x, rl.z, BURIED_R, BURIED_HP); }
+      // (the rock is pinned: the field never wraps it round the ship, sim/field.ts)
+      if (this.burial && !this.field.bulwarks.includes(this.burial)) {
+        this.burial = null;
+        this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Relay clear', reason: 'hold in its ring', main: true });
+      }
+    }
+    if (tw === 'guarded' && !this.guardsSent && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < GUARD_WAKE) {
+      this.guardsSent = true;
+      for (let i = 0; i < GUARDS; i++) {
+        const a = (i / GUARDS) * Math.PI * 2;
+        this.spawnHostile('picket', { x: rl.x + Math.cos(a) * 30, y: 0, z: rl.z + Math.sin(a) * 30 }, null, true);
+      }
+      this.events.push({ type: 'storyNotice', tone: 'red', headline: 'Relay guarded', reason: 'drive them off the mast', main: true });
+    }
+  }
+
+  /** Why the uplink cannot run at a relay with a twist ('' when it can): the HUD's objective says what to do (English, for t()). */
+  get uplinkBlock(): string {
+    const rl = this.wakeRelay;
+    if (!rl) return '';
+    if (this.burial) return 'Mine the relay clear';
+    if (this.bk?.def.twist === 'guarded' && this.aliens.some((a) => !a.ward && !a.fleeing && Math.hypot(a.x - rl.x, a.z - rl.z) < GUARD_HOLD)) return 'Drive the guards off the relay';
+    return '';
   }
 
   /** The lane is open on this sortie (World.openLane). */
