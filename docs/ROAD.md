@@ -129,6 +129,17 @@ code carries it.
     `sim/evidence.ts`) answers it, and the charge runs 8% faster for each, up to twice as fast
     (`CHORUS_STEP`, `CHORUS_MAX`). Sam says so; the HUD reads "Waking it · your relays answer". It keeps
     the late waves.
+  - **The Threshold** (step 7). Wane Rest's gate is the last relay (`l_wane`, twist `threshold`). Calloway's last
+    card still opens on the way to the gate; the relay stands between her and the ring, so whatever she
+    chose (fight, spool under her guns, or a pass) is played out while the key charges. It sends no Custody
+    waves: the Patience is the fight. Everyone who came (`ALLIES` in `content/waves.ts`) flies cover on the
+    ring, Sam says so, and their guns fire once per 2.5 s divided by how many came. The gate opens on it
+    ("Warden key accepted · the Threshold is open").
+  - **Balance** (step 7). A relay's wave only tops the hostile hulls already on her up to four (`WAVE_CROWD`,
+    hunters first): a system already hot (a checkpoint she ran from, a chase) sends fewer. Before this the
+    run policy wrecked three times at the Rift, where Ashgrove's lancers and two waves came together; now
+    5 of 6 whole-road pilot runs reach the Threshold (all fight and bluff runs, one of two run runs). The
+    person pilot takes about 2 h 25 min with reading ([BALANCE-PERSON.md](BALANCE-PERSON.md)).
   The scripted pilot (`tools/pilot.ts`) flies into the ring and sits there, firing on a buried relay's rock.
 - **An awake relay opens the lane** (spaceways plan, step 3). The gate's lane is lit: a soft teal beam
   under the flight plane runs from down the course through the ring and away beyond, with motes flowing

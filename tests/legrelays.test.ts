@@ -230,3 +230,37 @@ describe('the Last Lanes’ relay', () => {
     expect(many.uplinkLine).toBe('Waking it · your relays answer');
   });
 });
+
+describe('the Threshold’s relay', () => {
+  it('Wane Rest: no Custody waves; whoever came flies cover, the faster for each; the gate opens on it', () => {
+    const w = stop('l_wane', ['drift_walked', 'saints_helped']);
+    expect(w.bk!.def.twist).toBe('threshold');
+    hold(w, FLOOR.arrival + 0.5, -300, 0);
+    // into the first stage: the aliens hold() clears would be the waves, so count what each stage spawns instead
+    let spawned = 0;
+    for (let i = 0; i < Math.round(16 / STEP); i++) {
+      const m = relayOf(w.bk!)!;
+      w.ship.invuln = 99; w.ship.x = m.x - 15; w.ship.z = m.z; w.ship.vx = w.ship.vz = 0;
+      const n = w.aliens.filter((a) => !a.ward).length;
+      w.step(STEP, NO); w.events.length = 0;
+      spawned += Math.max(0, w.aliens.filter((a) => !a.ward).length - n);
+      for (let k = w.aliens.length - 1; k >= 0; k--) if (!w.aliens[k]!.ward) w.aliens.splice(k, 1);
+      const open = w.comms ?? w.call; if (open) w.answer(open.def.choices[0]!.id);
+    }
+    expect(w.uplink).toBeGreaterThan(1 / 3);
+    expect(spawned).toBe(0);
+    // a hostile on the ring draws the allies' fire, every 1.25 s with two of them
+    const m = relayOf(w.bk!)!;
+    (w as unknown as { spawnHostile: (v: string, at: { x: number; y: number; z: number }) => unknown }).spawnHostile('picket', { x: m.x + 30, y: 0, z: m.z });
+    let flak = 0;
+    for (let i = 0; i < Math.round(5 / STEP); i++) {
+      w.ship.invuln = 99; w.ship.x = m.x - 15; w.ship.z = m.z; w.ship.vx = w.ship.vz = 0;
+      for (const a of w.aliens) a.hp = Math.max(a.hp, 500);
+      w.step(STEP, NO);
+      flak += w.events.filter((e) => e.type === 'flak').length; w.events.length = 0;
+    }
+    expect(flak).toBeGreaterThanOrEqual(3);
+    hold(w, 40, -15, 0);
+    expect(w.flags.has('relay_l_wane')).toBe(true);
+  });
+});

@@ -28,6 +28,9 @@ export function waveTier(first: boolean, reach: boolean, gate: number): WaveTier
   return first ? 'first' : reach ? 'reach' : gate >= LATE_FROM ? 'late' : 'mid';
 }
 
+/** A wave tops the hostile hulls already on her up to this many, and no further: a system already hot (a checkpoint run, a chase) sends less. */
+export const WAVE_CROWD = 4;
+
 /** Locals who fly cover at a relay once she has helped them: the stop, the flag that says she did, and who speaks. */
 export interface CoverRow { stop: string; flag: string; from: string; caller: 'miners' | 'frontier'; line: string }
 export const COVER: readonly CoverRow[] = [
@@ -36,6 +39,11 @@ export const COVER: readonly CoverRow[] = [
   // every crew she helped stands at the Breaker (content/script/legs.ts yt_hester)
   { stop: 'breaker', flag: 'thread_crews_3', from: 'Hester', caller: 'miners', line: '“Every rig we’ve got is on the mast. Hold the key, we’ll hold the ring.”' },
 ];
+
+/** The flags that bring an ally to the Threshold (content/script/threshold.ts, who came): each one that came flies cover at its relay. */
+export const ALLIES: readonly string[] = ['thread_line_2', 'thread_crews_3', 'job_long_walk_won', 'drift_walked', 'thread_survey_2', 'saints_helped'];
+/** Who says so at the Threshold's relay, once the first stage lights (its guns fire the faster for each ally there). */
+export const THRESHOLD_COVER: CoverRow = { stop: 'l_wane', flag: '', from: 'Sam Okoro', caller: 'miners', line: '“Everyone who came is on your mast, Juno. Hold the key. We hold the ring.”' };
 
 /** Cover: how far from the mast the locals' guns reach, how often they fire, and what a shot does. */
 export const COVER_R = 160;
