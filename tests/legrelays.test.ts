@@ -4,7 +4,7 @@ import { newJourney, sortieDef } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { relayOf, splitMasts } from '../src/sim/breakout';
 import { FLOOR } from '../src/sim/floor';
-import { GIVEN_R, UPLINK_R } from '../src/sim/uplink';
+import { GIVEN_R, HUNGRY_FEED, STARVED, UPLINK_R } from '../src/sim/uplink';
 
 // The legs' relays (spaceways plan, step 6): the Marches. Kessel Hold gains a relay that the moot's crews wake if it stood with her
 // (given); the Rift's relay is adrift, tumbling on a slow loop, and she keeps in its ring as it goes.
@@ -124,5 +124,28 @@ describe('the Drift Deep’s relay', () => {
     expect(ran).toBeGreaterThan(60);
     expect(arcs).toBeGreaterThan(3);
     expect(w.floor.log.some((l) => l.kind === 'signal' && l.id === 'Relay jammed')).toBe(true);
+  });
+});
+
+describe('the Breaker Yards’ relay', () => {
+  it('Keelberth: the core drinks her jump fluid as it charges, and starves when the tank is dry', () => {
+    const w = stop('y_keel');
+    expect(w.bk!.def.twist).toBe('hungry');
+    hold(w, FLOOR.arrival + 0.5, -300, 0);
+    w.fuel = 30;
+    const f0 = w.fuel, u0 = w.uplink;
+    hold(w, 6, -15, 0);
+    expect(w.uplink).toBeGreaterThan(u0);
+    expect(w.fuel).toBeLessThan(f0);
+    expect(f0 - w.fuel).toBeCloseTo((w.uplink - u0) * HUNGRY_FEED, 3);
+    // dry: the charge waits and the HUD asks her to feed it
+    w.fuel = 0;
+    const held = w.uplink;
+    hold(w, 3, -15, 0);
+    expect(w.uplink).toBe(held);
+    expect(w.uplinkBlock).toBe(STARVED);
+    w.fuel = 30;
+    hold(w, 2, -15, 0);
+    expect(w.uplink).toBeGreaterThan(held);
   });
 });

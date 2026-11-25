@@ -11,7 +11,7 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Floor, FLOOR, SCAN_LINE } from './floor';
-import { JAM_CYCLE, JAM_QUIET, JAM_STRIKE, HUNTED_RATE, SPLIT_MASTS, ADRIFT_A, ADRIFT_B, ADRIFT_LOOP, ADRIFT_OUT, ADRIFT_TELL, BURIED_HP, BURIED_R, GIVEN_FLAG, GIVEN_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
+import { HUNGRY_FEED, STARVED, JAM_CYCLE, JAM_QUIET, JAM_STRIKE, HUNTED_RATE, SPLIT_MASTS, ADRIFT_A, ADRIFT_B, ADRIFT_LOOP, ADRIFT_OUT, ADRIFT_TELL, BURIED_HP, BURIED_R, GIVEN_FLAG, GIVEN_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
 import { COVER, COVER_DMG, COVER_EVERY, COVER_R, HUNT_PULL, HUNT_SIT, PULSE_CROWD, PULSE_PUSH, PULSE_R, PULSE_SNARE, waveTier, type CoverRow } from '../content/waves';
 import { Script, type Output } from './script';
 import { derive, SIG_CLUES, relaysLit, relayFlag } from './evidence';
@@ -516,7 +516,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.adriftTold = false; this.jamTold = false; this.jamT = 0; this.hunters = new Set(); this.pulsed = false; this.cover = null; this.coverT = 0; this.mainLines = new Set(); this.listenAt = Infinity;
+    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.adriftTold = false; this.jamTold = false; this.hungryTold = false; this.jamT = 0; this.hunters = new Set(); this.waveHulls = new Set(); this.pulsed = false; this.cover = null; this.coverT = 0; this.mainLines = new Set(); this.listenAt = Infinity;
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
@@ -2227,8 +2227,12 @@ export class World implements EncounterHost {
     // a rock or a guard on the mast holds the charge; a tether hunter drags it
     const blk = this.uplinkBlock;
     const r = stepUplink(this.uplink, this.uplinking, !blk ? 1 : blk === 'Drive the hunter off the relay' ? HUNTED_RATE : 0, dt);
+    // a hungry relay's core drinks the jump fluid as it charges (content/road.ts LEG_RELAYS)
+    if (b.def.twist === 'hungry' && r.charge > this.uplink) this.fuel = Math.max(0, this.fuel - (r.charge - this.uplink) * HUNGRY_FEED);
     this.uplink = r.charge;
     if (!r.stage) return;
+    // woken, the relay overrides the lock: what Custody sent for it breaks off (a hunter would otherwise circle the gate's field for ever)
+    if (r.stage === 3) for (const a of this.aliens) if (this.waveHulls.has(a.id)) { a.fleeing = true; a.mode = 'leave'; }
     const gate = b.def.first ? -1 : Math.max(0, GATES.findIndex((g) => g.script === b.def.script) - 1);
     const reach = !!(b.def.script && REACH_RELAYS[b.def.script]);
     const wave = uplinkWave(r.stage, waveTier(!!b.def.first, reach, gate));
@@ -2253,8 +2257,8 @@ export class World implements EncounterHost {
       ? { type: 'storyNotice', tone: 'amber', headline: 'Relay waking', reason: 'Custody traced the uplink', main: true }
       : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: hunted ? 'a tether hunter is coming' : reach ? 'the core is warming' : 'more Custody inbound', main: true });
     const rows = (h: boolean) => wave.filter((w) => !!w.hunter === h).map((w) => ({ variant: w.variant, n: w.n, from: 'ahead' as const }));
-    if (rows(false).length) this.applyOutcome({ text: '', spawn: rows(false) }, 0, []);
-    if (hunted) for (const id of this.applyOutcome({ text: '', spawn: rows(true) }, 0, [])) this.hunters.add(id);
+    if (rows(false).length) for (const id of this.applyOutcome({ text: '', spawn: rows(false) }, 0, [])) this.waveHulls.add(id);
+    if (hunted) for (const id of this.applyOutcome({ text: '', spawn: rows(true) }, 0, [])) { this.hunters.add(id); this.waveHulls.add(id); }
     // the locals she helped come out at the first wave (content/waves.ts COVER)
     if (r.stage === 1 && !this.cover) {
       const c = COVER.find((x) => x.stop === b.def.script && this.flags.has(x.flag));
@@ -2264,6 +2268,8 @@ export class World implements EncounterHost {
 
   /** Tether hunters (content/waves.ts): hulls that make for the mast and hold the charge while they sit by it. */
   private hunters = new Set<number>();
+  /** Every hull a relay's waves sent, so they break off once it is awake. */
+  private waveHulls = new Set<number>();
   /** Whether this wake's damping pulse has gone, and the locals flying cover (null: none), and their next shot. */
   private pulsed = false;
   private cover: CoverRow | null = null;
@@ -2331,6 +2337,7 @@ export class World implements EncounterHost {
   private guardsSent = false;
   private adriftTold = false;
   private jamTold = false;
+  private hungryTold = false;
   private jamT = 0;
 
   /** A jammed relay's static is bursting now (content/road.ts LEG_RELAYS): on a fixed cycle from the arrival. */
@@ -2375,6 +2382,10 @@ export class World implements EncounterHost {
         this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Relay jammed', reason: 'wake it between the bursts', main: true });
       }
     }
+    if (tw === 'hungry' && !this.hungryTold && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < UPLINK_R) {
+      this.hungryTold = true;
+      this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Relay hungry', reason: 'its core drinks your jump fluid', main: true });
+    }
     if (tw === 'guarded' && !this.guardsSent && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < GUARD_WAKE) {
       this.guardsSent = true;
       for (let i = 0; i < GUARDS; i++) {
@@ -2391,6 +2402,7 @@ export class World implements EncounterHost {
     if (!rl) return '';
     if (this.burial) return 'Mine the relay clear';
     if (this.jammed) return 'Wait for the static to pass';
+    if (this.bk?.def.twist === 'hungry' && this.fuel <= 0.05) return STARVED;
     const sit = this.onMast(rl);
     if (sit.length) return this.bk?.def.twist === 'guarded' && !sit.some((a) => this.hunters.has(a.id)) ? 'Drive the guards off the relay' : 'Drive the hunter off the relay';
     return '';

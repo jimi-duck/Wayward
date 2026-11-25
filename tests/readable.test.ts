@@ -85,7 +85,7 @@ describe('every Reach stop reads', () => {
 // says "holding" (then "open") round it only where a scene really keeps her there: a handshake, a reboot, the Slow Door, a moot, the end.
 describe('a gate that waits on a call', () => {
   /** Stops whose gate holds her for a scene, by design (the Reach's relays since the spaceways plan's step 4). */
-  const SCENES = new Set(['halden', 'marlow', 'branford', 'copperline', 'narrows', 'm_kessel', 'b_kessler', 'd_lantern', 'rift', 'slowdoor', 'breaker', 'f_gilt', 'seam', 'l_wane']);
+  const SCENES = new Set(['halden', 'marlow', 'branford', 'copperline', 'narrows', 'm_kessel', 'b_kessler', 'd_lantern', 'y_keel', 'rift', 'slowdoor', 'breaker', 'f_gilt', 'seam', 'l_wane']);
   it('only says it is holding at a scene stop', () => {
     const told: string[] = [];
     const n = newJourney(5, false, 'road').chart.systems.length;

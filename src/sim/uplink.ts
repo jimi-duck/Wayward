@@ -37,6 +37,10 @@ export const SPLIT_MASTS: ReadonlyArray<{ back: number; across: number }> = [{ b
 export const JAM_CYCLE = 14;
 export const JAM_QUIET = 9;
 export const JAM_STRIKE = 0.35;
+/** A hungry relay: the jump fluid its core drinks over a whole wake. */
+export const HUNGRY_FEED = 8;
+/** What the HUD asks while a hungry relay's core is starved (English, for t()). */
+export const STARVED = 'Feed the core: fill the tank';
 /** Stages of the wake: lamps, the dish, the core. */
 export const UPLINK_STAGES = 3;
 

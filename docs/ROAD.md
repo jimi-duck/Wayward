@@ -107,6 +107,12 @@ code carries it.
   - **The Drift Deep.** Lantern Mile gains a **jammed** relay: bursts of static (5 s in every 14, `JAM_CYCLE`,
     `JAM_QUIET`) crackle down the mast as arcs and hold the charge ("Wait for the static to pass"); it runs
     between them. The Survey analyst points to it. The Slow Door keeps its own three-minute scene.
+  - **The Breaker Yards.** Keelberth's relay (Sam calls through it) is **hungry**: its core drinks
+    `HUNGRY_FEED` (8) jump fluid over a wake, and starves on a dry tank ("Feed the core: fill the tank"); she
+    mines to feed it. The Breaker keeps its own fight.
+  - Once any relay is awake, every hull its waves sent breaks off (it flees): a tether hunter left alive used to
+    circle the gate's field for ever, and its threat kept the stop's card from opening (a pilot run stuck at the
+    Seam).
   The scripted pilot (`tools/pilot.ts`) flies into the ring and sits there, firing on a buried relay's rock.
 - **An awake relay opens the lane** (spaceways plan, step 3). The gate's lane is lit: a soft teal beam
   under the flight plane runs from down the course through the ring and away beyond, with motes flowing
