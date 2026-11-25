@@ -118,6 +118,12 @@ code carries it.
     then): *Wake it* (the lane opens, the pier is charted, Guild -1) or *Leave it dark* (6 jump fluid for the
     long way round, Guild +1; no relay to wake and the gate does not wait on it). The Tollgate keeps its
     scene (its relay answers on arrival, inside Calloway's field).
+  - **The Hollows.** Hollowforge's relay is **loud**: the Voice warns that it sings as it wakes. Drifting
+    below a fifth of her top speed (`LOUD_STILL`), the charge runs quiet at half rate; flying or fighting in
+    the ring it runs at full rate, but every 9 s of loud charge (`LOUD_FILL`) draws a knot of three Thren
+    motes, at most three a wake ("Thren knot · drawn by the relay's noise"). The HUD says which: "Waking it
+    quietly" or "Waking it loud · the Thren hear". The knots break off when the relay wakes. Nothing
+    human lives in the Hollows, so a loud relay sends no Custody waves: the Thren are the whole fight.
   The scripted pilot (`tools/pilot.ts`) flies into the ring and sits there, firing on a buried relay's rock.
 - **An awake relay opens the lane** (spaceways plan, step 3). The gate's lane is lit: a soft teal beam
   under the flight plane runs from down the course through the ring and away beyond, with motes flowing

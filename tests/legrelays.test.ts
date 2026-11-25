@@ -186,3 +186,33 @@ describe('the Free Ports’ relay', () => {
     expect(w.gateWhy).not.toBe('wake the relay');
   });
 });
+
+describe('the Hollows’ relay', () => {
+  it('Hollowforge: drifting, it wakes quiet at half rate; flying, it wakes fast and draws Thren knots', () => {
+    const w = stop('h_forge');
+    expect(w.bk!.def.twist).toBe('loud');
+    hold(w, FLOOR.arrival + 0.5, -300, 0);
+    // quiet: still in the ring, no knots and half the rate
+    const u0 = w.uplink;
+    hold(w, 6, -15, 0);
+    expect(w.quiet).toBe(true);
+    expect(w.uplinkLine).toBe('Waking it quietly');
+    const quiet = w.uplink - u0;
+    expect(quiet).toBeGreaterThan(0);
+    // loud: moving through the ring, the charge runs faster and the noise brings motes
+    let motes = 0;
+    const u1 = w.uplink;
+    for (let i = 0; i < Math.round(10 / STEP); i++) {
+      const m = relayOf(w.bk!)!;
+      w.ship.invuln = 99; w.ship.x = m.x - 15; w.ship.z = m.z; w.ship.vx = 40; w.ship.vz = 0;
+      w.step(STEP, NO);
+      motes += w.aliens.filter((a) => a.variant === 'mote').length;
+      w.events.length = 0;
+      for (let k = w.aliens.length - 1; k >= 0; k--) if (!w.aliens[k]!.ward) w.aliens.splice(k, 1);
+      const open = w.comms ?? w.call; if (open) w.answer(open.def.choices[0]!.id);
+    }
+    expect(w.uplinkLine).toBe('Waking it loud · the Thren hear');
+    expect((w.uplink - u1) / 10).toBeGreaterThan((quiet / 6) * 1.5);
+    expect(motes).toBeGreaterThan(0);
+  });
+});
