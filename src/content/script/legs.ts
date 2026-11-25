@@ -392,6 +392,9 @@ const HOLLOWS_ROWS: Row[] = [
 const LAST_ROWS: Row[] = [
   notice('ll_notice', 'l_lastlight', arrive(), 'teal', 'Lastlight', 'the Last Lanes · the Threshold ahead'),
   objective('ll_objective', 'l_lastlight', arrive(), 'Next: The Last Toll', 'The Threshold · 7 jumps'),
+  // the last relay before the Threshold (spaceways plan, step 6): every relay she woke answers it, and it wakes the faster for each
+  radio('ll_relay_say', 'l_lastlight', after('ll_objective', 8), SAM[0], SAM[1], '“Every relay you’ve lit is listening, Juno. Wake this one and they’ll all push.”', { main: true }),
+  { id: 'll_relay', stop: 'l_lastlight', on: relay(), wall: 'relay_l_lastlight', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the last lane is open' } }, main: true, urgent: true },
   objective('ll_gate', 'l_lastlight', leave(), 'Jump to the Last Toll'),
 
   // 2 · the Last Toll (hub): Oren Lisle's toll

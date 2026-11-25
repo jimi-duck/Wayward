@@ -14,8 +14,8 @@ as it can, and does not read. Pilot numbers, not playtests.
 | torpedo+defence | run | no | 34 | 3 | — | none | none |
 | torpedo+defence | run | no | 32 | 3 | — | ri_hand_lit, ri_note | none |
 | torpedo+defence | bluff | yes | 97 | 3 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | bluff | yes | 98 | 2 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 100 | 2 | broadcast, unite, sell, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 99 | 2 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 101 | 2 | broadcast, unite, sell, seal, vanish | none | none |
 | torpedo+defence | fight | yes | 101 | 2 | broadcast, unite, sell, seal, vanish | none | none |
 
 ## Leg by leg

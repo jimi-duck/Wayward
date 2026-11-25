@@ -11,10 +11,10 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Floor, FLOOR, SCAN_LINE } from './floor';
-import { HUNGRY_FEED, LOUD_FILL, LOUD_KNOT, LOUD_MAX, LOUD_QUIET_RATE, LOUD_STILL, STARVED, JAM_CYCLE, JAM_QUIET, JAM_STRIKE, HUNTED_RATE, SPLIT_MASTS, ADRIFT_A, ADRIFT_B, ADRIFT_LOOP, ADRIFT_OUT, ADRIFT_TELL, BURIED_HP, BURIED_R, GIVEN_FLAG, GIVEN_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
+import { HUNGRY_FEED, chorusRate, LOUD_FILL, LOUD_KNOT, LOUD_MAX, LOUD_QUIET_RATE, LOUD_STILL, STARVED, JAM_CYCLE, JAM_QUIET, JAM_STRIKE, HUNTED_RATE, SPLIT_MASTS, ADRIFT_A, ADRIFT_B, ADRIFT_LOOP, ADRIFT_OUT, ADRIFT_TELL, BURIED_HP, BURIED_R, GIVEN_FLAG, GIVEN_R, GUARD_HOLD, GUARD_WAKE, GUARDS, LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
 import { COVER, COVER_DMG, COVER_EVERY, COVER_R, HUNT_PULL, HUNT_SIT, PULSE_CROWD, PULSE_PUSH, PULSE_R, PULSE_SNARE, waveTier, type CoverRow } from '../content/waves';
 import { Script, type Output } from './script';
-import { derive, SIG_CLUES, relaysLit, relayFlag } from './evidence';
+import { derive, SIG_CLUES, relaysLit, relayFlag, wardenRelays } from './evidence';
 import { GATES, ON_ROAD, REACH_RELAYS } from '../content/road';
 import { debtLeft } from './threads';
 import { GHOST_AFTER, GHOST_STOP, spawnGhost, stepGhost, type Ghost } from './ghost';
@@ -516,7 +516,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.adriftTold = false; this.jamTold = false; this.hungryTold = false; this.loudTold = false; this.noise = 0; this.knots = 0; this.jamT = 0; this.hunters = new Set(); this.waveHulls = new Set(); this.pulsed = false; this.cover = null; this.coverT = 0; this.mainLines = new Set(); this.listenAt = Infinity;
+    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.adriftTold = false; this.jamTold = false; this.hungryTold = false; this.twistTold = false; this.noise = 0; this.knots = 0; this.jamT = 0; this.hunters = new Set(); this.waveHulls = new Set(); this.pulsed = false; this.cover = null; this.coverT = 0; this.mainLines = new Set(); this.listenAt = Infinity;
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
@@ -2229,7 +2229,8 @@ export class World implements EncounterHost {
     // a rock or a guard on the mast holds the charge; a tether hunter drags it
     const blk = this.uplinkBlock;
     // (a loud relay charges at half rate while she drifts quiet, World.quiet)
-    const r = stepUplink(this.uplink, this.uplinking, (!blk ? 1 : blk === 'Drive the hunter off the relay' ? HUNTED_RATE : 0) * (this.quiet ? LOUD_QUIET_RATE : 1), dt);
+    // (a chorus relay charges faster for every relay she woke on the way, World.chorus)
+    const r = stepUplink(this.uplink, this.uplinking, (!blk ? 1 : blk === 'Drive the hunter off the relay' ? HUNTED_RATE : 0) * (this.quiet ? LOUD_QUIET_RATE : 1) * this.chorus, dt);
     if (b.def.twist === 'loud' && r.charge > this.uplink && !this.quiet) this.stepNoise(dt);
     // a hungry relay's core drinks the jump fluid as it charges (content/road.ts LEG_RELAYS)
     if (b.def.twist === 'hungry' && r.charge > this.uplink) this.fuel = Math.max(0, this.fuel - (r.charge - this.uplink) * HUNGRY_FEED);
@@ -2344,7 +2345,7 @@ export class World implements EncounterHost {
   private adriftTold = false;
   private jamTold = false;
   private hungryTold = false;
-  private loudTold = false;
+  private twistTold = false;
   /** A loud relay's noise (0 to 1, a knot comes when it fills) and the knots it has drawn this wake. */
   private noise = 0;
   private knots = 0;
@@ -2355,8 +2356,14 @@ export class World implements EncounterHost {
     return this.bk?.def.twist === 'loud' && this.uplinking && Math.hypot(this.ship.vx, this.ship.vz) < topSpeed(this.hull) * LOUD_STILL;
   }
 
-  /** What the HUD says while the charge runs (English, for t()): a loud relay tells her whether she is being heard. */
+  /** A chorus relay's rate (content/road.ts LEG_RELAYS): every relay she woke answers it (1 anywhere else). */
+  get chorus(): number {
+    return this.bk?.def.twist === 'chorus' ? chorusRate(wardenRelays(this.flags)) : 1;
+  }
+
+  /** What the HUD says while the charge runs (English, for t()): a loud relay tells her whether she is being heard; a chorus that the others answer. */
   get uplinkLine(): string {
+    if (this.bk?.def.twist === 'chorus' && this.chorus > 1) return 'Waking it · your relays answer';
     if (this.bk?.def.twist !== 'loud') return 'Waking the relay';
     return this.quiet ? 'Waking it quietly' : 'Waking it loud · the Thren hear';
   }
@@ -2415,8 +2422,12 @@ export class World implements EncounterHost {
       this.hungryTold = true;
       this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Relay hungry', reason: 'its core drinks your jump fluid', main: true });
     }
-    if (tw === 'loud' && !this.loudTold && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < UPLINK_R) {
-      this.loudTold = true;
+    if (tw === 'chorus' && !this.twistTold && this.chorus > 1 && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < UPLINK_R) {
+      this.twistTold = true;
+      this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Relays answering', reason: 'every one you woke', main: true });
+    }
+    if (tw === 'loud' && !this.twistTold && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < UPLINK_R) {
+      this.twistTold = true;
       this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Relay loud', reason: 'drift slow to wake it quietly', main: true });
     }
     if (tw === 'guarded' && !this.guardsSent && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < GUARD_WAKE) {

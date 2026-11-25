@@ -4,7 +4,7 @@ import { newJourney, sortieDef } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { relayOf, splitMasts } from '../src/sim/breakout';
 import { FLOOR } from '../src/sim/floor';
-import { GIVEN_R, HUNGRY_FEED, STARVED, UPLINK_R } from '../src/sim/uplink';
+import { CHORUS_MAX, GIVEN_R, HUNGRY_FEED, STARVED, UPLINK_R } from '../src/sim/uplink';
 
 // The legs' relays (spaceways plan, step 6): the Marches. Kessel Hold gains a relay that the moot's crews wake if it stood with her
 // (given); the Rift's relay is adrift, tumbling on a slow loop, and she keeps in its ring as it goes.
@@ -214,5 +214,19 @@ describe('the Hollows’ relay', () => {
     expect(w.uplinkLine).toBe('Waking it loud · the Thren hear');
     expect((w.uplink - u1) / 10).toBeGreaterThan((quiet / 6) * 1.5);
     expect(motes).toBeGreaterThan(0);
+  });
+});
+
+describe('the Last Lanes’ relay', () => {
+  it('Lastlight: every relay she woke answers, and the charge runs the faster for each', () => {
+    const none = stop('l_lastlight');
+    const many = stop('l_lastlight', ['relay_first', 'relay_halden', 'relay_branford', 'relay_narrows', 'relay_rift', 'relay_m_kessel', 'relay_h_forge']);
+    expect(many.bk!.def.twist).toBe('chorus');
+    expect(none.chorus).toBe(1);
+    expect(many.chorus).toBeGreaterThan(1.5);
+    expect(many.chorus).toBeLessThanOrEqual(CHORUS_MAX);
+    for (const w of [none, many]) { hold(w, FLOOR.arrival + 0.5, -300, 0); hold(w, 6, -15, 0); }
+    expect(many.uplink / none.uplink).toBeCloseTo(many.chorus, 1);
+    expect(many.uplinkLine).toBe('Waking it · your relays answer');
   });
 });

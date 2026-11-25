@@ -124,6 +124,11 @@ code carries it.
     motes, at most three a wake ("Thren knot · drawn by the relay's noise"). The HUD says which: "Waking it
     quietly" or "Waking it loud · the Thren hear". The knots break off when the relay wakes. Nothing
     human lives in the Hollows, so a loud relay sends no Custody waves: the Thren are the whole fight.
+  - **The Last Lanes.** Lastlight's relay, the last before the Threshold, is a **chorus**: every Warden relay
+    she woke on the way (the first system's, the Reach's, the gates' and the legs', `wardenRelays` in
+    `sim/evidence.ts`) answers it, and the charge runs 8% faster for each, up to twice as fast
+    (`CHORUS_STEP`, `CHORUS_MAX`). Sam says so; the HUD reads "Waking it · your relays answer". It keeps
+    the late waves.
   The scripted pilot (`tools/pilot.ts`) flies into the ring and sits there, firing on a buried relay's rock.
 - **An awake relay opens the lane** (spaceways plan, step 3). The gate's lane is lit: a soft teal beam
   under the flight plane runs from down the course through the ring and away beyond, with motes flowing

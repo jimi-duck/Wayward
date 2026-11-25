@@ -48,6 +48,10 @@ export const LOUD_QUIET_RATE = 0.5;
 export const LOUD_FILL = 9;
 export const LOUD_KNOT = 3;
 export const LOUD_MAX = 3;
+/** A chorus relay (the Last Lanes): each relay she woke on the way adds this much to the charge's rate, up to this many times its own. */
+export const CHORUS_STEP = 0.08;
+export const CHORUS_MAX = 2;
+export const chorusRate = (woken: number): number => Math.min(CHORUS_MAX, 1 + CHORUS_STEP * woken);
 /** Stages of the wake: lamps, the dish, the core. */
 export const UPLINK_STAGES = 3;
 
