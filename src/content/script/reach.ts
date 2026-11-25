@@ -56,7 +56,7 @@ export const REACH: Row[] = [
   sam('hr_paper', 'halden', { on: 'place', place: 'hr_paper' }, '“Paper, signed L. C. Tallyhouse keeps Kellern’s books. Someone there will know the hand.”', { main: true }),
   card('hr_order', '*', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] }, holdsJob: true }),
   // at Halden, Ilse names Ada on the radio after the order: one card a stop (owner, 23 November 2026); the card is for an order found elsewhere
-  { id: 'hr_ada', stop: 'halden', on: { on: 'flag', flag: 'frag_order' }, if: { has: ['ilse_met'], not: ['ada_named'] }, wall: 'ada_named', do: { radio: { from: ILSE, caller: 'miners', text: '“Your archive thinks like Ada Aster. She stood watch with me. Aster’s your name too. Ada left it listening.”' } } },
+  { id: 'hr_ada', stop: 'halden', on: { on: 'flag', flag: 'frag_order' }, if: { has: ['ilse_met'], not: ['ada_named'] }, wall: 'ada_named', do: { radio: { from: ILSE, caller: 'miners', text: '“That key in your hull is Ada Aster’s. She stood watch with me. Aster’s your name too.”' } } },
   card('hr_hand', '*', { on: 'flag', flag: 'clue_order_sig' }, 'story_handwriting', { if: { not: ['ada_named', 'ilse_met'] }, holdsJob: true }),
   // her relay: Ilse points to it once the paper is aboard, and the gate waits for it (spaceways plan, step 4)
   { id: 'hr_relay_say', stop: 'halden', on: { on: 'after', row: 'hr_paper', delay: 4 }, do: { radio: { from: ILSE, caller: 'miners', text: '“The relay by your gate was ours. Dark since that night. Put your key to it and Halden trades again.”' } } },

@@ -174,6 +174,8 @@ export const PLACE_AT = 30;
 
 /** Seconds a road gate holds a stop's main beats once the player is near it (the Narrows rule, #384, for every stop): the HUD counts it down, so the wait always has an end (owner, 14 November 2026). */
 const GATE_HOLD = 90;
+/** How long a gate whose relay is awake waits for a beat still owed (Ada's note on the wake), at most, before it opens. */
+const LIT_HOLD = 10;
 /** Seconds from her coming near a gate that waits on a call only waiting its turn, before it says it is holding (the HUD gate line says so all along). */
 const CALL_QUIET = 20;
 /** Units from the gate at which a hold is told and its clock starts: she is waiting at the gate, not only in the ring. */
@@ -1993,7 +1995,8 @@ export class World implements EncounterHost {
     this.gateWhy = h.why;
     if (h.paint || h.handshake) return true;
     if (this.holdAt === Infinity) this.holdAt = this.runTime;
-    if (!h.slow && this.runTime - this.holdAt >= GATE_HOLD) { sc!.release(this.flags, this.tankCap ? this.fuel / this.tankCap : 0); this.gateLet = true; return false; }
+    // a woken relay opens its gate almost at once (owner, 25 November 2026): a beat due on the wake gets LIT_HOLD to play, the rest is carried
+    if (!h.slow && this.runTime - this.holdAt >= (h.resetting ? LIT_HOLD : GATE_HOLD)) { sc!.release(this.flags, this.tankCap ? this.fuel / this.tankCap : 0); this.gateLet = true; return false; }
     return true;
   }
 

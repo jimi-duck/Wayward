@@ -8,7 +8,7 @@
 
 export const JUNO_LOG: Readonly<Record<string, string>> = {
   // the Reach
-  northfold: 'Stole my own ship. Someone left me a quiet lane.',
+  northfold: 'One lane open. Gran’s key will open the rest.',
   halden: 'Old Wardens retire here. One of them kept paper.',
   marlow: 'Kellern counts everything. Someone here counted honestly.',
   branford: 'Hester’s lane. Pirates want a toll, and the Net wants me.',

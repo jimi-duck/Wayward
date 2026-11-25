@@ -112,6 +112,7 @@ describe('a shut Jump Gate', () => {
     expect(moot).toBeGreaterThan(0);
     // the call came while the gate was still holding for it, not after the hold ran out
     expect(moot).toBeLessThan(40 + 90);
-    expect(open).toBeGreaterThanOrEqual(moot);
+    // (once the relay is awake the gate holds at most LIT_HOLD, 10 s, for a beat owed: owner, 25 November 2026)
+    expect(open).toBeGreaterThanOrEqual(moot - 10);
   }, 60000);
 });

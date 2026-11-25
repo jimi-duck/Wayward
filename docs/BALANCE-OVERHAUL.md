@@ -11,25 +11,25 @@ as it can, and does not read. Pilot numbers, not playtests.
 
 | Strategy | Policy | Threshold | Minutes | Wrecks | Endings open | Dropped | Twice |
 |---|---|---|---|---|---|---|---|
-| torpedo+defence | run | no | 68 | 5 | — | br_hand_lit, br_note | none |
-| torpedo+defence | run | yes | 99 | 2 | unite, vanish | none | none |
-| torpedo+defence | bluff | yes | 98 | 1 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | bluff | yes | 95 | 2 | broadcast, sell, trade, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 102 | 3 | broadcast, unite, sell, seal, vanish | none | none |
-| torpedo+defence | fight | yes | 96 | 1 | broadcast, unite, sell, seal, vanish | none | none |
+| torpedo+defence | run | no | 63 | 3 | — | br_hand_lit, br_note | none |
+| torpedo+defence | run | no | 45 | 4 | — | sg_hand_lit, sg_note | none |
+| torpedo+defence | bluff | yes | 94 | 1 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | bluff | yes | 89 | 2 | broadcast, sell, trade, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 97 | 3 | broadcast, unite, sell, seal, vanish | none | none |
+| torpedo+defence | fight | yes | 93 | 0 | broadcast, unite, sell, seal, vanish | none | none |
 
 ## Leg by leg
 
 | Leg | Minutes (mean) | Wrecks (mean) |
 |---|---|---|
 | The Reach | 21 | 0.0 |
-| The Marches | 10 | 0.0 |
-| The Salvage Belt | 13 | 0.3 |
-| The Drift Deep | 11 | 0.0 |
-| The Breaker Yards | 13 | 1.0 |
-| The Free Ports | 7 | 0.0 |
-| The Hollows | 10 | 1.0 |
-| The Last Lanes | 8 | 0.0 |
+| The Marches | 9 | 0.0 |
+| The Salvage Belt | 12 | 0.7 |
+| The Drift Deep | 9 | 0.0 |
+| The Breaker Yards | 9 | 0.7 |
+| The Free Ports | 6 | 0.0 |
+| The Hollows | 7 | 0.8 |
+| The Last Lanes | 6 | 0.0 |
 
 ## Jobs on the road
 
@@ -50,19 +50,19 @@ never chases a goal, so this shows what is reachable, not how often a player win
 | wreck_remembered | 2 | 2 | 2 | 0 |
 | the_witness | 2 | 2 | 2 | 0 |
 | long_walk | 0 | 4 | 2 | 0 |
-| finders_keepers | 0 | 4 | 2 | 0 |
-| something_dark | 4 | 0 | 2 | 0 |
-| missing_payroll | 2 | 2 | 2 | 0 |
-| last_shift | 4 | 0 | 2 | 0 |
-| tarik_bend | 2 | 2 | 2 | 0 |
-| cradle_crew | 2 | 2 | 2 | 0 |
-| needle | 0 | 4 | 2 | 0 |
-| drift_cache | 0 | 4 | 2 | 0 |
-| voice_wire | 0 | 4 | 2 | 0 |
-| kill_zone | 0 | 2 | 4 | 0 |
-| dead_drop | 0 | 4 | 1 | 0 |
-| be_bait | 4 | 0 | 1 | 0 |
-| lose_prefect | 0 | 4 | 1 | 0 |
-| recovery_order | 0 | 2 | 3 | 0 |
+| finders_keepers | 0 | 4 | 1 | 0 |
+| something_dark | 4 | 0 | 1 | 0 |
+| missing_payroll | 2 | 2 | 1 | 0 |
+| last_shift | 4 | 0 | 1 | 0 |
+| tarik_bend | 2 | 2 | 1 | 0 |
+| cradle_crew | 2 | 2 | 1 | 0 |
+| needle | 0 | 4 | 1 | 0 |
+| drift_cache | 0 | 4 | 1 | 0 |
+| voice_wire | 0 | 4 | 1 | 0 |
+| kill_zone | 0 | 2 | 3 | 0 |
+| dead_drop | 0 | 4 | 0 | 0 |
+| be_bait | 4 | 0 | 0 | 0 |
+| lose_prefect | 0 | 4 | 0 | 0 |
+| recovery_order | 0 | 2 | 2 | 0 |
 | sables_crossing | 0 | 0 | 0 | 0 |
-| ring_centre | 2 | 2 | 1 | 0 |
+| ring_centre | 3 | 1 | 0 | 0 |

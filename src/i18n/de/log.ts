@@ -2,7 +2,7 @@
 
 export const LOG: Record<string, string> = {
   'Juno’s log': 'Junos Logbuch',
-  'Stole my own ship. Someone left me a quiet lane.': 'Mein eigenes Schiff geklaut. Jemand hat mir eine ruhige Route gelassen.',
+  'One lane open. Gran’s key will open the rest.': 'Eine Bahn offen. Omas Schlüssel öffnet den Rest.',
   'Old Wardens retire here. One of them kept paper.': 'Alte Wardens setzen sich hier zur Ruhe. Eine hat Papier aufgehoben.',
   'Kellern counts everything. Someone here counted honestly.': 'Kellern zählt alles. Einer hier hat ehrlich gezählt.',
   'Hester’s lane. Pirates want a toll, and the Net wants me.': 'Hesters Route. Piraten wollen Zoll, und das Net will mich.',
