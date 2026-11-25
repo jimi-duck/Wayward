@@ -30,3 +30,11 @@ export function uplinkWave(stage: number, gate: number): Array<{ variant: 'picke
   const pickets = Math.min(4, 2 + Math.floor(gate / 2));
   return stage === 1 ? [{ variant: 'picket', n: pickets }] : [{ variant: 'picket', n: pickets - 1 }, { variant: gate >= 3 ? 'enforcer' : 'lancer', n: 1 }];
 }
+
+/** A hauler captain on the radio, a few seconds after a relay has opened its gate: the lane is live again (one per gate, in turn). */
+export const LANE_LINES = [
+  '“Gate’s live? First time in years. Whoever lit it, thank you.”',
+  '“That gate’s been dark since my mother flew it. Who woke it?”',
+  '“Lane’s open! Haulers, form up. We’re going through.”',
+  '“Warden signal on the gate. I haven’t seen that since I was a boy.”',
+] as const;

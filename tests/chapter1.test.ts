@@ -154,6 +154,11 @@ describe('a shut Jump Gate says why, from afar', () => {
     fly(w, 8);
     for (const e of w.events) if (e.type === 'ping') pings.push(e.id);
     expect(pings.some((p) => p.includes('sam_relay'))).toBe(true);
+    // the lane is live: hulls come through the gate, and one of them says so
+    expect(w.traffic!.arrived).toBeGreaterThanOrEqual(2);
+    fly(w, 12);
+    for (const e of w.events) if (e.type === 'ping') pings.push(e.id);
+    expect(pings.some((p) => p.includes('lane_open'))).toBe(true);
     expect(w.gateWhy).toBe('');
   });
 });

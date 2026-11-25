@@ -1,5 +1,5 @@
 import {
-  AdditiveBlending, BoxGeometry, CircleGeometry, Color, CylinderGeometry, DoubleSide, ShaderMaterial, Matrix4, Quaternion, Vector3, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Sprite, SpriteMaterial, ExtrudeGeometry, IcosahedronGeometry, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, Line, Shape,
+  AdditiveBlending, BoxGeometry, Points, PointsMaterial, CircleGeometry, Color, CylinderGeometry, DoubleSide, ShaderMaterial, Matrix4, Quaternion, Vector3, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Sprite, SpriteMaterial, ExtrudeGeometry, IcosahedronGeometry, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, Line, Shape,
   type Material, type Scene, type Texture,
 } from 'three';
 import type { World } from '../sim/world';
@@ -225,6 +225,12 @@ function buildLane(): Group {
 
 /** Where the ring's centre floats above the flight plane. */
 const GATE_Y = 7;
+/** The lane of light's motes and how far beyond the gate they run (units). */
+const LANE_MOTES = 160;
+const LANE_LEN = 1400;
+/** How far back down the course toward the system it runs, and its height under the flight plane (in the gate's group). */
+const LANE_IN = 600;
+const LANE_Y = -3;
 const MEMBRANE_R = 44;
 const smooth01 = (x: number) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
 
@@ -555,6 +561,10 @@ export class BreakoutView {
   private readonly tether: Line;
   /** The uplink line from her keel to a relay she is waking (sim/uplink.ts). */
   private readonly uplinkLine: Line;
+  /** The lane of light: a woken relay's gate is live again, and motes of teal run out through it along the way on (sim/uplink.ts). */
+  private readonly laneLight: Points;
+  private readonly laneBeam: Mesh;
+  private laneLit = 0;
   /** The repair gantry (sim/gantry.ts) and its lamp. */
   private readonly gantry = new Group();
   private readonly gantryLamp = (materials().lamp as MeshBasicMaterial).clone();
@@ -619,6 +629,34 @@ export class BreakoutView {
     this.lanehaze.position.y = GATE_Y;
     this.gate.add(this.lanehaze);
     this.lane.add(this.laneRing, this.laneField);
+    // the lane of light: three strands of motes out of the throat and away beyond the gate, along the course (turned each frame)
+    {
+      const n = LANE_MOTES, g = new BufferGeometry();
+      g.setAttribute('position', new Float32BufferAttribute(new Float32Array(n * 3), 3));
+      this.laneLight = new Points(g, new PointsMaterial({ map: glow, color: new Color(0.15, 0.75, 0.85), size: 3, sizeAttenuation: true, transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
+      this.laneLight.frustumCulled = false;
+      this.laneLight.visible = false;
+      this.lane.add(this.laneLight);
+      // and a soft beam under the motes: two crossed ribbons, bright at the throat and gone into the dark at the far end
+      // it runs from down the course (where the trade comes in) through the ring and away beyond, below the flight plane like a runway
+      const beam = new BufferGeometry(), w = 2.2, xs = [-LANE_IN, 0, LANE_LEN], lit = [0, 1, 0];
+      const pos: number[] = [], col: number[] = [], idx: number[] = [];
+      for (const k of [0, 1]) {
+        // two crossed ribbons: one flat, one upright
+        for (let i = 0; i < 3; i++) {
+          for (const sgn of [-1, 1]) { pos.push(xs[i]!, LANE_Y + (k ? sgn * w : 0), k ? 0 : sgn * w); col.push(lit[i]!, lit[i]!, lit[i]!); }
+        }
+        const o = k * 6;
+        idx.push(o, o + 2, o + 3, o, o + 3, o + 1, o + 2, o + 4, o + 5, o + 2, o + 5, o + 3);
+      }
+      beam.setAttribute('position', new Float32BufferAttribute(pos, 3));
+      beam.setAttribute('color', new Float32BufferAttribute(col, 3));
+      beam.setIndex(idx);
+      this.laneBeam = new Mesh(beam, new MeshBasicMaterial({ color: new Color(0.08, 0.42, 0.5), vertexColors: true, transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false, side: DoubleSide, toneMapped: false, fog: false }));
+      this.laneBeam.frustumCulled = false;
+      this.laneBeam.visible = false;
+      this.lane.add(this.laneBeam);
+    }
     // the depot stands off to one side of its berth; the cyan ring is where you dock
     this.portRing = flatRing(9, 0.25, CYAN, 0.6);
     this.portRing.position.y = 1.4;
@@ -845,6 +883,24 @@ export class BreakoutView {
     const spool = Math.min(1, b.spool / b.spoolNeed);
     const shut = world.gateWhy !== '' && spool === 0 && !jump;
     this.shut += ((shut ? 1 : 0) - this.shut) * Math.min(1, dt * 3);
+    // the lane of light, once the relay is awake (not the Narrows: its gate reboots on its own scene)
+    const live = b.def.script !== 'narrows' && !!relayOf(b) && world.flags.has(relayKey(b.def));
+    this.laneLit = Math.max(0, Math.min(1, this.laneLit + (live ? dt / 3 : -dt)));
+    this.laneLight.visible = this.laneBeam.visible = this.laneLit > 0;
+    if (this.laneLight.visible) {
+      const pos = this.laneLight.geometry.attributes.position as Float32BufferAttribute;
+      for (let i = 0; i < LANE_MOTES; i++) {
+        const strand = i % 3, a = (strand / 3) * Math.PI * 2 + this.time * 0.35;
+        // each mote runs out along the axis and round its strand's slow spiral; the far ones thin into the dark
+        const u = ((i / LANE_MOTES) + this.time * 0.03) % 1, x = -LANE_IN + u * (LANE_IN + LANE_LEN), r = 1.5 + Math.max(0, x / LANE_LEN) * 12;
+        pos.setXYZ(i, x, LANE_Y + Math.sin(a + u * 14) * r, Math.cos(a + u * 14) * r);
+      }
+      pos.needsUpdate = true;
+      // the way on: from the start through the gate (the course starts at the origin, sim/breakout.ts course())
+      this.laneLight.rotation.y = this.laneBeam.rotation.y = Math.atan2(-b.lane.z, b.lane.x);
+      (this.laneLight.material as PointsMaterial).opacity = 0.85 * this.laneLit;
+      (this.laneBeam.material as MeshBasicMaterial).opacity = this.laneLit * (0.8 + 0.2 * Math.sin(this.time * 1.3));
+    }
     this.throat.rotation.x += dt * (0.2 + spool * 3);
     (this.lanehaze.material as SpriteMaterial).opacity = 0.022 + 0.034 * ready + 0.15 * spool;
     (this.throat.material as MeshBasicMaterial).opacity = (1 - 0.8 * this.shut) * (0.015 + 0.025 * ready + 0.18 * spool + 0.4 * (jump?.flare ?? 0));
