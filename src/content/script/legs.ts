@@ -245,6 +245,9 @@ const YARDS_ROWS: Row[] = [
   objective('yk_objective', 'y_keel', arrive(), 'Keelberth · Sam, through the relays'),
   main('yk_sam', 'y_keel', free(6), 'story_tam_brother'),
   analyst('yk_survey', 'y_keel', 'job_voice_wire_won', '“The relay that hailed you heard the Narrows handshake. It’s listening to Ada’s route, not to you. Interesting distinction.”'),
+  // Keelberth's relay (spaceways plan, step 6): Sam calls through it; hungry, it drinks her jump fluid as it wakes
+  radio('yk_relay_say', 'y_keel', after('yk_objective', 6), SAM[0], SAM[1], '“Juno? I’m on the relay by your gate. It’s thirsty. Feed it and I’ll hear you properly.”', { main: true }),
+  { id: 'yk_relay', stop: 'y_keel', on: relay(), wall: 'relay_y_keel', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'Sam’s line is clear' } }, main: true, urgent: true },
   objective('yk_gate', 'y_keel', leave(), 'Jump to Torchwall'),
 
   // 5 · Cradle Gap (breather): the cage, a breaker still holding a knot of motes

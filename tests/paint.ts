@@ -1,6 +1,7 @@
 import type { World } from '../src/sim/world';
 import { PAINTED } from '../src/sim/postjump';
 import { OPENING_AT } from '../src/content/story';
+import { STARVED } from '../src/sim/uplink';
 
 const STEP = 1 / 60;
 const IDLE = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' } as const;
@@ -44,7 +45,7 @@ export function atPlace(w: World): boolean {
 
 /**
  * A relay she wakes herself (sim/uplink.ts): park her in its ring, as a player would, with what a twist puts in the way gone: a
- * buried mast's rock mined away, a guarded mast's picket driven off. True while there is a relay to wake.
+ * buried mast's rock mined away, a guarded mast's picket driven off, a hungry one's tank filled. True while there is a relay to wake.
  */
 export function atRelay(w: World): boolean {
   // (once awake, the key is told within reach of the mast: she stays by it)
@@ -54,5 +55,7 @@ export function atRelay(w: World): boolean {
   const f = w.field;
   for (let i = f.bulwarks.length - 1; i >= 0; i--) if (Math.hypot(f.bulwarks[i]!.x - rl.x, f.bulwarks[i]!.z - rl.z) < 1) f.bulwarks.splice(i, 1);
   for (let i = w.aliens.length - 1; i >= 0; i--) if (!w.aliens[i]!.ward && Math.hypot(w.aliens[i]!.x - rl.x, w.aliens[i]!.z - rl.z) < 120) w.aliens.splice(i, 1);
+  // a hungry relay's starved core: she has mined to feed it
+  if (w.uplinkBlock === STARVED) w.fuel = Math.max(w.fuel, 20);
   return true;
 }

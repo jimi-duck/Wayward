@@ -18,6 +18,7 @@ import { live } from '../src/sim/encounters';
 import { ARCADE_PRICE, FITTING } from '../src/content/web';
 import { MODULE_BY_ID } from '../src/content/modules';
 import type { SurvivalId } from '../src/content/survival';
+import { STARVED } from '../src/sim/uplink';
 
 /** The arcade pilot presses B in a quiet moment (as a player who knows the key would); PILOT_NO_B=1 leaves it to the bay's own openings. */
 const B_KEY = process.env.PILOT_NO_B !== '1';
@@ -557,7 +558,8 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
     if (!pickup && d < sp.def.r + 30 && v > 0.08) f.brk = true;
   }
   // a relay to wake (sim/uplink.ts): fly into its ring and sit there while it charges, fighting what comes; a buried one's rock is shot away
-  const rl = !job && bk && !bk.chase && !paint && !sp ? w.wakeRelay : null;
+  // (a hungry relay's starved core waits while she mines to feed it)
+  const rl = !job && bk && !bk.chase && !paint && !sp && w.uplinkBlock !== STARVED ? w.wakeRelay : null;
   if (rl && !targets.boss) {
     const dx = rl.x - s.x, dz = rl.z - s.z, d = Math.hypot(dx, dz) || 1;
     want = Math.atan2(-dz, dx);
