@@ -94,7 +94,7 @@ of every road relay (`sim/uplink.ts`, docs/ROAD.md): 36 s inside its 45-unit rin
 sending two Custody patrol fighters (`uplinkWave(stage, -1)`), the first fight after Cerro's raiders. This lifts the quiet
 rule below for this fight only. The third stage is told here (there is no stop script): "Warden key accepted · Jump Gate
 open", then Sam (`SAM_RELAY`). The relay comes before the tank on the HUD (`refuelAt` waits for it); the relay's mark shows
-only once she is painted.
+only once she is painted. Awake, the relay opens the lane: the beam, hulls through the gate and a hauler's line (docs/ROAD.md).
 
 ## After the paint
 

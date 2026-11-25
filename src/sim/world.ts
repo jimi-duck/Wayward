@@ -11,7 +11,7 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Floor, FLOOR, SCAN_LINE } from './floor';
-import { stepUplink, uplinkWave, UPLINK_R } from './uplink';
+import { LANE_LINES, stepUplink, uplinkWave, UPLINK_R } from './uplink';
 import { Script, type Output } from './script';
 import { derive, SIG_CLUES, relaysLit, relayFlag } from './evidence';
 import { GATES, ON_ROAD } from '../content/road';
@@ -515,7 +515,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.mainLines = new Set(); this.listenAt = Infinity;
+    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.mainLines = new Set(); this.listenAt = Infinity;
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
@@ -2210,6 +2210,8 @@ export class World implements EncounterHost {
   /** The uplink: inside the relay's ring the charge runs; each stage is told, and the first two send a wave. */
   private stepRelay(dt: number): void {
     const rl = this.wakeRelay, b = this.bk;
+    // a woken relay opens the lane: the trade comes through the gate again (a reload of the system finds it open, without the voice)
+    if (b && !this.laneOpened && b.def.script !== 'narrows' && relayOf(b) && this.flags.has(relayKey(b.def))) this.openLane(this.uplink >= 1);
     if (!rl || !b || this.phase !== 'play') return;
     const r = stepUplink(this.uplink, this.uplinking, true, dt);
     this.uplink = r.charge;
@@ -2229,6 +2231,19 @@ export class World implements EncounterHost {
       : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: 'more Custody inbound', main: true });
     const spawn = uplinkWave(r.stage, gate).map((w) => ({ ...w, from: 'ahead' as const }));
     if (spawn.length) this.applyOutcome({ text: '', spawn }, 0, []);
+  }
+
+  /** The lane is open on this sortie (World.openLane). */
+  laneOpened = false;
+
+  /** A woken relay's lane: hulls come through the gate (sim/traffic.ts), and one of them says so on the radio a little after the key. */
+  private openLane(voice: boolean): void {
+    this.laneOpened = true;
+    if (!this.traffic) this.traffic = new Traffic(this, { n: 0, patrols: false, routes: [], busy: false });
+    this.traffic.openLane(this);
+    if (!voice) return;
+    const line = LANE_LINES[(GATES.findIndex((g) => g.script === this.bk?.def.script) + 1) % LANE_LINES.length]!;
+    this.radioLines('lane_open', tr('Hauler captain'), 'frontier', [tr(line)], 6);
   }
 
   /** Where the relay mast stands that the gate waits on, while it waits on it (the HUD names its range). */

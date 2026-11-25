@@ -186,5 +186,7 @@ describe('waking a relay (the uplink, plan "Reopen the spaceways")', () => {
     step(15, rl.x, rl.z);
     expect(w.flags.has('relay_' + w.bk!.def.script)).toBe(true);
     expect(notices.indexOf('Warden key accepted')).toBeGreaterThan(notices.indexOf('Relay dish turning'));
+    // and the lane is live again: hulls come through the gate
+    expect(w.traffic?.arrived ?? 0).toBeGreaterThanOrEqual(2);
   });
 });

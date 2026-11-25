@@ -34,6 +34,9 @@ const FIRST_SECURITY_GAP = 25;
 export const SECURITY_DELAY = 3.5;
 /** A second hit inside this many seconds calls them. */
 const STRIKE_WINDOW = 60;
+/** An opened lane: seconds between hulls through the gate, and how many beyond the system's own traffic. */
+export const LANE_GAP = 28;
+const LANE_EXTRA = 3;
 /** Traffic within this of a shot hull scatters (units). */
 const SCATTER_R = 170;
 
@@ -147,6 +150,11 @@ export class Traffic {
   private nextPatrol = Infinity;
   /** The relay post of a system that has patrols, or null. */
   relayPost: RelayPost | null = null;
+  /** A woken relay opened the gate (sim/uplink.ts): hulls come through it now and then, and when the next is due. */
+  private laneOpen = false;
+  private nextArrival = Infinity;
+  /** Hulls that have come through the opened gate. */
+  arrived = 0;
 
   constructor(w: World, plan: TrafficPlan) {
     const b = w.bk!, h = w.ship.heading;
@@ -221,6 +229,39 @@ export class Traffic {
     return [b.lane, ...(b.port ? [b.port] : []), ...(b.audit ? [b.audit] : [])].map((p) => ({ x: p.x, z: p.z, r: 60 }));
   }
 
+  /**
+   * The gate is open on a woken relay: the lane is live again, and the trade comes through it. A hull leaves the ring on the
+   * system's side and flies down the course and off to one side, a first pair at once, then one every LANE_GAP while the sky
+   * holds fewer than the system's own traffic and LANE_EXTRA more.
+   */
+  openLane(w: World): void {
+    if (this.laneOpen) return;
+    this.laneOpen = true;
+    this.arrive(w, 1); this.arrive(w, -1);
+    this.nextArrival = w.runTime + LANE_GAP;
+  }
+
+  private arrive(w: World, side: number): void {
+    // the gate in the course's frame (it lies ahead along the start's heading, but read it rather than assume it)
+    const G = w.bk!.lane, len = this.len, dx = G.x - this.x0, dz = G.z - this.z0;
+    const gf = (dx * this.fx + dz * this.fz) / len, go = dx * this.rx + dz * this.rz;
+    const p = (u: number, o: number): [number, number] => [gf - u / len, go + side * o];
+    // a line of its own (not the system's, so the respawn never picks it): out of the ring, down the course, off to a side
+    const route: Route = { id: 'through', pts: [p(70, 12), p(420, 160), p(900, 620), p(1300, 1400)], ships: ['hauler', 'liner', 'barge'], pace: [1.1, 1.6] };
+    const a = this.at(route.pts[0]!), g = this.at(route.pts[1]!);
+    const v = route.ships[this.rng.int(route.ships.length)]!;
+    const al = w.spawnHostile(v, { x: a.x, y: this.rng.range(-1, 1), z: a.z }, null, true);
+    al.canCloak = false; al.cloak = 0; al.mode = 'drift'; al.escort = false; al.ttl = 0;
+    al.r *= v === 'barge' ? 0.78 : v === 'liner' ? 1.18 : 1;
+    al.hp = al.maxHp = Math.max(4, Math.round(al.maxHp * 0.35));
+    al.spK *= this.rng.range(route.pace[0], route.pace[1]);
+    al.ax = g.x; al.az = g.z;
+    al.face = Math.atan2(-(g.z - a.z), g.x - a.x);
+    al.ward = { act: 'pass', temper: 'meek', hx: g.x, hz: g.z, ring: 0, warned: 0, tag: VARIANTS[v]!.label };
+    this.hulls.push({ al, route, leg: 1 });
+    this.arrived++;
+  }
+
   /** Put a hull on a route: at a random stretch of it when the system is first dealt, else at its start. */
   private launch(w: World, deal: boolean): void {
     for (let tries = 0; tries < 8; tries++) {
@@ -274,6 +315,11 @@ export class Traffic {
     if ((this.respawn -= dt) <= 0) {
       this.respawn = 5;
       if (this.hulls.length < this.n) this.launch(w, false);
+    }
+    // the lane, once a relay has opened it
+    if (this.laneOpen && w.runTime >= this.nextArrival) {
+      this.nextArrival = w.runTime + LANE_GAP;
+      if (this.hulls.length < this.n + LANE_EXTRA) this.arrive(w, this.rng.next() < 0.5 ? -1 : 1);
     }
     // a patrol, now and then
     if (this.patrols) { this.relayStep(w, dt); this.patrolStep(w); }

@@ -66,6 +66,12 @@ code carries it.
   Custody wave from the gate side, bigger further down the road (`uplinkWave`). Awake, the stop's
   "Warden key accepted" row plays even in a fight. The first system past Cerro has one too (docs/POSTJUMP.md). The mast lights with the charge, a line runs from
   her keel to it, and the HUD reads "Waking the relay" with the percentage. The Narrows keeps its scene.
+- **An awake relay opens the lane** (spaceways plan, step 3). The gate's lane is lit: a soft teal beam
+  under the flight plane runs from down the course through the ring and away beyond, with motes flowing
+  along it (`laneLight`, `laneBeam` in `render/breakout.ts`). The trade comes back: two hulls leave the
+  ring at once, then one every 28 s up to three more than the system's own traffic (`Traffic.openLane`,
+  `LANE_GAP`), and a hauler captain says so on the radio a few seconds after the key (`LANE_LINES`, one
+  per gate in turn). A reload finds the lane open, without the voice. Not at the Narrows.
 
 ## Continuance Public Service
 
