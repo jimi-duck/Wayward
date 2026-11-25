@@ -149,3 +149,40 @@ describe('the Breaker Yards’ relay', () => {
     expect(w.uplink).toBeGreaterThan(held);
   });
 });
+
+describe('the Free Ports’ relay', () => {
+  /** Hold her near the mast, answering the pier's card with `pick`; other cards with their first answer. */
+  function near(w: World, secs: number, pick: string): boolean {
+    let asked = false;
+    for (let i = 0; i < Math.round(secs / STEP); i++) {
+      const m = relayOf(w.bk!)!;
+      w.ship.invuln = 99; w.ship.x = m.x - 15; w.ship.z = m.z; w.ship.vx = w.ship.vz = 0;
+      for (let k = w.aliens.length - 1; k >= 0; k--) if (!w.aliens[k]!.ward) w.aliens.splice(k, 1);
+      w.step(STEP, NO); w.events.length = 0;
+      if (w.comms?.def.id === 'story_mirren_relay') { asked = true; w.answer(pick); continue; }
+      const open = w.comms ?? w.call; if (open) w.answer(open.def.choices[0]!.id);
+    }
+    return asked;
+  }
+
+  it('Mirren’s Pier: the locals ask her to leave it dark; woken, the gate opens on her key', () => {
+    const w = stop('f_mirren', ['frag_witnesses', 'forty_held']);
+    expect(w.bk!.def.twist).toBe('refused');
+    hold(w, FLOOR.arrival + 0.5, -400, 0);
+    expect(w.uplinkBlock).toBe('Hear the locals out first');
+    expect(near(w, 60, 'wake')).toBe(true);
+    expect(w.flags.has('relay_f_mirren')).toBe(true);
+  });
+
+  it('Mirren’s Pier: left dark, no relay to wake, the long way costs jump fluid, and the gate does not wait on it', () => {
+    const w = stop('f_mirren', ['frag_witnesses', 'forty_held']);
+    hold(w, FLOOR.arrival + 0.5, -400, 0);
+    w.fuel = 30;
+    expect(near(w, 40, 'dark')).toBe(true);
+    expect(w.fuel).toBeLessThanOrEqual(24.01);
+    expect(w.wakeRelay).toBeNull();
+    hold(w, 20, -15, 0);
+    expect(w.flags.has('relay_f_mirren')).toBe(false);
+    expect(w.gateWhy).not.toBe('wake the relay');
+  });
+});

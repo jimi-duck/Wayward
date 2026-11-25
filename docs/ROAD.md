@@ -113,6 +113,11 @@ code carries it.
   - Once any relay is awake, every hull its waves sent breaks off (it flees): a tether hunter left alive used to
     circle the gate's field for ever, and its threat kept the stop's card from opening (a pilot run stuck at the
     Seam).
+  - **The Free Ports.** Mirren's Pier's relay is **refused**: it is dark on purpose, hiding the pier. Within 150
+    of the mast Old Mirren's card asks (`story_mirren_relay`; the HUD reads "Hear the locals out first" until
+    then): *Wake it* (the lane opens, the pier is charted, Guild -1) or *Leave it dark* (6 jump fluid for the
+    long way round, Guild +1; no relay to wake and the gate does not wait on it). The Tollgate keeps its
+    scene (its relay answers on arrival, inside Calloway's field).
   The scripted pilot (`tools/pilot.ts`) flies into the ring and sits there, firing on a buried relay's rock.
 - **An awake relay opens the lane** (spaceways plan, step 3). The gate's lane is lit: a soft teal beam
   under the flight plane runs from down the course through the ring and away beyond, with motes flowing

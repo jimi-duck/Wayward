@@ -153,7 +153,7 @@ export const REACH_RELAYS: Record<string, { twist?: RelayTwist }> = {
 };
 
 /** A relay's twist: what is in the way of waking it (sim/world.ts stepTwist). */
-export type RelayTwist = 'buried' | 'guarded' | 'adrift' | 'given' | 'split' | 'jammed' | 'hungry';
+export type RelayTwist = 'buried' | 'guarded' | 'adrift' | 'given' | 'split' | 'jammed' | 'hungry' | 'refused';
 
 /**
  * The legs' relays (spaceways plan, step 6), past the Narrows: a stop that gains one, or a road gate (GATES, a relay already) that
@@ -161,7 +161,8 @@ export type RelayTwist = 'buried' | 'guarded' | 'adrift' | 'given' | 'split' | '
  * her (`pact_holdfast`), Kessel's crews wake it and she holds the ring while they do; else she wakes it herself. `split`: three small
  * masts, one a stage; each woken mast sends its wave, and the next is marked. `jammed`: bursts of static strike the mast on a
  * cycle, and the charge only runs between them. `hungry`: the core drinks her jump fluid as it charges, and starves when the
- * tank is dry (she mines to feed it).
+ * tank is dry (she mines to feed it). `refused`: the locals ask her to leave it dark (a card in the ring's approach): she wakes it
+ * and they are found, or leaves it and the long way round costs jump fluid, and the gate opens without it.
  */
 export const LEG_RELAYS: Record<string, { twist?: RelayTwist }> = {
   m_kessel: { twist: 'given' },
@@ -173,6 +174,8 @@ export const LEG_RELAYS: Record<string, { twist?: RelayTwist }> = {
   d_lantern: { twist: 'jammed' },
   // the Breaker Yards: Keelberth's relay, the one Sam calls through, drinks from her tank as it wakes
   y_keel: { twist: 'hungry' },
+  // the Free Ports: Mirren's Pier's relay is dark on purpose; waking it shows the pier to Custody (the Tollgate keeps its scene)
+  f_mirren: { twist: 'refused' },
 };
 
 export const GATES: Array<{ script: string; purpose: string; /** What is going on at this gate, for the pause card (as RoadStop.brief). */ brief?: string }> = [
