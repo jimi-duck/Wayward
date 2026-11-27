@@ -652,3 +652,11 @@ whose removal lifts the rate is the cost; nothing lifting it says the page or th
 
 **Not measured:** the laptop. Chrome's GPU raster of the HUD is a likely share of a cost that does not change with the
 tier, but nobody has timed it on that machine; the Test line from it would say where the rest goes.
+
+### Pass 19, part two: start at the size the device settled on
+
+Reported after #640: better, but still slow, most of all at the start of an Arcade run. Since pass 18 a laptop mostly
+moves its drawing size rather than its tier, and only the tier was kept between visits (`wayward.tier`), so every visit
+began at full size: two seconds of grace and three of measuring at about 19 fps before the size came down. The kept
+record now holds the pixels per CSS pixel the device last drew at too (`saveTier`, written on every move), and the
+governor starts there (`startAt`). It still climbs back at a quiet moment when there is room. Not measured on the laptop.

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { QualityGovernor, tierIndex } from '../src/render/quality';
+import { describe, expect, it, vi } from 'vitest';
+import { QualityGovernor, keptTier, saveTier, tierIndex } from '../src/render/quality';
 
 const HIGH = tierIndex('high');
 const MEDIUM = tierIndex('medium');
@@ -257,5 +257,28 @@ describe('QualityGovernor on a phone (breathe)', () => {
     expect(q.stepUp()).toBe(true);
     expect(q.scale).toBe(1);
     expect(q.tier.name).toBe('phone');
+  });
+});
+
+describe('the size a device settled on is kept between visits', () => {
+  it('saves and reads back the drawing size with the tier', () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal('localStorage', { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => { store.set(k, v); } });
+    saveTier('t', 'high', HIGH, 1.34);
+    expect(keptTier('t')).toEqual({ tier: HIGH, ceil: HIGH, dpr: 1.34 });
+    // an older record without a size still reads
+    store.set('t', JSON.stringify({ tier: 'medium', ceil: MEDIUM, at: Date.now() }));
+    expect(keptTier('t')).toEqual({ tier: MEDIUM, ceil: MEDIUM });
+    vi.unstubAllGlobals();
+  });
+
+  it('a laptop starts at the kept size, not full size, and keeps its tier', () => {
+    const q = new QualityGovernor(HIGH, false, undefined, false, () => 2);
+    q.startAt(1.0);
+    expect(q.tier.name).toBe('high');
+    expect(q.drawn).toBeCloseTo(1.0);
+    // still climbs back when there is room
+    feed(q, 1 / 60, 2200);
+    expect(q.wantsUp).toBe(true);
   });
 });
