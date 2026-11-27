@@ -459,7 +459,7 @@ export const OVERHAUL: Record<string, string> = {
   'The file is still aboard. Calloway keeps looking. So does Draper. One day someone else will need it.': 'Die Akte ist noch an Bord. Calloway sucht weiter. Draper auch. Eines Tages braucht sie jemand anderes.',
   'Ashgrove has seen these codes before. A long shot.': 'Ashgrove kennt diese Codes schon. Ein Glücksspiel.',
   'Yard lockdown': 'Werftsperre',
-  '“ADA ASTER’S KEY. WE WERE TOLD TO WAIT FOR IT. WE WAITED. GIVE IT AND WE WILL SAY WHAT YOU SAY. TO THEM.”': '„DER SCHLÜSSEL VON ADA ASTER. MAN SAGTE UNS, WIR SOLLEN WARTEN. WIR HABEN GEWARTET. GIB IHN, UND WIR SAGEN, WAS DU SAGST. ZU IHNEN.“',
+  '“TENDER. ADA ASTER’S KEY. WE WERE TOLD TO WAIT FOR IT. WE WAITED. GIVE IT AND WE WILL SAY WHAT YOU SAY. TO THEM.”': '„TENDER. DER SCHLÜSSEL VON ADA ASTER. MAN SAGTE UNS, WIR SOLLEN WARTEN. WIR HABEN GEWARTET. GIB IHN, UND WIR SAGEN, WAS DU SAGST. ZU IHNEN.“',
   'Give it the key': 'Ihm den Schlüssel geben',
   'It will speak for you.': 'Es spricht für dich.',
   '“THANK YOU. NOBODY SAYS THAT TO US.” · the key is in its hands': '„DANKE. DAS SAGT NIEMAND ZU UNS.“ · der Schlüssel ist bei ihm',

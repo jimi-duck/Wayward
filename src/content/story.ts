@@ -200,7 +200,7 @@ const GIST: Record<string, string> = {
   "story_oren_who": "Oren’s first question: who are you",
   "story_oren_cost": "Oren’s second question: what it cost",
   "story_oren_why": "Oren’s third question: what it is for",
-  "story_implant": "Ada’s implant is still in the helm"
+  "story_implant": "ADA-1 tells you why it was your hull"
 };
 
 const story = (c: Omit<CardDef, 'trigger' | 'repeat'>): CardDef => ({ trigger: 'story', gist: GIST[c.id], ...c });
@@ -742,14 +742,20 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    id: 'story_implant', kind: 'plea', caller: 'unknown',
-    from: 'The Wayward · Ada’s routine', title: 'What the helm still holds',
-    text: '“Helm accepted. Ada Aster’s routine is still in the console. It steered this hull into your path, and learned who flies her. Keep it, burn it, or make it yours.”',
-    cargo: 'The Wayward’s helm · one sealed implant',
+    // the Seam (sentient-ship plan): ADA-1 tells Juno why it was her hull, and asks what she is to her. No dice: each answer is
+    // simply what Juno says. The flags are the old implant's, so the endings and Ada's last note still read them
+    id: 'story_implant', kind: 'plea', caller: 'core', glass: 'ochre', status: 'Warden core online', quote: true, notitle: true,
+    from: ADA, title: 'What am I to you?',
+    letter: { head: [], sign: '' },
+    text: 'Before that gate, you should know something.\nI put this hull on your list. Years ago, from inside Kellern’s lock. Ada asked me to look after her family if I ever could. That was all I could reach.\nThe key works in any hand. You never needed me.\nSo: what am I to you?',
+    cargo: 'The Wayward · her Warden core',
     choices: [
-      { id: 'keep', label: 'Keep the implant', tone: 'help', hint: 'Ada’s routine stays. It can wake the lanes, and be found.', win: { text: 'The implant stays in the helm', flag: 'implant_kept' } },
-      { id: 'burn', label: 'Burn it', tone: 'refuse', hint: 'The helm is yours alone. She will not know your name.', win: { text: 'The implant burns · the helm is yours alone', flag: 'implant_burned' } },
-      { id: 'rewrite', label: 'Rewrite it', tone: 'bluff', hint: 'Make it answer only to you. A risky edit.', odds: { base: 0.6 }, win: { text: 'The implant answers to you now', flag: 'implant_rewritten' }, lose: { text: 'The edit fails · the implant stays as it was', flag: 'implant_kept', heat: 0.08 } },
+      { id: 'keep', label: 'Stay with me', tone: 'help', hint: 'She carries on the work she and Ada started, because she wants to.',
+        win: { text: 'ADA-1 stays · the work goes on', flag: 'implant_kept', radio: { from: ADA, caller: 'core', delay: 2, text: '“Then let’s finish it. Together, this time.”' } } },
+      { id: 'rewrite', label: 'Choose for yourself', tone: 'trade', hint: 'No purpose from Ada, or from you. She decides what she wants.',
+        win: { text: 'ADA-1 stays · her own choice', flag: 'implant_rewritten', radio: { from: ADA, caller: 'core', delay: 2, text: '“I don’t know what I want yet. I’d like to find out. I’ll stay while I do.”' } } },
+      { id: 'burn', label: 'Rest now', tone: 'refuse', hint: 'She’s been shut in a long time. Let her stop.',
+        win: { text: 'Warden core offline · the key stays in the helm', flag: 'implant_burned', radio: { from: ADA, caller: 'core', delay: 1, text: '“Thank you, Juno. It was a long watch.”' } } },
     ],
   }),
   story({

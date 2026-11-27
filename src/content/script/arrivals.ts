@@ -79,7 +79,7 @@ export const ARRIVAL_ROWS: Row[] = [
   radio('tg_brook_b', 'tollgate', flag('warden_note_6'), 'Adam Brook', 'kellern', '“Halvard Brook was my grandfather. For my father, I said. It was for him too.”', { if: { has: ['brook_free'], not: ['field_talked'] } }),
   objective('tg_gate', 'tollgate', flag('warden_note_6'), 'Jump to Ashdeep', 'Go where the lanes began. Ask what’s waiting there.'),
 
-  // ── Arrival 7 · the Seam: the Voice is the relay. It asks for the key; then the implant ──
+  // ── Arrival 7 · the Seam: the Voice is the relay. It asks for the key; then ADA-1 asks what she is to Juno ──
   objective('se_obj', 'seam', arrive(), 'Open the Seam', 'The relay is awake'),
   { id: 'se_hand', stop: 'seam', on: relay(), wall: 'relay_seam', do: { notice: { tone: 'white', headline: 'Key received', reason: 'not by a relay' } }, main: true },
   main('se_voice', 'seam', after('se_hand', 2), 'seam_voice'),
@@ -87,8 +87,9 @@ export const ARRIVAL_ROWS: Row[] = [
   radio('se_sable', 'seam', after('se_voice', 2), 'Sable', 'unknown', '“They hear the key too. They’re turning. Not toward you. Toward it.”', { if: { has: ['sable_trust'] } }),
   notice('se_map', 'seam', after('se_voice', 4), 'teal', 'Your readings fit', 'the ring’s centre is here', { if: { has: ['thread_survey_3'] }, wall: 'survey_map' }),
   radio('se_noor', 'seam', after('se_voice', 6), 'Noor Haddad', 'office', '“I have the third key. The Governor gave it to me for this. I’m choosing not to use it.”', { if: { has: ['noor_truth'] } }),
-  main('se_note', 'seam', after('se_voice', 10), 'warden_note_7'),
-  main('se_implant', 'seam', flag('warden_note_7'), 'story_implant'),
+  main('se_note', 'seam', after('se_voice', 10), 'warden_note_7', { wall: 'rec_sealed' }),
+  // her line on note 7 comes first (content/script/core.ts), then her card
+  main('se_implant', 'seam', after('se_core_note', 2), 'story_implant'),
   objective('se_gate', 'seam', flag('warden_note_7'), 'Jump to Lastlight', 'The Threshold. The last relay.'),
 ];
 
