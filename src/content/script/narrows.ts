@@ -18,7 +18,7 @@ export const NARROWS_ROWS: Row[] = [
   notice('nr_notice', { on: 'arrive', delay: 2 }, 'amber', 'The Narrows', 'Custody has locked the Jump Gate'),
   { id: 'nr_objective', stop: STOP, on: { on: 'arrive', delay: 2 }, do: { objective: { main: 'Reach Ada’s relay', quiet: 'The Jump Gate is locked by Custody' } } },
   radio('nr_lock', ASHGROVE, 'custody', { on: 'arrive', delay: 6 }, '“The Narrows gate is closed by order. Turn back, whoever you are.”'),
-  radio('nr_sam_1', 'Sam Okoro', 'miners', { on: 'after', row: 'nr_lock', delay: 4 }, '“That’s the relay your gran watched. Her key can still talk to that gate.”'),
+  radio('nr_sam_1', 'Sam Okoro', 'miners', { on: 'after', row: 'nr_lock', delay: 4 }, '“That’s the relay your grandmother watched. Her old ship can still talk to that gate.”'),
 
   // ── 2 · The key: 2 km from the mast ──
   { id: 'nr_answer', stop: STOP, on: { on: 'near', site: 'relay', within: 200 }, wall: 'relay_broadcast', do: { wall: 'clue_relay_answered' }, main: true },

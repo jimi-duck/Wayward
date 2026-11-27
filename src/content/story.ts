@@ -44,6 +44,12 @@ export const SAM_BEAT = 'story_sam';
 /** Where Sam's private channel always comes in from, in degrees (the bearing line and the RX readout on his calls). */
 const SAM_BEARING = 47;
 export const WAKE_BEAT = 'story_wake';
+/** ADA-1, the ship's Warden core, as the radio and her cards name her (sentient-ship plan, owner 2026-11-27). */
+export const ADA = 'ADA-1 · Warden core';
+/** Set once she has spoken to Juno: her first card, or the one-time card for a save that read the old letter. */
+export const CORE_MET = 'core_met';
+/** A save that read the old letter, loaded since: ADA-1's one-time card is due (meta/save.ts). */
+export const CORE_CATCHUP = 'core_catchup_due';
 /** The opening's chain past Cerro. There is no registry card: the code's notice says it (owner 2026-10-31). */
 export const CERRO_BEATS = [BREACH_BEAT, SAM_BEAT, WAKE_BEAT] as const;
 /**
@@ -151,7 +157,8 @@ const GIST: Record<string, string> = {
   "story_seized": "The raiders took everything",
   "story_breach": "Contract in breach · recovery ordered",
   "story_sam": "Sam has a code for the owner lock",
-  "story_wake": "Gran’s letter · a gate key in her core",
+  "story_wake": "ADA-1 wakes · Ada’s key in her core",
+  "story_core_catchup": "ADA-1 · the ship’s Warden core",
   "story_registry": "Lane checkpoint · your registry decides",
   "story_warden": "A retired Warden heard the shutdown order",
   "story_ledger": "A Kellern clerk sells the real books",
@@ -329,18 +336,34 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    // a message someone left in a sealed partition of her core (owner, 23 October 2026; found by Ned, opened by the yard's reboot: owner 2026-11-24)
-    id: 'story_wake', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Unsent', quote: true, notitle: true,
-    herald: { headline: 'Warden core open', reason: 'it woke on the reboot' },
-    from: 'Warden core · stored message', title: 'For Juno',
-    letter: { head: [], sign: '— Gran' },
-    text: 'Juno, if you’re reading this, Ned’s reboot opened my old core. She’s yours now.\nSeventy years ago the government shut the Jump Gates to the outer worlds. They said the Krail had run out. The reserve log says 94%. Shut lanes kept people counted and charged.\nShe’s a Warden tender. Before they took my key, I hid part of the gate network’s key in her core. Every dead relay still answers it.\nWake them and the gates open. People travel the stars again, and the government’s grip breaks.\nStart with the relay beside your gate. Then take the quiet lane to Halden’s Reach. Someone there remembers me.',
+    // ADA-1's first words (sentient-ship plan, owner 2026-11-27): the reboot at Ned's yard gave the ship's old Warden core her hull back.
+    // She flew it with Ada Aster for decades and has been shut in under Kellern's lock since. Short and strange on purpose: the first
+    // relay shows what she can do (sim/relaywake.ts), the card never explains it. "Where have you been?" is said to Ada, for a moment.
+    id: 'story_wake', kind: 'warning', caller: 'core', glass: 'ochre', status: 'Warden core online', quote: true, notitle: true,
+    herald: { headline: 'Warden core online', reason: 'it woke with the lights' },
+    from: 'ADA-1 · Warden core', title: 'I can hear the ship again',
+    letter: { head: [], sign: '' },
+    text: 'Systems returning. I can hear the ship again.\nWhere have you been?\n…No. You wouldn’t know.\nI’m ADA-1. I flew this ship with Ada Aster. Your grandmother.\nI’ve been in here a long time, Juno.\nI think there’s something we need to finish.',
     cargo: 'The Wayward · a Warden core under her decking',
     choices: [
-      { id: 'lead', label: 'Find the relay', tone: 'help', hint: '',
-        win: { text: 'Gran’s letter is on the Wall · the relay by the gate first', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'],
+      { id: 'lead', label: 'Finish what?', tone: 'help', hint: 'She shows you the relay by the gate.',
+        win: { text: 'ADA-1 is awake · the relay by the gate first', flag: ['archive_woke', 'clue_archive_log', CORE_MET],
           signal: { tone: 'amber', headline: 'Registry: unregistered', reason: 'Paint won’t pass a scan' },
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.5, text: '“Your gran hid a gate key in her? Then use it, Juno. Wake that relay.”' } } },
+          radio: [
+            { from: ADA, caller: 'core', delay: 3, text: '“That relay by the gate. I’ve watched its signal for years. I can’t answer it alone. Bring me close.”' },
+            { from: 'Sam Okoro', caller: 'miners', delay: 13, text: '“Your ship talks now? Fine. If she gets you out, listen to her.”' },
+          ] } },
+    ],
+  }),
+  story({
+    // a save that read the grandmother's old letter before ADA-1 had a voice: once, at the next free moment on the road (content/script/core.ts)
+    id: 'story_core_catchup', kind: 'warning', caller: 'core', glass: 'ochre', status: 'Warden core online', quote: true, notitle: true, handover: true,
+    from: 'ADA-1 · Warden core', title: 'I’m the one who kept it',
+    letter: { head: [], sign: '' },
+    text: 'That letter you read was Ada’s.\nI’m the one who kept it.\nI’m ADA-1. I flew this ship with her, a long time ago.',
+    cargo: 'The Wayward · her Warden core',
+    choices: [
+      { id: 'hear', label: 'Go on', tone: 'help', hint: 'She talks to the relays from now on.', win: { text: 'ADA-1 is awake', flag: [CORE_MET] } },
     ],
   }),
   // ── Act II, the Reach ───────────────────────────────────────────────────

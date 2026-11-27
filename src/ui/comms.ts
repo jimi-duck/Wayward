@@ -9,7 +9,7 @@ import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { INK } from './palette';
 import { num, t } from '../i18n';
 import { FACTION_NAME } from './hud';
-import { arrive, arriving, bars, bearingLine, settle, settleDigits } from './arrive';
+import { arrive, arriving, bars, bearingLine, corePulse, settle, settleDigits } from './arrive';
 
 // ── the comms panel ───────────────────────────────────────────────────────
 // Grown out of the hail panel: every channel opened to the ship, drawn the
@@ -91,7 +91,7 @@ export function artOf(d: Open['def']): ArtRef {
 
 const CALLER_CSS: Record<Caller, string> = {
   custody: NEON_CSS.custody, gutter: NEON_CSS.gutter, office: NEON_CSS.office,
-  frontier: INK.teal, guild: INK.amber, kellern: INK.krail, miners: INK.white, calloway: INK.red, captain: INK.red, unknown: INK.white2,
+  frontier: INK.teal, guild: INK.amber, kellern: INK.krail, miners: INK.white, calloway: INK.red, captain: INK.red, unknown: INK.white2, core: INK.ochre,
 };
 const KIND_WORD: Record<string, string> = {
   captain: 'Named captain', trade: 'Trade', plea: 'Plea', job: 'Job offer', warning: 'Warning', shakedown: 'Shakedown', checkpoint: 'Checkpoint', distress: 'Distress call', rumour: 'Rumour', offer: 'Offer',
@@ -144,6 +144,8 @@ interface SheetPanel {
   lines: string[];
   /** A private channel's bearing in degrees (Sam's is always the same), or null. */
   rx: number | null;
+  /** ADA-1, the ship's Warden core, is speaking: her core pulse where the signal bars would be. */
+  core?: boolean;
 }
 
 /** The opening's sheets (docs/DESIGN-GUIDELINES.md): a main panel, maybe a second one beside it, and an optional document. */
@@ -171,7 +173,7 @@ function sheetView(d: Open['def'], o: Open): SheetView {
   return {
     tpl: 'sheet', timer: false,
     main: {
-      who: null, role, from: t(d.from), status: d.status ? t(d.status) : '', dot: d.status === 'Unknown' ? 'white' : role,
+      who: null, role, from: t(d.from), status: d.status ? t(d.status) : '', dot: d.status === 'Unknown' ? 'white' : role, core: d.caller === 'core',
       title: d.notitle || d.hero ? '' : t(d.title), sub: d.quote ? '' : lines.join(' '), label: '', lines: d.quote ? lines : [],
       facts: !!d.facts, hero: d.hero ? [t(d.hero[0]), t(d.hero[1])] : null, rows: rowsOf(o.ledger), note: d.note ? t(d.note) : '', rx: d.rx ?? null,
       letter: d.letter ? { head: d.letter.head.map(([k, v]) => [t(k), t(v)] as [string, string]), sign: d.letter.sign ? t(d.letter.sign) : '' } : null,
@@ -484,12 +486,12 @@ export class CommsPanel {
       this.items.push({ el, act, n });
       return el;
     };
-    const head = (p: { from: string; status: string; dot: string; rx?: number | null }, box = false) => {
+    const head = (p: { from: string; status: string; dot: string; rx?: number | null; core?: boolean }, box = false) => {
       const deg = p.rx != null ? h('span', 'rx-deg') : null;
       const rx = t('RX {n}°', { n: String(p.rx).padStart(3, '0') });
       if (deg) { if (arriving($('comms'))) settleDigits(deg, rx); else deg.textContent = rx; }
       // the situation chip first (filled in the rim's colour), then who is speaking, then the signal bars
-      return h('header', 'ns-h', '', p.status ? h('span', `ns-st ${box ? 'box' : `chip ${p.dot}`}`, p.status) : null, h('span', 'ns-from', p.from), deg, bars());
+      return h('header', 'ns-h', '', p.status ? h('span', `ns-st ${box ? 'box' : `chip ${p.dot}`}`, p.status) : null, h('span', 'ns-from', p.from), deg, p.core ? corePulse() : bars());
     };
     const rows = (rs: Row[]) => rs.map((r) => h('div', `ns-r ${r.tone}`, '', h('span', 'k', r.k), h('b', 'v', r.v)));
     // the lines read as one block of text, no bar (the owner, 23 October 2026)

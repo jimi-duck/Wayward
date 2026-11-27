@@ -32,7 +32,7 @@ function pastBreakout(seed = 7): Journey {
   const j = newJourney(seed);
   endSortie(j, result(j, {}, { cyrite: 20, supplies: 12}));
   // the opening's chain beyond the gate is played already
-  j.carry.flags.push('archive_woke');
+  j.carry.flags.push('archive_woke', 'core_met');
   return j;
 }
 

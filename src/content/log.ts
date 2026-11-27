@@ -8,12 +8,12 @@
 
 export const JUNO_LOG: Readonly<Record<string, string>> = {
   // the Reach
-  northfold: 'One lane open. Gran’s key will open the rest.',
+  northfold: 'One lane open. The voice in my ship says the rest will follow.',
   halden: 'Old Wardens retire here. One of them kept paper.',
   marlow: 'Kellern counts everything. Someone here counted honestly.',
   branford: 'Hester’s lane. Pirates want a toll, and the Net wants me.',
   copperline: 'Last Kellern port. After this, their books stop mattering.',
-  narrows: 'Gran watched this gate the night they shut it.',
+  narrows: 'My grandmother watched this gate the night they shut it.',
   // the Marches
   m_wake: 'Cut off for seventy years, and they still send lifeboats.',
   m_kessel: 'They lost kin the night the lanes closed. I have the file.',
@@ -29,7 +29,7 @@ export const JUNO_LOG: Readonly<Record<string, string>> = {
   b_kessler: 'A Warden wreck, recorder still running. It heard that night.',
   b_kiln: 'Someone sold my heading. I want to know who.',
   b_tarik: 'A man who draws the burned lanes back by hand.',
-  scrapgate: 'A gate built out of ships. Gran’s key still fits.',
+  scrapgate: 'A gate built out of ships. My grandmother’s key still fits.',
   // the Drift Deep
   d_longwater: 'The Drift never stops. Maybe they remember the pattern.',
   d_ferry: 'A ferry nobody hunts, and nobody asks. I like it.',
@@ -53,7 +53,7 @@ export const JUNO_LOG: Readonly<Record<string, string>> = {
   f_penny: 'Something answers a full tank here. So do the pickets.',
   f_mirren: 'Forty names: everyone who was in the room.',
   f_gilt: 'Everyone wants a copy, and today there is a hearing.',
-  f_nine: 'Static, then Gran’s voice. Then something else’s.',
+  f_nine: 'Static, then my grandmother’s voice. Then something else’s.',
   tollgate: 'Calloway shut the gate behind me. She wants a name.',
   // the Hollows
   h_ashdeep: 'Nothing human out here. This is where the lanes began.',
@@ -62,7 +62,7 @@ export const JUNO_LOG: Readonly<Record<string, string>> = {
   h_cairn: 'Two voices, each wanting something only I can give.',
   h_cinder: 'The swarm lane. The drones are opening the gates for it.',
   h_gaunt: 'The Governor’s aide holds a key, and wants my plan.',
-  seam: 'The relay is awake, and asking for Gran’s key.',
+  seam: 'The relay is awake, and asking ADA-1 for my grandmother’s key.',
   // the Last Lanes
   l_lastlight: 'One relay left. Then I decide what the file is for.',
   l_toll: 'An archivist at the end of every lane, with three questions.',
@@ -71,5 +71,5 @@ export const JUNO_LOG: Readonly<Record<string, string>> = {
   l_step: 'What is it for? Everyone wants to hear my answer.',
   l_dusk: 'The instruments disagree here. So might Ashgrove.',
   l_wane: 'The last quiet. Draper’s fleet is waiting ahead.',
-  threshold: 'The last relay. Gran never got this far.',
+  threshold: 'The last relay. My grandmother never got this far.',
 };

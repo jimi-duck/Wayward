@@ -798,7 +798,7 @@ export class Hud {
           text($('obj-left'), world.yardPhase > 0 ? '' : range(dpt));
           ticks($('obj-p'), Math.max(0, 1 - dpt / (bk.def.lane * 0.65)), 30);
         } else if (world.letterDue) {
-          // after the work, until Gran's letter is read: Ned has the helm and the word, and the relay waits for the letter that names it
+          // after the work, until the old letter is read: Ned has the helm and the word, and the relay waits for the letter that names it
           text($('obj-t'), t(world.yardPhase > 0 ? 'Autopilot · Ned is working' : 'Stand by for Ned'));
           text($('obj-left'), '');
           ticks($('obj-p'), 0, 30);
@@ -829,6 +829,8 @@ export class Hud {
           ticks($('obj-p'), gt ? 1 - gt.left / gt.total : wake >= 0 ? wake : 1 - dl / bk.def.lane, 30);
         }
         text($('obj-s'), world.letterDue ? '' : recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact')
+          // the charge is running: ADA-1 is the one talking to it, unless she has been let rest (sentient-ship plan)
+          : world.uplinking ? t(world.flags.has('implant_burned') ? 'Warden key · by hand' : 'ADA-1 · talking to the relay')
           : world.gateWhy === 'resetting after the key' ? t('Jump Gate resetting')
           : world.gateWhy === 'the gate is rebooting' ? `${t('Jump Gate rebooting')} · ${t('opens in {t}', { t: clock(world.gateEta) })} · ${range(dl)}`
           : world.gateWhy === 'the gate is opening' ? `${t('Jump Gate opens')} · ${t('opens in {t}', { t: clock(world.gateEta) })} · ${range(dl)}`

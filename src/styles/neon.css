@@ -982,3 +982,16 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-c { min-height: 40px; padding: 3px 12px; }
   .ns-hint { font-size: 11.5px; line-height: 1.2; }
 }
+
+/* ADA-1, the ship's Warden core (sentient-ship plan, 27 November 2026): she is aboard, not on a channel, so where a caller's signal
+   bars or trace would be she shows a ring of lamps round a core, breathing slowly. Ochre, because she is the WAYWARD. */
+.core-pulse { position: relative; display: inline-block; flex: none; width: 16px; height: 16px; margin-left: auto; background: var(--ochre);
+  -webkit-mask: no-repeat center / 100% 100% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%23000'%3E%3Ccircle cx='12' cy='2.6' r='1.7'/%3E%3Ccircle cx='18.6' cy='5.4' r='1.7'/%3E%3Ccircle cx='21.4' cy='12' r='1.7'/%3E%3Ccircle cx='18.6' cy='18.6' r='1.7'/%3E%3Ccircle cx='12' cy='21.4' r='1.7'/%3E%3Ccircle cx='5.4' cy='18.6' r='1.7'/%3E%3Ccircle cx='2.6' cy='12' r='1.7'/%3E%3Ccircle cx='5.4' cy='5.4' r='1.7'/%3E%3Ccircle cx='12' cy='12' r='3.4'/%3E%3C/g%3E%3C/svg%3E");
+          mask: no-repeat center / 100% 100% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%23000'%3E%3Ccircle cx='12' cy='2.6' r='1.7'/%3E%3Ccircle cx='18.6' cy='5.4' r='1.7'/%3E%3Ccircle cx='21.4' cy='12' r='1.7'/%3E%3Ccircle cx='18.6' cy='18.6' r='1.7'/%3E%3Ccircle cx='12' cy='21.4' r='1.7'/%3E%3Ccircle cx='5.4' cy='18.6' r='1.7'/%3E%3Ccircle cx='2.6' cy='12' r='1.7'/%3E%3Ccircle cx='5.4' cy='5.4' r='1.7'/%3E%3Ccircle cx='12' cy='12' r='3.4'/%3E%3C/g%3E%3C/svg%3E");
+  animation: core-breathe 3.2s ease-in-out infinite; }
+@keyframes core-breathe { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+.rd-line.core .tx-wave { width: 11px; height: 11px; background: var(--ochre);
+  -webkit-mask: no-repeat center / 100% 100% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%23000'%3E%3Ccircle cx='12' cy='2.6' r='1.7'/%3E%3Ccircle cx='18.6' cy='5.4' r='1.7'/%3E%3Ccircle cx='21.4' cy='12' r='1.7'/%3E%3Ccircle cx='18.6' cy='18.6' r='1.7'/%3E%3Ccircle cx='12' cy='21.4' r='1.7'/%3E%3Ccircle cx='5.4' cy='18.6' r='1.7'/%3E%3Ccircle cx='2.6' cy='12' r='1.7'/%3E%3Ccircle cx='5.4' cy='5.4' r='1.7'/%3E%3Ccircle cx='12' cy='12' r='3.4'/%3E%3C/g%3E%3C/svg%3E");
+          mask: no-repeat center / 100% 100% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%23000'%3E%3Ccircle cx='12' cy='2.6' r='1.7'/%3E%3Ccircle cx='18.6' cy='5.4' r='1.7'/%3E%3Ccircle cx='21.4' cy='12' r='1.7'/%3E%3Ccircle cx='18.6' cy='18.6' r='1.7'/%3E%3Ccircle cx='12' cy='21.4' r='1.7'/%3E%3Ccircle cx='5.4' cy='18.6' r='1.7'/%3E%3Ccircle cx='2.6' cy='12' r='1.7'/%3E%3Ccircle cx='5.4' cy='5.4' r='1.7'/%3E%3Ccircle cx='12' cy='12' r='3.4'/%3E%3C/g%3E%3C/svg%3E");
+  animation: core-breathe 3.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .core-pulse, .rd-line.core .tx-wave { animation: none; opacity: 1; } }

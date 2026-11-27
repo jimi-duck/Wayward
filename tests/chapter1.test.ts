@@ -151,9 +151,12 @@ describe('a shut Jump Gate says why, from afar', () => {
     expect(w.flags.has('relay_first')).toBe(true);
     expect(most).toBeGreaterThanOrEqual(2);
     expect(notices).toEqual(expect.arrayContaining(['Relay waking', 'Relay dish turning', 'Warden key accepted']));
-    fly(w, 8);
-    for (const e of w.events) if (e.type === 'ping') pings.push(e.id);
+    // ADA-1 hears the network again, and the first record back is the 94%; then Sam (sentient-ship plan)
+    expect(w.flags.has('clue_reserves')).toBe(true);
+    for (let i = 0; i < Math.round(45 / STEP); i++) { w.ship.invuln = 1; w.step(STEP, input()); for (const e of w.events) if (e.type === 'ping') pings.push(e.id); w.events.length = 0; }
+    expect(pings.some((p) => p.includes('core_first'))).toBe(true);
     expect(pings.some((p) => p.includes('sam_relay'))).toBe(true);
+    expect(pings.findIndex((p) => p.includes('core_first'))).toBeLessThan(pings.findIndex((p) => p.includes('sam_relay')));
     // the lane is live: hulls come through the gate, and one of them says so
     expect(w.traffic!.arrived).toBeGreaterThanOrEqual(2);
     fly(w, 12);

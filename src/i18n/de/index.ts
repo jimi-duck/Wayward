@@ -21,6 +21,7 @@ import { REWORK, REWORK_KEEP } from './rework';
 import { DIRECTION } from './direction';
 import { PLACES_DE } from './places';
 import { LOG } from './log';
+import { CORE } from './core';
 
 // ── German ────────────────────────────────────────────────────────────────
 // English on the left, German on the right. Short and informal (du), like the
@@ -31,8 +32,9 @@ import { LOG } from './log';
 //   story  · captains, Calloway, the endings, unlocks
 //   space  · the shared world's features and expanses (content/features.ts)
 //   scenes · situations: their calls, goals and the Archive's sightings (content/situations.ts)
+//   core   · ADA-1, the ship's Warden core: her cards, her lines and what the Wall says of her
 
-export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...BRIEFS, ...REACH_DE, ...OVERHAUL, ...SIGNALS, ...REWORK, ...ARMS, ...DIRECTION, ...PLACES_DE, ...LOG };
+export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...BRIEFS, ...REACH_DE, ...OVERHAUL, ...SIGNALS, ...REWORK, ...ARMS, ...DIRECTION, ...PLACES_DE, ...LOG, ...CORE };
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([

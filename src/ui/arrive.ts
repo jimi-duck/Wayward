@@ -31,6 +31,17 @@ export function settle(el: HTMLElement): void {
 export const arriving = (el: HTMLElement): boolean => 'rx' in el.dataset;
 
 /** The header's signal bars: four, filled; they fill in one by one while the pop-up is arriving. */
+/**
+ * ADA-1's mark where a caller's signal bars would be: a ring of lamps with a slow pulse, because she is aboard, not on a channel
+ * (sentient-ship plan, 27 November 2026). Static under reduced motion (neon.css).
+ */
+export function corePulse(): HTMLElement {
+  const b = document.createElement('i');
+  b.className = 'core-pulse';
+  b.setAttribute('aria-hidden', 'true');
+  return b;
+}
+
 export function bars(): HTMLElement {
   const b = document.createElement('i');
   b.className = 'rx-bars';
