@@ -164,7 +164,7 @@ const GIST: Record<string, string> = {
   "story_ledger": "A Kellern clerk sells the real books",
   "story_brook_arrest": "Brook is in a Custody transport",
   "story_order": "The signed order to shut the relays",
-  "story_handwriting": "Ilse knows whose routine is in your hull",
+  "story_handwriting": "Ilse knows Ada’s old ship",
   "ilse_recording": "Ilse sends the order anyway",
   "story_brook_road": "Brook is in a Custody transport",
   "story_brook_declined": "Brook is in a Custody transport anyway",
@@ -403,11 +403,11 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_handwriting', kind: 'rumour', caller: 'miners', glass: 'cyan',
     from: 'Ilse Marrow · Ada Aster', title: 'Ada Aster',
-    text: '“The key in your hull answers like Ada Aster’s. She stood watch with me at the Narrows. Aster is your name too, isn’t it?”',
+    text: '“Those are Ada Aster’s lamps. She stood watch with me at the Narrows. Is her old core still in there? It used to argue with her.”',
     cargo: 'An old Warden’s skiff · no guns',
     choices: [
       { id: 'grandmother', label: 'She was my grandmother', tone: 'help', hint: 'Your family only said she was lost in service.',
-        win: { text: 'Ada Aster · the archive has a name', flag: 'ada_named',
+        win: { text: 'Ada Aster · Ilse knew her', flag: 'ada_named',
           radio: { from: 'Ilse Marrow', caller: 'miners', delay: 0.8, text: '“Lost in service. That’s all they ever told anyone. Go to the Narrows. Ada left it listening for you.”' } } },
     ],
   }),

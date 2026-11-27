@@ -6,6 +6,7 @@ import { World } from '../src/sim/world';
 import { SCRIPT } from '../src/content/script';
 import { CARDS } from '../src/content/cards';
 import { pursuerOf } from '../src/sim/course';
+import { ALIEN_TYPES } from '../src/sim/enemies';
 
 // The Narrows on the road: approach, handshake, the note, the answer and the way on, in that order.
 
@@ -63,7 +64,8 @@ describe('the Narrows', () => {
         seen.read = true;
         for (let k = 0; k < Math.round(1 / STEP); k++) { w.step(STEP, NO_INPUT); w.events.length = 0; }
         seen.after = w.aliens.filter((a) => a.faction === 'custody' && !a.ward && !a.fleeing).length;
-        seen.fleeing = w.aliens.filter((a) => a.faction === 'custody' && !a.ward && a.fleeing).length;
+        // a hull leaving on its own (a lancer's time up, a scout's four runs flown) is not her answer's doing
+        seen.fleeing = w.aliens.filter((a) => a.faction === 'custody' && !a.ward && a.fleeing && !(ALIEN_TYPES[a.kind].ttl > 0 && a.ttl <= 0) && a.runs < 4).length;
       }
     }
     return { w, log, seen };
