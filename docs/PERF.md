@@ -766,3 +766,47 @@ by what was drawn (a shader's cache key, else the object and material kind, or a
 lists the eight dearest, ms a frame and draws a frame. Chrome and Firefox have the timer; Safari does not, and the line
 says so. Queries split the GPU's work, so the sums run high; the order is what counts. Checked in the cloud with a
 stubbed timer only (SwiftShader has none).
+
+## Pass 26: a smaller size has to pay for itself (2026-11-27)
+
+The owner's next Test showed the readout's own Test had been measuring the wrong thing: it pinned the tier, and a pin set
+the drawing size back to full and dropped the even 30. Read that way, Low in Chrome on the M1 was 20 fps at full size and
+24 at a quarter of the pixels: once the rock shader was cheap (pass 24), half size bought almost nothing and cost a
+blurred picture. The owner said so too ("a large quality drop").
+
+**A smaller size has to pay** (`quality.ts`, `PAYS`). On a computer, after a step down in size the governor compares
+the new frame with the old once it has settled. If frames came less than 1.3× faster and still miss an even 30, the size
+is put back and the tier is judged instead (on Low, that means the even 30 at the old size). A phone keeps its small
+steps as before. Kept records from before this pass (`v` missing) keep their tier but are judged again for size.
+
+**No climbing behind a panel.** The refit bay and the port hide the scene; those quick empty frames read as room, and
+Chrome climbed to Medium in the bay, only to be judged slow again in flight. Frames with nothing drawn
+(`Sector.drawing`) are no longer measured.
+
+**Test measures what is in use.** It holds the governor still (`freeze`) at the size and tier in use, and lifts the
+30 cap while it runs.
+
+**Profile in shares.** Chrome on the M1 summed 769 ms a frame for a 17 ms frame: ANGLE times each query with its wait.
+The line now gives each kind of draw's share. Its first reading: the hull shader (`kit-metal8`, 32 draws) first, then
+plain unlit meshes, then rock. The hull reads its textures twelve times a pixel with anisotropic filtering at 8; Low now
+filters at 2 (`kitAnisotropy`). Other tiers unchanged.
+
+**Not measured:** any of it on the M1. The governor change is tested with modelled frame times (`tests/quality.test.ts`).
+
+## Pass 27: a lower tier has to pay too; Low stops at three quarters (2026-11-27)
+
+After pass 26 the owner's Chrome on the M1 ran well but looked blurry. Then the owner pinned High: 20 fps at full size
+(2878 x 1322, every effect), the same as Low at one pixel per CSS pixel and close to Low at half (24). On that browser
+the frame costs about the same whatever the tier: dropping tiers threw the look away for nothing.
+
+**A lower tier has to pay** (`quality.ts`). On a computer a tier drop is judged like a size step (pass 26): if frames
+came less than 1.3x faster and still miss an even 30, the governor goes back up a tier, restores the ceiling, and holds an
+even 30 there. On the M1 that settles on High at full size, capped at 30. A device that really is short of pixels still
+steps down as before. A phone is unchanged.
+
+**Low stops at three quarters** (`LOW_FLOOR` 0.74, was half): where Low is reached, it is a little sharper.
+
+**Kept records** are now `v: 3`; older ones are dropped, so each device is judged once more from the top. A kept even
+30 now starts at any tier, not only Low.
+
+**Not measured:** a whole visit on the M1 with this governor. Tested with modelled frame times (`tests/quality.test.ts`).

@@ -9,6 +9,13 @@ import { CanvasTexture, RepeatWrapping, type Texture } from 'three';
 
 const SIZE = 1024;
 let scratches: Texture | null = null;
+let scratchAniso = 8;
+
+/** The scratches' anisotropic filtering, with the plating's (kit.ts kitAnisotropy). */
+export function scratchAnisotropy(n: number): void {
+  scratchAniso = n;
+  if (scratches && scratches.anisotropy !== n) { scratches.anisotropy = n; scratches.needsUpdate = true; }
+}
 
 function rand(seed: number) {
   let s = seed;
@@ -67,7 +74,7 @@ export function scratchTexture(): Texture {
   }
   const t = new CanvasTexture(c);
   t.wrapS = t.wrapT = RepeatWrapping;
-  t.anisotropy = 8;
+  t.anisotropy = scratchAniso;
   scratches = t;
   return t;
 }

@@ -47,6 +47,8 @@ export interface PerfHooks {
   pin(index: number | null): void;
   /** Re-size the drawing buffer (after ½ res is switched). */
   fit(): void;
+  /** Lift the even-30 cap while the Test measures (true), or put it back as the governor has it (false). */
+  uncap(on: boolean): void;
 }
 
 export class PerfReadout {
@@ -65,7 +67,7 @@ export class PerfReadout {
   private readonly pending: WebGLQuery[] = [];
   private query: WebGLQuery | null = null;
   /** The self-test in progress: the step, when it began, and the frame intervals counted so far. */
-  private test: { step: number; at: number; frames: number[]; out: string[]; wasAuto: boolean } | null = null;
+  private test: { step: number; at: number; frames: number[]; out: string[]; pinned: boolean } | null = null;
   /** The last self-test's line, kept under the readout. */
   private tested = '';
   /** The per-draw GPU profile in progress, or the last one. */
@@ -200,11 +202,12 @@ export class PerfReadout {
    */
   private startTest(): void {
     if (this.test) return;
-    const q = this.hooks.quality;
-    const wasAuto = !q.pinned;
-    if (wasAuto) this.hooks.pin(TIERS.indexOf(q.tier.name));
+    const pinned = this.hooks.quality.pinned;
+    // the size and tier in use, held still, and no frame cap, so each step reads what this picture really costs
+    this.hooks.quality.freeze(true);
+    this.hooks.uncap(true);
     for (const l of [...this.hooks.off]) this.toggle(l);
-    this.test = { step: 0, at: performance.now(), frames: [], out: [], wasAuto };
+    this.test = { step: 0, at: performance.now(), frames: [], out: [], pinned };
   }
 
   private testFrame(now: number, dt: number): void {
@@ -220,7 +223,8 @@ export class PerfReadout {
     if (next === undefined) {
       this.tested = `test (fps): ${t.out.join(' · ')}`;
       this.test = null;
-      if (t.wasAuto) this.hooks.pin(null);
+      this.hooks.quality.freeze(t.pinned);
+      this.hooks.uncap(false);
       this.paint();
       return;
     }

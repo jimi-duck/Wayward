@@ -4,7 +4,7 @@ import {
   Vector3, Vector4, type Material, type Texture,
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { scratchTexture, WEAR_NOISE } from './wear';
+import { scratchAnisotropy, scratchTexture, WEAR_NOISE } from './wear';
 
 // ── the industrial kit ────────────────────────────────────────────────────
 // Every hull in the game, ours and theirs, is built from this kit: boxes,
@@ -20,6 +20,19 @@ import { scratchTexture, WEAR_NOISE } from './wear';
 
 const SIZE = 1024;
 let plating: { map: Texture; bump: Texture; paint: Texture } | null = null;
+let platingAniso = 8;
+
+/**
+ * Anisotropic filtering on the hull plating and its wear: 8, and 2 on Low. The hull shader reads its textures twelve
+ * times a pixel (three ways, four maps); Chrome on an M1 timed it as its dearest draw (docs/PERF.md pass 26), and Low
+ * draws a small picture where the sharper grazing texture hardly shows.
+ */
+export function kitAnisotropy(n: number): void {
+  platingAniso = n;
+  scratchAnisotropy(n);
+  if (!plating) return;
+  for (const t of [plating.map, plating.bump, plating.paint]) if (t.anisotropy !== n) { t.anisotropy = n; t.needsUpdate = true; }
+}
 
 function rand(seed: number) {
   let s = seed;
@@ -217,7 +230,7 @@ function platingTextures(): { map: Texture; bump: Texture; paint: Texture } {
   const bump = new CanvasTexture(cb);
   const paintMap = new CanvasTexture(cp);
   paintMap.colorSpace = SRGBColorSpace;
-  for (const t of [map, bump, paintMap]) { t.wrapS = t.wrapT = RepeatWrapping; t.anisotropy = 8; }
+  for (const t of [map, bump, paintMap]) { t.wrapS = t.wrapT = RepeatWrapping; t.anisotropy = platingAniso; }
   plating = { map, bump, paint: paintMap };
   return plating;
 }

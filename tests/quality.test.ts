@@ -137,7 +137,7 @@ describe('QualityGovernor', () => {
   });
 
   it('still measures a phone that only manages 15fps', () => {
-    const q = new QualityGovernor(HIGH);
+    const q = new QualityGovernor(HIGH, false, undefined, true);
     feed(q, 1 / 15, 400);
     expect(q.tier.name).not.toBe('high');
   });
@@ -183,21 +183,56 @@ describe('QualityGovernor on a high-density laptop screen', () => {
 
   it('never draws below one pixel per CSS pixel: past that it gives up a tier, at the same size', () => {
     const q = new QualityGovernor(HIGH, false, undefined, false, retina);
-    for (let i = 0; i < 8 && q.tier.name === 'high'; i++) secs(q, 1 / 30 + 0.004, 4);
+    // all fill, and still slow at one pixel per CSS pixel: each smaller size pays, but not enough
+    const fill = 0.04 / (1440 * 661 / 1e6);
+    for (let t = 0; t < 60 && q.tier.name === 'high';) { const dt = laptop(q, 0.002, fill); q.sample(dt); t += dt; }
     expect(q.tier.name).toBe('medium');
     // Medium draws at most 1.5; it keeps about the one pixel per CSS pixel High had reached, not 1.5
     expect(1.5 * q.scale).toBeLessThan(1.1);
     expect(1.5 * q.scale).toBeGreaterThanOrEqual(0.99);
   });
 
-  it('on Low, the last stop, a computer may draw down to half a pixel per CSS pixel, then holds an even 30', () => {
+  it('on Low, the last stop, a computer may draw down to three quarters of a pixel per CSS pixel when that pays, then holds an even 30', () => {
     const q = new QualityGovernor(0, false, undefined, false, retina);
     expect(q.scale).toBe(1);
-    // Chrome on an M1: 19 fps on Low at full size
-    for (let i = 0; i < 8; i++) secs(q, 1 / 19, 4);
+    // 19 fps on Low at full size, most of it pixels: the smaller size is worth it
+    const fill = (1 / 19 - 0.02) / (1440 * 661 / 1e6);
+    for (let t = 0; t < 40;) { const dt = laptop(q, 0.02, fill); q.sample(dt); t += dt; }
     expect(q.tier.name).toBe('low');
-    expect(q.scale).toBe(0.5);
+    expect(q.scale).toBe(0.75);
     expect(q.thirty).toBe(true);
+  });
+
+  it('puts the size back when drawing smaller bought too little, and holds an even 30 at full size', () => {
+    const q = new QualityGovernor(0, false, undefined, false, retina);
+    // Chrome on an M1 once its rocks were cheap (pass 26): 20 fps at full size, 24 at a quarter of the pixels
+    const fill = (1 / 20 - 1 / 24) / (1440 * 661 * 0.75 / 1e6);
+    let moves = 0;
+    for (let t = 0; t < 40;) { const dt = laptop(q, 1 / 24 - fill * 1440 * 661 * 0.25 / 1e6, fill); if (q.sample(dt)) moves++; t += dt; }
+    expect(q.scale).toBe(1);
+    expect(q.thirty).toBe(true);
+    expect(moves).toBe(3);
+  });
+
+  it('a record kept before steps down had to pay is judged again from the top', () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal('localStorage', { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => { store.set(k, v); } });
+    store.set('t', JSON.stringify({ tier: 'low', ceil: 0, at: Date.now(), dpr: 0.5, thirty: true, v: 2 }));
+    expect(keptTier('t')).toBeNull();
+    vi.unstubAllGlobals();
+  });
+
+  it('takes a lower tier back when it bought too little, and holds an even 30 on the higher one', () => {
+    // Chrome on an M1 (pass 27): about 20 fps on every tier and size, pixels or not
+    const q = new QualityGovernor(HIGH, false, undefined, false, retina);
+    let moves = 0;
+    for (let t = 0; t < 60;) { const dt = 1 / 20; if (q.sample(dt)) moves++; t += dt; }
+    expect(q.tier.name).toBe('high');
+    expect(q.scale).toBe(1);
+    expect(q.thirty).toBe(true);
+    expect(q.ceiling).toBe(HIGH);
+    // a size step, its undoing, a tier step, its undoing
+    expect(moves).toBe(4);
   });
 
   it('a screen of one pixel per CSS pixel has no smaller size to give: it drops a tier as before', () => {
@@ -280,9 +315,9 @@ describe('the size a device settled on is kept between visits', () => {
     vi.stubGlobal('localStorage', { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => { store.set(k, v); } });
     saveTier('t', 'high', HIGH, 1.34);
     expect(keptTier('t')).toEqual({ tier: HIGH, ceil: HIGH, dpr: 1.34 });
-    // an older record without a size still reads
+    // a record from before a step down had to pay is judged again from the top
     store.set('t', JSON.stringify({ tier: 'medium', ceil: MEDIUM, at: Date.now() }));
-    expect(keptTier('t')).toEqual({ tier: MEDIUM, ceil: MEDIUM });
+    expect(keptTier('t')).toBeNull();
     // a device that settled on an even 30 says so
     saveTier('t', 'low', 0, 0.5, true);
     expect(keptTier('t')).toEqual({ tier: 0, ceil: 0, dpr: 0.5, thirty: true });
