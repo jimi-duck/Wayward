@@ -47,14 +47,13 @@ import { Haptics } from './ui/haptics';
 import { DevicePrefs } from './ui/prefs';
 import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18n';
 
-/** New Story journeys run the eight regions; ?short plays the old three, for testing. */
 /** Seconds the quality governor ignores after a new system or a closed panel. */
 const GRACE = 2;
-const LONG_JOURNEY = !new URLSearchParams(location.search).has('short');
-/** The Story is the Warden's Road: Cerro to the Threshold as fixed stops (docs/ROAD.md). ?classic plays the generated eight-region chart instead, for comparing. */
-const ROAD = !new URLSearchParams(location.search).has('classic');
-/** The region table a new Story journey is laid out with. */
-const NEW_SET: RegionSet = !LONG_JOURNEY ? 'three' : ROAD ? 'road' : 'eight';
+/**
+ * A new Story journey is the Warden's Road: Cerro to the Threshold as fixed stops (docs/ROAD.md). The generated chart
+ * (?classic, ?short) was taken out as a way in on 2026-11-27; a journey saved on it still loads and plays.
+ */
+const NEW_SET: RegionSet = 'road';
 /** `?train` plays the training whether or not it has been played (to look at it). */
 const TRAIN = new URLSearchParams(location.search).has('train');
 

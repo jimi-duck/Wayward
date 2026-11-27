@@ -5,8 +5,7 @@
 - Settings has a Dev review button that opens the review world, the same as `?dev`.
 - `?dev` opens the review world: every ship, rock, item and feature, labelled,
   flown without risk ([REVIEW.md](REVIEW.md)).
-- `?train` plays the training again; `?short` plays the old three-region
-  journey instead of the eight; `?nospace` turns the environment phenomena off
+- `?train` plays the training again; `?nospace` turns the environment phenomena off
   ([ENVIRONMENT.md](ENVIRONMENT.md)).
 - `` ` `` toggles the debug readout; `?debug=1` starts with it open;
   `?quality=low|medium|high` pins a quality tier.

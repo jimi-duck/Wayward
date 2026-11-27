@@ -42,7 +42,7 @@ const base = `http://localhost:${server.address().port}/`;
 const SIZES = { desktop: { width: 1280, height: 720 }, phone: { width: 568, height: 320 } };
 const MODES = [
   ['title', ''],
-  ['story', ''], ['classic', 'classic'], ['arcade', ''], ['dev', 'dev'],
+  ['story', ''], ['arcade', ''], ['dev', 'dev'],
 ];
 const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox'] });
 const bad = [];
@@ -63,7 +63,6 @@ for (const [size, vp] of Object.entries(SIZES)) for (const lang of ['en', 'de'])
     await page.goto(`${base}?quality=low&lang=${lang}${q ? '&' + q : ''}&debug=1`, { waitUntil: 'load' });
     await page.waitForTimeout(1500);
     if (mode === 'story') { await page.click('#m-journey'); await page.waitForTimeout(400); await page.locator('#mods .st-row').first().click().catch(() => {}); }
-    if (mode === 'classic') { await page.click('#m-journey'); await page.waitForTimeout(400); await page.locator('#mods .st-row').first().click().catch(() => {}); }
     if (mode === 'arcade') await page.click('#m-arcade');
     await page.waitForTimeout(4000);
     await page.screenshot({ path: `${out}/${tag}.png`, timeout: 90000 });

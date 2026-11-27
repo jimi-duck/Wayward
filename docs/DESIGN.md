@@ -115,7 +115,7 @@ The Breakout is the first sortie of a journey (`sim/journey.ts`), and the
 journey is the layer above the world: everything that lasts longer than one
 system. A Story journey runs from Cerro to the Threshold, the last lane the
 old charts know: about 85 stops in eight regions (`content/regions.ts`), around
-seven hours. `?short` plays the older three-region chart, for testing.
+seven hours.
 
 - **Two steps, over and over.** A sortie (one system, flown in real time by
   the world, as the Breakout is) and, on the far side of its lane, the chart
