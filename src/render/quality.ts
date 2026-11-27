@@ -338,8 +338,13 @@ export class QualityGovernor {
 
   /** The drawing scales open to this tier on this device. */
   private scales(): readonly number[] {
-    if (this.breathe) return SCALES;
     const base = Math.min(this.screen() || 1, this.tier.dprCap);
+    // a phone never draws under one pixel per CSS pixel: Phone (1.5) steps down to 1, Low (1) has no smaller size and holds an
+    // even 30 instead. Low at two thirds read as very blocky on an iPhone (docs/PERF.md pass 29)
+    if (this.breathe) {
+      const n = SCALES.filter((s) => base * s >= 0.99).length;
+      return SCALES.slice(0, Math.max(1, n));
+    }
     // a computer keeps at least one pixel per CSS pixel, except on Low, the last stop, where a slightly soft picture beats
     // a juddering one (docs/PERF.md passes 22 and 27)
     const floor = this.index === 0 ? LOW_FLOOR : 0.99;
