@@ -1,6 +1,8 @@
 import type { WebGLRenderer } from 'three';
 import type { QualityGovernor } from '../render/quality';
+import type { Object3D } from 'three';
 import type { PerfLayer } from '../render/sector';
+import { DrawProfile } from './profile';
 
 // The phone readout (`?perf`): what a frame costs on the device in hand, and switches that take one layer
 // out at a time, so a phone can say where its time goes. The cloud has no GPU; this is how we measure one.
@@ -17,6 +19,7 @@ const LAYERS: ReadonlyArray<[PerfLayer, string]> = [
 const TIERS = ['low', 'phone', 'medium', 'high'] as const;
 const AUTO = 'auto';
 const TEST = 'test';
+const PROFILE = 'profile';
 /** The self-test: each state held this long, the first part of it not counted (a resize or a layer change settles). */
 const TEST_HOLD = 3;
 const TEST_SKIP = 0.8;
@@ -38,6 +41,8 @@ export interface PerfHooks {
   readonly renderer: WebGLRenderer;
   readonly quality: QualityGovernor;
   readonly off: Set<PerfLayer>;
+  /** The scene, for the per-draw profile. */
+  scene(): Object3D;
   /** Pin a tier (0 low, 1 phone, 2 medium, 3 high), or `null` to hand it back to the governor. */
   pin(index: number | null): void;
   /** Re-size the drawing buffer (after ½ res is switched). */
@@ -63,6 +68,8 @@ export class PerfReadout {
   private test: { step: number; at: number; frames: number[]; out: string[]; wasAuto: boolean } | null = null;
   /** The last self-test's line, kept under the readout. */
   private tested = '';
+  /** The per-draw GPU profile in progress, or the last one. */
+  private profile: DrawProfile | null = null;
   private readonly gpuName: string;
   /** The browser's own build (arm or x86, from client hints): an x86 Chrome on an Apple chip runs translated, and slow. */
   private arch = '';
@@ -95,8 +102,9 @@ export class PerfReadout {
       el.append(r);
     };
     // a tier button pins that tier for the session (the governor stops judging); Auto hands it back
-    row([[TEST, 'Test'], [AUTO, 'Auto'], ...TIERS.map((n) => [n, n[0]!.toUpperCase() + n.slice(1)] as [string, string])], (id) => {
+    row([[TEST, 'Test'], [PROFILE, 'Profile'], [AUTO, 'Auto'], ...TIERS.map((n) => [n, n[0]!.toUpperCase() + n.slice(1)] as [string, string])], (id) => {
       if (id === TEST) this.startTest();
+      else if (id === PROFILE) { if (this.ext && !this.profile?.running) this.profile = new DrawProfile(this.gl, this.ext, hooks.scene); }
       else hooks.pin(id === AUTO ? null : TIERS.indexOf(id as typeof TIERS[number]));
     });
     row(LAYERS, (id) => this.toggle(id as PerfLayer));
@@ -113,6 +121,8 @@ export class PerfReadout {
     info.autoReset = false;
     info.reset();
     this.collect();
+    // the profile times each draw itself; a frame query around them would nest, which the extension does not allow
+    if (this.profile?.running) { this.profile.frame(); return; }
     if (this.ext && !this.query && this.pending.length < 4) {
       this.query = this.gl.createQuery();
       if (this.query) this.gl.beginQuery(this.ext.TIME_ELAPSED_EXT, this.query);
@@ -175,6 +185,7 @@ export class PerfReadout {
       `draws ${info.calls} · tris ${(info.triangles / 1000).toFixed(0)}k · off ${off}`,
       this.gpuName + this.arch,
       ...(this.test ? [`testing… ${this.test.out.join(' · ')}`] : this.tested ? [this.tested] : []),
+      ...(this.profile ? [this.profile.running ? 'profiling…' : this.profile.result] : this.ext ? [] : ['profile: no GPU timer in this browser']),
     ].join('\n');
     this.frames.length = 0;
     this.cpuSum = this.cpuN = this.gpuSum = this.gpuN = 0;

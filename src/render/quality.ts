@@ -75,19 +75,22 @@ export function tierIndex(name: string | null | undefined): number {
 const KEEP_MS = 14 * 24 * 3600 * 1000;
 
 /** The tier, ceiling and drawing size (pixels per CSS pixel) this device settled on last time, if recent. */
-export function keptTier(key: string, now = Date.now()): { tier: number; ceil: number; dpr?: number } | null {
+export function keptTier(key: string, now = Date.now()): { tier: number; ceil: number; dpr?: number; thirty?: boolean } | null {
   try {
-    const v = JSON.parse(localStorage.getItem(key) ?? 'null') as { tier?: string; ceil?: number; at?: number; dpr?: number } | null;
+    const v = JSON.parse(localStorage.getItem(key) ?? 'null') as { tier?: string; ceil?: number; at?: number; dpr?: number; thirty?: boolean } | null;
     const tier = tierIndex(v?.tier);
     if (!v || tier < 0 || typeof v.ceil !== 'number' || typeof v.at !== 'number' || now - v.at > KEEP_MS) return null;
     const dpr = typeof v.dpr === 'number' && v.dpr > 0 && v.dpr <= 4 ? v.dpr : undefined;
-    return { tier, ceil: Math.max(tier, Math.min(TIERS.length - 1, v.ceil)), ...(dpr ? { dpr } : {}) };
+    return { tier, ceil: Math.max(tier, Math.min(TIERS.length - 1, v.ceil)), ...(dpr ? { dpr } : {}), ...(v.thirty === true ? { thirty: true } : {}) };
   } catch { return null; }
 }
 
-/** Keep the tier, ceiling and drawing size, so the next visit starts where this one settled rather than at full size. */
-export function saveTier(key: string, tier: TierName, ceil: number, dpr?: number): void {
-  try { localStorage.setItem(key, JSON.stringify({ tier, ceil, at: Date.now(), ...(dpr ? { dpr: Math.round(dpr * 1000) / 1000 } : {}) })); } catch { /* not kept */ }
+/**
+ * Keep the tier, ceiling, drawing size and whether it settled on an even 30, so the next visit starts where this one
+ * settled rather than spending its first seconds finding it again.
+ */
+export function saveTier(key: string, tier: TierName, ceil: number, dpr?: number, thirty = false): void {
+  try { localStorage.setItem(key, JSON.stringify({ tier, ceil, at: Date.now(), ...(dpr ? { dpr: Math.round(dpr * 1000) / 1000 } : {}), ...(thirty ? { thirty } : {}) })); } catch { /* not kept */ }
 }
 
 /** The drawing scales a phone steps through before it gives up a tier (docs/PERF.md pass 15). */
