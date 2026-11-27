@@ -55,7 +55,7 @@ export class RelayWake {
   step(dt: number): void {
     const rl = this.wakeRelay, b = this.w.bk;
     // a woken relay opens the lane: the trade comes through the gate again (a reload of the system finds it open, without the voice)
-    if (b && !this.laneOpened && b.def.script !== 'narrows' && relayOf(b) && this.w.flags.has(relayKey(b.def))) this.openLane(this.w.uplink >= 1);
+    if (b && !this.laneOpened && b.def.script !== 'narrows' && relayOf(b) && this.w.flags.has(relayKey(b.def))) this.openLane(this.w.uplink >= 1 && !b.def.first);
     if (!rl || !b || this.w.phase !== 'play') return;
     this.stepTwist(rl, dt);
     this.stepHunters(rl, dt);
@@ -303,7 +303,8 @@ export class RelayWake {
   /** The lane is open on this sortie (World.openLane). */
   laneOpened = false;
 
-  /** A woken relay's lane: hulls come through the gate (sim/traffic.ts), and one of them says so on the radio a little after the key. */
+  /** A woken relay's lane: hulls come through the gate (sim/traffic.ts), and one of them says so on the radio a little after the key. Not in
+   * the first system: ADA-1 and Sam have the radio there, and a third voice put Sam's "Go" half a minute after the gate opened. */
   private openLane(voice: boolean): void {
     this.laneOpened = true;
     if (!this.w.traffic) this.w.traffic = new Traffic(this.w, { n: 0, patrols: false, routes: [], busy: false });

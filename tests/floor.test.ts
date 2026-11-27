@@ -47,6 +47,15 @@ describe('the floor', () => {
     expect(out[2]![0] - out[1]![0]).toBeLessThan(FLOOR.gap);
   });
 
+  it('says the story lines still queued back to back while she waits at the gate, so none comes after the jump (owner 2026-11-27)', () => {
+    const f = new Floor();
+    f.take([voice('story_a'), voice('story_b'), voice('story_c')], 0);
+    f.rush = true;
+    const out = play(f, 0, 20);
+    expect(out.map(([, id]) => id)).toEqual(['story_a', 'story_b', 'story_c']);
+    expect(out[2]![0] - out[0]![0]).toBeCloseTo(2 * HOLD, 1);
+  });
+
   it('says nothing while a card is up, then keeps the quiet window for voices', () => {
     const f = new Floor();
     f.opened(0, 'card');

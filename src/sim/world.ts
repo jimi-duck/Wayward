@@ -24,6 +24,8 @@ import { SCRIPT } from '../content/script';
 const SCRIPT_BY_ID = new Map(SCRIPT.map((r) => [r.id, r]));
 /** Seconds the drive waits at the gate for the story to finish a line (World.listening). */
 const LISTEN = 12;
+/** Seconds a call's hold (hold still, wait) must have changed before the gate's line says so (World.callHold). */
+const CALL_KIND_HOLD = 3;
 /** ...and for a main beat's line still to be said. */
 const LISTEN_MAIN = 40;
 /** Seconds into a line before it counts as heard (World.rowHeard). */
@@ -1162,6 +1164,7 @@ export class World implements EncounterHost {
     }
     // the story is still talking: the drive waits for the line, and the HUD says why
     const listen = inReach && !gateHeld && this.listening();
+    this.floor.rush = listen;
     if (listen) this.gateWhy = 'the radio first';
     const near = inReach && !gateHeld && !listen;
     if (near && this.fuel >= this.jumpCost && this.phase === 'play') {
@@ -2047,12 +2050,18 @@ export class World implements EncounterHost {
    * What the gate waits on when a card is owed, and what the player must do about it: the caller's name, and whether the call is
    * held back by a hostile near her, by mining or tight flying (she must clear it or hold still), or only by the queue ahead of it.
    */
+  private callKind: 'clear' | 'still' | 'wait' = 'wait';
+  private callKindAt = -Infinity;
   private callHold(): { why: string; who: string } {
     const row = this.script?.owedRow(this.flags, this.tankCap ? this.fuel / this.tankCap : 0);
     const def = row && 'card' in row.do ? CARD_BY_ID[row.do.card] : undefined;
     const who = (def?.from ?? '').split(' · ')[0]!;
     const busy = this.busy();
-    const kind = busy === 'fight' || this.aliens.some((a) => !a.fleeing && !a.ward && Math.hypot(a.x - this.ship.x, a.z - this.ship.z) < DESK.threat * 2) ? 'clear' : busy === 'mining' || busy === 'tight' ? 'still' : 'wait';
+    const now = busy === 'fight' || this.aliens.some((a) => !a.fleeing && !a.ward && Math.hypot(a.x - this.ship.x, a.z - this.ship.z) < DESK.threat * 2) ? 'clear' : busy === 'mining' || busy === 'tight' ? 'still' : 'wait';
+    // the HUD's line changes only once what holds the call has held a moment (a hostile at once): mining in bursts flipped it every second
+    if (now !== this.callKind && (now === 'clear' || this.runTime - this.callKindAt >= CALL_KIND_HOLD)) { this.callKind = now; this.callKindAt = this.runTime; }
+    else if (now === this.callKind) this.callKindAt = this.runTime;
+    const kind = this.callKind;
     const why = who
       ? kind === 'clear' ? 'clear the hostiles · {who} will call' : kind === 'still' ? 'hold still · {who} will call' : 'wait for the call from {who}'
       : kind === 'clear' ? 'clear the hostiles · a call will come' : kind === 'still' ? 'hold still · a call will come' : 'wait for the call';
@@ -2204,7 +2213,8 @@ export class World implements EncounterHost {
     if (!talking || this.floor.hush) { this.listenAt = Infinity; return false; }
     if (this.listenAt === Infinity) this.listenAt = this.runTime;
     // a main beat still to be said holds her longer than a passing line
-    return this.runTime - this.listenAt < (this.mainLines.size ? LISTEN_MAIN : LISTEN);
+    // a story line still queued holds her too: at the gate the floor says them back to back (Floor.rush), so this is a few seconds a line
+    return this.runTime - this.listenAt < (this.mainLines.size || this.floor.holding ? LISTEN_MAIN : LISTEN);
   }
   /** Main beats' radio lines played but not yet heard (World.listening). */
   private mainLines = new Set<string>();
