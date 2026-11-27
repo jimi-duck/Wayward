@@ -474,7 +474,7 @@ export class Sector {
         case 'rockDestroyed':
         case 'rockMined': {
           const i = this.rockfx.react(e);
-          if (i) { if (i.shake) this.rig.shake(i.shake); hold = Math.max(hold, i.hold); }
+          if (i?.shake) this.rig.shake(i.shake);
           break;
         }
         case 'bulwarkHit':
@@ -494,7 +494,6 @@ export class Sector {
           this.fx.explode(e.x, e.y, e.z, e.radius * (small ? 0.3 : 0.45), tint, 'metal');
           this.fx.ring(e.x, e.y, e.z, e.radius * 1.1, tint, 0.5);
           this.rig.shake(small ? 0.1 : e.kind === 'volatile' ? 0.5 : 0.35);
-          hold = Math.max(hold, small ? 0 : 0.03);
           break;
         }
         case 'shipHit':
@@ -506,7 +505,6 @@ export class Sector {
           this.fx.streakBurst(e.x, 0.4, e.z, 6, 12, 0.5, 1.2);
           this.fx.light(e.x, 0.5, e.z, [1, 0.35, 0.2], 140, 0.3);
           this.rig.shake(0.65);
-          hold = Math.max(hold, 0.06);
           break;
         case 'shieldHit':
           this.ship.flareShield(true, e.fx, e.fz);
@@ -514,7 +512,6 @@ export class Sector {
           this.fx.flash(e.x, 0.3, e.z, 4, SHIELD, 0.2);
           this.fx.burst(e.x, 0.3, e.z, 26, SHIELD, 12, 0.3, 0.5);
           this.rig.shake(0.35);
-          hold = Math.max(hold, 0.04);
           break;
         case 'damageControl':
           this.fx.ring(e.x, 0.2, e.z, 10, AMBER, 0.6);
@@ -536,7 +533,8 @@ export class Sector {
         case 'alienDestroyed':
           this.fx.explode(e.x, e.y, e.z, e.r * (e.elite ? 1.4 : 1), rgb(e.faction), 'metal');
           this.rig.shake(0.22 + e.r * 0.06);
-          hold = Math.max(hold, e.elite ? 0.07 : 0.05);
+          // only a hull worth watching holds the frame: a beat on every kill left the helm dead for a frame each time
+          if (e.elite || e.r >= 2.4) hold = Math.max(hold, e.elite ? 0.07 : 0.05);
           // a cruiser or an elite going up is worth watching: the clock drops for a moment
           if (e.elite || e.r >= 2.4) this.slowFor(e.r >= 3 ? 0.3 : 0.4, e.r >= 3 ? 0.35 : 0.25);
           break;

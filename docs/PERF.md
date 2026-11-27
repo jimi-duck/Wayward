@@ -682,3 +682,25 @@ frame bench (`--freeze --nostub`, Arcade, Low): byte for byte identical with and
 
 **Not measured:** the M1. Orphaning is the standard cure for this stall, but whether it is this laptop's stall only the
 laptop can say; the `?perf` Test line will show it.
+
+## Pass 21: Safari 60 fps, Chrome 9–15, one M1 (2026-11-27)
+
+The owner's `?perf` in Safari on the same MacBook Air: High, 1440 × 701 at ratio 1, 164 draws, 694k triangles, CPU 2.2 ms,
+60 fps. Chrome and Brave (one engine) on the same laptop: Low, 9–15 fps. So the game is not too heavy for the laptop;
+the gap is inside Chrome's GPU process. In the cloud's Chrome with every draw stubbed out, an Arcade frame costs about
+3.7 ms of page work (script 2.4, style 0.3, layout 0.1) at 60 fps, HUD shown or hidden: the page is not the cost either.
+Still not found: what Chrome on that Mac spends 70 ms a frame on.
+
+**The helm and the picture out of step.** Reported as "the controls don't feel in sync with what's on screen". Every kill,
+blast, shield hit, hull hit and rock hit held the simulation still for 30–60 ms (a hit-stop) while drawing went on. In
+a fight that is several dead beats a second where keys do nothing, and at 10–15 fps each one ate half a frame of
+movement. Now only the big moments hold (an elite or a cruiser going up, a broken bulwark, lost cargo, the death), and
+nothing holds on a frame slower than 1/30 s. Shakes and slow motion for big kills are unchanged.
+
+**Fewer page writes per frame.** Chrome (and any extension watching the page) does work for every attribute write,
+changed or not. `classList.add`/`remove`, `hidden = true` and `setProperty` all write even when nothing changes. The
+targeting layer and the HUD now write only on change (`toggle(name, on)`, `hide()`, `css()`): 19 writes a frame down to 7
+in an Arcade fight on Low, the rest real movement of edge markers.
+
+**Not measured:** Chrome on the M1. The `?perf` Test line run in Chrome would show whether any one layer holds the
+cost, or none does (then it is Chrome's own compositing).

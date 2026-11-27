@@ -25,8 +25,8 @@ const GRIT: RGB = [1.1, 1.02, 0.88];
 
 const BLASTED = new Set(['torpedo', 'mine', 'plasma', 'arc']);
 
-/** What the caller does with a rock event: a camera shake and a hold, both small. */
-export interface Impact { shake: number; hold: number }
+/** What the caller does with a rock event: a small camera shake. A rock never holds the frame: the helm stays live. */
+export interface Impact { shake: number }
 
 export class RockFx {
   /** Where each rock was last hit: the break throws its pieces away from there. */
@@ -75,7 +75,7 @@ export class RockFx {
       default:
         this.fx.spray(x, y, z, dx, dz, Math.round(1 + k), EMBER, 5, 0.12, 0.22, 0.8);
     }
-    return { shake: heavy ? 0.05 : 0, hold: heavy ? 0.04 : 0 };
+    return { shake: heavy ? 0.05 : 0 };
   }
 
   private broke(id: number, kind: string, size: number, x: number, z: number, r: number, vx: number, vz: number, src: string, mined = false): Impact {
@@ -115,6 +115,6 @@ export class RockFx {
         // basalt: heavy and dusty, the embers in its cracks fly out as dull sparks
         this.fx.burst(x, 0.2, z, Math.round((3 + 6 * big) * power), EMBER, 5 + 2 * power, 0.15, 0.4);
     }
-    return { shake: (heavy ? 0.12 : 0.03) + (heavy ? 0.2 : 0.07) * big, hold: size === 0 ? 0.03 : 0 };
+    return { shake: (heavy ? 0.12 : 0.03) + (heavy ? 0.2 : 0.07) * big };
   }
 }

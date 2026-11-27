@@ -58,7 +58,7 @@ export class Heading {
 
     // the objective on the tape, a few times a second is plenty for the words
     const lead = live ? guideTarget(world) : null;
-    this.obj.hidden = !lead;
+    if (this.obj.hidden !== !lead) this.obj.hidden = !lead;
     if (!lead) { text($('hdg-rel'), ''); return; }
     const s = world.ship, f = fix(s.x, s.z, heading, lead.x, lead.z);
     if (this.tick++ % 20 === 0) this.half = Math.max(40, this.tape.offsetWidth / 2 - 6);

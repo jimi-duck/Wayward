@@ -714,7 +714,8 @@ function boot(review: typeof import('./review') | null): void {
       }
       // a kill lands harder for a beat of stillness (never with reduced motion)
       const hold = sector.react(events);
-      if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);
+      // and never on a slow frame, where a held beat is a whole frame the helm does nothing
+      if (hold > 0 && !sector.reduceMotion && frameDt < 1 / 30) loop.freeze(hold);
       // a big kill slows the clock for a moment; a pause, a pop-up or reduced motion lets it go at once
       if (sector.slow) { slowmo.request(sector.slow.scale, sector.slow.secs); sector.slow = null; }
       if (loop.paused || sector.reduceMotion || !world.alive) slowmo.clear();

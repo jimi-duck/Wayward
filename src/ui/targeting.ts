@@ -71,6 +71,17 @@ function text(el: HTMLElement, t: string): void {
   if (el.textContent !== t) el.textContent = t;
 }
 
+/** The last value written to each inline style property, so a frame that changes nothing writes nothing. */
+const written = new WeakMap<HTMLElement, Map<string, string>>();
+/** Set an inline style property (a custom property, transform or opacity) only when it changed. */
+function css(el: HTMLElement, k: string, v: string): void {
+  let m = written.get(el);
+  if (!m) written.set(el, (m = new Map()));
+  if (m.get(k) === v) return;
+  m.set(k, v);
+  el.style.setProperty(k, v);
+}
+
 export class Targeting {
   /** The current target's id, for the radar, and what it is, for the mode line. */
   target: number | null = null;
@@ -82,7 +93,7 @@ export class Targeting {
   private readonly incoming: HTMLElement[] = [];
   private readonly markState: Array<{ cls: string; t: string; side: string }> = [];
   /** Pointers drawn this frame, to keep their words apart. */
-  private ptrs: Array<{ el: HTMLElement; x: number; y: number; pri: boolean }> = [];
+  private ptrs: Array<{ el: HTMLElement; x: number; y: number; pri: boolean; crowd?: boolean }> = [];
   private readonly box = $('tgt');
   private readonly ret = $('reticle');
   private readonly card = $('tgt-card');
@@ -136,7 +147,7 @@ export class Targeting {
     // the gunsight, thirty units ahead on the plane
     const ahead = live ? sector.project(s.x + Math.cos(s.heading) * 30, 0.4, s.z - Math.sin(s.heading) * 30) : null;
     this.ret.style.display = ahead ? '' : 'none';
-    if (ahead) this.ret.style.transform = `translate(${ahead.x.toFixed(1)}px, ${ahead.y.toFixed(1)}px)`;
+    if (ahead) css(this.ret, 'transform', `translate(${ahead.x.toFixed(1)}px, ${ahead.y.toFixed(1)}px)`);
 
     const t = live ? this.pick(world, s.x, s.z, s.heading) : null;
     this.target = t ? t.id : null;
@@ -209,15 +220,15 @@ export class Targeting {
     card.classList.toggle('on', !!t);
     card.classList.toggle('locked', !!t && this.lockedNow);
     if (!t || !c || !top || c.x < -40 || c.y < -40 || c.x > this.w + 40 || c.y > this.h + 40) {
-      el.classList.remove('on');
-      el.dataset.id = '';
+      el.classList.toggle('on', false);
+      if (el.dataset.id) el.dataset.id = '';
       if (t) this.drawCard(world, t, dt);
       return;
     }
     // a new target: the brackets close in and a scan line runs down it; a new lock: they snap
     const fresh = el.dataset.id !== String(t.id);
     const wasLocked = el.classList.contains('locked');
-    el.classList.add('on');
+    el.classList.toggle('on', true);
     el.classList.toggle('locked', this.lockedNow);
     el.classList.toggle('arc', arc);
     if (fresh) {
@@ -228,8 +239,8 @@ export class Targeting {
 
     // close round what it is: small things a readable box, big things one that never swallows the view
     const half = clamp(Math.abs(c.y - top.y) * 1.15, 12, Math.min(46, this.h * 0.08));
-    el.style.setProperty('--h', `${half.toFixed(0)}px`);
-    el.style.transform = `translate(${c.x.toFixed(1)}px, ${c.y.toFixed(1)}px)`;
+    css(el, '--h', `${half.toFixed(0)}px`);
+    css(el, 'transform', `translate(${c.x.toFixed(1)}px, ${c.y.toFixed(1)}px)`);
     const s = world.ship;
     const d = Math.hypot(t.x - s.x, t.y, t.z - s.z);
     const alt = t.y > 1 ? ` · ▲ ${metres(t.y)} m` : t.y < -1 ? ` · ▼ ${metres(-t.y)} m` : '';
@@ -245,7 +256,7 @@ export class Targeting {
     if (this.cardClock < 0.1) return;
     this.cardClock = 0;
     let name = '', sub = '', intK = tr('Hull'), hp = 1, cls = '';
-    this.card.classList.remove('unk');
+    this.card.classList.toggle('unk', false);
     if (t.kind === 'hull') {
       const a = t.ref as Alien;
       if (Math.hypot(a.x - world.ship.x, a.z - world.ship.z) > IDENT_RANGE) {
@@ -256,10 +267,10 @@ export class Targeting {
         const ue = $('tgt-sub');
         if (ue.innerHTML !== u) ue.innerHTML = u;
         text($('tgt-int-k'), `${intK}:`);
-        $('tgt-int').style.setProperty('--v', '1');
-        $('tgt-hp').style.setProperty('--v', '1');
+        css($('tgt-int'), '--v', '1');
+        css($('tgt-hp'), '--v', '1');
         text($('tgt-int-v'), '—');
-        this.card.classList.add('unk');
+        this.card.classList.toggle('unk', true);
         for (const k of ['elite', 'friendly', 'boss', 'neutral']) { this.box.classList.toggle(k, k === 'neutral'); this.card.classList.toggle(k, k === 'neutral'); }
         return;
       }
@@ -287,8 +298,8 @@ export class Targeting {
     if (subEl.innerHTML !== sub) subEl.innerHTML = sub;
     text($('tgt-int-k'), `${intK}:`);
     const v = clamp(hp, 0, 1);
-    $('tgt-int').style.setProperty('--v', v.toFixed(2));
-    $('tgt-hp').style.setProperty('--v', v.toFixed(2));
+    css($('tgt-int'), '--v', v.toFixed(2));
+    css($('tgt-hp'), '--v', v.toFixed(2));
     text($('tgt-int-v'), `${Math.round(v * 100)}%`);
     if (t.kind === 'boss') cls = 'boss';
     const card = this.card;
@@ -338,7 +349,7 @@ export class Targeting {
       if (st.t !== label) { st.t = label; m.dataset.t = label; }
       if (st.side !== side) { st.side = side; if (side) m.dataset.side = side; else delete m.dataset.side; }
       m.hidden = false;
-      m.style.transform = `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px)`;
+      css(m, 'transform', `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px)`);
     };
     if (live) {
       // the objective first: it must never be crowded out
@@ -406,7 +417,7 @@ export class Targeting {
     const lead = live && !lesson ? guideTarget(world) : null;
     const isLead = (x: number, z: number) => !!lead && Math.abs(lead.x - x) < 0.5 && Math.abs(lead.z - z) < 0.5;
     this.ptrs = [];
-    if (bk && !bk.port) $('ptr-port').classList.remove('on');
+    if (bk && !bk.port) $('ptr-port').classList.toggle('on', false);
     for (const wp of world.seenPlaces()) {
       if (wp.kind === 'audit' && lockLifted(world.flags)) continue;
       const id = wp.kind === 'lane' ? 'ptr-lane' : wp.kind === 'audit' ? 'ptr-audit' : wp.kind === 'yard' ? 'ptr-yard' : wp.kind === 'relay' ? 'ptr-relay' : wp.kind === 'story' ? 'ptr-story' : 'ptr-port';
@@ -416,11 +427,11 @@ export class Targeting {
       // one target: the lead's pointer has words; another place's is a small quiet arrow
       $(id).classList.toggle('side', !!lead && !isLead(wp.x, wp.z));
     }
-    if (bk && lockLifted(world.flags)) $('ptr-audit').classList.remove('on');
-    if (!bk || !world.seenPlaces().some((p) => p.kind === 'yard')) $('ptr-yard').classList.remove('on');
-    if (!bk || !world.seenPlaces().some((p) => p.kind === 'relay')) $('ptr-relay').classList.remove('on');
-    if (!bk || !world.seenPlaces().some((p) => p.kind === 'story')) $('ptr-story').classList.remove('on');
-    if (!bk) { $('ptr-lane').classList.remove('on'); $('ptr-port').classList.remove('on'); $('ptr-audit').classList.remove('on'); }
+    if (bk && lockLifted(world.flags)) $('ptr-audit').classList.toggle('on', false);
+    if (!bk || !world.seenPlaces().some((p) => p.kind === 'yard')) $('ptr-yard').classList.toggle('on', false);
+    if (!bk || !world.seenPlaces().some((p) => p.kind === 'relay')) $('ptr-relay').classList.toggle('on', false);
+    if (!bk || !world.seenPlaces().some((p) => p.kind === 'story')) $('ptr-story').classList.toggle('on', false);
+    if (!bk) { $('ptr-lane').classList.toggle('on', false); $('ptr-port').classList.toggle('on', false); $('ptr-audit').classList.toggle('on', false); }
     const boss = world.command.boss;
     const showBoss = live && !!boss && !boss.leaving && boss.cloak < 0.5;
     this.pointer($('ptr-cap'), $('ptr-cap-t'), sector, s.x, s.z, s.heading, showBoss ? boss! : null,
@@ -437,12 +448,14 @@ export class Targeting {
     $('ptr-obj').classList.toggle('pri', !!pt && (!!les?.mark || isLead(pt.x, pt.z)));
     // two pointers on nearly one bearing: the yellow one keeps its words, the other keeps its arrow
     const on = this.ptrs;
-    for (const p of on) { p.el.removeAttribute('data-crowd'); p.pri = p.el.classList.contains('pri'); }
+    for (const p of on) p.pri = p.el.classList.contains('pri');
     for (let i = 0; i < on.length; i++) for (let j = i + 1; j < on.length; j++) {
       if (Math.hypot(on[i]!.x - on[j]!.x, on[i]!.y - on[j]!.y) > 90) continue;
       const loser = on[j]!.pri && !on[i]!.pri ? on[i]! : on[j]!;
-      loser.el.setAttribute('data-crowd', '');
+      loser.crowd = true;
     }
+    // attributes only when they change: a write each frame is work for the page (and for any extension watching it)
+    for (const p of on) p.el.toggleAttribute('data-crowd', !!p.crowd);
   }
 
   /** Hulls out of view: the most pressing first (armed and near, then what you cannot see), each pinned to the edge along its bearing. */
@@ -468,14 +481,14 @@ export class Targeting {
         el.hidden = false;
         const cls = `thr${a.elite ? ' elite' : ''}${top ? ' top' : ''}${f.dist < 30 && Math.abs(f.rel) > BEHIND ? ' close' : ''}`;
         if (el.className !== cls) el.className = cls;
-        el.style.setProperty('--pc', f.friendly ? 'var(--cy)' : NEON_CSS[a.faction]);
-        el.style.setProperty('--a', `${((Math.atan2(dy, dx) * 180) / Math.PI + 45).toFixed(0)}deg`);
-        el.style.opacity = clamp(1.25 - f.dist / THREAT_RANGE, 0.45, 1).toFixed(2);
-        el.style.transform = `translate(${(cx + dx * k).toFixed(1)}px, ${(cy + dy * k).toFixed(1)}px)`;
+        css(el, '--pc', f.friendly ? 'var(--cy)' : NEON_CSS[a.faction]);
+        css(el, '--a', `${((Math.atan2(dy, dx) * 180) / Math.PI + 45).toFixed(0)}deg`);
+        css(el, 'opacity', clamp(1.25 - f.dist / THREAT_RANGE, 0.45, 1).toFixed(2));
+        css(el, 'transform', `translate(${(cx + dx * k).toFixed(1)}px, ${(cy + dy * k).toFixed(1)}px)`);
         // the pressing one says how far; the label flips inward at the edges so it never leaves the screen
         const lab = el.lastElementChild as HTMLElement;
         text(lab, top ? range(f.dist) : '');
-        lab.style.setProperty('--ly', dy > 0.6 ? '-22px' : '12px');
+        css(lab, '--ly', dy > 0.6 ? '-22px' : '12px');
       }
     }
     for (; n < MAX_THREATS; n++) if (!this.threats[n]!.hidden) this.threats[n]!.hidden = true;
@@ -502,19 +515,19 @@ export class Targeting {
         const k = Math.min((cx - m) / Math.max(1e-3, Math.abs(ux)), (cy - m) / Math.max(1e-3, Math.abs(uy)));
         const el = this.incoming[n++]!;
         el.hidden = false;
-        el.style.transform = `translate(${(cx + ux * k).toFixed(1)}px, ${(cy + uy * k).toFixed(1)}px)`;
-        el.style.setProperty('--a', `${((Math.atan2(uy, ux) * 180) / Math.PI + 90).toFixed(0)}deg`);
-        el.style.setProperty('--k', clamp(1.2 - d / INCOMING_RANGE, 0.5, 1).toFixed(2));
+        css(el, 'transform', `translate(${(cx + ux * k).toFixed(1)}px, ${(cy + uy * k).toFixed(1)}px)`);
+        css(el, '--a', `${((Math.atan2(uy, ux) * 180) / Math.PI + 90).toFixed(0)}deg`);
+        css(el, '--k', clamp(1.2 - d / INCOMING_RANGE, 0.5, 1).toFixed(2));
       }
     }
     for (; n < MAX_INCOMING; n++) if (!this.incoming[n]!.hidden) this.incoming[n]!.hidden = true;
   }
 
   private pointer(el: HTMLElement, label: HTMLElement, sector: Sector, sx: number, sz: number, heading: number, o: { x: number; y: number; z: number } | null, t: string): void {
-    if (!o) { el.classList.remove('on'); return; }
+    if (!o) { el.classList.toggle('on', false); return; }
     const p = sector.project(o.x, o.y, o.z);
     const m = 46;
-    if (p && p.x > m && p.y > m && p.x < this.w - m && p.y < this.h - m) { el.classList.remove('on'); return; }
+    if (p && p.x > m && p.y > m && p.x < this.w - m && p.y < this.h - m) { el.classList.toggle('on', false); return; }
     // off screen: point along its bearing from the middle of the screen, pinned inside the edge
     const rel = angleDelta(heading, Math.atan2(-(o.z - sz), o.x - sx));
     const dx = -Math.sin(rel), dy = -Math.cos(rel);
@@ -522,10 +535,10 @@ export class Targeting {
     const kx = (cx - m) / Math.max(1e-3, Math.abs(dx)), ky = (cy - m - 40) / Math.max(1e-3, Math.abs(dy));
     const k = Math.min(kx, ky);
     const x = cx + dx * k, y = cy + dy * k;
-    el.classList.add('on');
+    el.classList.toggle('on', true);
     this.ptrs.push({ el, x, y, pri: false });
-    el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
-    el.style.setProperty('--a', `${((Math.atan2(dy, dx) * 180) / Math.PI + 45).toFixed(0)}deg`);
+    css(el, 'transform', `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`);
+    css(el, '--a', `${((Math.atan2(dy, dx) * 180) / Math.PI + 45).toFixed(0)}deg`);
     text(label, t);
   }
 }
