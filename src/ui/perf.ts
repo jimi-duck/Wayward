@@ -16,6 +16,12 @@ const LAYERS: ReadonlyArray<[PerfLayer, string]> = [
 ];
 const TIERS = ['low', 'phone', 'medium', 'high'] as const;
 const AUTO = 'auto';
+const TEST = 'test';
+/** The self-test: each state held this long, the first part of it not counted (a resize or a layer change settles). */
+const TEST_HOLD = 3;
+const TEST_SKIP = 0.8;
+/** What the self-test takes out, one at a time, after a look at the whole frame. */
+const TEST_STEPS: ReadonlyArray<PerfLayer | null> = [null, 'post', 'shadow', 'sky', 'far', 'rocks', 'debris', 'hud', 'half'];
 
 interface TimerExt { TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number }
 
@@ -44,10 +50,18 @@ export class PerfReadout {
   private readonly ext: TimerExt | null;
   private readonly pending: WebGLQuery[] = [];
   private query: WebGLQuery | null = null;
+  /** The self-test in progress: the step, when it began, and the frame intervals counted so far. */
+  private test: { step: number; at: number; frames: number[]; out: string[]; wasAuto: boolean } | null = null;
+  /** The last self-test's line, kept under the readout. */
+  private tested = '';
+  private readonly gpuName: string;
 
   constructor(private readonly el: HTMLElement, private readonly hooks: PerfHooks) {
     this.gl = hooks.renderer.getContext() as WebGL2RenderingContext;
     this.ext = this.gl.getExtension('EXT_disjoint_timer_query_webgl2') as TimerExt | null;
+    // which GPU the browser drew with (a browser that fell back to software says so here)
+    const info = this.gl.getExtension('WEBGL_debug_renderer_info') as { UNMASKED_RENDERER_WEBGL: number } | null;
+    this.gpuName = String((info ? this.gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : this.gl.getParameter(this.gl.RENDERER)) ?? '?').replace(/^ANGLE \((.*)\)$/, '$1').slice(0, 80);
     el.hidden = false;
     el.classList.add('pf');
     el.replaceChildren();
@@ -68,13 +82,11 @@ export class PerfReadout {
       el.append(r);
     };
     // a tier button pins that tier for the session (the governor stops judging); Auto hands it back
-    row([[AUTO, 'Auto'], ...TIERS.map((n) => [n, n[0]!.toUpperCase() + n.slice(1)] as [string, string])], (id) => hooks.pin(id === AUTO ? null : TIERS.indexOf(id as typeof TIERS[number])));
-    row(LAYERS, (id) => {
-      const l = id as PerfLayer;
-      if (hooks.off.has(l)) hooks.off.delete(l); else hooks.off.add(l);
-      if (l === 'hud') document.documentElement.classList.toggle('perf-nohud', hooks.off.has('hud'));
-      if (l === 'half') hooks.fit();
+    row([[TEST, 'Test'], [AUTO, 'Auto'], ...TIERS.map((n) => [n, n[0]!.toUpperCase() + n.slice(1)] as [string, string])], (id) => {
+      if (id === TEST) this.startTest();
+      else hooks.pin(id === AUTO ? null : TIERS.indexOf(id as typeof TIERS[number]));
     });
+    row(LAYERS, (id) => this.toggle(id as PerfLayer));
     // taps here are for the readout, never the flight controls underneath
     for (const type of ['pointerdown', 'pointerup', 'touchstart'] as const) el.addEventListener(type, (e) => e.stopPropagation());
     this.paint();
@@ -107,6 +119,7 @@ export class PerfReadout {
     this.cpuSum += performance.now() - this.cpuStart;
     this.cpuN++;
     if (dt > 0 && dt < 1) this.frames.push(dt);
+    if (this.test) this.testFrame(now, dt);
     if (!this.since) this.since = now;
     if (now - this.since >= WINDOW * 1000) this.report();
   }
@@ -147,6 +160,8 @@ export class PerfReadout {
       `cpu ${(this.cpuSum / (this.cpuN || 1)).toFixed(1)}ms · gpu ${this.ext ? (this.gpuN ? `${(this.gpuSum / this.gpuN).toFixed(1)}ms` : '…') : 'n/a'}`,
       `tier ${q.tier.name} ${q.pinned ? 'pinned' : 'auto'} · ${c.width}×${c.height} @${r.getPixelRatio().toFixed(2)}${q.scale < 1 ? ` (size ${q.scale})` : ''}`,
       `draws ${info.calls} · tris ${(info.triangles / 1000).toFixed(0)}k · off ${off}`,
+      this.gpuName,
+      ...(this.test ? [`testing… ${this.test.out.join(' · ')}`] : this.tested ? [this.tested] : []),
     ].join('\n');
     this.frames.length = 0;
     this.cpuSum = this.cpuN = this.gpuSum = this.gpuN = 0;
@@ -154,9 +169,57 @@ export class PerfReadout {
     this.paint();
   }
 
+  /**
+   * Test: the whole frame, then each layer off in turn and the picture at half size, about three seconds each, on the
+   * tier in use (held still meanwhile). One line of frame rates says where the time goes on this device: a layer whose
+   * removal lifts the rate is the cost; nothing lifting it but the HUD or half size says pixels or the page.
+   */
+  private startTest(): void {
+    if (this.test) return;
+    const q = this.hooks.quality;
+    const wasAuto = !q.pinned;
+    if (wasAuto) this.hooks.pin(TIERS.indexOf(q.tier.name));
+    for (const l of [...this.hooks.off]) this.toggle(l);
+    this.test = { step: 0, at: performance.now(), frames: [], out: [], wasAuto };
+  }
+
+  private testFrame(now: number, dt: number): void {
+    const t = this.test!;
+    const age = (now - t.at) / 1000;
+    if (age > TEST_SKIP && dt > 0 && dt < 1) t.frames.push(dt);
+    if (age < TEST_HOLD) return;
+    const mean = t.frames.reduce((a, b) => a + b, 0) / (t.frames.length || 1);
+    const what = TEST_STEPS[t.step];
+    const label = what ? `-${LAYERS.find(([l]) => l === what)![1]}` : 'all';
+    t.out.push(`${label} ${t.frames.length ? (1 / mean).toFixed(0) : '?'}`);
+    if (what) this.toggle(what);
+    t.step++;
+    const next = TEST_STEPS[t.step];
+    if (next === undefined) {
+      this.tested = `test (fps): ${t.out.join(' · ')}`;
+      this.test = null;
+      if (t.wasAuto) this.hooks.pin(null);
+      this.paint();
+      return;
+    }
+    if (next) this.toggle(next);
+    t.at = performance.now();
+    t.frames = [];
+  }
+
+  /** Take a layer out, or put it back, as its button does. */
+  private toggle(l: PerfLayer): void {
+    const off = this.hooks.off;
+    if (off.has(l)) off.delete(l); else off.add(l);
+    if (l === 'hud') document.documentElement.classList.toggle('perf-nohud', off.has('hud'));
+    if (l === 'half') this.hooks.fit();
+    this.paint();
+  }
+
   private paint(): void {
     const q = this.hooks.quality, tier = q.tier.name;
     this.buttons.get(AUTO)?.classList.toggle('on', !q.pinned);
+    this.buttons.get(TEST)?.classList.toggle('on', !!this.test);
     for (const n of TIERS) this.buttons.get(n)?.classList.toggle('on', q.pinned && n === tier);
     for (const [l] of LAYERS) this.buttons.get(l)?.classList.toggle('on', this.hooks.off.has(l));
   }
