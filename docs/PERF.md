@@ -560,3 +560,29 @@ side: about 0.5 ms a frame less on the phone runs, within noise on desktop.
 
 **Not measured:** a real GPU. The saving is in fragment work, which is what phones are short of, but its size on a
 phone is a guess until someone plays the preview.
+
+### Pass 17, part three: no program switches in a frame
+
+`--switches` logs every draw where three.js changes a material's program. Before: about 7 a frame in Arcade and up
+to 15 in the Story, each one rebuilding the material's parameters and cache key (the biggest garbage three.js made).
+
+- **Glow drawn once** (`render/singlepass.ts`). three.js draws a transparent double-sided material twice, back faces
+  then front, switching its side in between. For added light with depth writes off the order doesn't matter, so a
+  material that is additive, writes no depth and never reads its normals or facing now draws in one pass. Checked on
+  every draw, so a material that changes later (hulls fading) is never caught out.
+- **Depth for instanced casters** (`render/casters.ts`). The sun's shadow pass shared one depth material between
+  instanced pools and plain meshes, which need different programs. Rocks, shards and hulls bring their own copy.
+
+After: no switches in either run. Pixels: identical to the bit in all four test frames (the shield's additive bubble
+is in them). One catch for anyone comparing pixels: a new three.js material takes two values from `Math.random` for
+its id, which moves the bench's seeded world, so the check held the sequence still around the two new materials.
+
+| 45 s, paced, before → after | Garbage (with the pilot's) | GC runs | Main thread mean |
+|---|---|---|---|
+| Desktop Arcade | 20.1 → 17.6 MB/s | 41 → 36 | 5.53 → 5.41 ms |
+| Desktop Story | 21.1 → 16.2 MB/s | 39 → 29 | 4.25 → 4.47 ms |
+| Phone Arcade | 19.8 → 17.1 MB/s | 37 → 32 | 4.73 → 4.10 ms |
+| Phone Story | 21.4 → 16.2 MB/s | 37 → 30 | 4.06 → 3.92 ms |
+
+The frame times are within run-to-run noise here (the seeded worlds differ, as above); the garbage and GC counts
+are the reliable part. Also a few fewer draws: a double-sided glow is one draw, not two.

@@ -1,4 +1,5 @@
 import './lightskip';
+import { instancedCaster } from './casters';
 import { rockPose } from './rockmotion';
 import {
   Color, IcosahedronGeometry, LatheGeometry, Vector2, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, Quaternion,
@@ -592,7 +593,7 @@ export class RockView {
     this.shards = new InstancedMesh(shardGeometry(), crystal, MAX_SHARDS);
     this.shards.count = 0;
     this.shards.frustumCulled = false;
-    this.shards.castShadow = true;
+    instancedCaster(this.shards);
     scene.add(this.shards);
     for (const kind of KINDS) {
       const mat = lavaRock(1.35, 1, 0.15, LOOKS[kind]);
@@ -606,7 +607,8 @@ export class RockView {
         mesh.instanceColor = new InstancedBufferAttribute(new Float32Array(PER_VARIANT * 3).fill(1), 3);
         mesh.count = 0;
         mesh.frustumCulled = false;
-        mesh.castShadow = mesh.receiveShadow = true;
+        instancedCaster(mesh);
+        mesh.receiveShadow = true;
         this.meshes.push(mesh);
         scene.add(mesh);
       }

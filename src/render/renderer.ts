@@ -1,4 +1,5 @@
 import './lightskip';
+import './singlepass';
 import { NoToneMapping, PCFShadowMap, SRGBColorSpace, WebGLRenderer } from 'three';
 import type { QualityTier } from './quality';
 import { installAerial } from './aerial';
