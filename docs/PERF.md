@@ -532,3 +532,31 @@ game itself (three.js's uniform setters, debris, radar colour strings): a later 
 
 **Not measured:** a real device. These are main-thread times in a cloud browser; a phone's CPU is slower, so the
 saving there should be larger in milliseconds, but nobody has timed it.
+
+### Pass 17, part two: the GPU skips work that adds nothing
+
+Software WebGL can't time a real GPU, but it does rasterise every pixel, so `--gpu --nostub` gives a relative
+measure of fill cost, and `--freeze --shots` gives identical frames to compare pixels.
+
+- **Dark point lights.** The scene keeps about ten point lights (the blast pool, yard lamps, the ship's lamps) at
+  intensity 0 when unlit, so the light count never changes and no shader relinks (pass 11). Each still ran its
+  whole lighting sum on every lit pixel. `render/lightskip.ts` wraps the loop body in a test on the light's colour,
+  a uniform, so all pixels take the same branch and a dark light adds exactly what it did before: nothing. In a
+  busy Arcade frame 8 of the 10 were dark.
+- **Sun shafts** (Medium and High) are a full-screen pass of 22 reads a pixel. With the sun out of view it adds
+  nothing (`uOn` 0), so the pass is switched off for that frame.
+- **Idle effect pools.** Sparks (1,800 slots), debris and the flame and smoke puffs walked every slot, uploaded
+  their buffers and drew zero-sized points on every frame, alive or not. Each pool now sleeps, hidden, when nothing
+  in it is alive, and wakes on the next emit. The warm-up still draws them once behind the title.
+
+| Software raster, one frame, 1600 × 900 High | Before | After |
+|---|---|---|
+| Arcade (two base runs) | 2,483 / 2,382 ms | 1,997 ms (about −18%) |
+| Story's first system | 1,836 / 1,631 ms | 1,407 ms (about −14%) |
+
+Pixels (frames 20 and 44, Arcade and Story): two base runs match exactly; before against after, 29 to 60 of 5.76
+million channel values differ, by 1/255 at most (rounding in a different instruction order); the idle pools alone change none. Idle pools on the CPU
+side: about 0.5 ms a frame less on the phone runs, within noise on desktop.
+
+**Not measured:** a real GPU. The saving is in fragment work, which is what phones are short of, but its size on a
+phone is a guess until someone plays the preview.

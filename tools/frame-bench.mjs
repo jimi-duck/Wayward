@@ -10,7 +10,7 @@
 // --freeze --shots 20,44 --shotdir dir (identical frames to compare pixels before and after a change).
 import { createRequire } from 'node:module';
 import { spawn } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 const { chromium } = createRequire(import.meta.url)('playwright');
 
 const arg = (k, d) => { const i = process.argv.indexOf(`--${k}`); return i < 0 ? d : process.argv[i + 1]; };
@@ -83,6 +83,7 @@ try {
     if (flag('switches')) console.log((await page.evaluate(() => window.__bench.sharedPrograms())).join('\n'));
     if (flag('programs')) console.log((await page.evaluate(() => window.__bench.programs())).join('\n'));
     if (PROFILE) { const { profile } = await cdp.send('Profiler.stop'); writeFileSync(PROFILE.replace('.cpuprofile', `-${size}-${mode}.cpuprofile`), JSON.stringify(profile)); }
+    if (res.shots?.length) mkdirSync(arg('shotdir', '/tmp'), { recursive: true });
     for (const sh of res.shots ?? []) writeFileSync(`${arg('shotdir', '/tmp')}/${size}-${mode}-f${sh.frame}-${sh.w}x${sh.h}.rgba`, Buffer.from(sh.rgba, 'base64'));
     let gameAlloc = null;
     if (ALLOC) {

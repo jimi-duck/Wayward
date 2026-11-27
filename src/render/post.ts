@@ -85,6 +85,7 @@ export class Post {
   readonly composer: EffectComposer | null;
   private readonly mood = new MoodEffect();
   private shafts: ShaftsEffect | null = null;
+  private shaftsPass: EffectPass | null = null;
   private readonly camera: Camera;
   private readonly sunAt = new Vector3();
   private readonly fwd = new Vector3();
@@ -113,7 +114,8 @@ export class Post {
     // the sun's shafts on Medium and High, before the bloom, so the brightest of them glow like the rest of the light
     if (tier.name === 'medium' || tier.name === 'high') {
       this.shafts = new ShaftsEffect();
-      this.composer.addPass(new EffectPass(camera, this.shafts));
+      this.shaftsPass = new EffectPass(camera, this.shafts);
+      this.composer.addPass(this.shaftsPass);
     }
     this.composer.addPass(new EffectPass(camera, bloom, this.mood, vignette, grain, grade, contrast, tone));
     if (fxaa) this.composer.addPass(new EffectPass(camera, new FXAAEffect()));
@@ -136,6 +138,9 @@ export class Post {
     const on = facing <= 0 ? 0 : Math.min(1, facing * 4) * (1 - Math.min(1, Math.max(0, (off - 1.1) / 0.6)));
     (this.shafts.uniforms.get('uSun')!.value as Vector2).set(this.sunAt.x * 0.5 + 0.5, this.sunAt.y * 0.5 + 0.5);
     this.shafts.uniforms.get('uOn')!.value = on;
+    // with the sun out of view the pass adds nothing (uOn 0): skip it, a full-screen march of 22 reads a pixel saved
+    // on most frames (docs/PERF.md, pass 17); the picture is the same
+    this.shaftsPass!.enabled = on > 0;
   }
 
   setSize(width: number, height: number): void {

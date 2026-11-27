@@ -36,6 +36,8 @@ class Sparks {
   /** 1 for cold gas, which fades evenly instead of cooling from white to red. */
   private readonly cold = new Uint8Array(MAX_SPARKS);
   private next = 0;
+  /** No spark alive and the last zero sizes sent: the pool sleeps, hidden, until the next emit. */
+  private idle = false;
 
   constructor() {
     const g = new BufferGeometry();
@@ -80,11 +82,16 @@ class Sparks {
     this.decay[i] = 1 / life;
     this.drag[i] = drag;
     this.cold[i] = cold ? 1 : 0;
+    if (this.idle) { this.idle = false; this.points.visible = true; }
   }
 
   update(dt: number): void {
+    // Most frames have no sparks: skip the 1,800-slot walk, the three uploads and the draw (docs/PERF.md, pass 17).
+    if (this.idle) return;
+    let live = 0;
     for (let i = 0; i < MAX_SPARKS; i++) {
       if (this.life[i]! <= 0) { this.size[i] = 0; continue; }
+      live++;
       const l = (this.life[i] = this.life[i]! - this.decay[i]! * dt);
       const d = Math.pow(this.drag[i]!, dt * 60);
       this.vel[i * 3]! *= d; this.vel[i * 3 + 1]! *= d; this.vel[i * 3 + 2]! *= d;
@@ -110,6 +117,7 @@ class Sparks {
     g.attributes.position!.needsUpdate = true;
     g.attributes.color!.needsUpdate = true;
     g.attributes.size!.needsUpdate = true;
+    if (live === 0) { this.idle = true; this.points.visible = false; }
   }
 }
 
@@ -174,6 +182,8 @@ class Debris {
   private readonly fade = new Float32Array(MAX_DEBRIS);
   private readonly drag = new Float32Array(MAX_DEBRIS);
   private next = 0;
+  /** No fragment alive and every matrix already zero on the GPU: skip the walk, the upload and the draw. */
+  private idle = false;
   private readonly m = new Matrix4();
   private readonly q = new Quaternion();
   private readonly ax = new Vector3();
@@ -217,18 +227,23 @@ class Debris {
     this.a[i * 4] = ax / n; this.a[i * 4 + 1] = ay / n; this.a[i * 4 + 2] = az / n; this.a[i * 4 + 3] = Math.random() * 6;
     this.s[i * 2] = size; this.s[i * 2 + 1] = (Math.random() - 0.5) * (drift ? 3.5 : 10);
     this.life[i] = 1;
+    if (this.idle) { this.idle = false; this.mesh.visible = true; }
   }
 
   /** Visit each live fragment: where it is and how much of its life is left (1 new, 0 gone). */
   each(cb: (x: number, y: number, z: number, life: number, size: number) => void): void {
+    if (this.idle) return;
     for (let i = 0; i < MAX_DEBRIS; i++) {
       if (this.life[i]! > 0) cb(this.p[i * 3]!, this.p[i * 3 + 1]!, this.p[i * 3 + 2]!, this.life[i]!, this.s[i * 2]!);
     }
   }
 
   update(dt: number): void {
+    if (this.idle) return;
+    let live = 0;
     for (let i = 0; i < MAX_DEBRIS; i++) {
       if (this.life[i]! <= 0) continue;
+      live++;
       const l = (this.life[i] = this.life[i]! - dt * this.fade[i]!);
       if (l <= 0) { this.mesh.setMatrixAt(i, this.m.makeScale(0, 0, 0)); continue; }
       // torn edges cool from white-hot to dark in about the first two seconds
@@ -243,6 +258,7 @@ class Debris {
     }
     this.mesh.instanceMatrix.needsUpdate = true;
     if (this.heat) this.heat.needsUpdate = true;
+    if (live === 0) { this.idle = true; this.mesh.visible = false; }
   }
 }
 
