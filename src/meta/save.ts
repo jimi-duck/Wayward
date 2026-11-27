@@ -1,3 +1,4 @@
+import { CORE_CATCHUP, CORE_MET } from '../content/story';
 import { HUSH } from '../sim/desk';
 import { CHITS_PER_CYRITE, TANK_MAX, refine } from '../sim/purse';
 import { hunchOf, newDossier } from '../sim/calloway';
@@ -113,6 +114,10 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 28) shortBreathers(j as Journey);
   // 28 → 29: the road's gates are close (5.5 to 6.5 km); a road chart's lanes are folded in as a new one's are
   if (j.version < 29 && (j as Journey).chart.regionSet === 'road') for (const s of (j as Journey).chart.systems) s.lane = roadLane('road', s.lane);
+  // ADA-1 (sentient-ship plan, owner 2026-11-27; no change of shape, so no new version): a journey that read the grandmother's old letter
+  // before the ship had a voice gets her one-time card on the road (content/script/core.ts core_catchup)
+  const fl = (j as Journey).carry.flags;
+  if (fl.includes('archive_woke') && !fl.includes(CORE_MET) && !fl.includes(CORE_CATCHUP)) fl.push(CORE_CATCHUP);
   j.version = VERSION;
   return j as Journey;
 }

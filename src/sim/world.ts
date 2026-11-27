@@ -1288,7 +1288,7 @@ export class World implements EncounterHost {
     }
   }
   /**
-   * Ned's yard to Gran's letter (owner, 27 November 2026: the objective showed before the message): from the work until the letter is read
+   * Ned's yard to the old letter (owner, 27 November 2026: the objective showed before the message): from the work until the letter is read
    * the objective is Ned's, and the gate and the relay wait for the letter that names them.
    */
   get letterDue(): boolean {
@@ -1324,7 +1324,7 @@ export class World implements EncounterHost {
    * then does the first Custody hull come (STOLEN). Returns whether the pursuit may run.
    */
   private stolen(t: number): boolean {
-    // the clock starts once Gran's letter is read: nothing comes over Ned's work or the letter
+    // the clock starts once the old letter is read: nothing comes over Ned's work or the letter
     if (!painted(this.flags) || this.letterDue) return false;
     const b = this.bk!;
     if (this.stolenAt === Infinity) { this.stolenAt = t; b.nextPursuit = Math.max(b.nextPursuit, t + STOLEN.pursuit); }
@@ -2019,7 +2019,7 @@ export class World implements EncounterHost {
     // the hull is still the company's grey (owner, 5 November 2026): the gate waits for the paint bay
     if (b?.def.first && b.yard && paintDue(this.flags)) return { why: 'Ned’s yard first', paint: true, handshake: false, slow: false, resetting: false };
     // the first system past Cerro: her gate is locked to Kellern's ID; the Warden relay by it opens it on her own key (the archive says so)
-    // ...but only once Gran's letter has said so: until it is read, the gate waits on Ned's yard
+    // ...but only once the old letter has said so: until it is read, the gate waits on Ned's yard
     if (b?.def.first && this.letterDue) return { why: 'Ned’s yard first', paint: false, handshake: true, slow: false, resetting: false };
     if (b?.def.first && painted(this.flags) && !this.flags.has(relayKey(b.def))) return { why: 'wake the relay', paint: false, handshake: true, slow: false, resetting: false };
     if (!sc || !b || this.gateLet) return null;
@@ -2680,9 +2680,9 @@ export class World implements EncounterHost {
     for (const [k, v] of Object.entries(out.notice ?? {}) as Array<[Faction, number]>) this.noticeDelta[k] = (this.noticeDelta[k] ?? 0) + v;
     if (out.follow) this.follows.push({ card: out.follow.card, at: this.runTime + out.follow.after, quick: out.follow.quick });
     if (out.signal) this.events.push({ type: 'storyNotice', tone: out.signal.tone, headline: out.signal.headline, reason: out.signal.reason });
-    if (out.radio) {
-      const lines = [out.radio.text].flat();
-      this.radioLines(`radio_${lines[0]!.slice(1, 12)}`, tr(out.radio.from), out.radio.caller ?? 'unknown', lines.map((l) => tr(l)), out.radio.delay ?? 0, out.radio.gap ?? RADIO_GAP);
+    for (const rd of [out.radio ?? []].flat()) {
+      const lines = [rd.text].flat();
+      this.radioLines(`radio_${lines[0]!.slice(1, 12)}`, tr(rd.from), rd.caller ?? 'unknown', lines.map((l) => tr(l)), rd.delay ?? 0, rd.gap ?? RADIO_GAP);
     }
     if (out.job && !this.jobs.some((j) => j.id === out.job!.id)) this.jobs.push(out.job);
     if (out.drop) this.jobs = this.jobs.filter((j) => j.id !== out.drop);

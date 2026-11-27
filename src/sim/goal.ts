@@ -18,7 +18,7 @@ export function goalOf(w: World): Goal {
   const scope = w.stage?.onScope ? w.stage.def.name : undefined;
   // the paint bay comes before everything (owner, 5 November 2026): Sam's code leaves the hull grey and Ned does it free at the depot
   if (paintAt(w)) return { goal: 'Fly to Ned’s yard: free reprogram, repaint and rename', jobs, scope };
-  // after Ned's work, until Gran's letter is read: Ned has the word
+  // after Ned's work, until the old letter is read: Ned has the word
   if (w.letterDue) return { goal: 'Stand by for Ned', jobs };
   // a story place waits for her: what to do there (sim/places.ts)
   const sp = w.storyPlace;

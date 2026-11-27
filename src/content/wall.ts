@@ -50,26 +50,27 @@ const clue = (r: Row & { name: string }): WallItem => ({ kind: 'clue', ...r });
 /** In the order the story finds them. */
 export const WALL: WallItem[] = [
   clue({
-    flag: 'archive_woke', name: 'The archive woke', certainty: 'fact', at: -1, short: true,
-    proves: 'The sealed archive opened on your hand, and the registry logged it.',
-    not: 'Why it knew you, or who sealed it.',
-    detail: 'A legacy key, good for this hull only, opened it. It points to the old relay in Halden’s Reach.',
-    ask: 'Why did the hauler wake?',
-    lead: 'Reach the old relay in Halden’s Reach, then find what the shortage story hides.',
+    // ADA-1 (sentient-ship plan, owner 2026-11-27): the "archive" is the ship's own Warden core, awake since Ned's reboot
+    flag: 'archive_woke', name: 'ADA-1, the Warden core', certainty: 'fact', at: -1, short: true,
+    proves: 'Ada Aster’s tender has a mind, and it holds her key.',
+    not: 'What Ada did, or why.',
+    detail: 'ADA-1 flew this hull with Ada for decades, then sat shut in under Kellern’s lock. Ned’s reboot gave her the ship back.',
+    ask: 'What does she remember?',
+    lead: 'Wake the relays. Each one gives a memory back.',
   }),
   clue({
     flag: 'clue_archive_log', name: 'The Warden Line log', certainty: 'fact', at: -1, short: true,
-    proves: 'A routine called ADA-1 woke when you took the helm. Any hand would have done.',
-    not: 'What Ada Aster meant it to do.',
-    detail: 'The routine is signed A. Aster, Lane Warden. The keys work in any hand. The routine only made sure this hull came to yours.',
-    ask: 'Who built the routine?',
+    proves: 'ADA-1 came back when Kellern’s lock came off. Any hand would have done.',
+    not: 'Why this hull came to yours.',
+    detail: 'Tenders take their Warden’s call sign: ADA-1 is A. Aster, Lane Warden. The keys work in any hand.',
+    ask: 'Why this hull?',
     lead: 'Ada Aster wanted this found. Learn who remembers her.',
   }),
   clue({
     flag: 'clue_reserves', name: 'Krail reserves: 94%', certainty: 'fact', at: -1, short: true,
     proves: 'The Krail shortage was a cover. Reserves stood at 94% the day the lanes closed.',
     not: 'Who ordered the closing, why, or what the Thren have to do with it.',
-    detail: 'The archive holds the Continuance’s own stock report and its shortage order, both dated day one. They cannot both be true.',
+    detail: 'The first relay ADA-1 woke still held the Continuance’s own stock report and its shortage order, both dated day one. They cannot both be true.',
     ask: 'Was there ever a shortage?',
     lead: 'Someone in the Reach heard the order given, and Kellern keeps its books there.',
   }),

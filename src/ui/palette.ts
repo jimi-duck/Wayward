@@ -57,6 +57,7 @@ export const INK = {
   cyrite: hex('cyrite'),
   anomaly: hex('anomaly'),
   paper: hex('ink-hi'),
+  ochre: hex('ochre'),  // the WAYWARD herself: ADA-1, her Warden core
 } as const;
 
 /** The display faces, for canvas text. */

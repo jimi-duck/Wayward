@@ -45,7 +45,11 @@ export type Standing = 'custody' | 'gutter' | 'frontier' | 'guild' | 'kellern' |
 /** Seconds between one radio beat and the next of the same voice (`World.radioLines`). */
 export const RADIO_GAP = 4.5;
 
-export type Caller = Standing | 'office' | 'calloway' | 'captain' | 'unknown';
+/** Radio lines a card's answer leaves behind (`Outcome.radio`). */
+export interface RadioOut { from: string; text: string | string[]; caller?: Caller; delay?: number; gap?: number }
+
+/** Who is on the channel. `core` is ADA-1, the ship's own Warden core: she is aboard, not on a channel (sentient-ship plan, 27 November 2026). */
+export type Caller = Standing | 'office' | 'calloway' | 'captain' | 'unknown' | 'core';
 /** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded Jump Gate, at an open one, with Calloway, as her offer (from her file), or as a story beat (sim/story.ts). */
 export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt' | 'offer' | 'story' | 'scene';
 /** How much a transmission weighs (sim/desk.ts): what it may interrupt, and how it is shown. */
@@ -186,8 +190,8 @@ export interface Outcome {
   redo?: boolean;
   /** A Signal (a short notice) the moment the card closes: what just changed, in a headline and a reason (sim/floor.ts). */
   signal?: { tone: 'teal' | 'amber' | 'red'; headline: string; reason: string };
-  /** Lines on the radio, no answer asked: one subtitle beat each, the first `delay` seconds of play after the answer. */
-  radio?: { from: string; text: string | string[]; caller?: Caller; delay?: number; gap?: number };
+  /** Lines on the radio, no answer asked: one subtitle beat each, the first `delay` seconds of play after the answer. A list is two voices, each from its own delay. */
+  radio?: RadioOut | RadioOut[];
   job?: JobDef;
   /** A job given up. */
   drop?: string;

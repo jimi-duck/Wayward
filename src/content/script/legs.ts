@@ -59,15 +59,15 @@ const MARCHES_ROWS: Row[] = [
   notice('walk_notice', 'm_walk', arrive(), 'teal', 'The Long Walk', 'Drift fleet · five hulls, waiting'),
   objective('walk_objective', 'm_walk', arrive(), 'The Long Walk · the Drift kept the names'),
   main('walk_saffi', 'm_walk', { on: 'place', place: 'mw_saffi' }, 'story_drift'),
-  radio('walk_wren', 'm_walk', after('walk_saffi', 2), 'Wren Saffi', 'miners', '“Ninefold, line nine. My parents. Gran reads the list every year. I just fly.”'),
+  radio('walk_wren', 'm_walk', after('walk_saffi', 2), 'Wren Saffi', 'miners', '“Ninefold, line nine. My parents. Ma reads the list every year. I just fly.”'),
   // the lifeboat's echo
   radio('walk_boat', 'm_walk', after('walk_wren', 4), 'Ma Saffi', 'miners', '“Anka’s boat came through. Forty-one names. You kept them.”', { if: { has: ['lifeboat_saved'] } }),
   // what was Low Harrow's (cut 22 November 2026): a scored hull in the fleet, Wren's rule about full tanks, Hester's call for Gannet
   notice('walk_hull', 'm_walk', after('walk_saffi', 30), 'white', 'Drift hull', 'scored in long parallel lines', { wall: 'saw_scored' }),
   radio('walk_rule', 'm_walk', after('walk_hull', 2), 'Wren Saffi', 'miners', '“Don’t run a lane full. They follow the full ones. Everybody knows that.”', { if: { full: false } }),
-  radio('walk_rule_full', 'm_walk', after('walk_hull', 2), 'Wren Saffi', 'miners', '“You’re running heavy. I’d vent some, if I were you. Gran would just stare.”', { if: { full: true } }),
+  radio('walk_rule_full', 'm_walk', after('walk_hull', 2), 'Wren Saffi', 'miners', '“You’re running heavy. I’d vent some, if I were you. Ma would just stare.”', { if: { full: true } }),
   // the count, said once the walk is over: a hull lost stays lost
-  radio('walk_cost', 'm_walk', flag('drift_walk_cost'), 'Wren Saffi', 'miners', '“Not all of us. Gran will read more names this year.”'),
+  radio('walk_cost', 'm_walk', flag('drift_walk_cost'), 'Wren Saffi', 'miners', '“Not all of us. Ma will read more names this year.”'),
   radio('walk_lost', 'm_walk', flag('drift_scattered'), 'Wren Saffi', 'miners', '“They broke us up. We’ll find each other. We always do.”'),
   radio('walk_hester', 'm_walk', flag('drift_walked'), HESTER[0], HESTER[1], '“Hester again. A shift went quiet at Gannet. Nine people. I’ve got no ships. You’ve got one.”'),
   radio('walk_hester_lost', 'm_walk', flag('drift_scattered'), HESTER[0], HESTER[1], '“Hester again. A shift went quiet at Gannet. Nine people. I’ve got no ships. You’ve got one.”'),
@@ -237,7 +237,7 @@ const YARDS_ROWS: Row[] = [
   // 3 · Anvil Slip (work): the Account's Drift cache, which is Drift property
   notice('ya_notice', 'y_anvil', arrive(), 'teal', 'Anvil Slip', 'Kellern claim · a wrecked cargo train'),
   objective('ya_objective', 'y_anvil', arrive(), 'Anvil Slip · cases drifting'),
-  radio('ya_wren', 'y_anvil', flag('job_drift_cache_won'), 'Wren Saffi', 'miners', '“Those were our cases. Gran says to stop calling you ours.”', { if: { has: ['pact_drift'] } }),
+  radio('ya_wren', 'y_anvil', flag('job_drift_cache_won'), 'Wren Saffi', 'miners', '“Those were our cases. Ma says to stop calling you ours.”', { if: { has: ['pact_drift'] } }),
   objective('ya_gate', 'y_anvil', leave(), 'Jump to Keelberth'),
 
   // 4 · Keelberth (turn): Sam, patched through the relays: Eben and the scarred hulls; the Survey's voice on the wire

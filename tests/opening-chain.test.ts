@@ -82,7 +82,9 @@ describe('the opening chain beyond the gate', () => {
     expect(seen).toEqual(['story_breach', 'story_sam', 'story_wake']);
     expect(w.phase).toBe('play');
     const c = w.result().carry;
-    expect(c.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'archive_woke', 'clue_reserves']));
+    expect(c.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'archive_woke', 'core_met']));
+    // the 94% is the first relay's to give now, not the card's (sentient-ship plan)
+    expect(c.flags).not.toContain('clue_reserves');
   });
   it('adds up (opening sheets B and F): a projection, not a balance, and a breach bill of 800 CR kept apart from it', () => {
     const bay = ledgerFor('bay');
@@ -124,15 +126,17 @@ describe('the opening chain beyond the gate', () => {
     expect(ledgerFor('evidence').find((r) => r.k === 'Reserve level')?.v).toBe('94%');
     expect(ledgerFor('evidence').find((r) => r.k === 'Reserve entry and gate-closure order')?.v).toBe('same day');
     expect(ledgerFor('archive').find((r) => r.k === 'Next lead')?.v).toBe('Halden’s Reach');
-    // a written message: no headline figure, no record to open, the 94% in the writer's own words
+    // ADA-1's first words (sentient-ship plan, owner 2026-11-27): short, personal, unsigned, one answer; the first relay shows the rest
     const wake = CARD_BY_ID.story_wake!;
     expect(wake.hero).toBeUndefined();
     expect(wake.doc).toBeUndefined();
-    expect(wake.letter?.head).toEqual([]);
-    expect(wake.letter?.sign).toBe('— Gran');
-    expect(wake.text).toContain('The reserve log says 94%');
-    expect(wake.text).toContain('gate network’s key');
-    expect(wake.text).toContain('Halden’s Reach');
+    expect(wake.caller).toBe('core');
+    expect(wake.glass).toBe('ochre');
+    expect(wake.letter?.sign).toBe('');
+    expect(wake.text.split(/\s+/).length).toBeLessThan(50);
+    expect(wake.text).toContain('Ada Aster');
+    expect(wake.text).not.toContain('94');
+    expect(wake.choices.map((c) => c.label)).toEqual(['Finish what?']);
   });
 });
 
@@ -150,7 +154,17 @@ describe('save migration', () => {
     const a = migrate(structuredClone(old))!;
     expect(a.version).toBe(VERSION);
     expect('civic' in a.carry).toBe(false);
-    expect(a.carry.flags).toEqual(old.carry.flags);
+    // (and a save that read Gran's old letter is due ADA-1's one-time card: sentient-ship plan)
+    expect(a.carry.flags).toEqual([...old.carry.flags, ...(old.carry.flags.includes('archive_woke') ? ['core_catchup_due'] : [])]);
+  });
+  it('gives a save that read the old letter ADA-1\'s one-time card, once', () => {
+    const old = JSON.parse(readFileSync('tests/fixtures/journey-v19.json', 'utf8'));
+    old.carry.flags = ['archive_woke'];
+    const a = migrate(structuredClone(old))!;
+    expect(a.carry.flags).toEqual(['archive_woke', 'core_catchup_due']);
+    expect(migrate(JSON.parse(JSON.stringify(a)))!.carry.flags).toEqual(['archive_woke', 'core_catchup_due']);
+    old.carry.flags = ['archive_woke', 'core_met'];
+    expect(migrate(structuredClone(old))!.carry.flags).toEqual(['archive_woke', 'core_met']);
   });
 });
 

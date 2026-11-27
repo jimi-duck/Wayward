@@ -1,0 +1,55 @@
+// ── ADA-1, the ship's Warden core (sentient-ship plan, owner 2026-11-27) ──
+// She says du to Juno, short and dry like the English. Her name stays ADA-1; "Warden core" is "Warden-Kern".
+export const CORE: Record<string, string> = {
+  // her name and look
+  'ADA-1 · Warden core': 'ADA-1 · Warden-Kern',
+  'Warden core online': 'Warden-Kern online',
+  'it woke with the lights': 'mit den Lichtern aufgewacht',
+  'ADA-1 · talking to the relay': 'ADA-1 · spricht mit dem Relais',
+  'Warden key · by hand': 'Warden-Schlüssel · von Hand',
+
+  // her first words, at Ringhold
+  'ADA-1 wakes · Ada’s key in her core': 'ADA-1 wacht auf · Adas Schlüssel in ihrem Kern',
+  'I can hear the ship again': 'Ich höre das Schiff wieder',
+  'Systems returning. I can hear the ship again.\nWhere have you been?\n…No. You wouldn’t know.\nI’m ADA-1. I flew this ship with Ada Aster. Your grandmother.\nI’ve been in here a long time, Juno.\nI think there’s something we need to finish.':
+    'Systeme kommen zurück. Ich höre das Schiff wieder.\nWo warst du?\n…Nein. Das kannst du nicht wissen.\nIch bin ADA-1. Ich bin dieses Schiff mit Ada Aster geflogen. Deiner Großmutter.\nIch bin schon lange hier drin, Juno.\nIch glaube, wir haben etwas zu Ende zu bringen.',
+  'Finish what?': 'Was zu Ende bringen?',
+  'She shows you the relay by the gate.': 'Sie zeigt dir das Relais am Tor.',
+  'ADA-1 is awake · the relay by the gate first': 'ADA-1 ist wach · zuerst das Relais am Tor',
+  '“That relay by the gate. I’ve watched its signal for years. I can’t answer it alone. Bring me close.”':
+    '„Das Relais am Tor. Ich sehe sein Signal seit Jahren. Allein kann ich nicht antworten. Bring mich hin.“',
+  '“Your ship talks now? Fine. If she gets you out, listen to her.”':
+    '„Dein Schiff redet jetzt? Gut. Wenn sie dich rausbringt, hör auf sie.“',
+  '“I can hear them again. First thing back: Krail reserves, the night they shut the lanes. Ninety-four per cent.”':
+    '„Ich höre sie wieder. Das Erste, was zurückkommt: Krail-Reserven in der Nacht, als sie die Bahnen schlossen. Vierundneunzig Prozent.“',
+
+  // the one-time card for a save that read Gran's old letter
+  'ADA-1 · the ship’s Warden core': 'ADA-1 · der Warden-Kern des Schiffs',
+  'I’m the one who kept it': 'Ich habe ihn aufbewahrt',
+  'That letter you read was Ada’s.\nI’m the one who kept it.\nI’m ADA-1. I flew this ship with her, a long time ago.':
+    'Der Brief, den du gelesen hast, war von Ada.\nIch habe ihn aufbewahrt.\nIch bin ADA-1. Ich bin dieses Schiff mit ihr geflogen, vor langer Zeit.',
+  'Go on': 'Erzähl weiter',
+  'She talks to the relays from now on.': 'Ab jetzt spricht sie mit den Relais.',
+  'ADA-1 is awake': 'ADA-1 ist wach',
+
+  // the Wall, the log and the briefs
+  'ADA-1, the Warden core': 'ADA-1, der Warden-Kern',
+  'Ada Aster’s tender has a mind, and it holds her key.': 'Ada Asters Tender hat einen Verstand, und er hält ihren Schlüssel.',
+  'What Ada did, or why.': 'Was Ada getan hat, oder warum.',
+  'ADA-1 flew this hull with Ada for decades, then sat shut in under Kellern’s lock. Ned’s reboot gave her the ship back.':
+    'ADA-1 ist diesen Rumpf jahrzehntelang mit Ada geflogen und saß dann unter Kellerns Sperre fest. Neds Neustart hat ihr das Schiff zurückgegeben.',
+  'What does she remember?': 'Woran erinnert sie sich?',
+  'Wake the relays. Each one gives a memory back.': 'Weck die Relais. Jedes gibt eine Erinnerung zurück.',
+  'ADA-1 came back when Kellern’s lock came off. Any hand would have done.': 'ADA-1 kam zurück, als Kellerns Sperre fiel. Jede Hand hätte gereicht.',
+  'Why this hull came to yours.': 'Warum dieser Rumpf zu dir kam.',
+  'Tenders take their Warden’s call sign: ADA-1 is A. Aster, Lane Warden. The keys work in any hand.':
+    'Tender tragen das Rufzeichen ihres Wardens: ADA-1 ist A. Aster, Bahnwächterin. Die Schlüssel funktionieren in jeder Hand.',
+  'Why this hull?': 'Warum dieser Rumpf?',
+  'The first relay ADA-1 woke still held the Continuance’s own stock report and its shortage order, both dated day one. They cannot both be true.':
+    'Das erste Relais, das ADA-1 geweckt hat, hatte noch den Lagerbericht der Continuance und ihren Mangelbefehl, beide vom ersten Tag. Beides kann nicht stimmen.',
+  'One lane open. The voice in my ship says the rest will follow.': 'Eine Bahn offen. Die Stimme in meinem Schiff sagt, der Rest folgt.',
+  'ADA-1 named a quiet lane, and this is it. Every other way out is watched, and your hull is posted as stolen. Nobody is hunting you yet.':
+    'ADA-1 hat einen ruhigen Weg genannt, und das ist er. Alle anderen Ausgänge werden überwacht, und dein Rumpf ist als gestohlen gemeldet. Noch jagt dich niemand.',
+  // Ada's notes are signed as the grandmother she was (owner 2026-11-27: never "Gran")
+  '— Your grandmother': '— Deine Großmutter',
+};

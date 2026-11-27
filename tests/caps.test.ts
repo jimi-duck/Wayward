@@ -31,7 +31,7 @@ describe('the writing caps', () => {
     for (const c of [...STORY_CARDS, ...CARDS] as CardDef[]) {
       out.push(...over(c.text ?? '', c.letter ? CAPS.document : CAPS.moment).map((m) => `${c.id} ${m.slice(0, 40)}`));
       for (const ch of c.choices ?? []) for (const o of [ch.win, ch.lose]) {
-        for (const x of [o?.radio?.text ?? []].flat()) out.push(...over(x, CAPS.voice).map((m) => `${c.id} ${m}`));
+        for (const x of [o?.radio ?? []].flat().flatMap((r) => [r.text].flat())) out.push(...over(x, CAPS.voice).map((m) => `${c.id} ${m}`));
         if (o?.signal) out.push(...over(o.signal.headline, CAPS.headline), ...over(o.signal.reason, CAPS.reason));
       }
       if (c.herald) out.push(...over(c.herald.headline, CAPS.headline), ...over(c.herald.reason, CAPS.reason));

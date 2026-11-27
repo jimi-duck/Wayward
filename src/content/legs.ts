@@ -137,7 +137,7 @@ export const NOTE_CARDS: CardDef[] = [
 export const NOTE_8 = {
   title: 'Warden’s note 8 of 8',
   kept: {
-    sign: '— Gran',
+    sign: '— Your grandmother',
     /** Juno's answer: the button that goes on to the choice. */
     answer: 'You could have asked me.',
     lines: [

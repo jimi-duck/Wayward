@@ -131,7 +131,6 @@ export const REACH_DE: Record<string, string> = {
   'Custody blockade at the gate': 'Custody-Blockade am Tor',
   'Reach the Narrows relay': 'Erreiche das Relais der Narrows',
   'Custody blockade · the Jump Gate': 'Custody-Blockade · das Sprungtor',
-  '“That’s the relay your gran watched. Seventy years and they still guard a dead thing.”': '„Das ist das Relais, das deine Oma bewacht hat. Siebzig Jahre, und sie bewachen immer noch ein totes Ding.“',
   'Inspector Ashgrove': 'Inspektor Ashgrove',
   '“I’ll remember the hull. Whoever you are.”': '„Den Rumpf merke ich mir. Wer auch immer du bist.“',
   '“The relay by your gate was ours. Dark since that night. Put your key to it and Halden trades again.”': '„Das Relais an deinem Tor war unseres. Dunkel seit jener Nacht. Halt deinen Schlüssel dran, dann handelt Halden wieder.“',

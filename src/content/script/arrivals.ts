@@ -17,7 +17,7 @@ const handshake = (id: string, stop: string, reason: string): Row[] => [
 export const ARRIVAL_ROWS: Row[] = [
   // ── Arrival 2 · the Rift: flown, not read. The relay is broken; someone talks her through, or nobody does ──
   objective('ri_obj', 'rift', arrive(), 'Cross the Rift', 'Relay adrift · no beacons'),
-  radio('ri_wren_1', 'rift', free(4), 'Wren Saffi', 'miners', '“Juno, it’s Wren. Gran says you’re ours now. Follow my beacons, and don’t argue with the third one.”', { if: { has: ['wren_trust'] } }),
+  radio('ri_wren_1', 'rift', free(4), 'Wren Saffi', 'miners', '“Juno, it’s Wren. Ma says you’re ours now. Follow my beacons, and don’t argue with the third one.”', { if: { has: ['wren_trust'] } }),
   radio('ri_wren_2', 'rift', after('ri_wren_1', 12), 'Wren Saffi', 'miners', '“Left of the big hull. That was the Ninefold. My parents flew her. Keep going.”'),
   radio('ri_wren_3', 'rift', after('ri_wren_2', 12), 'Wren Saffi', 'miners', '“Last one. Now you know the way, so you’re one of us. Sorry.”'),
   radio('ri_oduya', 'rift', free(8), 'Councillor Oduya', 'miners', '“Kessel Hold lit its rig lamps along the Rift. All of them. The moot voted. It was close.”', { if: { has: ['oduya_rigs'] } }),
@@ -62,7 +62,7 @@ export const ARRIVAL_ROWS: Row[] = [
   radio('br_sam', 'breaker', after('br_hand_lit', 2), SAM[0], SAM[1], '“Five relays lit, and they carry voices. Eben got your warning. He says thanks. Rudely.”', { if: { has: ['eben_warned'] } }),
   radio('br_sam_b', 'breaker', after('br_hand_lit', 2), SAM[0], SAM[1], '“Juno. Five relays lit, and they carry voices. Eben’s fine. I think. Keep moving.”', { if: { not: ['eben_warned'] } }),
   main('br_note', 'breaker', after('br_hand_lit', 8), 'warden_note_5'),
-  radio('br_draper', 'breaker', flag('warden_note_5'), 'Director Draper', 'office', '“Your gran built the case, Juno. I just collect on it. Family business, both of us.”', { if: { has: ['draper_revealed'] } }),
+  radio('br_draper', 'breaker', flag('warden_note_5'), 'Director Draper', 'office', '“Your grandmother built the case, Juno. I just collect on it. Family business, both of us.”', { if: { has: ['draper_revealed'] } }),
   objective('br_gate', 'breaker', flag('warden_note_5'), 'Jump to Saltquay', 'Find the room. The free ports kept the names.'),
 
   // ── Arrival 6 · the Tollgate: Calloway's damping field holds the gate (content/story.ts story_tollgate) ──

@@ -34,7 +34,7 @@ export interface JobTerms { reward: string[]; limit: number }
 
 const CALLER_CSS: Record<Caller, string> = {
   custody: NEON_CSS.custody, gutter: NEON_CSS.gutter, office: NEON_CSS.office,
-  frontier: INK.teal, guild: INK.amber, kellern: INK.krail, miners: INK.white, calloway: INK.red, captain: INK.red, unknown: INK.white2,
+  frontier: INK.teal, guild: INK.amber, kellern: INK.krail, miners: INK.white, calloway: INK.red, captain: INK.red, unknown: INK.white2, core: INK.ochre,
 };
 const KIND_WORD: Record<string, string> = {
   trade: 'Trade', plea: 'Plea', job: 'Job offer', warning: 'Warning', distress: 'Distress call', rumour: 'Rumour',
@@ -183,6 +183,8 @@ export class Radio {
     box.classList.remove('her');
     box.querySelector('.rdl-face')?.remove();
     if (!e) { box.hidden = true; return; }
+    // ADA-1 is aboard, not on a channel: her core pulse in place of the signal trace
+    box.classList.toggle('core', e.caller === 'core');
     const colour = CALLER_CSS[e.caller as Caller] ?? INK.white2;
     $('rdl-from').textContent = t(e.from);
     $('rdl-from').style.color = colour;
