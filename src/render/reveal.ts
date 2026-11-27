@@ -1,16 +1,11 @@
 // ── the rename reveal ─────────────────────────────────────────────────────
-// Sam's code lifts the owner lock (the `ship_stolen` flag, set once by the story card's answer) and the ship takes
-// her new identity in about six seconds (the owner's rename reveal kit, 2026-10-22; longer and wider, owner 2026-10-23):
-//   0.00–0.35  the lock lifts: the HUD's centre notice says so, the hull is still grey
-//   0.35–2.40  one amber band crosses the hull from bow to stern; the plate behind it is ochre
-//   0.60–6.00  the camera swings slowly round to her flank and pulls back (only when no hostile gun can reach her)
-//   6.00–7.20  the view holds on her flank, then the camera eases back (no card: owner 2026-10-31, the HUD's notice says
-//              she is repainted and renamed) The flag is the livery: this only decides how it is shown, so a
-// save made at any point loads straight into the ochre hull with no replay. Reduced motion: ochre at once, no arc.
-// No Three.js here, so the timing is tested headless.
+// Ned's yard paints and renames her in the dark (sim/postjump.ts): the `hull_repainted` flag turns on as the light comes back, and the
+// ship is already in her new colours (owner, 27 November 2026: no painting animation). What plays is the camera:
+//   0.60–6.00  it swings slowly round to her flank and pulls back (only when no hostile gun can reach her)
+//   6.00–7.20  the view holds on her flank, then the camera eases back
+// The flag is the livery: this only decides how it is shown, so a save made at any point loads straight into the new paint with no
+// replay. Reduced motion: no arc. No Three.js here, so the timing is tested headless.
 
-export const LOCK_AT = 0.35;
-export const SWEEP_END = 2.4;
 const ARC_START = 0.6;
 export const ARC_END = 6;
 /** When the camera starts back, after a moment held on her flank. */
@@ -19,10 +14,8 @@ export const HOLD_END = 7.2;
 const BACK = 1.6;
 
 export interface RevealFrame {
-  /** 0 grey to 1 ochre, when no sweep is running. */
+  /** 0 grey, 1 her new paint: the flag, as it stands. */
   livery: number;
-  /** Where the band is along the hull (-1 bow, +1 stern) while it crosses; null otherwise. */
-  sweep: number | null;
   /** 0 to 1: the camera's arc. */
   arc: number;
 }
@@ -72,11 +65,10 @@ export class RenameReveal {
       }
     }
     if (!i.stolen) this.known = false;
-    if (this.t0 < 0) return { livery: i.stolen ? 1 : 0, sweep: null, arc: 0 };
+    const livery = i.stolen ? 1 : 0;
+    if (this.t0 < 0) return { livery, arc: 0 };
 
     const e = i.time - this.t0;
-    const sweep = e >= LOCK_AT && e < SWEEP_END ? -1 + 2 * smooth((e - LOCK_AT) / (SWEEP_END - LOCK_AT)) : null;
-    const livery = e < LOCK_AT ? 0 : 1;
 
     let arc = 0;
     if (this.orbit) {
@@ -88,8 +80,7 @@ export class RenameReveal {
         arc = this.back * (1 - smooth(this.release / BACK));
       } else arc = smooth((e - ARC_START) / (ARC_END - ARC_START));
     }
-    const over = e >= SWEEP_END && (!this.orbit || (this.release >= BACK));
-    if (over) { this.t0 = -1; return { livery: 1, sweep: null, arc: 0 }; }
-    return { livery, sweep, arc };
+    if (!this.orbit || this.release >= BACK) { this.t0 = -1; return { livery, arc: 0 }; }
+    return { livery, arc };
   }
 }

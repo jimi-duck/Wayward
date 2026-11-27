@@ -6,9 +6,9 @@ import { COSMETICS } from '../content/unlocks';
 import { clamp, lerp } from '../core/math';
 import { HOLD_MAX, JUMP_T, type SortieDef } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
-import { setLightLevel, setLiveryBlend, setLiverySweep, setMark, SWEEP_SPAN } from './wayward';
+import { setLightLevel, setLiveryBlend, setMark } from './wayward';
 import { RenameReveal } from './reveal';
-import { painted } from '../sim/postjump';
+import { painted, YARD_ZAP } from '../sim/postjump';
 import { SceneArc } from './scenes';
 import type { AlienKind, Faction } from '../sim/enemies';
 import { inFight } from '../sim/guide';
@@ -789,13 +789,11 @@ export class Sector {
       stolen, time: world.runTime, paused: world.phase !== 'play' || this.console !== null,
       calm: !inFight(world), reduced: this.reduceMotion,
     }, uiDt);
-    // Ned's yard: as the band crosses, her lights go out and come back white, and the registry is struck out and the name written behind it
-    const sw = rv.sweep === null ? null : (rv.sweep + 1) / 2;
-    setMark(sw === null ? (stolen ? 1 : 0) : Math.min(1, Math.max(0, sw * 1.15 - 0.1)));
-    const tt = this.time;
-    setLightLevel(sw === null ? (this.reveal.active && rv.livery === 0 ? 0 : 1) : sw < 0.15 ? (Math.sin(tt * 37) * Math.sin(tt * 13) > 0.2 ? 0.35 : 0) : sw < 0.45 ? 0.1 : 1 + 0.7 * (1 - sw));
-    setLiverySweep(rv.sweep === null ? null : -rv.sweep * SWEEP_SPAN);
-    if (rv.sweep === null) setLiveryBlend(rv.livery);
+    // Ned's yard: under the sparks her lights stutter and fail, dark through the reboot; the paint and the name are done in the dark
+    setMark(stolen ? 1 : 0);
+    const tt = this.time, zap = world.yardPhase === 2 ? Math.min(1, world.yardT / YARD_ZAP) : 0;
+    setLightLevel(world.yardPhase === 3 ? 0 : zap > 0 && Math.sin(tt * 37) * Math.sin(tt * 13) < zap * 0.8 - 0.3 ? 0.15 : 1);
+    setLiveryBlend(rv.livery);
     this.rig.reveal = Math.max(rv.arc, this.sceneArc.update(this.storyScene !== null, uiDt, this.reduceMotion));
     this.ship.update(s, dt, this.reduceMotion);
     this.rocks.update(world.field.rocks, world.field.bulwarks, alpha, dt, this.rig.target.x, this.rig.target.z);

@@ -72,10 +72,11 @@
 /* the jump: the HUD steps back for the fly-through, and a pale teal veil closes over the view at the end of it */
 #hud, #touch { transition: opacity .45s var(--ez); }
 #app.warping #hud, #app.warping #touch { opacity: 0; }
-/* Ned's yard: the ship is shut down. The view outside stays, a little darker; a rebooting loader sits low in the middle (ui/hud.ts reboot). */
-#reboot { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0; transition: opacity .45s ease;
-  background: radial-gradient(ellipse at 50% 55%, rgba(var(--void-rgb), .5), rgba(var(--void-rgb), .82)); display: grid; place-items: end center; padding-bottom: 20vh; }
-#reboot.on { opacity: 1; }
+/* Ned's yard: the ship is shut down. A cut to black (owner 2026-11-27), a rebooting loader low in the middle (ui/hud.ts reboot); the paint is
+   done in the dark, and the light comes back slowly on her new colours. */
+#reboot { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0; transition: opacity 1.6s ease-in;
+  background: #000; display: grid; place-items: end center; padding-bottom: 20vh; }
+#reboot.on { opacity: 1; transition: opacity .7s ease-out; }
 /* A device's first run: the start-up screen over a held world while the quality is found (main.ts calibrate). Nearly opaque,
    so the steps behind it are not seen; the same loader as the reboot, centred. Above the HUD and the pause card, under ?perf. */
 #calib { position: absolute; inset: 0; z-index: 7; pointer-events: none; opacity: 0; visibility: hidden; transition: opacity .5s ease, visibility 0s linear .5s;

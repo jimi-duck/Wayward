@@ -40,7 +40,7 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { ARCADE_EDGE, STORY_EDGE, EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_LINE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR, SAM_RELAY, NED_DONE, NED_DONE_AT, NED_PARTITION, NED_PARTITION_AT, PARTITION } from './postjump';
+import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_LINE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR, SAM_RELAY, NED_AT, NED_FOUND, PARTITION } from './postjump';
 import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
 import { RelayWake } from './relaywake';
@@ -517,7 +517,7 @@ export class World implements EncounterHost {
     this.follows = [];
     this.portCalled = false;
     this.auditCalled = false;
-    this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
+    this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false; this.nedSaid = false;
     this.recoverT = 0;
     this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.relay = new RelayWake(this); this.mainLines = new Set(); this.listenAt = Infinity;
     this.radioQ = [];
@@ -1267,24 +1267,32 @@ export class World implements EncounterHost {
   /** When the paint was done in the first system past Cerro (Infinity: not yet): the pursuit counts from it. */
   private stolenAt = Infinity;
   private stolenSaid = 0;
-  /** Ned's words after the work: 1 what he did, 2 what he found. */
-  private nedSaid = 0;
+  /** Ned has said what he found under her decking. */
+  private nedSaid = false;
 
-  /** The first system past Cerro, after the work: Ned says what he did and what he found, and the partition the reboot woke opens. */
+  /** The first system past Cerro, after the work: Ned says what he found, and the archive in the core the reboot woke opens straight after. */
   private stepFirst(): void {
     const t = this.runTime;
-    // Ned, after the work: what he did, then what he found (the partition the reboot woke)
-    if (this.yardAt !== Infinity && this.phase === 'play') {
-      const e = t - this.yardAt;
-      if (this.nedSaid === 0 && e >= NED_DONE_AT) { this.nedSaid = 1; this.radioLines('ned_done', tr(PAINTER), 'frontier', [tr(NED_DONE)]); }
-      if (this.nedSaid === 1 && e >= NED_PARTITION_AT) { this.nedSaid = 2; this.flags.add(PARTITION); this.radioLines('ned_partition', tr(PAINTER), 'frontier', [tr(NED_PARTITION)]); }
+    // Ned, once the cut scene is over: the core under her decking. He says what the herald would, so the message follows his line at once
+    if (this.yardAt !== Infinity && this.phase === 'play' && !this.nedSaid && t - this.yardAt >= NED_AT) {
+      this.nedSaid = true;
+      this.flags.add(PARTITION);
+      this.radioLines('cue_ned_core', tr(PAINTER), 'frontier', [tr(NED_FOUND)]);
+      if (!this.flags.has('archive_woke') && !this.cardsSeen.has(WAKE_BEAT)) { this.wakeHerald = true; this.follows.push({ card: WAKE_BEAT, at: t + 0.5 }); }
+      return;
     }
-    // the yard's reboot woke the partition: once Ned has said so, at a free moment, the stored message comes (owner, 24 November 2026:
-    // straight after the yard, not after filling the tank, for the story's sake)
-    if (painted(this.flags) && !this.flags.has('archive_woke') && !this.cardsSeen.has(WAKE_BEAT) && !this.wakeHerald && !this.follows.some((f) => f.card === WAKE_BEAT)
-      && (this.flags.has(PARTITION) || this.yardAt === Infinity) && !this.docked && this.phase === 'play' && this.scriptFree(this.busy(), t)) {
+    // a save made between the paint and the archive: at a free moment, the stored message comes with its herald
+    if (this.yardAt === Infinity && painted(this.flags) && !this.flags.has('archive_woke') && !this.cardsSeen.has(WAKE_BEAT) && !this.wakeHerald && !this.follows.some((f) => f.card === WAKE_BEAT)
+      && !this.docked && this.phase === 'play' && this.scriptFree(this.busy(), t)) {
       this.follows.push({ card: WAKE_BEAT, at: t });
     }
+  }
+  /**
+   * Ned's yard to Gran's letter (owner, 27 November 2026: the objective showed before the message): from the work until the letter is read
+   * the objective is Ned's, and the gate and the relay wait for the letter that names them.
+   */
+  get letterDue(): boolean {
+    return !!this.bk?.def.first && this.yardAt !== Infinity && !this.flags.has('archive_woke') && !this.cardsSeen.has(WAKE_BEAT);
   }
   /** Ned's yard (sim/postjump.ts): Ned has been heard. */
   private paintCalled = false;
@@ -1316,7 +1324,8 @@ export class World implements EncounterHost {
    * then does the first Custody hull come (STOLEN). Returns whether the pursuit may run.
    */
   private stolen(t: number): boolean {
-    if (!painted(this.flags)) return false;
+    // the clock starts once Gran's letter is read: nothing comes over Ned's work or the letter
+    if (!painted(this.flags) || this.letterDue) return false;
     const b = this.bk!;
     if (this.stolenAt === Infinity) { this.stolenAt = t; b.nextPursuit = Math.max(b.nextPursuit, t + STOLEN.pursuit); }
     const since = t - this.stolenAt, name = b.def.name;
@@ -1338,11 +1347,10 @@ export class World implements EncounterHost {
    */
   private stepYard(dt: number, speed: number): void {
     const b = this.bk!, y = b.yard;
-    // the special moment after the work: a second notice, then the title card (the first notice went with the work)
+    // the light is back on her new colours: the new name comes up, like a film's title
     if (this.yardAt !== Infinity && this.yardBeat < 2) {
       const e = this.runTime - this.yardAt;
-      if (this.yardBeat === 0 && e >= YARD_REPAINT_AT) { this.yardBeat = 1; this.events.push({ type: 'yardDone', n: 1 }); }
-      else if (this.yardBeat === 1 && e >= YARD_TITLE_AT) { this.yardBeat = 2; this.events.push({ type: 'yardDone', n: 2 }); }
+      if (e >= YARD_TITLE_AT) { this.yardBeat = 2; this.events.push({ type: 'yardDone', n: 2 }); }
     }
     if (this.yardPhase === 4) { if (this.runTime - this.yardAt >= YARD_AUTO_END) this.yardPhase = 0; return; }
     if (!y || !paintDue(this.flags) || this.docked || this.phase !== 'play') { this.yardPhase = 0; this.yardT = 0; return; }
@@ -1578,6 +1586,7 @@ export class World implements EncounterHost {
     this.addScore(5000 + (this.cyrite + this.fuel) * 50 + this.plates * 500, 'events');
     b.jumpT = JUMP_T;
     s.invuln = 99;
+    this.dropLessonLines();
     this.events.push({ type: 'jumped', x: s.x, z: s.z });
   }
 
@@ -2010,6 +2019,8 @@ export class World implements EncounterHost {
     // the hull is still the company's grey (owner, 5 November 2026): the gate waits for the paint bay
     if (b?.def.first && b.yard && paintDue(this.flags)) return { why: 'Ned’s yard first', paint: true, handshake: false, slow: false, resetting: false };
     // the first system past Cerro: her gate is locked to Kellern's ID; the Warden relay by it opens it on her own key (the archive says so)
+    // ...but only once Gran's letter has said so: until it is read, the gate waits on Ned's yard
+    if (b?.def.first && this.letterDue) return { why: 'Ned’s yard first', paint: false, handshake: true, slow: false, resetting: false };
     if (b?.def.first && painted(this.flags) && !this.flags.has(relayKey(b.def))) return { why: 'wake the relay', paint: false, handshake: true, slow: false, resetting: false };
     if (!sc || !b || this.gateLet) return null;
     // the Narrows: locked by Custody until Ada's key is in, then down while it reboots under her key (sim/narrows.ts)
@@ -2512,6 +2523,15 @@ export class World implements EncounterHost {
     texts.forEach((text, i) => this.radioQ.push({ at: at + i * gap, id: i ? `${id}_${i}` : id, from, caller, text }));
     this.radioQ.sort((a, b) => a.at - b.at);
     this.flushRadio();
+  }
+
+  /**
+   * Drop the opening lesson's lines still to be said (`train_`): they speak of the moment they were made for, so once the raiders call or
+   * she jumps they are out of date (owner, 27 November 2026: Sam's raider line came after the jump).
+   */
+  dropLessonLines(): void {
+    this.radioQ = this.radioQ.filter((r) => !r.id.startsWith('train_'));
+    this.floor.drop((e) => e.type === 'ping' && e.id.startsWith('train_'));
   }
 
   private flushRadio(): void {

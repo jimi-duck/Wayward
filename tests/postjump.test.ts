@@ -6,7 +6,7 @@ import { World } from '../src/sim/world';
 import { guideTarget, sidePlaces } from '../src/sim/guide';
 import { places } from '../src/sim/breakout';
 import { paintHull, toBreach } from './paint';
-import { lockLifted, painted, paintAt, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK, YARD_ZAP, YARD_AUTO_END, PARTITION } from '../src/sim/postjump';
+import { lockLifted, painted, paintAt, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK, YARD_ZAP, YARD_REBOOT, YARD_AUTO_END, PARTITION } from '../src/sim/postjump';
 import { WAKE_BEAT } from '../src/content/story';
 import { FIRST_SECURITY_MAX, SECURITY_FROM, SECURITY_TO, SECURITY_GAP, SECURITY_DELAY, TRAFFIC_CLEAR, TRAFFIC_N } from '../src/sim/traffic';
 import { goalOf } from '../src/sim/goal';
@@ -106,6 +106,11 @@ describe('the objective follows the owner lock', () => {
     expect(goalOf(w).goal).toMatch(/Ned/);
     paintHull(w);
     expect(w.flags.has('hull_repainted')).toBe(true);
+    // until Gran's letter is read, Ned has the word: no relay on the objective before the letter names it (owner 2026-11-27)
+    expect(goalOf(w).goal).toBe('Stand by for Ned');
+    expect(w.gateWhy).toBe('Ned’s yard first');
+    w.flags.add('archive_woke');
+    play(w, 0.1);
     // her gate is locked to Kellern's ID: the Warden relay by it is the course until she wakes it
     expect(guideTarget(w)).toMatchObject({ kind: 'relay', name: 'Warden relay' });
     w.flags.add('relay_first');
@@ -334,30 +339,31 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(w.yardGlitch).toBe(1);
     // the autopilot flies her out of the front, and the helm is hers again after
     const front = w.yardFront();
-    for (let i = 0; i < Math.round(YARD_AUTO_END / STEP) + 5; i++) { w.step(STEP, input()); w.events.length = 0; }
+    const heard: string[] = [];
+    for (let i = 0; i < Math.round(YARD_AUTO_END / STEP) + 5; i++) { w.step(STEP, input()); for (const e of w.events) if (e.type === 'ping') heard.push(e.id ?? ''); w.events.length = 0; }
     expect(w.yardPhase).toBe(0);
     expect(w.yardGlitch).toBe(0);
     expect((w.ship.x - p.x) * front.x + (w.ship.z - p.z) * front.z).toBeGreaterThan(8);
     expect(w.phase).toBe('play');
     // no card says what the yard did (owner 2026-11-21): Ned does, on the radio
-    const heard: string[] = [];
     for (let i = 0; i < Math.round(15 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); for (const e of w.events) if (e.type === 'ping') heard.push(e.id ?? ''); w.events.length = 0; }
     expect(w.comms).toBeNull();
-    expect(heard).toContain('ned_done');
+    expect(heard).toContain('cue_ned_core');
     expect(CARD_BY_ID.story_yard_done).toBeUndefined();
     expect(CARD_BY_ID.story_sam!.text).toContain('Ned’s yard');
   });
 
-  it('the work is a moment: a notice, a second notice, the name as a title, as the autopilot flies her out, then the card', () => {
+  it('the work is a cut scene: black, then the name as a title as the autopilot flies her out, no notice before it (owner 2026-11-27)', () => {
     const w = afterCode();
     const p = w.bk!.yard!;
     const heard: string[] = [];
     const note = () => { for (const e of w.events) { if (e.type === 'yardDone') heard.push(['reprogrammed', 'repainted', 'title'][e.n]!); } w.events.length = 0; };
     w.ship.x = p.x - p.r * 0.8; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
-    for (let i = 0; i < Math.round((YARD_ZAP + 8) / STEP) && w.yardPhase < 4; i++) { w.ship.invuln = 1; w.step(STEP, input()); note(); }
-    expect(heard).toEqual(['reprogrammed']);
+    for (let i = 0; i < Math.round((YARD_ZAP + YARD_REBOOT + 8) / STEP) && w.yardPhase < 4; i++) { w.ship.invuln = 1; w.step(STEP, input()); note(); }
+    expect(w.yardReboot).toBe(-1);
+    expect(w.flags.has('hull_repainted')).toBe(true);
     for (let i = 0; i < Math.round(9 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); note(); }
-    expect(heard).toEqual(['reprogrammed', 'repainted', 'title']);
+    expect(heard).toEqual(['reprogrammed', 'title']);
   });
 
   it('nothing attacks and no swarm comes between the code and the paint, however long she takes', () => {
@@ -394,7 +400,7 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(w.stage?.rangAt ?? null).toBeNull();
   });
 
-  it('Ned finds a sealed partition after the work, and the reboot opens it with the stored message, tank or no tank (owner 2026-11-24)', () => {
+  it('Ned finds a sealed partition after the work, and the stored message opens straight after his line, tank or no tank (owner 2026-11-27)', () => {
     const w = level();
     w.flags.add('ship_stolen'); w.flags.add('paint_due');
     paintHull(w);
@@ -402,13 +408,14 @@ describe('the paint bay (owner 2026-11-05)', () => {
     // no Custody in this one: the message waits out a fight, as every story card does
     w.bk!.nextPursuit = Infinity;
     const log: string[] = [];
+    let at = 0, opened = 0;
     const watch = (secs: number) => {
       for (let i = 0; i < Math.round(secs / STEP); i++) {
         w.ship.invuln = 1;
-        if (w.phase === 'comms') { if (w.comms!.def.id === WAKE_BEAT) { log.push('archive'); return; } w.answer(0); continue; }
+        if (w.phase === 'comms') { if (w.comms!.def.id === WAKE_BEAT) { log.push('archive'); opened = w.runTime; return; } w.answer(0); continue; }
         w.step(STEP, input());
         for (const e of w.events) {
-          if (e.type === 'ping' && e.id === 'ned_partition') log.push('partition');
+          if (e.type === 'ping' && e.id === 'cue_ned_core') { log.push('partition'); at = w.runTime; }
           if (e.type === 'storyNotice' && e.headline === 'Warden core open') log.push('open');
         }
         w.events.length = 0;
@@ -417,7 +424,10 @@ describe('the paint bay (owner 2026-11-05)', () => {
     // an empty tank: Ned finds it, it opens, and the message follows its notice
     watch(90);
     expect(w.flags.has(PARTITION)).toBe(true);
-    expect(log).toEqual(['partition', 'open', 'archive']);
+    // Ned says it himself, so no herald comes between: the message opens once his line has been read
+    expect(log).toEqual(['partition', 'archive']);
+    // the message follows his line, before anything else the floor has (the breach's lines here wait behind it)
+    expect(opened).toBeGreaterThan(at);
   });
 
   it('the pursuit clock starts at the paint, not at the code', () => {

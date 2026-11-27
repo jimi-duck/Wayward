@@ -23,7 +23,7 @@ import { heard } from './heard';
 import { damageWord } from './panels';
 import { Notifier, NoticePlates, type Notice } from './notify';
 import { blockOf, cheapest, quickPicks } from '../sim/bay';
-import { lockLifted, paintAt, PAINT_NOTICE, refuelAt, YARD_REPAINT } from '../sim/postjump';
+import { lockLifted, paintAt, refuelAt } from '../sim/postjump';
 import { recovering } from '../sim/recovery';
 
 /** A name put into the objective list's HTML: shown as text, whatever it holds (written as the browser writes it back, so the list's compare holds). */
@@ -278,9 +278,9 @@ export class Hud {
           if (e.headline !== SCAN_LINE) heard('', e.reason ? `${t(e.headline)} · ${t(e.reason)}` : t(e.headline), '');
           break;
         case 'yardDone':
-          // the special moment: the new name, like a film's title, as the autopilot flies her out of Ned's yard
+          // the special moment: the new name, like a film's title, as the autopilot flies her out of Ned's yard (the title says what was done:
+          // no notice before it, owner 2026-11-27)
           if (e.n === 2) this.nameCard();
-          else this.notify(world, { type: 'arrival', headline: e.n === 0 ? PAINT_NOTICE[0] : YARD_REPAINT[0], reason: e.n === 0 ? PAINT_NOTICE[1] : YARD_REPAINT[1], key: `yard:${e.n}` });
           break;
         case 'jobDone':
           this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain');
@@ -794,9 +794,14 @@ export class Hud {
           // the autopilot is overridden and the hull is still the company's: Ned's yard, free, is the course
           const pt = bk.yard!, dpt = Math.hypot(pt.x - s.x, pt.z - s.z);
           // in the ring the work is on: say so, so she holds still
-          text($('obj-t'), t(world.yardPhase > 0 ? 'Autopilot · Ned is working' : 'Reach Ned’s yard'));
+          text($('obj-t'), t(world.yardPhase >= 2 ? 'Ship systems failing' : world.yardPhase > 0 ? 'Autopilot · Ned is working' : 'Reach Ned’s yard'));
           text($('obj-left'), world.yardPhase > 0 ? '' : range(dpt));
           ticks($('obj-p'), Math.max(0, 1 - dpt / (bk.def.lane * 0.65)), 30);
+        } else if (world.letterDue) {
+          // after the work, until Gran's letter is read: Ned has the helm and the word, and the relay waits for the letter that names it
+          text($('obj-t'), t(world.yardPhase > 0 ? 'Autopilot · Ned is working' : 'Stand by for Ned'));
+          text($('obj-left'), '');
+          ticks($('obj-p'), 0, 30);
         } else if (world.storyPlace && !bk.chase) {
           // the stop's story place (sim/places.ts): what to do there, and how far, or how much of the hold is done
           const sp = world.storyPlace, dsp = Math.hypot(sp.x - s.x, sp.z - s.z), hold = 'hold' in sp.def.act ? sp.def.act.hold : 0;
@@ -823,7 +828,7 @@ export class Hud {
           text($('obj-left'), gt ? clock(gt.left) : wake >= 0 && (world.uplinking || wake > 0) ? `${Math.floor(wake * 100)}%` : mast ? range(Math.hypot(mast.x - s.x, mast.z - s.z)) : !ready ? `${Math.floor(world.fuel)}/${world.jumpCost}` : gateLine ? range(dl) : '');
           ticks($('obj-p'), gt ? 1 - gt.left / gt.total : wake >= 0 ? wake : 1 - dl / bk.def.lane, 30);
         }
-        text($('obj-s'), recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact')
+        text($('obj-s'), world.letterDue ? '' : recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact')
           : world.gateWhy === 'resetting after the key' ? t('Jump Gate resetting')
           : world.gateWhy === 'the gate is rebooting' ? `${t('Jump Gate rebooting')} · ${t('opens in {t}', { t: clock(world.gateEta) })} · ${range(dl)}`
           : world.gateWhy === 'the gate is opening' ? `${t('Jump Gate opens')} · ${t('opens in {t}', { t: clock(world.gateEta) })} · ${range(dl)}`
@@ -835,7 +840,7 @@ export class Hud {
           // two ways to fill it, on one line (a phone shows only the first): buy, or mine
           const pt = bk.port!;
           lines.push(`${t('Buy fluid at {port}', { port: esc(pt.name) })} · <b>${range(Math.hypot(pt.x - s.x, pt.z - s.z))}</b> · ${t('or mine Cyrite')}`);
-        } else if (!ready && !aud && !paintAt(world)) lines.push(world.storyPlace || world.wakeRelay ? `${t('Jump fluid')} · <b>${Math.floor(world.fuel)}/${world.jumpCost}</b>` : `${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
+        } else if (!ready && !aud && !paintAt(world) && !world.letterDue) lines.push(world.storyPlace || world.wakeRelay ? `${t('Jump fluid')} · <b>${Math.floor(world.fuel)}/${world.jumpCost}</b>` : `${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
         lines.push(...goal.quiet);
         // first, so a phone (which shows one line) shows it while it lasts
         if (this.hintOn(world)) lines.unshift(`<span class="hint">${this.hintLine!.text}</span>`);
