@@ -152,8 +152,13 @@ export class PuffLayer {
   private readonly pos: InstancedBufferAttribute;
   private readonly col: InstancedBufferAttribute;
   private readonly misc: InstancedBufferAttribute;
+  /** Which slots hold a puff, how many do, and whether any slot changed since the last commit. */
+  private readonly live: Uint8Array;
+  private lit = 0;
+  private dirty = false;
 
   constructor(readonly count: number, smoke: boolean) {
+    this.live = new Uint8Array(count);
     const quad = new PlaneGeometry(1, 1);
     const g = new InstancedBufferGeometry();
     g.index = quad.index;
@@ -180,16 +185,24 @@ export class PuffLayer {
     P[o] = x; P[o + 1] = y; P[o + 2] = z; P[o + 3] = size;
     C[o] = c.r; C[o + 1] = c.g; C[o + 2] = c.b; C[o + 3] = alpha;
     M[o] = turn; M[o + 1] = age; M[o + 2] = seed; M[o + 3] = warm;
+    if (!this.live[i]) { this.live[i] = 1; this.lit++; }
+    this.dirty = true;
   }
 
   /** Slot `i` draws nothing (a zero-size quad covers no pixels). */
   hide(i: number): void {
     (this.pos.array as Float32Array)[i * 4 + 3] = 0;
     (this.col.array as Float32Array)[i * 4 + 3] = 0;
+    if (this.live[i]) { this.live[i] = 0; this.lit--; }
+    this.dirty = true;
   }
 
-  /** Send this frame's slots to the GPU. */
+  /**
+   * Send this frame's slots to the GPU, only when one changed; with no puff in any slot the layer isn't drawn at all
+   * (every quad would be zero-sized). docs/PERF.md, pass 17.
+   */
   commit(): void {
-    this.pos.needsUpdate = true; this.col.needsUpdate = true; this.misc.needsUpdate = true;
+    if (this.dirty) { this.pos.needsUpdate = true; this.col.needsUpdate = true; this.misc.needsUpdate = true; this.dirty = false; }
+    this.mesh.visible = this.lit > 0;
   }
 }
