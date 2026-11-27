@@ -27,7 +27,7 @@ import type { GameEvent } from './sim/events';
 import { Cutscene } from './ui/adrift';
 import { ChartPanel, regionName } from './ui/chart';
 import { CoursePanel } from './ui/course';
-import { barsOut } from './ui/bars';
+import { watchScreen } from './ui/bars';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
 import { PerfReadout } from './ui/perf';
@@ -44,6 +44,7 @@ import type { RegionSet } from './content/regions';
 import { installCrashCard, onCrashKeep } from './ui/crash';
 import { TapGuard } from './ui/tapguard';
 import { Haptics } from './ui/haptics';
+import { DevicePrefs } from './ui/prefs';
 import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18n';
 
 /** New Story journeys run the eight regions; ?short plays the old three, for testing. */
@@ -689,13 +690,12 @@ function boot(review: typeof import('./review') | null): void {
   /** The tier the renderer is set up for, so a change of drawing size alone does not rebuild it. */
   let shownTier = quality.tier;
 
-  let autoFire = false;
   const slowmo = new SlowMo();
   const loop = new FixedStepLoop({
     step(dt) {
       const frame = input.sample();
       // auto-fire (Settings, touch only): the lasers fire while a ship (never rock or traffic) sits in the torpedo's sights
-      if (autoFire && world.lock !== null && (world.aliens.some((a) => a.id === world.lock) || world.command.targetable()?.id === world.lock)) frame.fire = true;
+      if (prefs.autoFire && world.lock !== null && (world.aliens.some((a) => a.id === world.lock) || world.command.targetable()?.id === world.lock)) frame.fire = true;
       world.step(dt, frame);
       debug.step();
     },
@@ -779,93 +779,10 @@ function boot(review: typeof import('./review') | null): void {
     },
   });
   loop.minInterval = saver || quality.thirty ? 1 / 30 : 0;
-  // Left-handed (touch only): the stick on the right, the buttons on the left. Kept per device.
-  const LEFTY_KEY = 'wayward.lefty';
-  let lefty = false;
-  try { lefty = localStorage.getItem(LEFTY_KEY) === '1'; } catch { /* no storage: off */ }
-  // Auto-fire and button size (touch only). Kept per device.
-  const store = (k: string): string | null => { try { return localStorage.getItem(k); } catch { return null; } };
-  const keep = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* not kept */ } };
-  autoFire = store('wayward.autofire') === '1';
-  /** The stick: floating (comes to the thumb, the default) or fixed (stays bottom left). */
-  let fixedStick = store('wayward.stick') === 'fixed';
-  const SIZES = ['normal', 'large', 'small'] as const;
-  let size: (typeof SIZES)[number] = SIZES.find((x) => x === store('wayward.btnsize')) ?? 'normal';
-  const paintTouch = () => {
-    for (const x of SIZES) document.documentElement.classList.toggle(`btn-${x}`, size === x && x !== 'normal');
-    for (const [id, on, label] of [['autofire', autoFire, autoFire ? 'On' : 'Off'], ['buzz', haptics.on, haptics.on ? 'On' : 'Off'], ['btnsize', size !== 'normal', size === 'large' ? 'Large' : size === 'small' ? 'Small' : 'Normal']] as const) {
-      for (const pre of ['s-', 'p-']) {
-        const e = el(pre + id);
-        e.classList.toggle('on', on);
-        e.setAttribute('aria-pressed', String(on));
-        el(`${pre}${id}-v`).textContent = t(label);
-      }
-    }
-    document.documentElement.classList.toggle('stick-fixed', fixedStick);
-    for (const pre of ['s-', 'p-']) {
-      el(pre + 'stick').setAttribute('aria-pressed', String(fixedStick));
-      el(`${pre}stick-v`).textContent = t(fixedStick ? 'Fixed' : 'Floating');
-    }
-    for (const id of ['s-autofire', 's-btnsize', 's-stick']) el(id).hidden = !coarse;
-    el('p-stick-r').hidden = !coarse;
-    for (const id of ['p-autofire-r', 'p-btnsize-r']) el(id).hidden = !coarse;
-    // vibration only where the browser has it (never an iPhone)
-    el('s-buzz').hidden = el('p-buzz-r').hidden = !coarse || !haptics.available;
-  };
-  // the camera view (the pause card's Camera row, and the title's Settings): chase by default; kept per device.
-  // Wide is the cinematic rig; the old Engine level view was folded into it when the card got its three buttons
-  const VIEW_NAMES: Record<CameraView, string> = { chase: 'Chase', cinematic: 'Wide', cockpit: 'Cockpit' };
-  const savedView = store('wayward.view') === 'low' ? 'cinematic' : store('wayward.view');
-  sector.rig.view = (CAMERA_VIEWS as readonly string[]).includes(savedView ?? '') ? (savedView as CameraView) : 'chase';
-  const camButtons = [...document.querySelectorAll<HTMLButtonElement>('#p-cam button[data-view]')];
-  const paintView = () => {
-    el('s-view-v').textContent = t(VIEW_NAMES[sector.rig.view]);
-    for (const b of camButtons) {
-      const on = b.dataset.view === sector.rig.view;
-      b.classList.toggle('on', on);
-      b.setAttribute('aria-pressed', String(on));
-    }
-  };
-  const setView = (v: CameraView) => {
-    sector.rig.view = v;
-    keep('wayward.view', v);
-    paintView();
-  };
-  const nextView = (dir = 1) => {
-    const n = CAMERA_VIEWS.length;
-    setView(CAMERA_VIEWS[(CAMERA_VIEWS.indexOf(sector.rig.view) + dir + n) % n]!);
-  };
-  // on by default on a touch screen (2026-11-23): a phone's HUD needs the room more than the extra lines
-  let compact = coarse ? store('wayward.compact') !== '0' : store('wayward.compact') === '1';
-  const paintCompact = () => {
-    document.documentElement.classList.toggle('compact-hud', compact);
-    for (const id of ['s-compact', 'p-compact']) {
-      el(id).classList.toggle('on', compact);
-      el(id).setAttribute('aria-pressed', String(compact));
-      el(`${id}-v`).textContent = t(compact ? 'On' : 'Off');
-    }
-    el('s-compact').hidden = !coarse;
-    el('p-compact-r').hidden = !coarse;
-  };
-  const paintLefty = () => {
-    document.documentElement.classList.toggle('lefty', lefty);
-    for (const id of ['s-lefty', 'p-lefty']) {
-      el(id).classList.toggle('on', lefty);
-      el(id).setAttribute('aria-pressed', String(lefty));
-      el(`${id}-v`).textContent = t(lefty ? 'On' : 'Off');
-    }
-    el('s-lefty').hidden = !coarse;
-    el('p-lefty-r').hidden = !coarse;
-  };
-  const setLefty = (on: boolean) => {
-    lefty = on;
-    try { localStorage.setItem(LEFTY_KEY, on ? '1' : '0'); } catch { /* not kept */ }
-    paintLefty();
-  };
-  paintLefty();
-  paintTouch();
-  paintCompact();
-  paintView();
+  // the player's device settings: touch layout, auto-fire, the stick, the compact HUD, the camera view (ui/prefs.ts)
+  const prefs = new DevicePrefs(coarse, haptics, sector.rig);
+  prefs.paint();
+  onLang(() => prefs.paint());
   const paintSaver = () => {
     for (const id of ['s-saver', 'p-saver']) {
       el(id).classList.toggle('on', saver);
@@ -892,43 +809,8 @@ function boot(review: typeof import('./review') | null): void {
   // dev server only: a handle for tools/shots.mjs to put any screen up
   if (import.meta.env.DEV) Object.assign(window, { wayward: { world, sector, hud, renderer, loop, launch, startSortie, openChart, chart, cut, get journey() { return journey; } } });
 
-  // ── landscape only ─────────────────────────────────────────────────────
-  // A phone held upright gets the turn screen over everything, and a run
-  // pauses under it; turned back, the pause card waits for a tap.
-  const upright = matchMedia('(orientation: portrait) and (max-width: 600px) and (pointer: coarse)');
-  const turn = () => {
-    document.documentElement.classList.toggle('upright', upright.matches);
-    if (upright.matches && started && !panelOpen()) setPaused(true);
-  };
-  upright.addEventListener('change', turn);
-  turn();
-
-  // ── the browser's bars ─────────────────────────────────────────────────
-  // An iPhone browser folds its tabs and bars away only when the page scrolls,
-  // so there the page scrolls under the game, which stays fixed. While the
-  // bars are out the swipe screen asks for the swipe up that folds them, and
-  // a run pauses under it. The game's own surfaces never scroll the page, so
-  // once folded the bars stay folded.
-  document.documentElement.classList.toggle('swipe', iphoneBrowser);
-  const probe = document.body.appendChild(document.createElement('div'));
-  probe.style.cssText = 'position:fixed;top:0;left:0;width:0;visibility:hidden;pointer-events:none';
-  const tall = (h: string) => { probe.style.height = h; return probe.offsetHeight; };
-  let small = 0;
-  let large = 0;
-  let out = false;
-  let kept = false; // the player chose to play with the bars
-  const bars = () => {
-    const now = iphoneBrowser && !kept && barsOut(innerHeight, small, large);
-    if (now === out) return;
-    out = now;
-    document.documentElement.classList.toggle('bars', out);
-    if (out && started && !panelOpen()) setPaused(true);
-  };
-  // the two heights change only with the window's shape; the bars, on every scroll
-  new ResizeObserver(() => { small = tall('100svh'); large = tall('100lvh'); bars(); }).observe(canvas);
-  window.addEventListener('scroll', bars, { passive: true });
-  window.visualViewport?.addEventListener('resize', bars);
-  el('swipe-x').addEventListener('click', () => { kept = true; bars(); });
+  // a phone held upright, or an iPhone browser with its bars out, covers the game and pauses a run (ui/bars.ts)
+  watchScreen(canvas, iphoneBrowser, () => { if (started && !panelOpen()) setPaused(true); });
 
   // The title is a list of buttons: nothing starts from a tap on the picture. Enter, or a pad's start, presses the row that has the focus.
   const menuEnter = () => {
@@ -961,7 +843,7 @@ function boot(review: typeof import('./review') | null): void {
   press('d-back', () => showStep('menu'));
   press('s-back', () => showStep('menu'));
   press('s-saver', () => setSaver(!saver));
-  press('s-lefty', () => setLefty(!lefty));
+  press('s-lefty', () => prefs.setLefty(!prefs.lefty));
   press('s-review', () => { location.search = '?dev'; });
   press('chapter', () => { const j = restartChapter(); if (j) { journey = j; showResume(); } });
   press('restore', () => { const j = restoreJourney(); if (j) { journey = j; showResume(); } });
@@ -1005,11 +887,11 @@ function boot(review: typeof import('./review') | null): void {
     if (e.code === 'KeyL' && world.mode === 'breakout' && !callHold) { if (!loop.paused) setPaused(true); showLog(true); return; }
     // a call holds the world itself: its own keys (and any held key) must not lift that hold from under the card
     // Tab (Shift+Tab back) switches the camera view in flight; while paused it only resumes, as any key does
-    if (e.code === 'Tab' && !loop.paused) nextView(e.shiftKey ? -1 : 1);
+    if (e.code === 'Tab' && !loop.paused) prefs.nextView(e.shiftKey ? -1 : 1);
     if (loop.paused && !callHold && !PAUSE_KEYS.includes(e.code)) setPaused(false);
     if (e.code === 'KeyB') openBay();
     if (e.code === 'KeyZ') zoom(sector.rig.zoom === ZOOMS.length - 1 ? -sector.rig.zoom : 1); // cycles round
-    if (e.code === 'KeyC') nextView(); // the camera view, as Tab and Settings
+    if (e.code === 'KeyC') prefs.nextView(); // the camera view, as Tab and Settings
     if (e.code === 'Minus') zoom(1);
     if (e.code === 'Equal') zoom(-1);
   });
@@ -1018,9 +900,10 @@ function boot(review: typeof import('./review') | null): void {
   // waits for the player: a key or a tap resumes.
   const away = () => { if (started) setPaused(true); };
   // A phone can take the GPU back while the page sleeps. Without preventDefault
-  // the canvas stays black for good; with it, three.js rebuilds on restore.
+  // the canvas stays black for good; with it, three.js rebuilds on restore, and
+  // the sky, its reflections and the cloud and smoke atlases are baked again.
   canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); away(); });
-  canvas.addEventListener('webglcontextrestored', fit);
+  canvas.addEventListener('webglcontextrestored', () => { sector.restoreContext(); fit(); });
   // A phone closes background tabs often (a call, a few other apps), and a journey saves at gates and ports: when the
   // page is hidden mid-system, the hold and everything else carried is saved as a port would (2026-11-23), so a closed
   // tab costs the system's flight, never its Cyrite. Not in the opening, which starts again from the top by design.
@@ -1064,24 +947,19 @@ function boot(review: typeof import('./review') | null): void {
   act('p-log', () => showLog(true));
   act('p-logback', () => showLog(false));
   act('p-saver', () => setSaver(!saver));
-  act('p-lefty', () => setLefty(!lefty));
-  const toggleAuto = () => { autoFire = !autoFire; keep('wayward.autofire', autoFire ? '1' : '0'); paintTouch(); };
-  const nextSize = () => { size = SIZES[(SIZES.indexOf(size) + 1) % SIZES.length]!; keep('wayward.btnsize', size); paintTouch(); };
-  const toggleCompact = () => { compact = !compact; keep('wayward.compact', compact ? '1' : '0'); paintCompact(); };
-  act('p-compact', toggleCompact);
-  for (const b of camButtons) act(b.id, () => setView(b.dataset.view as CameraView));
-  press('s-view', () => nextView());
-  press('s-compact', toggleCompact);
-  const toggleStick = () => { fixedStick = !fixedStick; keep('wayward.stick', fixedStick ? 'fixed' : 'float'); paintTouch(); };
-  act('p-stick', toggleStick);
-  press('s-stick', toggleStick);
-  const toggleBuzz = () => { haptics.toggle(); paintTouch(); };
-  act('p-buzz', toggleBuzz);
-  press('s-buzz', toggleBuzz);
-  act('p-autofire', toggleAuto);
-  act('p-btnsize', nextSize);
-  press('s-autofire', toggleAuto);
-  press('s-btnsize', nextSize);
+  act('p-lefty', () => prefs.setLefty(!prefs.lefty));
+  act('p-compact', () => prefs.toggleCompact());
+  for (const b of prefs.camButtons) act(b.id, () => prefs.setView(b.dataset.view as CameraView));
+  press('s-view', () => prefs.nextView());
+  press('s-compact', () => prefs.toggleCompact());
+  act('p-stick', () => prefs.toggleStick());
+  press('s-stick', () => prefs.toggleStick());
+  act('p-buzz', () => prefs.toggleBuzz());
+  press('s-buzz', () => prefs.toggleBuzz());
+  act('p-autofire', () => prefs.toggleAuto());
+  act('p-btnsize', () => prefs.nextSize());
+  press('s-autofire', () => prefs.toggleAuto());
+  press('s-btnsize', () => prefs.nextSize());
   act('p-go', () => setPaused(false));
   act('p-photo', () => setPhoto(true));
   // Story mode saves the journey as it stands (the last chart or dock); the arcade just leaves. Either way the page reloads to the title

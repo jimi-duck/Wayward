@@ -19,4 +19,7 @@ if (a >= 0 && b > a && !chunk.includes('pointLight.color != vec3( 0.0 )')) {
     + chunk.slice(a + START.length, b + END.length)
     + '\n\t\t}'
     + chunk.slice(b + END.length);
+} else if (a < 0 || b < 0) {
+  // three.js changed its light loop: lights still work, only the skip is lost (tests/shader-patches.test.ts fails first)
+  console.warn('lightskip: point-light loop not found; dark lights are no longer skipped.');
 }

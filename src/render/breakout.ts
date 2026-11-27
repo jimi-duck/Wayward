@@ -10,7 +10,7 @@ import { GANTRY_R } from '../sim/gantry';
 import { MARKET_R } from '../sim/market';
 import { CORDON_SCAN, SHADOW } from '../sim/cordon';
 import { DEPOT_AT } from '../sim/solids';
-import { animateStation, buildStation, clothMats, pools } from './stations';
+import { animateStation, buildStation, clothMats, disposeStation, pools } from './stations';
 
 import { MOOD_AMBER, MOOD_LIGHT, portStyleOf, type Mood, type PortStyle } from '../sim/site';
 import type { Effects } from './fx';
@@ -530,6 +530,9 @@ export function flatRing(r: number, w: number, color: Color, opacity: number): M
   return m;
 }
 
+/** Depots kept built at once: the one in view and the last two, so a quick jump back finds its depot ready. */
+const DEPOTS_KEPT = 3;
+
 export class BreakoutView {
   private readonly lane = new Group();
   /** Kiln's cordon (sim/cordon.ts): one ring on the plane round each picket, the reach of its sweep. */
@@ -545,7 +548,7 @@ export class BreakoutView {
   private fieldOn = 1;
   private faced: unknown = null;
   private readonly port = new Group();
-  /** The depots built so far, by holder's look; one shows. Built the first time a system wants it. */
+  /** The depots built lately, by holder's look and name, oldest first; one shows. Built the first time a system wants it. */
   private readonly depots = new Map<string, Group>();
   private depot = '';
   /** The depot's own lamps and windows, tinted by its mood (sim/site.ts). */
@@ -729,16 +732,27 @@ export class BreakoutView {
 
   }
 
-  /** The depot of a look, built the first time and kept; it stands off to one side of its berth. */
+  /**
+   * The depot of a look, built the first time and kept while it is one of the last few shown; it stands off to one side
+   * of its berth. Every port on the road has its own name, so older depots are freed rather than kept for good.
+   */
   private depotOf(st: PortStyle, name: string): Group {
     const key = `${st}|${name}`;
     let g = this.depots.get(key);
-    if (!g) {
+    if (g) {
+      this.depots.delete(key);
+    } else {
       g = buildPort(st, { lamp: this.lamp, win: this.win }, name);
       g.position.set(DEPOT_AT.x, 0, DEPOT_AT.z);
       g.visible = false;
-      this.depots.set(key, g);
       this.port.add(g);
+    }
+    this.depots.set(key, g);
+    for (const [k, old] of this.depots) {
+      if (this.depots.size <= DEPOTS_KEPT) break;
+      if (k === key) continue;
+      this.depots.delete(k);
+      disposeStation(old);
     }
     return g;
   }

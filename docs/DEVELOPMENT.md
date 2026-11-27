@@ -28,6 +28,19 @@ journeys; `JOURNEY_SET=eight` for the eight-region set; it writes `BALANCE-LONG.
 `PILOT_TIME` trade precision for speed. No pilot can judge feel or frame
 rate; those need a real device.
 
+`pilot:fingerprint` is not a report: it flies the first road legs and two Arcade
+runs and hashes the world once a second of game time (about 2,000 hashes, in
+`fingerprint.txt`, or `FINGERPRINT_OUT`). A change that only moves code, such as
+splitting `World` (`sim/relaywake.ts` came out of it this way), must leave the
+file byte for byte the same: run it before and after.
+
+`node tools/smoke.mjs [outDir] [--quick] [--draw]` starts the built game (`npm run
+build` first) in a browser at desktop and phone size, in English and German, and
+fails on a console error, a crash card or a file the Content Security Policy in
+`public/_headers` blocks; it serves `dist/` with those headers itself. Draws are
+no-ops unless `--draw`, so it takes about a minute. CI runs it `--quick` on every
+pull request and on `main`.
+
 Small tools in `tools/`: `save-fixture.ts` writes the journey fixture for the
 current save version (run it when `VERSION` is bumped), `locate-copy.mjs` finds
 where a line of copy is used, and `enemies.html`, `rocks.html` and `ship.html`

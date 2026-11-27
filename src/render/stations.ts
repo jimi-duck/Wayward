@@ -915,7 +915,32 @@ export function buildStation(style: PortStyle, name: string, own?: { lamp: Mater
   g.add(board.g);
   if (style === 'gutter' && board.mat instanceof MeshBasicMaterial) { anim.neon = board.mat; anim.neonBase.copy(board.mat.color); }
   g.userData.anim = anim;
+  g.userData.board = board.mat;
   return g;
+}
+
+/**
+ * Free a depot that is no longer wanted: the geometry built for it, its strobe, its name board and its glow pools.
+ * The materials and textures shared between depots (the livery's metal, the window and lamp, the pool texture) stay.
+ */
+export function disposeStation(g: Group): void {
+  const own = new Set<Material>();
+  const a = g.userData.anim as StationAnim | undefined, board = g.userData.board as Material | undefined;
+  if (a) own.add(a.strobe);
+  if (board) own.add(board);
+  g.traverse((o) => {
+    const m = o as Mesh | Sprite;
+    if ((m as Mesh).isMesh && m.geometry !== poolGeo && m.geometry !== strobeGeo) m.geometry.dispose();
+    // pools and haze make a material of their own on the shared pool texture every time
+    const mat = (m as Mesh).material as Material | Material[] | undefined;
+    if (mat && !Array.isArray(mat) && (mat as MeshBasicMaterial).map === poolTex && poolTex) own.add(mat);
+  });
+  for (const m of own) {
+    const t = m as MeshStandardMaterial;
+    if (t.map && t.map !== poolTex) t.map.dispose();
+    m.dispose();
+  }
+  g.removeFromParent();
 }
 
 /** Turn, blink and stutter a depot's moving parts: `time` is seconds. */

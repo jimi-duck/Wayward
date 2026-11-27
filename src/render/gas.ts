@@ -84,6 +84,15 @@ export function bakeGas(renderer: WebGLRenderer, size: number): Texture {
   return baked.texture;
 }
 
+/** The GPU context was lost and came back: the baked target is empty, so bake it again at the same size. */
+export function rebakeGas(renderer: WebGLRenderer): void {
+  if (!baked) return;
+  const size = baked.width;
+  // (not disposed: its GPU objects went with the old context, and freeing them again only draws warnings)
+  baked = null;
+  bakeGas(renderer, size);
+}
+
 /** The light every bank shares: the sun's colour and the sky's, set once per system (`setGasLight`). */
 const SUN_C = { value: new Color(1, 0.95, 0.88) };
 const SKY_C = { value: new Color(0.3, 0.32, 0.45) };

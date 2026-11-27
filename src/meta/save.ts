@@ -28,9 +28,9 @@ import { LEGS, ROAD } from '../content/road';
 // `migrate` brings an old one up to date, or refuses it if it cannot.
 // Each write first keeps the save it replaces (if it still reads) as a safety
 // copy, and a save that cannot be read is reported, not silently dropped, so
-// the title can offer the copy. The save can also be exported to a file and
-// imported back. Storage can be missing or refuse, so every read and write
-// is guarded.
+// the title can offer the copy. There is no export to a file: the save lives
+// only in this browser's storage. Storage can be missing or refuse, so every
+// read and write is guarded.
 
 const KEY = 'wayward.journey';
 /** The save before the latest write, kept while it still reads: the way back if the latest cannot be read. */

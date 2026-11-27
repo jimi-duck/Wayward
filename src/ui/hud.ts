@@ -25,6 +25,10 @@ import { Notifier, NoticePlates, type Notice } from './notify';
 import { blockOf, cheapest, quickPicks } from '../sim/bay';
 import { lockLifted, paintAt, PAINT_NOTICE, refuelAt, YARD_REPAINT } from '../sim/postjump';
 import { recovering } from '../sim/recovery';
+
+/** A name put into the objective list's HTML: shown as text, whatever it holds (written as the browser writes it back, so the list's compare holds). */
+const ESC: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;' };
+const esc = (s: string): string => s.replace(/[&<>]/g, (c) => ESC[c]!);
 import { wantedPips } from '../sim/pressure';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
@@ -828,7 +832,7 @@ export class Hud {
         } else if (refuelAt(world)) {
           // two ways to fill it, on one line (a phone shows only the first): buy, or mine
           const pt = bk.port!;
-          lines.push(`${t('Buy fluid at {port}', { port: pt.name })} · <b>${range(Math.hypot(pt.x - s.x, pt.z - s.z))}</b> · ${t('or mine Cyrite')}`);
+          lines.push(`${t('Buy fluid at {port}', { port: esc(pt.name) })} · <b>${range(Math.hypot(pt.x - s.x, pt.z - s.z))}</b> · ${t('or mine Cyrite')}`);
         } else if (!ready && !aud && !paintAt(world)) lines.push(world.storyPlace || world.wakeRelay ? `${t('Jump fluid')} · <b>${Math.floor(world.fuel)}/${world.jumpCost}</b>` : `${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
         lines.push(...goal.quiet);
         // first, so a phone (which shows one line) shows it while it lasts
@@ -847,7 +851,7 @@ export class Hud {
         if (e && e.dormant && e.place) lines.push(`${t('Off the course')} · ${t(e.place)} · <b>${range(Math.hypot(e.x - s.x, e.z - s.z))}</b>`);
         const sc = world.stage;
         if (sc?.onScope) lines.push(`${t('On the scope')} · ${t(sc.def.name)} · <b>${range(Math.hypot(sc.x - s.x, sc.z - s.z))}</b>`);
-        if (bk.port && bk.docks === 0 && !refuelAt(world) && !paintAt(world)) lines.push(`${t('Dock at {port} (optional)', { port: bk.port.name })} · <b>${range(Math.hypot(bk.port.x - s.x, bk.port.z - s.z))}</b>`);
+        if (bk.port && bk.docks === 0 && !refuelAt(world) && !paintAt(world)) lines.push(`${t('Dock at {port} (optional)', { port: esc(bk.port.name) })} · <b>${range(Math.hypot(bk.port.x - s.x, bk.port.z - s.z))}</b>`);
         const html = lines.slice(0, 2).map((l) => `<li>${l}</li>`).join('');
         const list = $('obj-list');
         if (list.innerHTML !== html) list.innerHTML = html;

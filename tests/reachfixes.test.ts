@@ -184,7 +184,7 @@ describe('waking a relay (the uplink, plan "Reopen the spaceways")', () => {
     // back in until it is awake: the second stage brings a tether hunter (content/waves.ts); driven off the mast, the key
     step(30, rl.x, rl.z);
     expect(notices).toContain('Relay dish turning');
-    const hunters = (w as unknown as { hunters: Set<number> }).hunters;
+    const hunters = (w as unknown as { relay: { hunters: Set<number> } }).relay.hunters;
     expect(hunters.size).toBe(1);
     for (let i = w.aliens.length - 1; i >= 0; i--) if (hunters.has(w.aliens[i]!.id)) w.aliens.splice(i, 1);
     step(15, rl.x, rl.z);

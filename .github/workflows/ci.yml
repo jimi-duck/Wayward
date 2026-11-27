@@ -2,8 +2,12 @@ name: CI
 
 # Every pull request gets the same gate as a deploy: types, tests and a
 # production build. A milestone branch that fails here would fail on main.
+# main runs it again after each merge, since Cloudflare deploys main as it
+# lands: a red main says the live game needs a look.
 on:
   pull_request:
+  push:
+    branches: [main]
 
 permissions:
   contents: read
@@ -20,3 +24,21 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run build
+
+  # The game started in a real browser (software WebGL): title, Story, Arcade and the
+  # review world, desktop in English and phone in German. Fails on a console error, a
+  # crash card, or a file the Content Security Policy blocks.
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm install --no-save --no-package-lock playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: node tools/smoke.mjs smoke-out --quick

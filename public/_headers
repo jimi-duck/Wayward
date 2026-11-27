@@ -2,3 +2,9 @@
 # asks again. index.html and the rest stay revalidated (Cloudflare's default), so a new build is seen at once.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# Only the game's own files run. Styles may be inline (the HUD sets them from code); images and fonts may be data URLs
+# (the Neon Glass frames are SVG data). tools/smoke.mjs serves the build with these headers, so a blocked file fails there.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
+  X-Content-Type-Options: nosniff
