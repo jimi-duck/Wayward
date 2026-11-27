@@ -274,7 +274,7 @@ export const REWORK: Record<string, string> = {
   '“Juno Aster, isn’t it? I’ll tell every claim office who kept the Gutter off me.”': '„Juno Aster, oder? Ich erzähl jedem Claimbüro, wer mir den Gutter vom Hals gehalten hat.“',
   'Her relay is blind. She cannot follow you out.': 'Ihr Relais ist blind. Sie kann dir nicht folgen.',
   'You slip out of the field · her relay is blind': 'Du schlüpfst aus dem Feld · ihr Relais ist blind',
-  '“Drop the Kellern act, Juno. I ran Accounts. Every job you took for me is on a charge sheet now. I own the record, and what’s left of the debt.”': '„Lass das Kellern-Theater, Juno. Ich hab die Buchhaltung geführt. Jeder Auftrag, den du für mich gemacht hast, steht jetzt auf einer Anklageschrift. Mir gehört die Akte, und was von der Schuld übrig ist.“',
+  '“Drop the Kellern act, Juno. I ran Accounts. Every job you took for me is on a charge sheet now. I recover assets. The hull is scrap. The core is the asset.”': '„Lass das Kellern-Theater, Juno. Ich hab die Buchhaltung geführt. Jeder Auftrag, den du für mich gemacht hast, steht jetzt auf einer Anklageschrift. Ich treibe Werte ein. Der Rumpf ist Schrott. Der Kern ist der Wert.“',
 };
 
 /** Names, the same in German. */

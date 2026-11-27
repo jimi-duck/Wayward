@@ -223,7 +223,7 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_voice_knows', kind: 'warning', caller: 'unknown', tier: 'important',
     from: 'The Voice · a relay', title: 'THE PREFECT IS BEHIND YOU',
-    text: '“THE PREFECT IS BEHIND YOU. SHE IS NOT ALONE. YOU WERE NOT TOLD THIS. WE ARE TELLING YOU.”',
+    text: '“THE PREFECT IS BEHIND YOU. SHE IS NOT ALONE. YOU WERE NOT TOLD THIS. WE ARE TELLING YOU. YOUR TENDER HEARS US. IT DOES NOT ANSWER.”',
     lines: [{ if: { flag: 'voice_mended' }, text: '“YOU LET US MEND YOU. WE REMEMBER.”' }, { if: { flag: 'voice_cut' }, text: '“YOU CUT THE CHANNEL AT RELAY SEVEN. WE FORGIVE IT.”' }],
     cargo: 'No ship · a relay speaking to you alone',
     choices: [

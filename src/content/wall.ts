@@ -107,7 +107,7 @@ export const WALL: WallItem[] = [
     lead: 'Anyone listening on the Warden channel. Keep moving.',
   }),
   clue({
-    flag: 'warden_note_1', name: 'Warden’s note 1 of 8', certainty: 'fact', at: 0,
+    flag: 'warden_note_1', name: 'Ada’s memory 1 of 8', certainty: 'fact', at: 0,
     proves: 'Ada Aster switched the Narrows off on order, kept the key, and left seven more relays that know her name.',
     not: 'What she saw at the other relays.',
     detail: 'Left in the Narrows relay for whoever the relays let through. It ends: find the Drift, they never stopped moving.',
@@ -118,7 +118,7 @@ export const WALL: WallItem[] = [
     flag: 'ada_named', name: 'Ada Aster', certainty: 'fact', at: 0,
     proves: 'The archive’s writer was Ada Aster, a Lane Warden on the Narrows watch.',
     not: 'What she saw there, or why she left the relay listening.',
-    detail: 'A retired Warden knew the routine in the hull by its habits. Juno’s family were only ever told Ada was lost in service.',
+    detail: 'A retired Warden knew Ada’s tender by its lamps, and its core by its arguing. Juno’s family were only ever told Ada was lost in service.',
     ask: 'Who wrote the archive?',
     lead: 'Go to the Narrows. Ada left it listening.',
   }),
@@ -148,6 +148,14 @@ export const WALL: WallItem[] = [
     says: 'Merit Grants remain open to every contract resident.',
     links: ['frag_ledger'],
   }),
+  clue({
+    flag: 'rec_closing', name: 'The closing log · the Narrows', certainty: 'fact', at: 0,
+    proves: 'The Narrows was powered down by hand, from the watch, on the night of the Severance.',
+    not: 'Who gave the order that night.',
+    detail: 'A Warden network log, given back by ADA-1. One line: relay powered down manually, watch officer A. Aster.',
+    ask: 'How did the Narrows go dark?',
+    lead: 'The Rift relay keeps the next log.',
+  }),
   fragment({
     flag: 'frag_manifests', certainty: 'fact', at: 1, short: true,
     proves: 'Ships “lost” in the blackout were redirected or scuttled on purpose.',
@@ -166,6 +174,14 @@ export const WALL: WallItem[] = [
     says: 'Her debt is owed to us all.',
     links: ['ada_named', 'clue_allocation'],
   }),
+  clue({
+    flag: 'rec_turnaway', name: 'The turn-away log · the Rift', certainty: 'fact', at: 1,
+    proves: 'Twenty-three ships were turned back from the Narrows that night, each logged by hull and souls aboard.',
+    not: 'Where they went after.',
+    detail: 'Given back by ADA-1 from the Rift relay. Every entry ends the same way: refused, no reason given.',
+    ask: 'Who was shut out?',
+    lead: 'The Belt’s wrecks carry the names.',
+  }),
   fragment({
     flag: 'frag_blackbox', certainty: 'fact', at: 2,
     proves: 'Ada Aster’s Warden ship recorded the night, and she meant the archive for her family.',
@@ -183,6 +199,14 @@ export const WALL: WallItem[] = [
     lead: 'Find who still keeps the schedule.',
     says: 'The outer worlds failed through their own neglect.',
     links: ['frag_manifests', 'clue_allocation'],
+  }),
+  clue({
+    flag: 'rec_keys', name: 'The key transfer record · the Scrapgate', certainty: 'fact', at: 2,
+    proves: 'Eight Warden keys were surrendered to Ada, and copied into her tender’s core the same night.',
+    not: 'Where the originals are now.',
+    detail: 'Given back by ADA-1. The transfer is logged to A. Aster. A second write, never logged, went to the tender’s core.',
+    ask: 'How does the Wayward carry Ada’s keys?',
+    lead: 'Ask the Drift where the closures run.',
   }),
   fragment({
     flag: 'frag_charts', certainty: 'inference', at: 3,
@@ -209,6 +233,14 @@ export const WALL: WallItem[] = [
     lead: 'Follow the readings to the ring.',
     says: 'The Survey Office finds no link to extraction.',
     links: ['frag_charts', 'clue_cyrite'],
+  }),
+  clue({
+    flag: 'rec_ring', name: 'The Survey’s ring chart · the Slow Door', certainty: 'fact', at: 3,
+    proves: 'The closed relays make one ring, and the Survey Office drew it before the Severance.',
+    not: 'What the ring keeps out.',
+    detail: 'Given back by ADA-1 from the Slow Door relay. The chart is dated a year before the night the lanes closed.',
+    ask: 'Was the ring planned?',
+    lead: 'Find who built the fence. The yards remember.',
   }),
   fragment({
     flag: 'frag_workorder', certainty: 'fact', at: 4,
@@ -242,6 +274,14 @@ export const WALL: WallItem[] = [
     ask: 'Who does the foreman really work for?',
     lead: 'He wants the file destroyed, and the fleet that destroys it is on its way to the Threshold.',
   }),
+  clue({
+    flag: 'rec_readings', name: 'The readings file · the Breaker', certainty: 'fact', at: 4,
+    proves: 'The readings that made the case for closing the lanes carry Ada Aster’s sign-off.',
+    not: 'That the readings were wrong.',
+    detail: 'Given back by ADA-1. A second check is logged under the tender’s core. The sums hold.',
+    ask: 'Whose readings closed the lanes?',
+    lead: 'Find the room. The free ports kept the names.',
+  }),
   fragment({
     flag: 'frag_witnesses', certainty: 'fact', at: 5,
     proves: 'Forty people were in the room when the order was read, and kept quiet.',
@@ -257,6 +297,14 @@ export const WALL: WallItem[] = [
     detail: 'The same hand as the ledger’s L. C. and the yard’s cipher. Idris Calloway’s father signed the Severance order.',
     ask: 'Whose hand signed the order?',
     lead: 'She will want to know. Decide who hears it first.',
+  }),
+  clue({
+    flag: 'rec_minutes', name: 'The minutes · the Tollgate', certainty: 'fact', at: 5,
+    proves: 'Forty were present when the order was read, and the minutes record no objection.',
+    not: 'Why nobody spoke.',
+    detail: 'Given back by ADA-1 from the Tollgate relay. Two Wardens are listed. Neither is minuted as saying anything.',
+    ask: 'What does the record of the room say?',
+    lead: 'Go where the lanes began. Ask what’s waiting there.',
   }),
   fragment({
     flag: 'frag_keys', certainty: 'fact', at: 6, short: true,

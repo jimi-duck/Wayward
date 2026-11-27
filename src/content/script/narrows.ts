@@ -25,7 +25,7 @@ export const NARROWS_ROWS: Row[] = [
   { id: 'nr_lit', stop: STOP, on: { on: 'near', site: 'relay', within: 200 }, do: { wall: 'relay_narrows' } },
   { ...notice('nr_key', { on: 'near', site: 'relay', within: 200 }, 'teal', 'Warden key accepted', 'the relay is waking'), urgent: true },
   // urgent, with the key's notice: if the pursuit has caught her here, the note still comes, or the gate would never start its reboot (road pilot, 22 November 2026)
-  { id: 'nr_note', stop: STOP, on: { on: 'after', row: 'nr_key', delay: 2 }, do: { card: 'warden_note_1' }, main: true, urgent: true },
+  { id: 'nr_note', stop: STOP, on: { on: 'after', row: 'nr_key', delay: 2 }, wall: 'rec_closing', do: { card: 'warden_note_1' }, main: true, urgent: true },
 
   // ── 3 · Gate down: the world starts the reboot as the note closes (`narrows_reboot`) ──
   { id: 'nr_hold', stop: STOP, on: { on: 'flag', flag: 'narrows_reboot' }, do: { objective: { main: 'Hold out', quiet: 'The damping field is down' } } },
@@ -36,6 +36,6 @@ export const NARROWS_ROWS: Row[] = [
 
   // ── 5 · The way out ──
   { id: 'nr_gate', stop: STOP, on: { on: 'flag', flag: 'narrows_gate_open' }, do: { objective: { main: 'Jump to Wake', quiet: 'Find the Drift. They never stopped moving.' } } },
-  radio('nr_sam_last', 'Sam Okoro', 'miners', { on: 'flag', flag: 'narrows_gate_open' }, '“This is where my signal ends. If those relays carry Ada’s voice, maybe one day they’ll carry mine. Go.”', { urgent: true }),
+  radio('nr_sam_last', 'Sam Okoro', 'miners', { on: 'flag', flag: 'narrows_gate_open' }, '“This is where my signal ends. You’re not alone in there now. Listen to her. Go.”', { urgent: true }),
   { id: 'nr_lost', stop: STOP, on: { on: 'after', row: 'nr_sam_last', delay: 3 }, wall: 'sam_silent', do: { notice: { tone: 'white', headline: 'Signal lost', reason: 'Sam Okoro' } }, urgent: true },
 ];

@@ -23,7 +23,7 @@ export const ARRIVAL_ROWS: Row[] = [
   radio('ri_oduya', 'rift', free(8), 'Councillor Oduya', 'miners', '“Kessel Hold lit its rig lamps along the Rift. All of them. The moot voted. It was close.”', { if: { has: ['oduya_rigs'] } }),
   notice('ri_blind', 'rift', free(4), 'amber', 'No guidance', 'fly the debris by eye', { if: { not: ['wren_trust', 'oduya_rigs'] } }),
   ...handshake('ri_hand', 'rift', 'the far relay still answers'),
-  main('ri_note', 'rift', after('ri_hand_lit', 2), 'warden_note_2'),
+  main('ri_note', 'rift', after('ri_hand_lit', 2), 'warden_note_2', { wall: 'rec_turnaway' }),
   objective('ri_gate', 'rift', flag('warden_note_2'), 'Jump to Breakwater', 'Listen to the wrecks. One of them is mine.'),
 
   // ── Arrival 3 · the Scrapgate: the gate made of ships ──
@@ -32,7 +32,7 @@ export const ARRIVAL_ROWS: Row[] = [
   notice('sg_amb', 'scrapgate', arrive(4), 'red', 'Pickets at gate', 'Val sold your heading', { if: { not: ['vell_paid', 'vell_exposed'] } }),
   radio('sg_kesh', 'scrapgate', after('sg_amb', 3), 'Kesh', 'gutter', '“Three pickets, port side, engines cold. Told you I’d warn you. We’re square.”', { if: { has: ['kesh_warned'] } }),
   ...handshake('sg_hand', 'scrapgate', 'a recording, not a note'),
-  main('sg_note', 'scrapgate', after('sg_hand_lit', 2), 'warden_note_3'),
+  main('sg_note', 'scrapgate', after('sg_hand_lit', 2), 'warden_note_3', { wall: 'rec_keys' }),
   radio('sg_ilse', 'scrapgate', flag('warden_note_3'), 'Ilse Marrow', 'miners', '“‘Don’t lose it.’ I said that. Seventy years and she listened to me once.”', { if: { has: ['copy_warden'] } }),
   objective('sg_gate', 'scrapgate', flag('warden_note_3'), 'Jump to Longwater', 'Ask the Drift where the closures run.'),
 
@@ -47,7 +47,7 @@ export const ARRIVAL_ROWS: Row[] = [
   radio('sd_ashe_used', 'slowdoor', free(30), 'Corin Ashe', 'office', '“I’m reporting you went the other way. I don’t know why I’m doing this.”', { if: { has: ['agent_used'], not: ['agent_exposed'] } }),
   notice('sd_view', 'slowdoor', after('sd_motes', 30), 'white', 'Dead relays', 'a curve across the whole sky'),
   ...handshake('sd_hand', 'slowdoor', 'the door’s relay still answers'),
-  main('sd_note', 'slowdoor', after('sd_hand_lit', 2), 'warden_note_4'),
+  main('sd_note', 'slowdoor', after('sd_hand_lit', 2), 'warden_note_4', { wall: 'rec_ring' }),
   objective('sd_gate', 'slowdoor', flag('warden_note_4'), 'Jump to Cutton', 'Find who built the fence. The yards remember.'),
 
   // ── Arrival 5 · the Breaker: the machine itself ──
@@ -61,7 +61,7 @@ export const ARRIVAL_ROWS: Row[] = [
   wall('br_serial_sig', 'breaker', flag('relay_breaker'), 'clue_sig_serial', { if: { has: ['hulls_seen'] } }),
   radio('br_sam', 'breaker', after('br_hand_lit', 2), SAM[0], SAM[1], '“Five relays lit, and they carry voices. Eben got your warning. He says thanks. Rudely.”', { if: { has: ['eben_warned'] } }),
   radio('br_sam_b', 'breaker', after('br_hand_lit', 2), SAM[0], SAM[1], '“Juno. Five relays lit, and they carry voices. Eben’s fine. I think. Keep moving.”', { if: { not: ['eben_warned'] } }),
-  main('br_note', 'breaker', after('br_hand_lit', 8), 'warden_note_5'),
+  main('br_note', 'breaker', after('br_hand_lit', 8), 'warden_note_5', { wall: 'rec_readings' }),
   radio('br_draper', 'breaker', flag('warden_note_5'), 'Director Draper', 'office', '“Your grandmother built the case, Juno. I just collect on it. Family business, both of us.”', { if: { has: ['draper_revealed'] } }),
   objective('br_gate', 'breaker', flag('warden_note_5'), 'Jump to Saltquay', 'Find the room. The free ports kept the names.'),
 
@@ -73,7 +73,7 @@ export const ARRIVAL_ROWS: Row[] = [
   radio('tg_ql_small', 'tollgate', free(4), 'Owen Pike', 'gutter', '“One runner’s all I can spare. She’s good. Don’t waste her.”', { if: { has: ['thread_line_1'], not: ['thread_line_2'] } }),
   radio('tg_ql_mid', 'tollgate', free(4), 'Owen Pike', 'gutter', '“Decoys at the Tollgate. Not many. Enough to make her blink.”', { if: { has: ['thread_line_2'], not: ['thread_line_3'] } }),
   radio('tg_quill', 'tollgate', flag('field_line'), 'Quill', 'frontier', '“You said you had somewhere to be. So do we. Go.”'),
-  main('tg_note', 'tollgate', flag('field_dropped'), 'warden_note_6'),
+  main('tg_note', 'tollgate', flag('field_dropped'), 'warden_note_6', { wall: 'rec_minutes' }),
   radio('tg_cal', 'tollgate', flag('warden_note_6'), 'Governor Idris Calloway', 'calloway', '“Ten years. Nobody ever told me he asked.”', { if: { has: ['field_talked'] } }),
   radio('tg_brook', 'tollgate', after('tg_cal', 3), 'Adam Brook', 'kellern', '“Halvard Brook was my grandfather. For my father, I said. It was for him too.”', { if: { has: ['brook_free'] } }),
   radio('tg_brook_b', 'tollgate', flag('warden_note_6'), 'Adam Brook', 'kellern', '“Halvard Brook was my grandfather. For my father, I said. It was for him too.”', { if: { has: ['brook_free'], not: ['field_talked'] } }),
