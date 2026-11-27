@@ -82,6 +82,13 @@ const SIMPLEX = /* glsl */ `
   }`;
 
 const lavaTime = { value: 0 };
+/**
+ * The stone's finest grain, on (1) or off (0), for every rock at once. Low turns it off: the fine noise, the pores and the top
+ * octaves of the base noise are skipped, about two and a half times less work a pixel. Low draws at a reduced size where
+ * that grain is under a pixel anyway, and a browser that runs this shader slowly (Chrome on an M1: docs/PERF.md pass 24)
+ * lands there.
+ */
+export const ROCK_FINE = { value: 1 };
 
 /** How a kind of rock looks: its cracks' glow, the stone's tint, how much of it is veined, how fast it pulses. */
 interface RockLook {
@@ -143,6 +150,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
   const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: look.metal, envMapIntensity: 0.3, vertexColors: true });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = lavaTime;
+    shader.uniforms.uFine = ROCK_FINE;
     shader.uniforms.uSkyRim = WORLD_RIM;
     shader.uniforms.uDetail = { value: detail };
     shader.uniforms.uLava = { value: lava };
@@ -162,18 +170,20 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRockP = position;\nvHit = aHit;\nvGeode = aGeode;\nvRockAO = color.r;');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
-        varying vec3 vRockP; varying float vHit; varying float vGeode; varying float vRockAO; uniform float uTime; uniform float uDetail; uniform float uLava; uniform float uBump;
+        varying vec3 vRockP; varying float vHit; varying float vGeode; varying float vRockAO; uniform float uTime; uniform float uFine; uniform float uDetail; uniform float uLava; uniform float uBump;
         uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse; uniform float uMineral; uniform float uStrata; uniform float uRim; uniform float uEmber; uniform float uViolet; uniform float uCool; uniform vec3 uSkyRim;
         ${SIMPLEX}
         ${PERTURB}
-        float rockFbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * snoise(p); p = p * 2.07 + 11.3; a *= 0.5; } return s; }`)
+        float rockFbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { if (i >= 2 && uFine < 0.5) break; s += a * snoise(p); p = p * 2.07 + 11.3; a *= 0.5; } return s; }`)
       .replace('#include <map_fragment>', `
         vec3 rp = vRockP * uDetail;
         // how much stone one pixel covers: each fine term fades out before it is small enough to shimmer
         float lod = length(fwidth(rp));
-        float lodK = 1.0 - smoothstep(0.06, 0.16, lod), lodF = 1.0 - smoothstep(0.025, 0.07, lod);
+        float lodK = (1.0 - smoothstep(0.06, 0.16, lod)) * uFine, lodF = (1.0 - smoothstep(0.025, 0.07, lod)) * uFine;
         float rn = rockFbm(rp * 0.9);
-        float fine = snoise(rp * 5.0) * 0.5 * lodK + snoise(rp * 11.0) * 0.2 * lodF;
+        // a term faded to nothing is not worked out at all (same picture): far stone skips its fine noise, which is most of the
+        // shader's cost on a browser that runs it slowly (Chrome on an M1 drew 19 fps with rocks, 44 without: docs/PERF.md pass 24)
+        float fine = (lodK > 0.0 ? snoise(rp * 5.0) * 0.5 * lodK : 0.0) + (lodF > 0.0 ? snoise(rp * 11.0) * 0.2 * lodF : 0.0);
         // the crack network: thin ridges of a warped noise, two scales
         float ridgeA = 1.0 - abs(snoise(rp * 0.55 + vec3(rn * 0.7)));
         float ridgeB = 1.0 - abs(snoise(rp * 1.35 + vec3(7.1, 2.3, 5.9) + vec3(rn * 0.4)));
@@ -194,10 +204,11 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         stone = mix(stone, vec3(0.3, 0.27, 0.22) * (0.7 + 0.5 * bedTone), strataK * smoothstep(0.55, 0.95, ribbon) * 0.5);
         stone *= 1.0 + strataK * ((bed - 0.5) * 0.4 + (bedTone - 0.5) * 0.45);
         // inclusions: grains of metal and mineral set in the stone
-        float incl = smoothstep(0.63, 0.72, snoise(rp * vec3(1.6, 7.5, 2.2) + 4.7) * 0.6 + snoise(rp * 2.1 + 9.0) * 0.5) * uMineral * (1.0 - uViolet);
+        float inclK = uMineral * (1.0 - uViolet);
+        float incl = inclK > 0.0 ? smoothstep(0.63, 0.72, snoise(rp * vec3(1.6, 7.5, 2.2) + 4.7) * 0.6 + snoise(rp * 2.1 + 9.0) * 0.5) * inclK : 0.0;
         stone = mix(stone, vec3(0.3, 0.3, 0.3), incl * 0.5);
         // speckle: light and dark grains in the stone
-        stone *= 0.8 + 0.4 * smoothstep(-0.4, 0.6, snoise(rp * 13.0 + 1.1)) * lodF + 0.2 * (1.0 - lodF);
+        stone *= 0.8 + (lodF > 0.0 ? 0.4 * smoothstep(-0.4, 0.6, snoise(rp * 13.0 + 1.1)) * lodF : 0.0) + 0.2 * (1.0 - lodF);
         stone = mix(vec3(dot(stone, vec3(0.3, 0.5, 0.2))), stone, 0.9);
         // crack lines and the crust beside a live seam go dark
         stone *= 1.0 - min(0.75, crackL * 0.35 * deep + smoothstep(0.9, 0.975, ridge) * zone * deep * 0.45);
@@ -209,17 +220,18 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         float exfol = (layer - smoothstep(0.84, 1.0, layer)) * strataK;
         // sharp crests between broken faces, and a granular crumble at two scales (creased noise), so the stone reads hard, not moulded
         float crest = pow(1.0 - abs(snoise(rp * 3.0 + 1.7)), 3.0);
-        float gran = pow(1.0 - abs(snoise(rp * 7.5 + 4.4)), 4.0) * lodK + pow(1.0 - abs(snoise(rp * 16.0 + 8.8)), 5.0) * 0.6 * lodF;
+        float gran = (lodK > 0.0 ? pow(1.0 - abs(snoise(rp * 7.5 + 4.4)), 4.0) * lodK : 0.0) + (lodF > 0.0 ? pow(1.0 - abs(snoise(rp * 16.0 + 8.8)), 5.0) * 0.6 * lodF : 0.0);
         // micro craters at two scales: a round bowl, dark inside, with a raised lip that catches the sun
-        float mcA = snoise(rp * 2.9 + 9.0), mcB = snoise(rp * 6.5 + 2.0) * lodK;
+        float mcA = snoise(rp * 2.9 + 9.0), mcB = lodK > 0.0 ? snoise(rp * 6.5 + 2.0) * lodK : 0.0;
         float bowl = smoothstep(0.35, 0.8, mcA) + smoothstep(0.4, 0.85, mcB) * 0.5;
         float lipC = smoothstep(0.2, 0.35, mcA) * (1.0 - smoothstep(0.35, 0.45, mcA)) + smoothstep(0.25, 0.4, mcB) * (1.0 - smoothstep(0.4, 0.5, mcB)) * 0.5;
         // regolith pores: sparse fine pockmarks, faded out once they are smaller than a pixel
-        float poreF = 1.0 - smoothstep(0.01, 0.03, lod);
-        float pore = smoothstep(0.62, 0.85, snoise(rp * 22.0 + 3.1)) * poreF;
+        float poreF = (1.0 - smoothstep(0.01, 0.03, lod)) * uFine;
+        float pore = poreF > 0.0 ? smoothstep(0.62, 0.85, snoise(rp * 22.0 + 3.1)) * poreF : 0.0;
         // the geode (rich rock): a cavity lined with crystal, faceted so each face throws its own light
         float geo = smoothstep(0.12, 0.55, vGeode) * uViolet;
-        float facet = fract(snoise(rp * 4.5 + 2.0) * 2.5 + snoise(rp * 9.0) * 0.6 * lodF);
+        // only a geode (rich rock) shows its facets
+        float facet = geo > 0.0 ? fract(snoise(rp * 4.5 + 2.0) * 2.5 + snoise(rp * 9.0) * 0.6 * lodF) : 0.0;
         float rockH = crest * 0.34 + rn * 0.24 + gran * 0.14 + exfol * 0.7 + fine * 0.1 - crackL * 0.35 * deep - bowl * 0.3 + lipC * 0.1 - pore * 0.2;
         rockH = mix(rockH, facet * 0.9, geo);
         diffuseColor.rgb *= (1.0 - bowl * 0.3) * (1.0 - pore * 0.45) * (0.8 + 0.5 * gran);
@@ -278,7 +290,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         #endif
         #include <aomap_fragment>`);
   };
-  m.customProgramCacheKey = () => `stone-rock19-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
+  m.customProgramCacheKey = () => `stone-rock21-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 

@@ -30,7 +30,7 @@ import { prepareSpace, SpaceView } from './space';
 import { krailRGB, PickupView } from './pickups';
 import { Post } from './post';
 import type { QualityTier } from './quality';
-import { RockView } from './rocks';
+import { ROCK_FINE, RockView } from './rocks';
 import { RockFx } from './rockfx';
 import { EnemyView, NEON, wreck } from './enemies';
 import { ShipView } from './ships';
@@ -235,6 +235,7 @@ export class Sector {
     this.env.setDetail(tier.name === 'low', tier.skyDetail);
     this.warp.setDetail(tier.name === 'low');
     this.debris.setCount(tier.debris);
+    ROCK_FINE.value = tier.name === 'low' ? 0 : 1;
   }
 
   resize(width: number, height: number, dpr: number, offsetY: number): void {
