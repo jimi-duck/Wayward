@@ -52,4 +52,23 @@ export const CORE: Record<string, string> = {
     'ADA-1 hat einen ruhigen Weg genannt, und das ist er. Alle anderen Ausgänge werden überwacht, und dein Rumpf ist als gestohlen gemeldet. Noch jagt dich niemand.',
   // Ada's notes are signed as the grandmother she was (owner 2026-11-27: never "Gran")
   '— Your grandmother': '— Deine Großmutter',
+
+  // ── the Reach and the Narrows ──
+  '“Ada had a watch partner. Ilse Marrow. If she’s alive, she’s at Halden’s Reach.”': '„Ada hatte eine Wachpartnerin. Ilse Marrow. Wenn sie noch lebt, ist sie in Halden’s Reach.“',
+  '“That isn’t a relay.”': '„Das ist kein Relais.“',
+  '“Ilse. She cheated at cards on the long watches. I don’t remember her face.”': '„Ilse. Sie hat auf den langen Wachen beim Kartenspiel geschummelt. An ihr Gesicht erinnere ich mich nicht.“',
+  '“She hated that engine. Said it sounded like a dying animal. I said it sounded worse when she flew.”': '„Sie hat diesen Antrieb gehasst. Klang wie ein sterbendes Tier, sagte sie. Ich sagte, schlimmer klingt er, wenn sie fliegt.“',
+  '“Ada used to say L. C. had steady hands. I don’t know who L. C. is.”': '„Ada sagte immer, L. C. hätte ruhige Hände. Ich weiß nicht, wer L. C. ist.“',
+  '“When she couldn’t sleep, she’d ask me to read her the relay logs. Just the numbers.”': '„Wenn sie nicht schlafen konnte, sollte ich ihr die Relais-Logs vorlesen. Nur die Zahlen.“',
+  '“She sang when she fixed things. Badly. I never told her.”': '„Sie hat gesungen, wenn sie was repariert hat. Schlecht. Ich hab’s ihr nie gesagt.“',
+  '“She always took the port corridor. Said starboard was haunted. It was a loose panel.”': '„Sie nahm immer den Backbordgang. Steuerbord spuke es, sagte sie. Es war eine lose Platte.“',
+  '“This was her watch. I was here. I remember the lights going out.”': '„Das war ihre Wache. Ich war hier. Ich weiß noch, wie die Lichter ausgingen.“',
+  '“She drank her tea cold on this watch. Said hot tea made her sleepy.”': '„Auf dieser Wache trank sie ihren Tee kalt. Heißer Tee mache sie müde, sagte sie.“',
+  '“This is where my signal ends. You’re not alone in there now. Listen to her. Go.”': '„Hier endet mein Signal. Du bist da drin jetzt nicht mehr allein. Hör auf sie. Los.“',
+  '“Ada’s tender. I’d know her lamps anywhere. Is her old core still in there? It used to argue with her.”': '„Adas Tender. Ihre Lampen erkenne ich überall. Ist ihr alter Kern noch drin? Der hat immer mit ihr gestritten.“',
+  '“The relay by your gate was ours. Let Ada’s core talk to it, and Halden trades again.”': '„Das Relais an deinem Tor war unseres. Lass Adas Kern mit ihm reden, und Halden handelt wieder.“',
+  'Ilse knows Ada’s old ship': 'Ilse kennt Adas altes Schiff',
+  '“Those are Ada Aster’s lamps. She stood watch with me at the Narrows. Is her old core still in there? It used to argue with her.”': '„Das sind Ada Asters Lampen. Sie hat mit mir an den Narrows Wache gestanden. Ist ihr alter Kern noch drin? Der hat immer mit ihr gestritten.“',
+  'Ada Aster · Ilse knew her': 'Ada Aster · Ilse kannte sie',
+  'A retired Warden knew Ada’s tender by its lamps, and its core by its arguing. Juno’s family were only ever told Ada was lost in service.': 'Eine Wächterin a. D. erkannte Adas Tender an den Lampen und den Kern am Streiten. Junos Familie hörte immer nur, Ada sei im Dienst verschollen.',
 };

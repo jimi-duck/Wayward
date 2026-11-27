@@ -118,7 +118,7 @@ export const WALL: WallItem[] = [
     flag: 'ada_named', name: 'Ada Aster', certainty: 'fact', at: 0,
     proves: 'The archive’s writer was Ada Aster, a Lane Warden on the Narrows watch.',
     not: 'What she saw there, or why she left the relay listening.',
-    detail: 'A retired Warden knew the routine in the hull by its habits. Juno’s family were only ever told Ada was lost in service.',
+    detail: 'A retired Warden knew Ada’s tender by its lamps, and its core by its arguing. Juno’s family were only ever told Ada was lost in service.',
     ask: 'Who wrote the archive?',
     lead: 'Go to the Narrows. Ada left it listening.',
   }),

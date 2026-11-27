@@ -36,6 +36,6 @@ export const NARROWS_ROWS: Row[] = [
 
   // ── 5 · The way out ──
   { id: 'nr_gate', stop: STOP, on: { on: 'flag', flag: 'narrows_gate_open' }, do: { objective: { main: 'Jump to Wake', quiet: 'Find the Drift. They never stopped moving.' } } },
-  radio('nr_sam_last', 'Sam Okoro', 'miners', { on: 'flag', flag: 'narrows_gate_open' }, '“This is where my signal ends. If those relays carry Ada’s voice, maybe one day they’ll carry mine. Go.”', { urgent: true }),
+  radio('nr_sam_last', 'Sam Okoro', 'miners', { on: 'flag', flag: 'narrows_gate_open' }, '“This is where my signal ends. You’re not alone in there now. Listen to her. Go.”', { urgent: true }),
   { id: 'nr_lost', stop: STOP, on: { on: 'after', row: 'nr_sam_last', delay: 3 }, wall: 'sam_silent', do: { notice: { tone: 'white', headline: 'Signal lost', reason: 'Sam Okoro' } }, urgent: true },
 ];

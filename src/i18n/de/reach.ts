@@ -37,7 +37,6 @@ export const REACH_DE: Record<string, string> = {
   'unknown contact logged': 'unbekannter Kontakt vermerkt',
   // radio
   '“Wayward, Ilse Marrow, off the hospice ring. Keep flying, I’ll come to you. Kellern listens on the open band.”': '„Wayward, Ilse Marrow, am Hospizring. Flieg weiter, ich komm zu dir. Kellern hört auf dem offenen Band mit.“',
-  '“That key in your hull is Ada Aster’s. She stood watch with me. Aster’s your name too.”': '„Der Schlüssel in deinem Rumpf gehört Ada Aster. Sie hat mit mir Wache gestanden. Aster heißt du doch auch.“',
   '“The spike’s coming across. If anyone asks, I was never here. They’ll ask.”': '„Der Spike kommt rüber. Wenn jemand fragt: Ich war nie hier. Sie werden fragen.“',
   '“L. C. again, on the order and on the money. Whoever that is signed both.”': '„Schon wieder L. C., auf dem Befehl und auf dem Geld. Wer das auch ist, hat beides unterschrieben.“',
   '“Whoever that is, they signed both.”': '„Wer das auch ist, hat beides unterschrieben.“',
@@ -50,7 +49,6 @@ export const REACH_DE: Record<string, string> = {
   '“I owe you a clean ledger. I’ll send it on ahead.”': '„Ich schulde dir ein sauberes Hauptbuch. Ich schick es voraus.“',
   // cards
   'The signed order to shut the relays': 'Der unterschriebene Befehl, die Relais abzuschalten',
-  'Ilse knows whose routine is in your hull': 'Ilse weiß, wessen Routine in deinem Rumpf steckt',
   'Ilse sends the order anyway': 'Ilse schickt den Befehl trotzdem',
   'Brook is in a Custody transport anyway': 'Brook sitzt trotzdem im Custody-Transporter',
   'Ilse Marrow · The order': 'Ilse Marrow · Der Befehl',
@@ -76,10 +74,8 @@ export const REACH_DE: Record<string, string> = {
   'The names go in the file.': 'Die Namen kommen in die Akte.',
   'The signed order · in the file': 'Der unterschriebene Befehl · in der Akte',
   'Ilse Marrow · Ada Aster': 'Ilse Marrow · Ada Aster',
-  '“The key in your hull answers like Ada Aster’s. She stood watch with me at the Narrows. Aster is your name too, isn’t it?”': '„Der Schlüssel in deinem Rumpf antwortet wie der von Ada Aster. Sie hat mit mir an den Narrows Wache gestanden. Aster heißt du doch auch, oder?“',
   'She was my grandmother': 'Sie war meine Großmutter',
   'Your family only said she was lost in service.': 'Deine Familie sagte nur, sie sei im Dienst verschollen.',
-  'Ada Aster · the archive has a name': 'Ada Aster · das Archiv hat einen Namen',
   '“Lost in service. That’s all they ever told anyone. Go to the Narrows. Ada left it listening for you.”': '„Im Dienst verschollen. Mehr haben sie nie jemandem gesagt. Flieg zu den Narrows. Ada hat es für dich lauschen lassen.“',
   'Ilse Marrow · recorded': 'Ilse Marrow · aufgezeichnet',
   'A recorded message · no reply': 'Eine Aufzeichnung · keine Antwort',
@@ -95,7 +91,6 @@ export const REACH_DE: Record<string, string> = {
   'Ada Aster': 'Ada Aster',
   'The archive’s writer was Ada Aster, a Lane Warden on the Narrows watch.': 'Die Verfasserin des Archivs war Ada Aster, eine Lane Warden der Narrows-Wache.',
   'What she saw there, or why she left the relay listening.': 'Was sie dort sah, oder warum sie das Relais lauschen ließ.',
-  'A retired Warden knew the routine in the hull by its habits. Juno’s family were only ever told Ada was lost in service.': 'Eine pensionierte Warden erkannte die Routine im Rumpf an ihren Eigenarten. Junos Familie hieß es nur, Ada sei im Dienst verschollen.',
   'Who wrote the archive?': 'Wer hat das Archiv geschrieben?',
   'Go to the Narrows. Ada left it listening.': 'Flieg zu den Narrows. Ada hat es lauschen lassen.',
   // the road's threads (content/missions.ts `thread`, the stops' radio)
@@ -133,7 +128,6 @@ export const REACH_DE: Record<string, string> = {
   'Custody blockade · the Jump Gate': 'Custody-Blockade · das Sprungtor',
   'Inspector Ashgrove': 'Inspektor Ashgrove',
   '“I’ll remember the hull. Whoever you are.”': '„Den Rumpf merke ich mir. Wer auch immer du bist.“',
-  '“The relay by your gate was ours. Dark since that night. Put your key to it and Halden trades again.”': '„Das Relais an deinem Tor war unseres. Dunkel seit jener Nacht. Halt deinen Schlüssel dran, dann handelt Halden wieder.“',
   'Halden’s lane is open': 'Haldens Bahn ist offen',
   '“That relay by the gate carried Kellern’s books out-system once. Wake it and the books travel with you.”': '„Das Relais am Tor hat Kellerns Bücher früher aus dem System getragen. Weck es, dann reisen die Bücher mit dir.“',
   'the books can travel now': 'die Bücher können jetzt reisen',
@@ -154,7 +148,6 @@ export const REACH_DE: Record<string, string> = {
   'CCV Patience inbound': 'CCV Patience im Anflug',
   '“That’s no picket. Juno, that’s a Governor’s ship.”': '„Das ist kein Posten. Juno, das ist das Schiff einer Gouverneurin.“',
   'Governor Calloway': 'Gouverneurin Calloway',
-  '“This is where my signal ends. If those relays carry Ada’s voice, maybe one day they’ll carry mine. Go.”': '„Hier endet mein Signal. Wenn diese Relais Adas Stimme tragen, tragen sie vielleicht eines Tages meine. Los.“',
   // the Narrows' cards
   'Ashgrove holds the gate at the Narrows': 'Ashgrove hält das Tor an den Narrows',
   'Ada’s first note · the Narrows watch': 'Adas erste Notiz · die Narrows-Wache',
