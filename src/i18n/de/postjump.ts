@@ -97,6 +97,7 @@ export const POSTJUMP: Record<string, string> = {
   'Ship systems restoring': 'Schiffssysteme werden wiederhergestellt',
   'Initialising': 'Initialisierung',
   'Tuning ship systems to this device': 'Schiffssysteme werden auf dein Gerät abgestimmt',
+  'Bringing ship systems online': 'Schiffssysteme fahren hoch',
   'Autopilot · Ned is working': 'Autopilot · Ned arbeitet',
   'Make her yours': 'Mach sie zu deinem Schiff',
   'free': 'kostenlos',

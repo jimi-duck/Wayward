@@ -49,8 +49,11 @@ import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18
 
 /** Seconds the quality governor ignores after a new system or a closed panel. */
 const GRACE = 2;
-/** The start-up screen (main.ts calibrate): the frames skipped first, the least and most it stays up, and its bar's pace, in seconds. */
-const CALIB_GRACE = 0.6, CALIB_MIN = 1.5, CALIB_MAX = 9, CALIB_TYPICAL = 5;
+/**
+ * The start-up screen (main.ts calibrate), in seconds: the frames skipped once warm, the least it stays up, the most it waits
+ * for the warm-up, the most it then measures, and its bar's pace.
+ */
+const CALIB_GRACE = 0.4, CALIB_MIN = 1.5, CALIB_WARM_MAX = 6, CALIB_MEASURE_MAX = 8, CALIB_TYPICAL = 4;
 /**
  * A new Story journey is the Warden's Road: Cerro to the Threshold as fixed stops (docs/ROAD.md). The generated chart
  * (?classic, ?short) was taken out as a way in on 2026-11-27; a journey saved on it still loads and plays.
@@ -162,7 +165,7 @@ function boot(review: typeof import('./review') | null): void {
   // frame has shown the card, so the first frame of play does not pay for it.
   const stageSky = () => setTimeout(() => { if (!started) sector.stageSky(world); }, 120);
   // compile every shader behind the start card, once it has painted
-  setTimeout(() => void sector.warm().then(() => {
+  const booted = new Promise<unknown>((ready) => setTimeout(() => ready(sector.warm().then(() => {
     if (started) return;
     // Arcade is the title's first row and starts at a tap, so its run is made now: the world, then its sky
     if (world.mode !== 'arcade' || world.survival.id !== profile.arcadeSurvival) world.restart({ survival: profile.arcadeSurvival, mode: 'arcade', carry: null });
@@ -171,7 +174,7 @@ function boot(review: typeof import('./review') | null): void {
     if (saved && saved.status === 'sortie') sector.stageSortieSky(sortieDef(saved));
     else sector.stageSky(world);
     sector.warmFrame();
-  }), 60);
+  })), 60)).catch(() => {});
 
   // ── the run's stops: the bay, comms, port, report ──────────────────────
   // The world pauses itself at each and waits (an ambush only slows it); the
@@ -314,6 +317,14 @@ function boot(review: typeof import('./review') | null): void {
    * few seconds pass, whichever is first), and the veil then lifts as it always did.
    */
   let settling = false, lift = 0;
+  /**
+   * Warm what the world now holds. A round is two frames, so the sector builds what the world holds (a station goes up a piece
+   * a frame), then every program it has is linked and drawn once. Rounds go on while they find new programs, so what arrives a
+   * few frames late is covered too; the cap keeps a slow link from holding the view for long.
+   */
+  const warmRounds = (known = -1, n = 0): Promise<void> => new Promise<void>((next) => requestAnimationFrame(() => requestAnimationFrame(() => next())))
+    .then(() => sector.warm()).then(() => sector.warmFrame())
+    .then(() => { const now = renderer.info.programs?.length ?? 0; return now === known || n >= 4 ? undefined : warmRounds(now, n + 1); });
   const settle = () => {
     if (settling) return;
     settling = true;
@@ -329,13 +340,7 @@ function boot(review: typeof import('./review') | null): void {
       lift = 1;
       if (world.run === run && !panelOpen()) { loop.paused = false; input.reset(); }
     };
-    // A round is two frames, so the sector builds what the world holds (a station goes up a piece a frame), then every program it
-    // has is linked. Rounds go on while they find new programs, so what arrives a few frames late is covered too; the cap keeps a
-    // slow link from holding the view for long.
-    const round = (known: number, n: number): Promise<void> => new Promise<void>((next) => requestAnimationFrame(() => requestAnimationFrame(() => next())))
-      .then(() => sector.warm()).then(() => sector.warmFrame())
-      .then(() => { const now = renderer.info.programs?.length ?? 0; return now === known || n >= 4 ? undefined : round(now, n + 1); });
-    void Promise.race([round(-1, 0), new Promise((r) => setTimeout(r, 20000))]).then(done, done);
+    void Promise.race([warmRounds(), new Promise((r) => setTimeout(r, 20000))]).then(done, done);
   };
   /** Fly the journey's current system. */
   const startSortie = () => {
@@ -795,29 +800,45 @@ function boot(review: typeof import('./review') | null): void {
     keepTier();
   };
   /**
-   * A device's first run (nothing kept): an in-theme start-up screen holds the world while the governor finds the tier and
-   * size this device can carry, judged on a shorter window, so its steps are never seen in flight (owner 2026-11-27: better
-   * than playing the first seconds at a quality that is still moving). Later visits start where this one settled.
+   * The start-up screen, on every launch from the title (owner 2026-11-27: "always shown"; a game opened fresh played its first
+   * seconds stuttering and at a quality still moving). In-theme, over a held world, it waits until the game is really ready:
+   * first every shader linked and the run's world drawn once (the title's warm-up, then rounds for what the launch made), then
+   * a quick verdict from the governor on real frames, so a device with nothing kept finds its tier and size unseen and one
+   * with a kept setting confirms it. It lifts once the verdict comes with no step waiting.
    */
-  let calib = -1;
+  let calib = -1, calibReady = false, calibAt = 0;
   const calibrate = () => {
-    if (settled || pinned >= 0 || saver || dev) return;
+    if (dev) return;
     calib = 0;
+    calibAt = performance.now();
+    calibReady = false;
     quality.quick = true;
-    quality.hold(CALIB_GRACE);
     loop.paused = true;
     el('cb-t').textContent = t('Initialising');
-    el('cb-s').textContent = t('Tuning ship systems to this device');
+    el('cb-s').textContent = t('Bringing ship systems online');
     el('cb-i').style.width = '0%';
     el('calib').classList.add('on');
+    const ready = () => {
+      if (calib < 0) return;
+      calibReady = true;
+      calibAt = performance.now();
+      quality.hold(CALIB_GRACE);
+      el('cb-s').textContent = t('Tuning ship systems to this device');
+    };
+    void Promise.race([booted.then(() => warmRounds()), new Promise((r) => setTimeout(r, CALIB_WARM_MAX * 1000))]).then(ready, ready);
   };
   const calibFrame = (dt: number) => {
     // the world stays held under the screen, whatever a key or a card asked for meanwhile
     loop.paused = true;
-    calib += dt;
-    if (sector.drawing && quality.sample(dt)) applyQuality();
-    el('cb-i').style.width = `${Math.round(Math.min(0.94, calib / CALIB_TYPICAL) * 100)}%`;
-    if ((calib > CALIB_MIN && quality.quiet) || calib > CALIB_MAX) calibrated();
+    // a frame held up by a shader link counts as one frame, not as the seconds it took
+    calib += Math.min(dt, 0.1);
+    // frames while shaders link are not the machine: measured only once the warm-up is done
+    if (calibReady && sector.drawing && quality.sample(dt)) applyQuality();
+    // the bar: the warm-up fills the first part, the measuring the rest
+    const p = calibReady ? 0.4 + 0.54 * Math.min(1, calib / CALIB_TYPICAL) : 0.4 * Math.min(1, calib / 2);
+    el('cb-i').style.width = `${Math.round(p * 100)}%`;
+    // the cap is wall time from the end of the warm-up: a device too slow to judge quickly still gets to play
+    if (calibReady && ((calib > CALIB_MIN && quality.quiet) || performance.now() - calibAt > CALIB_MEASURE_MAX * 1000)) calibrated();
   };
   const calibrated = () => {
     calib = -1;

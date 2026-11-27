@@ -833,3 +833,19 @@ thirds of a pixel per CSS pixel, stretched three times over on a 3x screen. A ph
 CSS pixel, so Low on a phone has no smaller size and holds an even 30 instead. Computers are unchanged.
 
 **Not measured:** the iPhone's rate on Low at full size.
+
+## Pass 30: the start-up screen on every launch (2026-11-27)
+
+The owner: a game opened fresh played its first seconds badly ("low quality and buggy") and the start-up screen should
+always show. It now comes up on every launch from the title (not with `?dev`) and waits for the game to be ready in two
+stages, its line saying which:
+
+1. **Bringing ship systems online**: the title's own warm-up (`sector.warm` and `warmFrame`, started behind the title),
+   then warm rounds for what the launch made (`warmRounds`, shared with the jump's arrival). At most 6 s.
+2. **Tuning ship systems to this device**: the governor judges real frames on its quick window. A device with nothing
+   kept finds its tier and size; one with a kept setting confirms it in about a second.
+
+It lifts once a verdict comes with no step waiting, at the least 1.5 s after launch and at most 8 s after the warm-up. A tap or key
+meanwhile is ignored; the world is held throughout.
+
+**Not measured:** how long it stays up on the owner's Mac or iPhone.
