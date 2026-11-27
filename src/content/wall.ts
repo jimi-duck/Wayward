@@ -322,6 +322,14 @@ export const WALL: WallItem[] = [
     ask: 'What does Cyrite have to do with it?',
     lead: 'The Threshold waits. Decide what the file is for.',
   }),
+  clue({
+    flag: 'rec_sealed', name: 'The Survey’s sealed readings · the Seam', certainty: 'fact', at: 6,
+    proves: 'The Survey Office measured that the Thren settle when digging slows, and sealed the page.',
+    not: 'Whether the lanes can open without waking them.',
+    detail: 'Given back by ADA-1 from the Seam relay. The page was in Ada’s readings. Nobody in the room asked for it.',
+    ask: 'What did the Survey know about the Thren?',
+    lead: 'The Threshold. The last relay.',
+  }),
 ];
 
 export const WALL_BY_FLAG: Record<string, WallItem> = Object.fromEntries(WALL.map((w) => [w.flag, w]));

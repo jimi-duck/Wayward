@@ -73,6 +73,13 @@ export const CORE_ROWS: Row[] = [
   core('fm_core_dark', 'f_mirren', flag('relay_dark_f_mirren'), '“I used to think Ada was always right about relays. Leave it dark.”', { stale: CORE_STALE }),
   core('tg_core_note', 'tollgate', after('tg_note', 3), '“She was brave, Juno. But don’t mistake that for never being afraid.”'),
 
+  // ── Act III · the Hollows and the Seam: her own ──
+  // Hollowforge's loud relay is hers to tell now (legs.ts hf_relay_say speaks as ADA-1, a main line)
+  core('hc_core_echo', 'h_cairn', after('hc_two', 3), '“It wants out of its orders. I know what shut in feels like.”'),
+  // note 7, then her card (arrivals.ts se_implant waits on this line: it never goes stale)
+  core('se_core_note', 'seam', flag('warden_note_7'), '“Ada was scared of what the Thren would answer. I’m not. I don’t think she’d agree with me.”'),
+  // after the Seam, every line of hers checks she isn't resting (implant_burned): after "Rest now" she says nothing more
+
   // a save that read the grandmother's old letter before ADA-1 had a voice (meta/save.ts marks it on load): she says who she is, once, at the
   // first free moment on the road
   card('core_catchup', '*', free(8), 'story_core_catchup', { if: { has: [CORE_CATCHUP], not: [CORE_MET] } }),

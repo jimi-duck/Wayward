@@ -1,5 +1,6 @@
 import type { Row } from '../../sim/script';
 import { ACCOUNTS, after, ANALYST, arrive, card, flag, free, HESTER, leave, main, notice, objective, PIKE, QUILL, radio, relay, SAM, settle, wall } from './kit';
+import { ADA } from '../story';
 
 // ── the road past the Narrows: the legs' scripts ───────────────────────────
 // Seven legs, seven stops each, in the order of the Beat Map
@@ -351,7 +352,7 @@ const HOLLOWS_ROWS: Row[] = [
   notice('hf_scope', 'h_forge', free(6), 'white', 'Scope pattern', 'it repeats when you move', { wall: 'saw_thren' }),
   main('hf_thren', 'h_forge', { on: 'place', place: 'hf_pattern' }, 'story_thren'),
   // the foundry's relay (spaceways plan, step 6): loud, the Thren follow its noise; woken fast and fought, or drifting and quiet
-  radio('hf_relay_say', 'h_forge', after('hf_objective', 8), 'The Voice', 'unknown', '“This relay sings when it wakes. The Thren hear singing. Drift still, and it will whisper.”', { main: true }),
+  radio('hf_relay_say', 'h_forge', after('hf_objective', 8), ADA, 'core', '“It sings when it wakes. Drift slow and I’ll keep it quiet.”', { main: true }),
   { id: 'hf_relay', stop: 'h_forge', on: relay(), wall: 'relay_h_forge', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the foundry’s lane is open' } }, main: true, urgent: true },
   objective('hf_gate', 'h_forge', leave(), 'Jump to Coldvault'),
 

@@ -126,7 +126,7 @@ export const NOTE_CARDS: CardDef[] = [
     // the Seam: the Voice is the relay, and it asks for Ada's key
     id: 'seam_voice', gist: 'The Voice asks for Ada’s key', kind: 'warning', caller: 'unknown',
     from: 'The Voice · every terminal at once', title: 'WE WERE TOLD TO WAIT',
-    text: '“ADA ASTER’S KEY. WE WERE TOLD TO WAIT FOR IT. WE WAITED. GIVE IT AND WE WILL SAY WHAT YOU SAY. TO THEM.”',
+    text: '“TENDER. ADA ASTER’S KEY. WE WERE TOLD TO WAIT FOR IT. WE WAITED. GIVE IT AND WE WILL SAY WHAT YOU SAY. TO THEM.”',
     cargo: 'No ship · the relay itself',
     choices: [
       { id: 'give', label: 'Give it the key', tone: 'help', hint: 'It will speak for you.', win: { text: '“THANK YOU. NOBODY SAYS THAT TO US.” · the key is in its hands', flag: ['seam_key_given', 'lane_keys'] } },

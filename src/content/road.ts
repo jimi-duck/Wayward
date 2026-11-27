@@ -191,7 +191,7 @@ export const GATES: Array<{ script: string; purpose: string; /** What is going o
   { script: 'slowdoor', purpose: 'three minutes to open', brief: 'The Slow Door takes three minutes to open, long enough for anyone behind you to catch up. Ada’s note waits at the relay.' },
   { script: 'breaker', purpose: 'the machine itself', brief: 'This is a lane breaker, one of the machines that shut the outer lanes seventy years ago. Ada’s next note says who it was built for.' },
   { script: 'tollgate', purpose: 'Calloway’s field', brief: 'Calloway has closed this gate behind you. No guns, no jump, until you answer her about the name signed on the order.' },
-  { script: 'seam', purpose: 'the relay is awake', brief: 'The relay is awake, and the Voice asks for its key. Ada’s implant is still in the helm, and you decide what happens to it.' },
+  { script: 'seam', purpose: 'the relay is awake', brief: 'The relay is awake, and the Voice asks for its key. ADA-1 has something to tell you before the gate.' },
   { script: 'threshold', purpose: 'the last relay' },
 ];
 
