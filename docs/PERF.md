@@ -591,3 +591,43 @@ are the reliable part. Also a few fewer draws: a double-sided glow is one draw, 
 four runs, none: the warm-up behind the title covers everything these runs drew. The odd 20–40 ms frame left (about one
 in 45 s) has no compile, GC or style work behind it in the trace; it may be the cloud machine, and only a real device
 can say.
+
+## Pass 18: a laptop at 19 fps on High (2026-11-27)
+
+Reported on a laptop, Story, Ringhold: "sometimes slow to respond, juddery". The `?perf` readout: 19 fps, frame
+51.8 ms, every frame slow, CPU 6.2 ms, tier High at 2878 × 1322 (a 1440 × 661 window at a pixel ratio of 2),
+642k triangles, 371 draws. The CPU had time to spare; the GPU was drawing 3.8 million pixels a frame through the
+post chain, so the game was fill-bound. At 19 fps two or three frames queue behind the GPU, which is the slow
+response: the eye sees a turn 100–150 ms after the key.
+
+**Why the governor kept High.** Three things, any of which can do it:
+
+- Verdicts were counted in frames (180, plus 120 of grace after every pop-up): three seconds at 60 fps, but about
+  16 s of uninterrupted flight at 19 fps. The Story's cards and calls often come sooner.
+- A computer had no step between High at a pixel ratio of 2 and Medium at 1.5, then Phone, then Low (no bloom). Each
+  step gave up part of the look and only a quarter of the pixels at most.
+- A tier button in the `?perf` readout pins that tier for the session; the readout did not say so.
+
+**Changes** (`render/quality.ts`, `render/post.ts`, `ui/perf.ts`):
+
+- Verdicts and grace are in seconds: three seconds of frames, two of grace, at any frame rate.
+- A computer draws smaller before it gives up a tier: `WIDE` scales (1, 0.85, 0.75, 0.67, 0.5) of the tier's
+  pixel ratio, never below one pixel per CSS pixel, so a screen of ratio 1 drops tiers as before. Every effect stays;
+  the 3D picture is softer at the bottom step (the HUD is HTML and stays sharp). A slow verdict goes straight to the
+  size whose pixels would fit the frame if the frame were all pixels (the least it could need), not one step at a time.
+  Past the bottom step it drops a tier at about the same pixel ratio. The size climbs back at a quiet moment after
+  30 s with room, as tiers do; a size that proves slow after a climb is not tried again on that tier.
+- Twenty stalls (frames over 100 ms) in a row count as measurements: one long frame is a tab switch, a run of them
+  is a machine that slow (before, a GPU under 10 fps was never measured at all).
+- Sun shafts skip their 22 reads on pixels they cannot touch (far from the sun on screen, or near): the same
+  picture by construction (they added zero there).
+- `?perf`: an Auto button, and the tier line says `auto` or `pinned` and the drawing size.
+
+**Measured here** (software WebGL, Story, a 720 × 330 window at ratio 2, one frame, median of four; a CPU raster, so a
+guide to fill, not a GPU's milliseconds): full High 924 ms; at ratio 1.5, 694 ms; at ratio 1, 376 ms. Taking one
+layer out at ratio 2: post chain −24%, far stars −9%, rocks −6%, shadows −3%, sky and debris within noise. The
+pixel count is the lever. A model of the reported laptop (6 ms fixed, the rest fill) settles at 60 fps on High within
+seconds in `tests/quality.test.ts`.
+
+**Not measured:** a real laptop GPU. The model assumes the 52 ms frame is almost all fill; if part of it is fixed GPU
+work (the 4096 shadow map, triangles), the governor takes a further step, then Medium at about the same pixel ratio.

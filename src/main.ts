@@ -47,8 +47,8 @@ import { Haptics } from './ui/haptics';
 import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18n';
 
 /** New Story journeys run the eight regions; ?short plays the old three, for testing. */
-/** Frames the quality governor ignores after a new system or a closed panel (two seconds at 60 fps). */
-const GRACE = 120;
+/** Seconds the quality governor ignores after a new system or a closed panel. */
+const GRACE = 2;
 const LONG_JOURNEY = !new URLSearchParams(location.search).has('short');
 /** The Story is the Warden's Road: Cerro to the Threshold as fixed stops (docs/ROAD.md). ?classic plays the generated eight-region chart instead, for comparing. */
 const ROAD = !new URLSearchParams(location.search).has('classic');
@@ -83,7 +83,8 @@ function boot(review: typeof import('./review') | null): void {
   const settled = keptTier(TIER_KEY);
   const firstTier = () => settled ? settled.tier : tierIndex(coarse ? 'phone' : 'high');
   // a phone's governor breathes: it draws a little smaller before it gives up a tier, and holds an even 30 at the bottom
-  const quality = new QualityGovernor(pinned >= 0 ? pinned : firstTier(), pinned >= 0, settled?.ceil, coarse);
+  // a computer's governor draws smaller before it gives up a tier too, but never below one pixel per CSS pixel
+  const quality = new QualityGovernor(pinned >= 0 ? pinned : firstTier(), pinned >= 0, settled?.ceil, coarse, () => window.devicePixelRatio || 1);
   const keepTier = () => { if (pinned < 0 && !saver) saveTier(TIER_KEY, quality.tier.name, quality.ceiling); };
   // Battery saver (a switch on the title's Settings and the pause card): the low tier and 30 frames a second. Kept per device.
   const SAVER_KEY = 'wayward.saver';
