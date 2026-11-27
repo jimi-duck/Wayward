@@ -724,3 +724,12 @@ Suggested to the owner: `chrome://flags/#use-angle` set to OpenGL, then the Test
 slow there had nothing left. Low now steps down to two thirds of that (`LOW_FLOOR`, WIDE 0.85, 0.75, 0.67) before it
 stops; other tiers keep the floor of one. From the fit above, about 27 fps instead of 17–19 on that laptop; a slightly
 soft picture over a juddering one. Not measured there.
+
+## Pass 23: Low to half size, then an even 30, on a computer (2026-11-27)
+
+The owner can't run browser experiments, so the fix stays inside what their Test line measured: Chrome on the M1 drew
+Low at 17–19 fps at full size and 32–34 at half. Low on a computer now steps down to half a pixel per CSS pixel
+(`LOW_FLOOR` 0.49, WIDE down to 0.5), and once nothing is left, the governor holds an even 30 (`thirty`, as phones
+already did) instead of a ragged rate. The kept record starts the next visit at the size it settled on. The HUD is page
+text and stays sharp; the 3D picture is softer on that machine only. Safari on the same laptop stays on High.
+Not measured on the laptop: the 30 is from the Test's half-size reading, not a run at this build.

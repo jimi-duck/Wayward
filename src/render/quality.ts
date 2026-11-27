@@ -99,8 +99,8 @@ export const SCALES = [1, 0.85, 0.75, 0.67] as const;
  * steps: it drops a tier as before.
  */
 export const WIDE = [1, 0.85, 0.75, 0.67, 0.5] as const;
-/** The least a computer draws on Low, in pixels per CSS pixel. */
-const LOW_FLOOR = 0.66;
+/** The least a computer draws on Low, in pixels per CSS pixel: half (Chrome on an M1 went from 17–19 fps to 32–34 there). */
+const LOW_FLOOR = 0.49;
 
 export class QualityGovernor {
   private index: number;
@@ -256,9 +256,9 @@ export class QualityGovernor {
       return true;
     }
     if (this.index === 0) {
-      // nothing left to give: an even 30 reads smoother than a ragged 40
-      if (this.breathe) { this.thirty = true; return true; }
-      return false;
+      // nothing left to give: an even 30 reads smoother than a ragged 40, on a phone or a computer
+      this.thirty = true;
+      return true;
     }
     const dpr = this.dpr();
     this.index--;
@@ -273,8 +273,8 @@ export class QualityGovernor {
   private scales(): readonly number[] {
     if (this.breathe) return SCALES;
     const base = Math.min(this.screen() || 1, this.tier.dprCap);
-    // a computer keeps at least one pixel per CSS pixel, except on Low, the last stop, where a slightly soft picture
-    // beats a juddering one (Chrome on an M1 drew Low at 19 fps, half size at 32: docs/PERF.md pass 22)
+    // a computer keeps at least one pixel per CSS pixel, except on Low, the last stop, where a soft picture beats a
+    // juddering one (Chrome on an M1 drew Low at 17–19 fps, half size at 32–34: docs/PERF.md pass 22)
     const floor = this.index === 0 ? LOW_FLOOR : 0.99;
     const n = WIDE.filter((s) => base * s >= floor).length;
     return WIDE.slice(0, Math.max(1, n));
