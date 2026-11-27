@@ -8,6 +8,7 @@ import type { Boss } from '../sim/bosses';
 import {
   ALIEN_ORDER, ALIEN_TYPES, BEAM_FIRE, BEAM_LEN, JINK_ROLL, type Alien, type AlienKind, type EliteId, type Faction, type Shot, type Web,
 } from '../sim/enemies';
+import { instancedCaster } from './casters';
 import { Kit, metal, seeded, type V3 } from './kit';
 import { GLOW, HULL_LOOK } from './look';
 import { capitalDesign, designFor, eliteDesign, type Extent } from './hulls';
@@ -477,12 +478,13 @@ class HullBatch {
     this.sets = [0, 1].map((flash) => src.map((m) => {
       const im = new InstancedMesh(m.geometry, flash ? FLASH : (m.material as Material), MAX_BATCH);
       im.count = 0;
-      im.castShadow = im.receiveShadow = true;
+      im.receiveShadow = true;
       im.visible = false;
       // drawn from the origin's bounding sphere otherwise: cull nothing, as the streaks do
       im.frustumCulled = false;
       // each hull its own soot: the colour per instance darkens a hull as its armour goes (set in add)
       im.setColorAt(0, WHITE);
+      instancedCaster(im);
       scene.add(im);
       return im;
     }));
@@ -523,6 +525,7 @@ class HullBatch {
       const w = new InstancedMesh(im.geometry, im.material, 1);
       w.setColorAt(0, WHITE);
       w.frustumCulled = false;
+      instancedCaster(w);
       return w;
     });
   }
