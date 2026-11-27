@@ -459,13 +459,13 @@ export const STORY_CARDS: CardDef[] = [
   }),
   story({
     // Ada's first note, in the archive's written-message style (the card's own layout, as story_wake)
-    id: 'warden_note_1', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
-    from: 'Ship database · Warden’s note 1 of 8', title: 'Warden’s note 1 of 8',
+    id: 'warden_note_1', herald: { headline: 'Memory restored', reason: 'The Narrows relay' }, kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
+    from: 'Recovered by ADA-1 · Ada’s memory 1 of 8', title: 'Ada’s memory 1 of 8',
     letter: { head: [['To', 'Whoever the relays let through'], ['From', 'A. Aster, Narrows watch'], ['Kept in', 'Narrows relay, Warden channel']], sign: '— A.' },
     text: 'The Narrows was mine the night they closed it. They told me to switch it off and forget the key. I switched it off. I never forgot.\nEight relays on this road still know my key. Each one keeps a piece of what I saw.\nEach will say my name out loud when you pass, and they’ll hear it.\nThis gate will go dark while it remembers me. Sorry about that part. Hold on, then keep moving.\nFind the Drift. They never stopped moving.',
     cargo: 'The Wayward · a note kept in the relay',
     choices: [
-      { id: 'close', label: 'Close the note', tone: 'help', hint: '', win: { text: 'Warden’s note 1 of 8 · on the Wall', flag: 'warden_note_1' } },
+      { id: 'close', label: 'Close the note', tone: 'help', hint: '', win: { text: 'Ada’s memory 1 of 8 · on the Wall', flag: 'warden_note_1' } },
     ],
   }),
 
@@ -532,7 +532,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_broker', kind: 'trade', caller: 'gutter',
     from: 'Val · a broker of the Gutter', title: 'Name your price',
-    text: '“Everyone in the Belt knows what you carry. At the Threshold I buy it. Here’s something on account, so you remember me fondly.”',
+    text: '“Everyone in the Belt knows what you carry. A Warden core that talks, and a file. At the Threshold I buy both. Here’s something on account, so you remember me fondly.”',
     cargo: 'A broker’s yacht · very clean guns',
     choices: [
       { id: 'take', label: 'Take the advance', tone: 'trade', hint: 'Eight Cyrite, and a buyer at the end.', win: { text: 'Eight Cyrite · Val will be waiting', chits: 40, flag: 'broker', standing: { gutter: 1 } } },
@@ -653,7 +653,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_tam_brother', kind: 'plea', caller: 'miners',
     from: 'Sam Okoro · patched through the relays', title: 'My brother is on that crew',
-    text: '“Juno, it’s me. The relays carry voices now, can you believe it? My brother Eben works the Breaker Yards. The hulls coming in are scarred. He thinks claws. Take a look?”',
+    text: '“Juno, it’s me. Your ship found me. Don’t ask me how. My brother Eben works the Breaker Yards. The hulls coming in are scarred. He thinks claws. Take a look?”',
     cargo: 'Sam’s voice · carried relay to relay',
     choices: [
       { id: 'warn', label: 'Warn the crew', tone: 'help', hint: 'The scarred hulls go in the file.', win: { text: 'Eben has the warning · the scarred hulls go in the file', flag: ['tam_brother', 'eben_warned', 'clue_scarred'], standing: { frontier: 1 } } },
@@ -766,7 +766,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_draper', kind: 'plea', caller: 'office',
     from: 'Director Draper · asset recovery, the Offices', title: 'Same man, other badge',
-    text: '“Drop the Kellern act, Juno. I ran Accounts. Every job you took for me is on a charge sheet now. I own the record, and what’s left of the debt.”',
+    text: '“Drop the Kellern act, Juno. I ran Accounts. Every job you took for me is on a charge sheet now. I recover assets. The hull is scrap. The core is the asset.”',
     lines: [
       { if: { flag: 'job_heavy_tanker_won' }, text: 'Charge sheet · assault on a Custody transport.' },
       { if: { flag: 'job_wanted_won' }, text: 'Charge sheet · an unlicensed capture.' },

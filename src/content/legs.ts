@@ -11,10 +11,13 @@ import { offer } from './calloway';
 
 const story = (c: Omit<CardDef, 'trigger' | 'repeat'>): CardDef => ({ trigger: 'story', ...c });
 
+/** ADA-1 gives each note back as the relay wakes (sentient-ship plan): the notice that comes before it names the relay. */
+export const memoryHerald = (kept: string): { headline: string; reason: string } => ({ headline: 'Memory restored', reason: kept.split(',')[0]! });
+
 /** A Warden's note: the archive's frame, its lines, and the close that puts it on the Wall. Every shown line is written out, for the German. */
 function note(n: number, w: { gist: string; from: string; title: string; kept: string; close: string }, lines: string[]): CardDef {
   return story({
-    id: `warden_note_${n}`, gist: w.gist, kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
+    id: `warden_note_${n}`, gist: w.gist, herald: memoryHerald(w.kept), kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
     from: w.from, title: w.title,
     letter: { head: [['To', 'Whoever the relays let through'], ['From', 'A. Aster'], ['Kept in', w.kept]], sign: '— A.' },
     text: lines.join('\n'),
@@ -24,7 +27,7 @@ function note(n: number, w: { gist: string; from: string; title: string; kept: s
 }
 
 export const NOTE_CARDS: CardDef[] = [
-  note(2, { gist: 'Ada’s second note · the lost ships', from: 'Ship database · Warden’s note 2 of 8', title: 'Warden’s note 2 of 8', kept: 'The Rift relay, Warden channel', close: 'Warden’s note 2 of 8 · on the Wall' }, [
+  note(2, { gist: 'Ada’s second note · the lost ships', from: 'Recovered by ADA-1 · Ada’s memory 2 of 8', title: 'Ada’s memory 2 of 8', kept: 'The Rift relay, Warden channel', close: 'Ada’s memory 2 of 8 · on the Wall' }, [
     'Twenty-three ships were out past the Narrows that night. Control turned every one of them away and never said why.',
     'I logged them as they went. Hull, master, souls aboard. I never read the names out. I should have.',
     'The Drift did. They kept better books than me, and they kept them out loud.',
@@ -32,26 +35,26 @@ export const NOTE_CARDS: CardDef[] = [
   ]),
   story({
     // the Scrapgate: not a note but Ada's own voice on the relay, with its transcript
-    id: 'warden_note_3', gist: 'Ada’s voice on the relay · the keys', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Recording', quote: true, notitle: true,
-    from: 'Recorded · Warden’s note 3 of 8', title: 'A voice on the relay',
+    id: 'warden_note_3', gist: 'Ada’s voice on the relay · the keys', herald: memoryHerald('The Scrapgate relay'), kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Recording', quote: true, notitle: true,
+    from: 'Recovered by ADA-1 · Ada’s memory 3 of 8', title: 'A voice on the relay',
     letter: { head: [['From', 'Ada Aster, recorded'], ['Kept in', 'The Scrapgate relay, Warden channel']], sign: '— Ada' },
     text: [
       '“This is Ada. I was the attending officer that night. The order said the Wardens surrender their keys to me, so they did.”',
       '“Ilse gave me hers and said, ‘Don’t lose it.’ I didn’t. I didn’t hand any of them in, either.”',
-      '“Eight keys, one cutter, and nobody counting. If you’re hearing this, somebody finally counted.”',
+      '“Eight keys. Copies in my tender, the originals in my cutter. Nobody counting. If you’re hearing this, somebody finally counted.”',
       'Ask the Drift where the closures run.',
     ].join('\n'),
     cargo: 'The Wayward · a voice kept in the relay',
-    choices: [{ id: 'close', label: 'Close the recording', tone: 'help', hint: '', win: { text: 'Warden’s note 3 of 8 · on the Wall', flag: 'warden_note_3' } }],
+    choices: [{ id: 'close', label: 'Close the recording', tone: 'help', hint: '', win: { text: 'Ada’s memory 3 of 8 · on the Wall', flag: 'warden_note_3' } }],
   }),
-  note(4, { gist: 'Ada’s fourth note · the ring', from: 'Ship database · Warden’s note 4 of 8', title: 'Warden’s note 4 of 8', kept: 'The Slow Door relay, Warden channel', close: 'Warden’s note 4 of 8 · on the Wall' }, [
+  note(4, { gist: 'Ada’s fourth note · the ring', from: 'Recovered by ADA-1 · Ada’s memory 4 of 8', title: 'Ada’s memory 4 of 8', kept: 'The Slow Door relay, Warden channel', close: 'Ada’s memory 4 of 8 · on the Wall' }, [
     'Put every closed relay on one chart and you get a circle. I drew it on the back of a ration card, in a Drift galley.',
     'It isn’t a border. It’s a fence, and we’re on the wrong side of it.',
     'My readings said the Thren press harder the more we dig. So they kept the Scatter digging, outside the fence, between them and the core.',
     'They were never keeping us in. They were keeping something out, and we were the cheapest wall going.',
     'Find who built the fence. The yards remember.',
   ]),
-  note(5, { gist: 'Ada’s fifth note · the list, and a confession', from: 'Ship database · Warden’s note 5 of 8', title: 'Warden’s note 5 of 8', kept: 'The Breaker relay, Warden channel', close: 'Warden’s note 5 of 8 · on the Wall' }, [
+  note(5, { gist: 'Ada’s fifth note · the list, and a confession', from: 'Recovered by ADA-1 · Ada’s memory 5 of 8', title: 'Ada’s memory 5 of 8', kept: 'The Breaker relay, Warden channel', close: 'Ada’s memory 5 of 8 · on the Wall' }, [
     'Thirty-one breakers, built at Yard Nine. Signed for by Kellern, the Guild and the Offices of Peace.',
     'The Survey Office sent the engineer, and it wasn’t a person. You’ll meet it.',
     'The rescue ships were built too. Then broken up, right here, for breaker plate.',
@@ -59,7 +62,7 @@ export const NOTE_CARDS: CardDef[] = [
     'I carried them into that room myself.',
     'Find the room. The free ports kept the names.',
   ]),
-  note(6, { gist: 'Ada’s sixth note · the room', from: 'Ship database · Warden’s note 6 of 8', title: 'Warden’s note 6 of 8', kept: 'The Tollgate relay, Warden channel', close: 'Warden’s note 6 of 8 · on the Wall' }, [
+  note(6, { gist: 'Ada’s sixth note · the room', from: 'Recovered by ADA-1 · Ada’s memory 6 of 8', title: 'Ada’s memory 6 of 8', kept: 'The Tollgate relay, Warden channel', close: 'Ada’s memory 6 of 8 · on the Wall' }, [
     'Forty people in the room. Two Wardens, Halvard Brook and me. I gave the readings.',
     'Lucan Calloway asked for ten years: dig less, warn everyone, bring the outer worlds in while it settled. The board said a warning would crash Krail.',
     'He signed, on a promise of ships. Three in that room made sure the ships never sailed: Kellern’s chair, the Offices’ director, the Survey’s chief.',
@@ -67,7 +70,7 @@ export const NOTE_CARDS: CardDef[] = [
     'I watched him sign and said nothing. I’ve been saying it to relays ever since.',
     'Go where the lanes began. Ask what’s waiting there.',
   ]),
-  note(7, { gist: 'Ada’s seventh note · what the lanes are', from: 'Ship database · Warden’s note 7 of 8', title: 'Warden’s note 7 of 8', kept: 'The Seam relay, Warden channel', close: 'Warden’s note 7 of 8 · on the Wall' }, [
+  note(7, { gist: 'Ada’s seventh note · what the lanes are', from: 'Recovered by ADA-1 · Ada’s memory 7 of 8', title: 'Ada’s memory 7 of 8', kept: 'The Seam relay, Warden channel', close: 'Ada’s memory 7 of 8 · on the Wall' }, [
     'The lanes aren’t ours. We found them and hung lamps on them. Cyrite is what the Thren leave behind, like coral on a reef.',
     'We burn it to cross their home, and they come for it, the way you’d come for your own bones.',
     'Dig less and they settle. My readings showed that too. Nobody in the room asked about that page.',
