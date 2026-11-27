@@ -51,8 +51,8 @@ export type Kind = 'voice' | 'signal';
 type Held = Extract<GameEvent, { type: 'ping' }> | Extract<GameEvent, { type: 'storyNotice' }>;
 interface Line { ev: Held; kind: Kind; at: number; keep: boolean; reply: boolean; live: boolean; hot: boolean; calm: boolean; scene: boolean }
 
-/** Lines said because something just happened (sim/traffic, stage, mission, den, gantry, claim rules), not because the story reached them. */
-const REACTIVE = /^(relay_|patrol|traffic_|say_|warn_|mis_|gantry_|den_|claim_|seed_studied)/;
+/** Lines said because something just happened (sim/traffic, stage, mission, den, gantry, claim rules, a port hailing her approach), not because the story reached them. */
+const REACTIVE = /^(relay_|patrol|traffic_|say_|warn_|mis_|gantry_|den_|claim_|seed_studied|depot_hail)/;
 /** The opening lesson's lines (sim/tutor.ts, `train_`): each is said when the lesson reaches its step or the raiders strike, so it goes ahead of the gap; a story line is never dropped. A later beat of the same voice (`_1`) waits its turn. */
 const LESSON = /^train_.*[^\d]$/;
 /** A turn in a conversation (sim/script.ts `scene`): it follows the line before it once that is read, without the gap. */
@@ -76,6 +76,12 @@ export class Floor {
   private momentOpen = false;
   /** The arrival's hush (FLOOR.arrival): set by the world each step while it lasts. No line but the scan, no Moment. */
   hush = false;
+  /**
+   * She waits at the Jump Gate for the story to finish (sim/world.ts listening): set by the world each step. The story lines still queued
+   * go out back to back, without the gap or a card's quiet, so the jump waits seconds, not minutes, and nothing is said after it (owner,
+   * 27 November 2026: lines came after the jump, or never).
+   */
+  rush = false;
   /** A fight is on: set by the world each step. A story line made before it waits it out; one made in it (an urgent script row) is part of it. */
   fight = false;
   /** Lines already let out, so a later take does not hold them again. */
@@ -109,7 +115,8 @@ export class Floor {
     const cue = this.hush ? undefined : this.q.find((l) => l.ev.type === 'ping' && CUE.test(l.ev.id));
     const pick = cue ?? hot ?? (this.hush ? this.q.find((l) => l.ev.type === 'storyNotice' && l.ev.headline === SCAN_LINE) : this.q.find((l) => !waits(l)));
     if (!pick) return null;
-    if (pick.kind === 'voice' && !pick.reply && pick !== cue && (now < this.quietUntil || (!pick.hot && !pick.scene && now - this.lastVoice < FLOOR.gap))) return null;
+    const rushed = this.rush && pick.keep;
+    if (pick.kind === 'voice' && !pick.reply && pick !== cue && !rushed && (now < this.quietUntil || (!pick.hot && !pick.scene && now - this.lastVoice < FLOOR.gap))) return null;
     this.q.splice(this.q.indexOf(pick), 1);
     if (pick.kind === 'voice') { this.lastVoice = now; this.floorUntil = now + lineSecs((pick.ev as Extract<Held, { type: 'ping' }>).text) + FLOOR.hold; }
     else this.floorUntil = now + FLOOR.signal;

@@ -157,11 +157,12 @@ describe('a shut Jump Gate says why, from afar', () => {
     expect(pings.some((p) => p.includes('core_first'))).toBe(true);
     expect(pings.some((p) => p.includes('sam_relay'))).toBe(true);
     expect(pings.findIndex((p) => p.includes('core_first'))).toBeLessThan(pings.findIndex((p) => p.includes('sam_relay')));
-    // the lane is live: hulls come through the gate, and one of them says so
+    // the lane is live: hulls come through the gate; here ADA-1 and Sam have the radio, so no hauler says so (owner 2026-11-27: Sam's
+    // "Go" came half a minute after the gate opened behind a third voice)
     expect(w.traffic!.arrived).toBeGreaterThanOrEqual(2);
     fly(w, 12);
     for (const e of w.events) if (e.type === 'ping') pings.push(e.id);
-    expect(pings.some((p) => p.includes('lane_open'))).toBe(true);
+    expect(pings.some((p) => p.includes('lane_open'))).toBe(false);
     expect(w.gateWhy).toBe('');
   });
 });
