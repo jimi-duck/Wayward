@@ -824,3 +824,12 @@ M1 in Chrome, which steps down and back twice, about six. Every later visit star
 screen. Not with `?quality`, the battery saver or `?dev`.
 
 **Not measured:** how long the screen stays up on the M1; modelled in `tests/quality.test.ts`.
+
+## Pass 29: a phone never draws under one pixel per CSS pixel (2026-11-27)
+
+An iPhone screenshot from the owner (Arcade, landscape) looked very blocky. A phone's drawing scales (`SCALES`, 1 to
+0.67) applied on every tier: on Phone (1.5 pixels per CSS pixel) the last step is 1, but on Low (1) it was 0.67, two
+thirds of a pixel per CSS pixel, stretched three times over on a 3x screen. A phone's scales now stop at one pixel per
+CSS pixel, so Low on a phone has no smaller size and holds an even 30 instead. Computers are unchanged.
+
+**Not measured:** the iPhone's rate on Low at full size.
