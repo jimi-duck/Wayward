@@ -86,7 +86,8 @@ const SWAY_RATE = 0.16;
 const DEATH_HOLD = 1.45;
 
 /** What the phone readout (`?perf`, ui/perf.ts) can take out of the frame, one at a time, to see what it costs. */
-export type PerfLayer = 'post' | 'shadow' | 'sky' | 'far' | 'rocks' | 'debris' | 'hud' | 'half';
+/** `scene` off draws nothing but a clear: what the browser costs a frame with a canvas and no picture. */
+export type PerfLayer = 'post' | 'shadow' | 'sky' | 'far' | 'rocks' | 'debris' | 'hud' | 'half' | 'scene';
 
 export class Sector {
   readonly scene = new Scene();
@@ -852,6 +853,7 @@ export class Sector {
 
   /** The frame with the readout's layers taken out: hidden for this draw only, the shadow map left as it was, or no post chain. */
   private drawProbed(dt: number): void {
+    if (this.off.has('scene')) { this.renderer.setRenderTarget(null); this.renderer.clear(); return; }
     const hidden: Object3D[] = [];
     for (const l of this.off) for (const o of this.layerOf(l)) if (o.visible) { o.visible = false; hidden.push(o); }
     const r = this.renderer, auto = r.shadowMap.autoUpdate, tone = r.toneMapping;
