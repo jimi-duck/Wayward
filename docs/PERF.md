@@ -715,9 +715,10 @@ Two runs of the `?perf` Test in Chrome on the owner's MacBook Air (Arcade and St
 No one layer holds the time. Half size nearly doubles the rate; with no picture the page keeps 60. Fitting the first run
 to "fixed + pixels" gives about 24 ms a frame that does not shrink with size and about 28 ms of pixels at full size:
 both several times what an M1 needs (Safari draws High at this size at 60 fps). A GPU that is slow at everything
-alike, in Chrome and Brave but not Safari, is what an Intel build of Chrome running translated (Rosetta) on an Apple
-chip would look like, a common leftover of moving apps from an older Mac. Not confirmed: the readout now prints the
-browser's own architecture (`browser arm-64` or `browser x86-64`, from client hints) to tell.
+alike, in Chrome and Brave but not Safari. Not a translated (Intel) browser: the owner's Brave is the arm64 build
+(Chromium 145 on macOS 27.0.1). A new macOS with Chromium's Metal path (ANGLE) is the likeliest place left; the
+readout now also prints the browser's own architecture (`browser arm-64`, from client hints) so the next readout says.
+Suggested to the owner: `chrome://flags/#use-angle` set to OpenGL, then the Test again.
 
 **Low may draw a little smaller on a computer.** Low was held at one pixel per CSS pixel, so a computer that is still
 slow there had nothing left. Low now steps down to two thirds of that (`LOW_FLOOR`, WIDE 0.85, 0.75, 0.67) before it
