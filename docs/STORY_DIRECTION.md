@@ -143,8 +143,9 @@ Old Mirren says the word.
 - **The Severance was abandonment as policy**, with an inner circle that made
   sure it could not be undone (§3).
 - **The keys work in any hand.** There is no bloodline lock and Juno is not a
-  chosen one. Ada's routine only nudged her onto the hull. Note 8 admits it,
-  and Juno resents it.
+  chosen one. ADA-1, Ada's old ship's mind, put the hull on Juno's lease list
+  because Ada asked her to look after the family; she confesses it at the Seam,
+  note 8 admits Ada asked, and Juno resents it (see "ADA-1" below).
 - **Unite is a confederation with no governor:** councils, crews and fleets
   with shared defence. It is slow and quarrelsome, and nobody can promise it
   holds.
@@ -224,4 +225,28 @@ way. Rows in `content/script/arc.ts`, cards in `content/arc.ts`.
 Telling her the truth at the Narrows (her name) or the Belt (the
 Severance) counts towards trust (`TOLD`), and so towards showing her the
 archive at the end.
+
+## ADA-1, the ship that remembers (owner, 27 November 2026)
+
+Plan: https://claude.ai/artifact/HciUREW2H4EuAeg434Wp86 ("WAYWARD: The ship that remembers"); built in #655 to #660.
+
+- **Who she is.** ADA-1 is the Wayward's Warden core: Ada's ship's mind and her friend for decades. She is not Ada and
+  not a last-order program. At the Severance Ada copied the eight keys into her core; when the tender was seized, ADA-1
+  pushed her records into the relays. Kellern's firmware then shut her in: she could watch (logs, sensors, signals) but
+  not send. Ned's reboot at Ringhold gives her the ship back. Ada died about 45 years after the Severance, at Kessler's
+  wreck. ADA-1 put this hull on Juno's lease list because Ada asked her to look after the family.
+- **What she can't do.** Fly, steer, aim or fight (Juno flies alone), choose for the player, translate the Thren. The keys
+  work in any hand; she needs someone to fly her to the relays.
+- **Three layers at each gate relay.** Ada's note ("Recovered by ADA-1 · Ada's memory n of 8", herald "Memory restored"),
+  a Wall record set silently (`rec_*`), and one memory line of ADA-1's own. Small relays give a small memory, often about
+  nothing. About 40 lines in all, two a stop at most, flavour lines dropped after 150 s.
+- **How she changes.** Alone (the Reach), Remembering (Narrows to the Belt), Questioning (Drift to Free Ports), Her own
+  (Hollows on). Her habit turns from "Ada used to say…" to "I used to think…" to "I don't think Ada would agree".
+- **The Seam.** Her card, "What am I to you?": Stay with me (`implant_kept`), Choose for yourself (`implant_rewritten`, no
+  dice), Rest now (`implant_burned`: she says nothing more; the HUD reads "Warden key · by hand"). The flags keep their old
+  names so saves and endings still read them.
+- **The end.** "Let her hear Ada" on Calloway's last card while she is aboard; note 8 rewritten; one `core` line in every
+  road epilogue (18 lines); under Seal on the choice screen: "She did this once, and spent her life sorry."
+- **Where.** Every line of hers is in `src/content/script/core.ts`, in road order (and her cards in `content/story.ts`);
+  her voice rules are in `tests/core.test.ts`. Never call Ada "Gran": "grandmother" (German "Großmutter").
 

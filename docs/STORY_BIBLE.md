@@ -110,10 +110,13 @@ annotated.
   profit and safety. Her arc is not "become a flawless revolutionary". It is:
   decide what freedom costs, whom she owes and what to do with the truth.
 - **Ada Aster**, her grandmother, a Lane Warden on the night of the Severance,
-  declared "lost in service". She built (or preserved) a dead-man routine in the
-  hauler. The keys work in any hand (owner, 14 November 2026): there is no
-  bloodline lock, and Juno is not a chosen one. The routine nudged her onto the
-  hull; note 8 admits it, and Juno resents it. Whether she
+  declared "lost in service"; she lived about 45 more years and died at Kessler's
+  wreck. Her tender's mind, **ADA-1**, kept copies of the eight keys and, shut in
+  under Kellern's lock, put the hull on Juno's lease list because Ada asked her to
+  look after the family (owner, 27 November 2026; docs/STORY_DIRECTION.md "ADA-1").
+  The keys work in any hand (owner, 14 November 2026): there is no bloodline lock,
+  and Juno is not a chosen one. ADA-1 confesses it at the Seam; note 8 admits Ada
+  asked, and Juno resents it. Whether she
   meant to expose the Continuance, protect someone, keep the lane keys, or all
   three is revealed in steps. **Cerro** gives the wake and the reserves figure;
   **the Salvage Belt** gives Ada's own voice; **the Hollows** gives her reason
@@ -179,8 +182,8 @@ believes or can do.
 | Flag | Clue | Certainty | Where | Effect |
 |---|---|---|---|---|
 | `archive_woke` | The archive woke on Juno's hand | fact | `story_wake`, the last card of the opening chain beyond the gate | Sets the Score drop; Wall entry. |
-| `clue_archive_log` | The Warden Line log: routine ADA-1 | fact | Cerro wake card, "open the log" (optional) | Deep layer; Ada's name early. |
-| `clue_reserves` | Krail reserves 94% on the shutdown date | fact | `story_wake` (both answers) | The Act I reveal. |
+| `clue_archive_log` | The Warden Line log: ADA-1 woke when Ned freed the ship | fact | Cerro wake card, "open the log" (optional) | Deep layer; Ada's name early. |
+| `clue_reserves` | Krail reserves 94% on the shutdown date | fact | ADA-1's first words as the first relay wakes (`sim/relaywake.ts`) | The Act I reveal. |
 | `clue_order_sig` | The closing order, signed L. C. | fact | Reach, Ilse's order as a document (`story_order`); at Vesta from her recording (`ilse_recording`) if she was cut off | The first L. C. Played on the Warden's Road only (`?road`). |
 | `ada_named` | Ada Aster, the archive's writer | fact | Reach, `story_handwriting`; at Vesta from her recording | The leg goal reads "the relay Ada watched". Road only. |
 | `clue_sig_reach` | "L. C." on the authorisation line | inference | Reach, the ledger | One of three for the signature. On the road it is the second L. C., after the order. |
@@ -319,11 +322,11 @@ extended, not replaced. Vanish is always open.
 | Seal | Keep the lanes closed. | Guns or Rig 3, keys, Echo trusted. | The lie survives; the Scatter stays cut off. |
 | Vanish | Take the Wayward beyond the routes. | Always. | Few learn what happened. |
 
-**Implant choice (planned):** keep (route home, legible to the regime; makes
-Trade cleaner), burn (freedom, scars; enriches Vanish and Unite), let the Voice
-rewrite it (something new; a Broadcast or Seal variant). Chosen before the file
-decision, recorded as a flag `implant_keep|burn|rewrite`, shown as short
-trade-off lines, changes epilogues only.
+**ADA-1's choice at the Seam (built, 27 November 2026):** her card "What am I to
+you?": Stay with me (`implant_kept`), Choose for yourself (`implant_rewritten`, no
+dice), Rest now (`implant_burned`). Chosen before the file decision; it changes her
+lines after the Seam, Calloway's last card, note 8 and one `core` line in each road
+epilogue.
 
 **Epilogues:** a stable base per ending plus conditional lines (`if`) for
 Calloway, Sam, Wren, Kesh, Echo or Sable, and surviving clients.

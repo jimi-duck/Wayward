@@ -166,9 +166,18 @@ Wane Rest, the last stop, plays the end as a scene (`content/script/threshold.ts
 1. Thane's last broadcast.
 2. "They gather": the Thren close round the gate.
 3. Who came: one line each from the allies the player built (Pike with `thread_line_2`, Hester with `thread_crews_3`, the Long Walk with `job_long_walk_won` or `drift_walked`, the analyst with `thread_survey_2`), the Hollow Saints with `saints_helped`, Val as a rival with `broker`, or "Nobody came".
-4. A main notice, "Calloway holds the gate", that holds the gate until the scene has played. Her last card follows at the gate, as before.
-5. On the ending screen, Ada's note 8 admits the keys would have worked in any hand, and its button is Juno's answer ("You could have asked me", or "My name is Juno. I chose." if the implant was burned).
-6. The choice. Every road epilogue has a `charter` slot: what that future does to the Charter.
+4. A main notice, "Calloway holds the gate", that holds the gate until the scene has played. Her last card follows at the gate, as before; while ADA-1 is aboard its archive answer is "Let her hear Ada".
+5. The last relay; then ADA-1's last line if she stayed or chose for herself at the Seam.
+6. On the ending screen, Ada's note 8 ("Ada's memory 8 of 8") says she asked her tender to look after the family and the keys would have worked in any hand; its button is Juno's answer ("You could have asked me", or "My name is Juno. I chose." if ADA-1 was let rest).
+7. The choice. Every road epilogue has a `charter` slot (what that future does to the Charter) and a `core` slot (ADA-1, by the Seam's answer), the line before the close.
+
+## ADA-1 on the road
+
+The ship's Warden core speaks from the first relay on (docs/STORY_DIRECTION.md "ADA-1"). All her lines are rows in
+`content/script/core.ts`, in road order: one or two a stop, a memory after a relay wakes (`memory()`, stale after
+150 s), and a line after each of Ada's notes. Each gate note's row also sets its Wall record (`rec_closing`,
+`rec_turnaway`, `rec_keys`, `rec_ring`, `rec_readings`, `rec_minutes`, `rec_sealed`), and any card with a `herald`
+says "Memory restored · <relay>" as a script row opens it. After the Seam her rows check `implant_burned` (`RESTING`).
 
 ## The divided resistance
 

@@ -52,5 +52,14 @@ label 8, win 16, lose 13, read 14), wide enough for a line to state its cost
 and risk.
 
 On top of those, one voice at a time (`tests/caps.test.ts`): a radio line is 20
-words at most, a card's text 60 (a written document, the archive or Ada's notes,
+words at most, a card's text 60 (a written document, Ada's notes,
 110), a notice's headline 3 words and its reason 6. The middle dot does not count.
+
+## ADA-1's voice
+
+Plain and dry, kind underneath. "I", sentence case, contractions; never capitals (those are the Voice's). "Juno",
+never "pilot". 20 words a line, two a stop at most, never in a fight and never before the stop's own card; she never
+names a button. Her habit changes over the road: "Ada used to say…", then "I used to think…", then "I don't think Ada
+would agree with me." German: she says du; "Warden core" is "Warden-Kern". Ada is "grandmother" ("Großmutter"), never
+"Gran". `tests/core.test.ts` holds the rules.
+
