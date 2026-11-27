@@ -753,3 +753,16 @@ that grain is under a pixel anyway; in the bench frames about 2% of pixels chang
 **Not measured:** Chrome on the M1. The bench's scene has little rock on screen (the software timing moved 2%); the
 owner's had a lot. From the Test line, rocks were about 30 ms of a 52 ms frame, so cutting their work by about 2.5×
 should bring Low from 19 fps to somewhere in the thirties.
+
+## Pass 25: start smooth, and a per-draw GPU profile (2026-11-27)
+
+After pass 24 the owner's Chrome held an even 30 in a fight at Low, half size; the Test still put the stars and the rocks
+at about a third of the frame each, and the first twenty seconds of a visit were worse. Those seconds were the governor
+measuring again before it settled on 30: the kept record (`saveTier`) now holds `thirty` too, and a device that settled
+there starts there.
+
+**Profile** (`?perf`, `ui/profile.ts`): for 90 frames every draw is wrapped in a GPU timer query and the time is summed
+by what was drawn (a shader's cache key, else the object and material kind, or a shader's first own uniform). One line
+lists the eight dearest, ms a frame and draws a frame. Chrome and Firefox have the timer; Safari does not, and the line
+says so. Queries split the GPU's work, so the sums run high; the order is what counts. Checked in the cloud with a
+stubbed timer only (SwiftShader has none).

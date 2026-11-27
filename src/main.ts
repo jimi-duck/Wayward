@@ -87,7 +87,9 @@ function boot(review: typeof import('./review') | null): void {
   const quality = new QualityGovernor(pinned >= 0 ? pinned : firstTier(), pinned >= 0, settled?.ceil, coarse, () => window.devicePixelRatio || 1);
   // and at the drawing size it settled on, so a visit does not open with seconds of slow frames while it is found again
   if (pinned < 0 && settled?.dpr) quality.startAt(settled.dpr);
-  const keepTier = () => { if (pinned < 0 && !saver) saveTier(TIER_KEY, quality.tier.name, quality.ceiling, quality.drawn); };
+  // a device that settled on an even 30 at the bottom starts there, not with twenty seconds of ragged frames first
+  if (pinned < 0 && settled?.thirty && quality.tier.name === 'low') quality.thirty = true;
+  const keepTier = () => { if (pinned < 0 && !saver) saveTier(TIER_KEY, quality.tier.name, quality.ceiling, quality.drawn, quality.thirty); };
   // Battery saver (a switch on the title's Settings and the pause card): the low tier and 30 frames a second. Kept per device.
   const SAVER_KEY = 'wayward.saver';
   let saver = false;
@@ -148,7 +150,7 @@ function boot(review: typeof import('./review') | null): void {
   fit();
   // ?perf: the phone readout (frame, CPU and GPU time) with switches to take one layer out at a time; docs/PERF.md
   const perf = params.has('perf') ? new PerfReadout(el('debug'), {
-    renderer, quality, off: sector.off, fit,
+    renderer, quality, off: sector.off, fit, scene: () => sector.scene,
     pin: (i) => { quality.pin(i); shownTier = quality.tier; matchTier(renderer, quality.tier); sector.setTier(quality.tier); fit(); void sector.warm(); },
   }) : null;
   // the console's text sizes change once the web fonts arrive

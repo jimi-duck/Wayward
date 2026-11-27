@@ -283,6 +283,9 @@ describe('the size a device settled on is kept between visits', () => {
     // an older record without a size still reads
     store.set('t', JSON.stringify({ tier: 'medium', ceil: MEDIUM, at: Date.now() }));
     expect(keptTier('t')).toEqual({ tier: MEDIUM, ceil: MEDIUM });
+    // a device that settled on an even 30 says so
+    saveTier('t', 'low', 0, 0.5, true);
+    expect(keptTier('t')).toEqual({ tier: 0, ceil: 0, dpr: 0.5, thirty: true });
     vi.unstubAllGlobals();
   });
 
