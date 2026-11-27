@@ -810,3 +810,17 @@ steps down as before. A phone is unchanged.
 30 now starts at any tier, not only Low.
 
 **Not measured:** a whole visit on the M1 with this governor. Tested with modelled frame times (`tests/quality.test.ts`).
+
+## Pass 28: a start-up screen while the quality is found (2026-11-27)
+
+With passes 26 and 27 the owner's Chrome played well, but the first seconds of a visit still showed the governor at work:
+a smaller size, a lower tier, then back. The owner asked for a loading screen in the game's theme instead.
+
+**Start-up screen** (`main.ts` calibrate, `#calib`): on a device's first run, when nothing is kept (`keptTier`), an
+"Initialising · Tuning ship systems to this device" screen in the reboot loader's style holds the world while the
+governor judges on a shorter window (`quick`: 1 s verdicts, 0.3 s after a move). It lifts once a verdict comes with no
+step waiting (`quiet`), at the least after 1.5 s and at most 9. A fast device sees it for about a second and a half; the
+M1 in Chrome, which steps down and back twice, about six. Every later visit starts where the first settled, with no
+screen. Not with `?quality`, the battery saver or `?dev`.
+
+**Not measured:** how long the screen stays up on the M1; modelled in `tests/quality.test.ts`.

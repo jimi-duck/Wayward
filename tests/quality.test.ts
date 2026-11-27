@@ -222,6 +222,23 @@ describe('QualityGovernor on a high-density laptop screen', () => {
     vi.unstubAllGlobals();
   });
 
+  it('behind the start-up screen (quick) it settles in a few seconds, and says when it is quiet', () => {
+    const q = new QualityGovernor(HIGH, false, undefined, false, retina);
+    q.quick = true;
+    let t = 0;
+    while (t < 9 && !q.quiet) { q.sample(1 / 20); t += 1 / 20; }
+    expect(q.quiet).toBe(true);
+    expect(t).toBeLessThan(7);
+    expect(q.tier.name).toBe('high');
+    expect(q.thirty).toBe(true);
+    // a fast device is quiet at once
+    const f = new QualityGovernor(HIGH, false, undefined, false, retina);
+    f.quick = true;
+    t = 0;
+    while (t < 9 && !f.quiet) { f.sample(1 / 60); t += 1 / 60; }
+    expect(t).toBeLessThan(1.5);
+  });
+
   it('takes a lower tier back when it bought too little, and holds an even 30 on the higher one', () => {
     // Chrome on an M1 (pass 27): about 20 fps on every tier and size, pixels or not
     const q = new QualityGovernor(HIGH, false, undefined, false, retina);
