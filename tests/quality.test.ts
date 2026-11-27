@@ -40,6 +40,9 @@ describe('QualityGovernor', () => {
     expect(q.tier.name).toBe('phone');
     secs(q, 1 / 40, 8);
     expect(q.tier.name).toBe('low');
+    // on Low it may still draw a little smaller (no lower than two thirds), then it stops
+    secs(q, 1 / 40, 30);
+    expect(q.scale).toBeGreaterThanOrEqual(0.66);
     expect(secs(q, 1 / 40, 10)).toBe(0);
   });
 
@@ -184,6 +187,16 @@ describe('QualityGovernor on a high-density laptop screen', () => {
     // Medium draws at most 1.5; it keeps about the one pixel per CSS pixel High had reached, not 1.5
     expect(1.5 * q.scale).toBeLessThan(1.1);
     expect(1.5 * q.scale).toBeGreaterThanOrEqual(0.99);
+  });
+
+  it('on Low, the last stop, a computer may draw a little under one pixel per CSS pixel, never below two thirds', () => {
+    const q = new QualityGovernor(0, false, undefined, false, retina);
+    expect(q.scale).toBe(1);
+    // Chrome on an M1: 19 fps on Low at full size
+    for (let i = 0; i < 8; i++) secs(q, 1 / 19, 4);
+    expect(q.tier.name).toBe('low');
+    expect(q.scale).toBe(0.67);
+    expect(q.drawn).toBeGreaterThanOrEqual(0.66);
   });
 
   it('a screen of one pixel per CSS pixel has no smaller size to give: it drops a tier as before', () => {

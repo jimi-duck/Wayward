@@ -99,6 +99,8 @@ export const SCALES = [1, 0.85, 0.75, 0.67] as const;
  * steps: it drops a tier as before.
  */
 export const WIDE = [1, 0.85, 0.75, 0.67, 0.5] as const;
+/** The least a computer draws on Low, in pixels per CSS pixel. */
+const LOW_FLOOR = 0.66;
 
 export class QualityGovernor {
   private index: number;
@@ -271,7 +273,10 @@ export class QualityGovernor {
   private scales(): readonly number[] {
     if (this.breathe) return SCALES;
     const base = Math.min(this.screen() || 1, this.tier.dprCap);
-    const n = WIDE.filter((s) => base * s >= 0.99).length;
+    // a computer keeps at least one pixel per CSS pixel, except on Low, the last stop, where a slightly soft picture
+    // beats a juddering one (Chrome on an M1 drew Low at 19 fps, half size at 32: docs/PERF.md pass 22)
+    const floor = this.index === 0 ? LOW_FLOOR : 0.99;
+    const n = WIDE.filter((s) => base * s >= floor).length;
     return WIDE.slice(0, Math.max(1, n));
   }
 
