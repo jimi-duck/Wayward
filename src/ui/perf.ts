@@ -20,8 +20,17 @@ const TEST = 'test';
 /** The self-test: each state held this long, the first part of it not counted (a resize or a layer change settles). */
 const TEST_HOLD = 3;
 const TEST_SKIP = 0.8;
-/** What the self-test takes out, one at a time, after a look at the whole frame. */
-const TEST_STEPS: ReadonlyArray<PerfLayer | null> = [null, 'post', 'shadow', 'sky', 'far', 'rocks', 'debris', 'hud', 'half'];
+/**
+ * What the self-test takes out: nothing, then each layer on its own, then every layer at once ("bare"), then no picture
+ * at all ("empty": a clear and the page). If even "empty" is slow, the time is the browser's, not the game's.
+ */
+const SINGLE: readonly PerfLayer[] = ['post', 'shadow', 'sky', 'far', 'rocks', 'debris', 'hud', 'half'];
+const TEST_STEPS: ReadonlyArray<{ label: string; off: readonly PerfLayer[] }> = [
+  { label: 'all', off: [] },
+  ...SINGLE.map((l) => ({ label: `-${LAYERS.find(([id]) => id === l)![1]}`, off: [l] })),
+  { label: 'bare', off: SINGLE },
+  { label: 'empty', off: ['scene', 'hud'] },
+];
 
 interface TimerExt { TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number }
 
@@ -61,7 +70,7 @@ export class PerfReadout {
     this.ext = this.gl.getExtension('EXT_disjoint_timer_query_webgl2') as TimerExt | null;
     // which GPU the browser drew with (a browser that fell back to software says so here)
     const info = this.gl.getExtension('WEBGL_debug_renderer_info') as { UNMASKED_RENDERER_WEBGL: number } | null;
-    this.gpuName = String((info ? this.gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : this.gl.getParameter(this.gl.RENDERER)) ?? '?').replace(/^ANGLE \((.*)\)$/, '$1').slice(0, 80);
+    this.gpuName = String((info ? this.gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : this.gl.getParameter(this.gl.RENDERER)) ?? '?').replace(/^ANGLE \((.*)\)$/, '$1').slice(0, 80) + ` · msaa ${this.gl.getContextAttributes()?.antialias ? 'on' : 'off'}`;
     el.hidden = false;
     el.classList.add('pf');
     el.replaceChildren();
@@ -189,12 +198,10 @@ export class PerfReadout {
     if (age > TEST_SKIP && dt > 0 && dt < 1) t.frames.push(dt);
     if (age < TEST_HOLD) return;
     const mean = t.frames.reduce((a, b) => a + b, 0) / (t.frames.length || 1);
-    const what = TEST_STEPS[t.step];
-    const label = what ? `-${LAYERS.find(([l]) => l === what)![1]}` : 'all';
-    t.out.push(`${label} ${t.frames.length ? (1 / mean).toFixed(0) : '?'}`);
-    if (what) this.toggle(what);
+    t.out.push(`${TEST_STEPS[t.step]!.label} ${t.frames.length ? (1 / mean).toFixed(0) : '?'}`);
     t.step++;
     const next = TEST_STEPS[t.step];
+    this.only(next?.off ?? []);
     if (next === undefined) {
       this.tested = `test (fps): ${t.out.join(' · ')}`;
       this.test = null;
@@ -202,9 +209,14 @@ export class PerfReadout {
       this.paint();
       return;
     }
-    if (next) this.toggle(next);
     t.at = performance.now();
     t.frames = [];
+  }
+
+  /** Exactly these layers out, the rest back in. */
+  private only(want: readonly PerfLayer[]): void {
+    for (const l of [...this.hooks.off]) if (!want.includes(l)) this.toggle(l);
+    for (const l of want) if (!this.hooks.off.has(l)) this.toggle(l);
   }
 
   /** Take a layer out, or put it back, as its button does. */

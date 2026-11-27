@@ -80,6 +80,8 @@ const MEND_QUIET = 10;
 /** How long the Jump Gate stays marked once the tank can make the jump. */
 const GATE_PING_S = 4;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+/** Set `hidden` only when it changes: hiding a hidden node is still a write the page has to process. */
+const hide = (el: HTMLElement, v: boolean): void => { if (el.hidden !== v) el.hidden = v; };
 const ROCK_BROKEN: Record<string, string> = { basalt: 'Rock broken', iron: 'Iron rock broken', rich: 'Rich rock broken', volatile: 'Volatile rock broken' };
 const pad = (n: number, w: number) => String(Math.max(0, Math.round(n))).padStart(w, '0');
 const fmt = num;
@@ -467,7 +469,7 @@ export class Hud {
     let hostiles = 0;
     for (const a of world.aliens) if (world.alive && !cloaked(a) && a.kind !== 'freighter' && !a.ward) hostiles++;
     const host = $('sec-host');
-    host.hidden = hostiles === 0;
+    hide(host, hostiles === 0);
     if (hostiles) text(host, plural(hostiles, '{n} hostile', '{n} hostiles'));
     if (world.seed !== this.seed) {
       this.seed = world.seed;
@@ -503,10 +505,10 @@ export class Hud {
     const n = this.count;
     const alert = world.alert(), locked = alert !== 'clear';
     text($('xp-v'), String(Math.floor(world.purse)));
-    $('rail').hidden = !!world.bk; // the Story's Cyrite is the fuel row
+    hide($('rail'), !!world.bk); // the Story's Cyrite is the fuel row
     const badge = $('upg');
     // the Story fits only at a work bay and the Arcade opens its own picks
-    badge.hidden = true;
+    hide(badge, true);
     badge.classList.toggle('ready', n > 0 && !locked);
     badge.classList.toggle('locked', n > 0 && locked);
     badge.classList.toggle('red', alert === 'red');
@@ -524,10 +526,10 @@ export class Hud {
 
   private updateVoyage(world: World): void {
     const b = world.bk;
-    $('vy-cells').hidden = !b;
-    $('sys-score').hidden = !!b;
+    hide($('vy-cells'), !b);
+    hide($('sys-score'), !!b);
     const th = $('obj-threat');
-    if (!b) { th.hidden = true; $('heat').hidden = true; return; }
+    if (!b) { hide(th, true); hide($('heat'), true); return; }
     // the tank, in the status panel: jump fluid toward the jump; and the purse (Cyrite) beside it
     const fuel = $('sys-fuel'), need = world.jumpCost;
     text($('v-fuel'), `${Math.floor(world.fuel)}/${need}`);
@@ -536,7 +538,7 @@ export class Hud {
     text($('v-purse'), String(Math.floor(world.cyrite)));
     // the contract's load, aboard from the first minute: the hold as a count of the quota (the opening's training holds it)
     const cg = cargoOf(world);
-    $('sys-cargo').hidden = !cg;
+    hide($('sys-cargo'), !cg);
     if (cg) {
       text($('v-cargo'), `${cg.onboard.toLocaleString('en')}/${cg.quota.toLocaleString('en')}`);
       $('g-cargo').style.setProperty('--v', Math.min(1, cg.onboard / cg.quota).toFixed(2));
@@ -558,9 +560,9 @@ export class Hud {
     const line = near ? `${t(near.d > IDENT_RANGE ? 'Unknown contact' : near.faction === 'custody' ? 'Custody patrol' : near.faction === 'gutter' ? 'Gutter crew' : 'Contact')} · ${range(near.d)}` : '';
     // the system's heat, lower right: four steps, gold from the third, red at the fourth
     const lit = Math.ceil(clamp(heat, 0, 1) * 4), ht = $('heat');
-    ht.hidden = false;
+    hide(ht, false);
     if (ht.dataset.lit !== String(lit)) ht.dataset.lit = String(lit);
-    th.hidden = !line;
+    hide(th, !line);
     text(th, line);
     th.classList.toggle('hot', level >= 4 || (!!near && near.d < 110));
     const cKey = `${!!line}`;
@@ -591,7 +593,7 @@ export class Hud {
 
     // torpedoes: the rack, the next round filling as it reloads, and the lock
     const tp = $('sys-tp'), vr = $('v-rack');
-    tp.hidden = !st.torpedoes;
+    hide(tp, !st.torpedoes);
     document.documentElement.classList.toggle('has-torps', st.torpedoes);
     const rack = blocks($('g-rack'), st.torpedoes ? st.torpRack : 0);
     const touchRack = blocks($('t-rack'), st.torpedoes ? st.torpRack : 0);
@@ -607,12 +609,12 @@ export class Hud {
       text(vr, arms.rack === 0 ? `${Math.max(0, arms.reload).toFixed(1)}s` : t(locked ? 'Lock' : 'Ready'));
     }
 
-    $('sys-fuel').hidden = !world.bk;
-    $('sys-purse').hidden = !world.bk;
+    hide($('sys-fuel'), !world.bk);
+    hide($('sys-purse'), !world.bk);
 
     // mines: laid by themselves, out of a rack
     const mn = $('sys-mn');
-    mn.hidden = !st.mines;
+    hide(mn, !st.mines);
     if (st.mines) {
       blocks($('g-mines'), st.mineMax).forEach((p, i) => p.classList.toggle('on', i < world.sys.mines.length));
       text($('v-mines'), `${world.sys.mines.length}/${st.mineMax}`);
@@ -919,11 +921,11 @@ export class Hud {
     this.modeKey = key;
     const mode = $('mode');
     mode.className = `glass ${held ? 'yellow' : calm || safe ? 'sighted' : a}${sighted && !safe ? ' cap' : ''}`;
-    mode.hidden = a === 'clear' && !calm && !safe && !held;
+    hide(mode, a === 'clear' && !calm && !safe && !held);
     text($('mode-t'), t(word));
     text($('mode-s'), note);
     const chips = $('mode-c');
-    chips.hidden = !teach;
+    hide(chips, !teach);
     if (teach) {
       chips.replaceChildren(
         Object.assign(document.createElement('span'), { className: 'chip', textContent: t('Stay clear · +score · next one sooner') }),
@@ -943,7 +945,7 @@ export class Hud {
     if (key === this.condKey) return;
     this.condKey = key;
     const el = $('cond');
-    el.hidden = !key;
+    hide(el, !key);
     // what the place does to the ship: a plus in teal for what helps, a minus in dull gold for what hurts
     const site = world.siteHere ? [NAMED[world.siteHere]!.name] : [];
     const fx = world.conditions.map((c) => ({ good: REPORT_GOOD.has(c.kind), text: REPORT_TEXT[c.kind] }));
