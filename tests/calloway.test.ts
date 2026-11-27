@@ -221,6 +221,14 @@ describe('the last meeting', () => {
     expect(oddsFor(honest.odds!, ctx())).toBeGreaterThan(oddsFor(liar.odds!, ctx()) + 0.4);
   });
 
+  it('lets her hear Ada while ADA-1 is aboard, and shows the archive if she was let rest (sentient-ship plan)', () => {
+    const aboard = finaleCard(file({ told: 2 }), { caught: 1, beaten: 0 }, ['implant_kept']).choices.find((c) => c.id === 'archive')!;
+    const resting = finaleCard(file({ told: 2 }), { caught: 1, beaten: 0 }, ['implant_burned']).choices.find((c) => c.id === 'archive')!;
+    expect(aboard.label).toBe('Let her hear Ada');
+    expect(resting.label).toBe('Show her the archive');
+    expect(aboard.odds).toEqual(resting.odds);
+  });
+
   it('is waiting at the Jump Gate when you plot the jump to the Threshold', () => {
     const j = newJourney(3);
     endSortie(j, result(j));
