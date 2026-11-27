@@ -222,6 +222,23 @@ describe('QualityGovernor on a high-density laptop screen', () => {
     vi.unstubAllGlobals();
   });
 
+  it('behind the start-up screen (quick) it settles in a few seconds, and says when it is quiet', () => {
+    const q = new QualityGovernor(HIGH, false, undefined, false, retina);
+    q.quick = true;
+    let t = 0;
+    while (t < 9 && !q.quiet) { q.sample(1 / 20); t += 1 / 20; }
+    expect(q.quiet).toBe(true);
+    expect(t).toBeLessThan(7);
+    expect(q.tier.name).toBe('high');
+    expect(q.thirty).toBe(true);
+    // a fast device is quiet at once
+    const f = new QualityGovernor(HIGH, false, undefined, false, retina);
+    f.quick = true;
+    t = 0;
+    while (t < 9 && !f.quiet) { f.sample(1 / 60); t += 1 / 60; }
+    expect(t).toBeLessThan(1.5);
+  });
+
   it('takes a lower tier back when it bought too little, and holds an even 30 on the higher one', () => {
     // Chrome on an M1 (pass 27): about 20 fps on every tier and size, pixels or not
     const q = new QualityGovernor(HIGH, false, undefined, false, retina);
@@ -276,8 +293,10 @@ describe('QualityGovernor on a high-density laptop screen', () => {
 });
 
 describe('QualityGovernor on a phone (breathe)', () => {
+  const iphone = () => 3;
+
   it('draws smaller three times (back to about one pixel per CSS pixel) before it gives up a tier', () => {
-    const q = new QualityGovernor(PHONE, false, undefined, true);
+    const q = new QualityGovernor(PHONE, false, undefined, true, iphone);
     secs(q, 1 / 40, 3.2);
     expect(q.tier.name).toBe('phone');
     expect(q.scale).toBe(0.85);
@@ -290,15 +309,23 @@ describe('QualityGovernor on a phone (breathe)', () => {
     expect(q.scale).toBe(1);
   });
 
+  it('never draws under one pixel per CSS pixel: Low has no smaller size and holds an even 30 at once', () => {
+    const q = new QualityGovernor(0, false, undefined, true, iphone);
+    secs(q, 1 / 40, 3.6);
+    expect(q.scale).toBe(1);
+    expect(q.thirty).toBe(true);
+    expect(feed(q, 1 / 40, 600)).toBe(0);
+  });
+
   it('holds an even 30 once nothing is left to give, and stops judging', () => {
-    const q = new QualityGovernor(0, false, undefined, true);
-    secs(q, 1 / 40, 3.6 * 4);
+    const q = new QualityGovernor(PHONE, false, undefined, true, iphone);
+    secs(q, 1 / 40, 3.6 * 6);
     expect(q.thirty).toBe(true);
     expect(feed(q, 1 / 40, 600)).toBe(0);
   });
 
   it('gives the drawing size back first when there is room', () => {
-    const q = new QualityGovernor(PHONE, false, PHONE, true);
+    const q = new QualityGovernor(PHONE, false, PHONE, true, iphone);
     secs(q, 1 / 40, 3.2);
     expect(q.scale).toBe(0.85);
     secs(q, 1 / 60, 35);

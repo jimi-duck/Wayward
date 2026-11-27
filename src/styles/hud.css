@@ -77,6 +77,15 @@
 #reboot { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0; transition: opacity 1.6s ease-in;
   background: #000; display: grid; place-items: end center; padding-bottom: 20vh; }
 #reboot.on { opacity: 1; transition: opacity .7s ease-out; }
+/* A device's first run: the start-up screen over a held world while the quality is found (main.ts calibrate). Nearly opaque,
+   so the steps behind it are not seen; the same loader as the reboot, centred. Above the HUD and the pause card, under ?perf. */
+#calib { position: absolute; inset: 0; z-index: 7; pointer-events: none; opacity: 0; visibility: hidden; transition: opacity .5s ease, visibility 0s linear .5s;
+  background: radial-gradient(ellipse at 50% 50%, rgba(var(--void-rgb), .9), rgba(var(--void-rgb), .97)); display: grid; place-items: center; }
+#calib.on { opacity: 1; visibility: visible; transition: none; pointer-events: auto; }
+#cb-t { font: 600 calc(var(--fs) * 1.25)/1 var(--font-rail); letter-spacing: .34em; text-indent: .34em; text-transform: uppercase; color: var(--cy); }
+#cb-i { transition: width .25s linear; }
+#cb-s { font: 500 calc(var(--fs) * .9)/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink); opacity: .85; text-align: center; }
+@media (max-height: 520px) { #cb-t { font-size: 14px; } #cb-s { font-size: 10px; } }
 .rb-box { display: grid; justify-items: center; gap: 10px; min-width: min(360px, 70vw); }
 #rb-t { font: 600 calc(var(--fs) * 1.25)/1 var(--font-rail); letter-spacing: .34em; text-indent: .34em; text-transform: uppercase; color: var(--cy); }
 .rb-bar { display: block; width: 100%; height: 4px; background: rgba(var(--void-rgb), .8); box-shadow: 0 0 0 1px var(--rim-cyan) inset; overflow: hidden; }
@@ -337,6 +346,9 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
   background: linear-gradient(var(--hud), var(--hud)) center / 100% 1px no-repeat, linear-gradient(var(--hud), var(--hud)) center / 1px 100% no-repeat; }
 #tgt.arc .tgt-x { display: block; }
 #tgt-under { position: absolute; left: 0; right: 0; top: calc(100% + 4px); display: flex; align-items: center; gap: 6px; }
+#tgt.flip #tgt-under { left: auto; right: calc(100% + 8px); top: 50%; translate: 0 -50%; width: max-content; flex-direction: row-reverse; }
+#tgt.flip #tgt-hp { display: none; }
+#tgt.quiet #tgt-under { display: none; }
 #tgt-hp { --v: 1; flex: 1; min-width: 18px; height: 3px; background: linear-gradient(90deg, var(--c-hp, var(--alert)) 0 calc(var(--v) * 100%), rgba(var(--white-rgb), .14) 0); }
 #tgt-d { flex: none; white-space: nowrap; text-shadow: 0 1px 5px var(--black);
   font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
@@ -397,7 +409,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 .ptr { position: absolute; left: 0; top: 0; display: none; --pc: var(--alert); }
 .ptr.on { display: block; }
 .ptr i { position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; border-right: 2px solid var(--pc); border-top: 2px solid var(--pc); rotate: var(--a, 0deg); }
-.ptr span { position: absolute; left: 0; top: 14px; translate: -50% 0; white-space: nowrap; text-shadow: 0 1px 5px var(--black), 0 0 2px var(--black);
+.ptr span { position: absolute; left: 0; top: 14px; translate: var(--lx, -50%) 0; white-space: nowrap; text-shadow: 0 1px 5px var(--black), 0 0 2px var(--black);
   font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--pc); }
 #ptr-obj, #ptr-lane, #ptr-audit, #ptr-port, #ptr-yard, #ptr-relay, #ptr-story { --pc: var(--hud-hi); }
 #ptr-unk { --pc: rgba(var(--ink-body-rgb), .62); }
@@ -594,6 +606,10 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
   .touch-ui #boss, .touch-ui #tgt-card { width: min(280px, var(--gap)); }
   .touch-ui #tgt-card.unk { width: auto; max-width: min(190px, var(--gap)); }
   .touch-ui #mode-s { display: none; }
+  /* the objective's clock sits right after its title, not out at the far edge of the plate */
+  .touch-ui .obj-h { justify-content: flex-start; gap: 10px; }
+  /* a full alert plate and a plate warning of the ship's own trouble are one crowded stack: the plate wins while it shows */
+  .touch-ui #log:has(#mode:not([hidden])) #cond { display: none; }
   .touch-ui #obj-list li:nth-child(n+2) { display: none; }
   /* a phone on its side: a tighter panel, and the thumbs' buttons down to the edge */
   .touch-ui #systems { width: min(250px, 34vw); row-gap: 5px; padding: 7px 10px 7px 11px; }

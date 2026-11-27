@@ -810,3 +810,42 @@ steps down as before. A phone is unchanged.
 30 now starts at any tier, not only Low.
 
 **Not measured:** a whole visit on the M1 with this governor. Tested with modelled frame times (`tests/quality.test.ts`).
+
+## Pass 28: a start-up screen while the quality is found (2026-11-27)
+
+With passes 26 and 27 the owner's Chrome played well, but the first seconds of a visit still showed the governor at work:
+a smaller size, a lower tier, then back. The owner asked for a loading screen in the game's theme instead.
+
+**Start-up screen** (`main.ts` calibrate, `#calib`): on a device's first run, when nothing is kept (`keptTier`), an
+"Initialising · Tuning ship systems to this device" screen in the reboot loader's style holds the world while the
+governor judges on a shorter window (`quick`: 1 s verdicts, 0.3 s after a move). It lifts once a verdict comes with no
+step waiting (`quiet`), at the least after 1.5 s and at most 9. A fast device sees it for about a second and a half; the
+M1 in Chrome, which steps down and back twice, about six. Every later visit starts where the first settled, with no
+screen. Not with `?quality`, the battery saver or `?dev`.
+
+**Not measured:** how long the screen stays up on the M1; modelled in `tests/quality.test.ts`.
+
+## Pass 29: a phone never draws under one pixel per CSS pixel (2026-11-27)
+
+An iPhone screenshot from the owner (Arcade, landscape) looked very blocky. A phone's drawing scales (`SCALES`, 1 to
+0.67) applied on every tier: on Phone (1.5 pixels per CSS pixel) the last step is 1, but on Low (1) it was 0.67, two
+thirds of a pixel per CSS pixel, stretched three times over on a 3x screen. A phone's scales now stop at one pixel per
+CSS pixel, so Low on a phone has no smaller size and holds an even 30 instead. Computers are unchanged.
+
+**Not measured:** the iPhone's rate on Low at full size.
+
+## Pass 30: the start-up screen on every launch (2026-11-27)
+
+The owner: a game opened fresh played its first seconds badly ("low quality and buggy") and the start-up screen should
+always show. It now comes up on every launch from the title (not with `?dev`) and waits for the game to be ready in two
+stages, its line saying which:
+
+1. **Bringing ship systems online**: the title's own warm-up (`sector.warm` and `warmFrame`, started behind the title),
+   then warm rounds for what the launch made (`warmRounds`, shared with the jump's arrival). At most 6 s.
+2. **Tuning ship systems to this device**: the governor judges real frames on its quick window. A device with nothing
+   kept finds its tier and size; one with a kept setting confirms it in about a second.
+
+It lifts once a verdict comes with no step waiting, at the least 1.5 s after launch and at most 8 s after the warm-up. A tap or key
+meanwhile is ignored; the world is held throughout.
+
+**Not measured:** how long it stays up on the owner's Mac or iPhone.

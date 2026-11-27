@@ -241,6 +241,10 @@ export class Targeting {
     const half = clamp(Math.abs(c.y - top.y) * 1.15, 12, Math.min(46, this.h * 0.08));
     css(el, '--h', `${half.toFixed(0)}px`);
     css(el, 'transform', `translate(${c.x.toFixed(1)}px, ${c.y.toFixed(1)}px)`);
+    // near the right edge the readout moves to the brackets' left, so it is not cut off
+    el.classList.toggle('flip', c.x > this.w - half - 150);
+    // under a HUD plate (the hull bars, the alert) the readout would only collide: the card above keeps the facts
+    el.classList.toggle('quiet', this.underHud(c.x - half - 120, c.y - half - 8, c.x + half + 120, c.y + half + 24));
     const s = world.ship;
     const d = Math.hypot(t.x - s.x, t.y, t.z - s.z);
     const alt = t.y > 1 ? ` · ▲ ${metres(t.y)} m` : t.y < -1 ? ` · ▼ ${metres(-t.y)} m` : '';
@@ -341,7 +345,7 @@ export class Targeting {
         const tries = beside
           ? [['', p.x + 12, p.y - hh / 2], ['l', p.x - 12 - w, p.y - hh / 2], ['u', p.x - w / 2, p.y - 18 - hh], ['d', p.x - w / 2, p.y + 18]] as const
           : [['', p.x - w / 2, p.y + 8]] as const;
-        const free = tries.find(([, x0, y0]) => !this.avoid.some((r) => !(x0 + w < r.left || x0 > r.right || y0 + hh < r.top || y0 > r.bottom))
+        const free = tries.find(([, x0, y0]) => x0 > 4 && x0 + w < this.w - 4 && !this.avoid.some((r) => !(x0 + w < r.left || x0 > r.right || y0 + hh < r.top || y0 > r.bottom))
           && !placed.some((q) => !(x0 + w < q.l || x0 > q.r || y0 + hh < q.t || y0 > q.b)));
         if (free) { side = free[0]; placed.push({ l: free[1], r: free[1] + w, t: free[2], b: free[2] + hh }); } else label = '';
       }
@@ -523,6 +527,33 @@ export class Targeting {
     for (; n < MAX_INCOMING; n++) if (!this.incoming[n]!.hidden) this.incoming[n]!.hidden = true;
   }
 
+  /** Whether a box overlaps one of the HUD plates that share the screen edge. */
+  private underHud(l: number, t: number, r: number, b: number): boolean {
+    for (const id of ['log', 'systems', 'objective']) {
+      const e = document.getElementById(id);
+      if (!e || e.hidden) continue;
+      const q = e.getBoundingClientRect();
+      if (q.width && l < q.right && r > q.left && t < q.bottom && b > q.top) return true;
+    }
+    return false;
+  }
+
+  /** Where a pointer at (x, y) goes so it sits outside the HUD plates that share the screen edge. */
+  private clearOfHud(x: number, y: number): [number, number] {
+    const pad = 28;
+    for (const id of ['log', 'systems', 'objective']) {
+      const e = document.getElementById(id);
+      if (!e || e.hidden) continue;
+      const r = e.getBoundingClientRect();
+      if (!r.width || x < r.left - pad || x > r.right + pad || y < r.top - pad || y > r.bottom + pad) continue;
+      // the nearest way out that stays on screen: below the plate, above it, or beside it
+      const outs: [number, number][] = [[x, r.bottom + pad], [x, r.top - pad], [r.left - pad, y], [r.right + pad, y]];
+      const ok = outs.filter(([a, b]) => a > 46 && b > 46 && a < this.w - 46 && b < this.h - 46);
+      if (ok.length) return ok.sort((p, q) => Math.hypot(p[0] - x, p[1] - y) - Math.hypot(q[0] - x, q[1] - y))[0]!;
+    }
+    return [x, y];
+  }
+
   private pointer(el: HTMLElement, label: HTMLElement, sector: Sector, sx: number, sz: number, heading: number, o: { x: number; y: number; z: number } | null, t: string): void {
     if (!o) { el.classList.toggle('on', false); return; }
     const p = sector.project(o.x, o.y, o.z);
@@ -534,8 +565,12 @@ export class Targeting {
     const cx = this.w / 2, cy = this.h / 2;
     const kx = (cx - m) / Math.max(1e-3, Math.abs(dx)), ky = (cy - m - 40) / Math.max(1e-3, Math.abs(dy));
     const k = Math.min(kx, ky);
-    const x = cx + dx * k, y = cy + dy * k;
+    let x = cx + dx * k, y = cy + dy * k;
+    // never under the HUD's own plates (the alert corner, the ship panel, the objective): slide along the edge to clear them
+    [x, y] = this.clearOfHud(x, y);
     el.classList.toggle('on', true);
+    // the label hangs under the arrow, but flips inward near a side edge so it is never cut off
+    css(el, '--lx', x > this.w - 110 ? '-100%' : x < 110 ? '0%' : '-50%');
     this.ptrs.push({ el, x, y, pri: false });
     css(el, 'transform', `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`);
     css(el, '--a', `${((Math.atan2(dy, dx) * 180) / Math.PI + 45).toFixed(0)}deg`);
