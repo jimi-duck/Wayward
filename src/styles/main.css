@@ -437,6 +437,7 @@ html.btn-small #touch { --sw: clamp(90px, 26vh, 116px); --fw: clamp(68px, 20vh, 
 .ends li.sel { border-left-color: var(--hud); background: rgba(var(--blue-rgb), .08); }
 .ends li.shut { opacity: .55; }
 .ends li .need { color: var(--ink-3); font-style: italic; }
+.ends li .core { color: var(--ochre); }
 .ends:empty { display: none; }
 .en-epi { display: grid; gap: 10px; }
 .en-epi:empty { display: none; }

@@ -19,6 +19,9 @@ import { after, card, flag, free } from './kit';
 /** Her first words back on the network, as the first relay wakes (sim/relaywake.ts): the record the old letter used to carry. */
 export const CORE_FIRST = '“I can hear them again. First thing back: Krail reserves, the night they shut the lanes. Ninety-four per cent.”';
 
+/** Set when Juno let her rest at the Seam (the old implant's flag): she says nothing after it. */
+export const RESTING = 'implant_burned';
+
 /** A flavour line of hers: dropped rather than played late (sim/script.ts `stale`). */
 export const CORE_STALE = 150;
 
@@ -79,6 +82,11 @@ export const CORE_ROWS: Row[] = [
   // note 7, then her card (arrivals.ts se_implant waits on this line: it never goes stale)
   core('se_core_note', 'seam', flag('warden_note_7'), '“Ada was scared of what the Thren would answer. I’m not. I don’t think she’d agree with me.”'),
   // after the Seam, every line of hers checks she isn't resting (implant_burned): after "Rest now" she says nothing more
+
+  // ── Act III · the Last Lanes and the Threshold: the network opens ──
+  core('ll_core_chorus', 'l_lastlight', after('ll_relay', 4), '“I spent so long watching the universe go by. I’d forgotten what being part of it felt like.”', { if: { not: [RESTING] }, stale: CORE_STALE }),
+  core('th_core_all', 'l_wane', after('th_relay', 3), '“That’s all of them. The whole network’s open. We finished it.”', { if: { has: ['implant_kept'] }, stale: CORE_STALE }),
+  core('th_core_own', 'l_wane', after('th_relay', 3), '“That’s all of them. Whatever comes next, I’d like to see it.”', { if: { has: ['implant_rewritten'] }, stale: CORE_STALE }),
 
   // a save that read the grandmother's old letter before ADA-1 had a voice (meta/save.ts marks it on load): she says who she is, once, at the
   // first free moment on the road

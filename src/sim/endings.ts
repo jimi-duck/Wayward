@@ -93,9 +93,10 @@ export function epilogue(j: Journey, id: EndingId): string[] {
   const def = ENDING_BY_ID[id];
   if (!authoredEnd(j)) return def.epilogue.filter((e) => !e.if || meets(l, e.if)).map((e) => e.text);
   const r = def.road;
-  const slot = (k: 'thread' | 'person' | 'cost' | 'charter') => r.lines.find((x) => x.slot === k && (!x.if || meets(l, x.if)))?.text;
+  const slot = (k: 'thread' | 'person' | 'cost' | 'charter' | 'core') => r.lines.find((x) => x.slot === k && (!x.if || meets(l, x.if)))?.text;
   const oren = OREN_LINES.find((o) => l.flags.has(o.flag))?.text;
-  return [r.open, slot('thread'), slot('person'), slot('cost'), slot('charter'), oren, r.close].filter((x): x is string => !!x);
+  // ADA-1's line, by what Juno chose at the Seam (sentient-ship plan), before the close
+  return [r.open, slot('thread'), slot('person'), slot('cost'), slot('charter'), oren, slot('core'), r.close].filter((x): x is string => !!x);
 }
 
 /** The journey ran the authored road to its end (sim/road.ts): its endings read as the road's (content/endings.ts `road`). */

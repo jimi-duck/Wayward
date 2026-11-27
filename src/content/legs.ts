@@ -136,26 +136,25 @@ export const NOTE_CARDS: CardDef[] = [
   }),
 ];
 
-/** Ada's last note, before the endings: to Juno by name if the routine learned it, to whoever flies her if it was burned. */
+/** Ada's last note, before the endings: to Juno, unless ADA-1 was let rest at the Seam, then to whoever flies her. */
 export const NOTE_8 = {
-  title: 'Warden’s note 8 of 8',
+  title: 'Ada’s memory 8 of 8',
   kept: {
     sign: '— Your grandmother',
     /** Juno's answer: the button that goes on to the choice. */
     answer: 'You could have asked me.',
     lines: [
-      'Juno. The routine knows your name now, so I can finally use it. I put this hull at the top of your list. I’m sorry.',
-      'The keys would have worked in any hand. I made sure it was yours. That wasn’t fair, and I did it anyway.',
-      'There was nobody else I’d trust with it, and I’d never even met you. You were two in the last picture I saw.',
-      'Whatever you do at that gate, do it because you chose to. I’ve had enough of people signing things for other people.',
-      'Keep moving if you want. Stop if you want.',
+      'Juno. If my tender brought you here, it found you. I asked it to look after my family if it ever could. I’m sorry. That wasn’t fair to either of you.',
+      'I helped shut these lanes. This relay holds the last of what we worked out, the tender and I: how to wake the whole network at once. I never got to use it.',
+      'The keys would have worked in any hand. Whatever you do at that gate, do it because you chose to. I’ve had enough of people signing things for other people.',
+      'Tell it I said thank you. It’ll pretend not to care.',
     ],
   },
   burned: {
     sign: '— A.',
     answer: 'My name is Juno. I chose.',
     lines: [
-      'To whoever flies her. I hoped the routine would have learned your name by now. It hasn’t, so you must have stopped it. That’s your right.',
+      'To whoever flies her. My tender went quiet before the end. That was its right, and yours.',
       'Whatever you do at that gate, do it because you chose to. I’ve had enough of people signing things for other people.',
     ],
   },

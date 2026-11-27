@@ -269,11 +269,13 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
     });
   }
   if (d.told > 0) {
+    // while ADA-1 is aboard (not let rest at the Seam) she plays her own record of the room: Calloway's father signing (sentient-ship plan)
+    const core = !has('implant_burned');
     choices.push({
-      id: 'archive', label: 'Show her the archive', tone: 'help',
+      id: 'archive', label: core ? 'Let her hear Ada' : 'Show her the archive', tone: 'help',
       hint: trusted > 1 ? 'She has listened before. She might now.' : trusted > 0 ? 'She might read it. She might not.' : 'Too many lies between you. She may not buy it.',
       odds: { base: ARCHIVE_BASE + ARCHIVE_TRUST * trusted },
-      win: { text: 'She reads it all the way through. Then the Patience stands aside.', blockade: 'pass', score: 5000 },
+      win: { text: core ? 'ADA-1 plays her record of the room: her father signing. Then the Patience stands aside.' : 'She reads it all the way through. Then the Patience stands aside.', blockade: 'pass', score: 5000 },
       lose: { text: '“It changes nothing.” · weapons hot', calloway: 'fight', blockade: 'pass' },
     });
   }

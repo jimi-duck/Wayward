@@ -31,7 +31,7 @@ export class EndingPanel {
     this.opened = performance.now();
     this.list = choices(j);
     this.sel = Math.max(0, this.list.findIndex((c) => c.open));
-    // on the road, Ada's last note comes first: to Juno by name, or to whoever flies her if the implant was burned
+    // on the road, Ada's last note comes first: to Juno by name, or to whoever flies her if ADA-1 was let rest
     if (authoredEnd(j)) { this.note(j); return; }
     this.ask(j);
   }
@@ -47,7 +47,7 @@ export class EndingPanel {
     $('ending').hidden = false;
     const go = $('en-go');
     go.hidden = false;
-    // Juno answers her (owner, 14 November 2026: the routine steered her, and she can say so)
+    // Juno answers her (owner, 14 November 2026: the hull was put in her path, and she can say so)
     go.textContent = t(n.answer);
     go.onclick = guarded(this.opened, () => this.ask(j));
     go.onpointerdown = (e) => e.stopPropagation();
@@ -101,7 +101,9 @@ export class EndingPanel {
     $('en-l').replaceChildren(...this.list.map((c, i) => {
       const li = h('li', `${c.open ? 'on' : 'shut'}${i === this.sel ? ' sel' : ''}`, '',
         h('b', '', `${i + 1} · ${t(c.def.name)}`), h('span', 'kind', t(c.open ? 'open' : 'shut')),
-        h('p', '', t(c.def.pitch)), c.open ? null : h('p', 'need', t(c.def.needs)));
+        h('p', '', t(c.def.pitch)), c.open ? null : h('p', 'need', t(c.def.needs)),
+        // ADA-1's word under an ending, on the road while she is aboard (Seal: Ada did this once)
+        c.def.core && this.j && authoredEnd(this.j) && !this.j.carry.flags.includes('implant_burned') ? h('p', 'core', `${t('ADA-1')}: ${t(c.def.core)}`) : null);
       if (c.open) {
         li.setAttribute('role', 'button');
         li.onclick = guarded(this.opened, () => this.pick(i));

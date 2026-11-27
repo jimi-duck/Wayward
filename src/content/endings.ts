@@ -67,7 +67,9 @@ export interface EndingDef {
    * The road's epilogue (docs/overhaul/SCRIPT_EN_DE.md §12): an opener, then at most one line of each slot in this order, the
    * thread payoff, a person and a cost, then Oren's third answer and the closing line, always shown.
    */
-  road: { open: string; lines: Array<{ slot: 'thread' | 'person' | 'cost' | 'charter'; if?: Need; text: string }>; close: string };
+  road: { open: string; lines: Array<{ slot: 'thread' | 'person' | 'cost' | 'charter' | 'core'; if?: Need; text: string }>; close: string };
+  /** ADA-1's word on the choice screen, under this ending, while she is aboard (the road only). */
+  core?: string;
 }
 
 /** Oren's third question, answered on the road: one line shared by every ending. */
@@ -97,6 +99,9 @@ export const ENDINGS: EndingDef[] = [
         { slot: 'person', if: { flags: ['sable_home'] }, text: 'In the swarm lane, Sable hears every word. She sends one pattern back.' },
         { slot: 'cost', text: 'Within a month the Scatter demands its lanes back. Somewhere past the ring, a relay lights without a key.' },
         { slot: 'charter', text: 'Everyone learns the Severance struck every Charter in the Scatter. At some gates the queues riot. At others they just keep queueing.' },
+        { slot: 'core', if: { flags: ['implant_kept'] }, text: 'ADA-1 read the file down every relay: Ada’s words first, then her own.' },
+        { slot: 'core', if: { flags: ['implant_rewritten'] }, text: 'ADA-1 read it in her own voice. She said Ada’s name, then hers.' },
+        { slot: 'core', if: { flags: ['implant_burned'] }, text: 'Juno sent it by hand, relay by relay. The ship stayed quiet.' },
       ],
       close: 'Everyone knows. That was the easy part.',
     },
@@ -129,6 +134,9 @@ export const ENDINGS: EndingDef[] = [
         { slot: 'cost', if: { flags: ['job_missing_payroll_won', 'job_drift_cache_won', 'job_heavy_tanker_won'] }, text: 'Not everyone comes. Some remember the wages, the cache, the wreck. A union built on a debt is still in debt.' },
         { slot: 'cost', if: { flags: ['saints_helped'] }, text: 'The Saints come too. Half the moot won’t sit at a table with them. The other half won’t sit without them.' },
         { slot: 'charter', text: 'The confederation recognises no Charter. Any hull may pass its gates. The core does not agree, so the line now runs between two worlds.' },
+        { slot: 'core', if: { flags: ['implant_kept'] }, text: 'The councils made ADA-1 the first Warden of the open lanes. She logs every crossing, and complains about most.' },
+        { slot: 'core', if: { flags: ['implant_rewritten'] }, text: 'The councils offered ADA-1 a Warden’s post. She asked for a vote first.' },
+        { slot: 'core', if: { flags: ['implant_burned'] }, text: 'The councils keep the lanes by hand. Nobody tends them the way a tender did.' },
       ],
       close: 'Divided on purpose. Together by choice. For now.',
     },
@@ -162,6 +170,9 @@ export const ENDINGS: EndingDef[] = [
         { slot: 'person', if: { flags: ['draper_revealed', 'broker'] }, text: 'Three days later the file turns up in Draper’s hands. It turns out Val has a buyer too.' },
         { slot: 'cost', text: 'The truth is an asset now. It comes out when it is useful, and stays in when it isn’t.' },
         { slot: 'charter', text: 'You are paid in a real Charter. You fly the Chartered lane past the queue you came from, and nobody stops you.' },
+        { slot: 'core', if: { flags: ['implant_kept'] }, text: 'Val’s buyers pulled ADA-1 from the decking. Somewhere, someone opens and shuts lanes with Ada’s keys.' },
+        { slot: 'core', if: { flags: ['implant_rewritten'] }, text: 'ADA-1 went with the sale. “Someone should watch what they do with it.”' },
+        { slot: 'core', if: { flags: ['implant_burned'] }, text: 'The buyers took a silent core. They are still trying to wake it.' },
       ],
       close: 'You are free. That was the deal.',
     },
@@ -191,6 +202,9 @@ export const ENDINGS: EndingDef[] = [
         { slot: 'person', if: { flags: ['sig_used'] }, text: 'It says her father asked for ten years. It does not say how many he got.' },
         { slot: 'cost', text: 'The lanes stay closed. The contracts are rewritten. Kellern’s rates drop by a third. People notice.' },
         { slot: 'charter', text: 'Merit Grants are issued at last: a dozen a year, to the deserving. A ladder with a handful of rungs, and a door that still decides who climbs.' },
+        { slot: 'core', if: { flags: ['implant_kept'] }, text: 'The Office of Public Record keeps ADA-1 in a sealed vault. Her testimony is still inadmissible.' },
+        { slot: 'core', if: { flags: ['implant_rewritten'] }, text: 'ADA-1 asked the Merit Board to hear her. They ruled her property. She keeps asking.' },
+        { slot: 'core', if: { flags: ['implant_burned'] }, text: 'The Offices took the core as evidence and never opened it.' },
       ],
       close: 'Your new registry has your real name on it.',
     },
@@ -208,6 +222,7 @@ export const ENDINGS: EndingDef[] = [
   },
   {
     id: 'seal', name: 'Seal', pitch: 'Close the lanes for good. The Scatter stays free, and alone.',
+    core: '“She did this once, and spent her life sorry.”',
     needs: 'Needs: Guns or Rig 3, Guns and Rig 2, Calloway beaten and Guns 1, the Voice’s keys, or the ring’s centre mapped.',
     ways: [{ marks: { guns: 3 } }, { marks: { rig: 3 } }, { marks: { guns: 2, rig: 2 } }, { beaten: 1, marks: { guns: 1 } }, { flags: ['lane_keys'] }, { allFlags: ['ring_mapped', 'thread_survey_3'] }],
     file: 'SEVERANCE · burned; this is what was left',
@@ -218,6 +233,9 @@ export const ENDINGS: EndingDef[] = [
         { slot: 'person', if: { flags: ['sable_home', 'sable_trust'] }, text: 'Sable stays in the lane. She sends one pattern back. It might mean goodbye.' },
         { slot: 'cost', text: 'Nobody will cross again. Not the core’s pickets. Not the Ferry. Not anybody’s granddaughter.' },
         { slot: 'charter', text: 'Nobody passes now, so nobody needs a Charter. Nobody leaves, either.' },
+        { slot: 'core', if: { flags: ['implant_kept'] }, text: 'ADA-1 closed every lane they had opened, then said nothing for a long time.' },
+        { slot: 'core', if: { flags: ['implant_rewritten'] }, text: 'ADA-1 closed them because Juno asked, and asked her never to ask again.' },
+        { slot: 'core', if: { flags: ['implant_burned'] }, text: 'Juno closed them by hand. It took a week.' },
       ],
       close: 'You decided for everyone. Somebody had to. That is what they said, too.',
     },
@@ -241,9 +259,11 @@ export const ENDINGS: EndingDef[] = [
       open: 'You turn the transponder off and leave it off.',
       lines: [
         { slot: 'person', if: { flags: ['implant_burned'] }, text: 'The helm is yours alone. Nobody, living or otherwise, knows your name.' },
-        { slot: 'person', if: { flags: ['implant_kept', 'implant_rewritten'] }, text: 'Some nights the routine opens a note you haven’t read. You don’t read it yet.' },
         { slot: 'cost', text: 'The file is still aboard. Calloway keeps looking. So does Draper. One day someone else will need it.' },
         { slot: 'charter', text: 'In the last shot, the work lane at the gate is still full.' },
+        { slot: 'core', if: { flags: ['implant_kept'] }, text: 'Somewhere beyond the last chart, the WAYWARD travels on. Two old companions, neither quite sure where they’re going.' },
+        { slot: 'core', if: { flags: ['implant_rewritten'] }, text: 'Somewhere past the last lane, two voices argue about where to go next.' },
+        { slot: 'core', if: { flags: ['implant_burned'] }, text: 'The ship is quiet now. Sometimes Juno still catches herself waiting for an answer.' },
       ],
       close: 'Keep moving.',
     },
@@ -253,9 +273,9 @@ export const ENDINGS: EndingDef[] = [
       { if: { flags: ['pod'] }, text: 'You left the Ares Drive survivor at the last port. They’ll tell it their way.' },
       { if: { hardcore: true }, text: 'One life, one ship, all the way through.' },
       { if: { fragments: 1 }, text: 'You keep what you pieced together. Someone should remember how it happened.' },
-      { if: { flags: ['implant_burned'] }, text: 'You burn the implant before you go. Nothing of Ada’s routine is left to find you.' },
-      { if: { flags: ['implant_kept'] }, text: 'You keep the implant. Ada’s routine rides with you into the dark.' },
-      { if: { flags: ['implant_rewritten'] }, text: 'You rewrite the implant. It now answers only to you.' },
+      { if: { flags: ['implant_burned'] }, text: 'You let ADA-1 rest before you go. The ship is quiet now.' },
+      { if: { flags: ['implant_kept'] }, text: 'ADA-1 rides with you into the dark.' },
+      { if: { flags: ['implant_rewritten'] }, text: 'ADA-1 came along. She says it was her own idea.' },
       { text: 'Someone will find the file, someday. It will be their choice then.' },
     ],
   },

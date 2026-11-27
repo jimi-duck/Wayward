@@ -337,6 +337,17 @@ describe('the endings on the road', () => {
     }
   });
 
+  it('gives ADA-1 one line before the close, by what Juno said to her at the Seam (sentient-ship plan)', () => {
+    for (const e of ENDINGS) {
+      for (const f of ['implant_kept', 'implant_rewritten', 'implant_burned']) {
+        const lines = epilogue(toThreshold({ flags: [f] }), e.id);
+        const core = e.road.lines.find((l) => l.slot === 'core' && l.if?.flags?.includes(f))!;
+        expect(core, `${e.id} ${f}`).toBeDefined();
+        expect(lines.at(-2), `${e.id} ${f}`).toBe(core.text);
+      }
+    }
+  });
+
   it('keeps the old epilogues off the road', () => {
     const j = newJourney(7);
     expect(authoredEnd(j)).toBe(false);
