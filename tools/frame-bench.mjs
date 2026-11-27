@@ -146,6 +146,7 @@ try {
       gameMBs: gameAlloc === null ? null : gameAlloc / 1e6 / secs,
       gc: { n: gcN, ms: gcMs, major: majorN, majorMs, worst: worstGc, mbPerSec: freed / 1e6 / secs },
       heapMB: { start: res.heap[0] / 1e6, end: res.heap.at(-1) / 1e6, max: Math.max(...res.heap) / 1e6 },
+      compiles: rows.map((x, i) => [x, i]).filter(([x]) => x.events.includes('compile:')).map(([x, i]) => `frame ${i} ${x.total.toFixed(1)}ms ${x.events.split(',').filter((e) => e.startsWith('compile:')).join(' ')}`),
       worst: [...rows].sort((a, b) => b.total - a.total).slice(0, 6).map((x) => `${x.total.toFixed(1)}ms (busy ${(x.busy ?? 0).toFixed(1)} step ${x.step.toFixed(1)} react ${x.react.toFixed(1)} prep ${x.prep.toFixed(1)} draw ${x.draw.toFixed(1)} hud ${x.hud.toFixed(1)}) ${x.events}`),
       errors: errs,
     };
@@ -158,6 +159,7 @@ try {
     console.log(`  frames >8ms ${r.over8}  main thread >16.7ms ${r.over16busy}  JS >16.7ms ${r.over16}  draws ${r.calls.mean.toFixed(0)} (max ${r.calls.max})  tris ${(r.tris.mean / 1000).toFixed(0)}k  programs ${r.programs}`);
     console.log(`  gc ${gcN}x ${gcMs.toFixed(0)} ms (major ${majorN}x ${majorMs.toFixed(0)} ms, worst ${worstGc.toFixed(1)} ms)  garbage ${r.gc.mbPerSec.toFixed(2)} MB/s  heap ${r.heapMB.start.toFixed(0)}->${r.heapMB.end.toFixed(0)} MB (max ${r.heapMB.max.toFixed(0)})`);
     for (const w of r.worst) console.log(`  worst ${w}`);
+    for (const c of r.compiles) console.log(`  linked in play: ${c}`);
     for (const x of [...rows].sort((a, b) => b.style - a.style).slice(0, 4)) console.log(`  style ${x.style.toFixed(1)}ms over ${x.styled} elements, events ${x.events || '-'}${flag('why') ? '\n    ' + [...x.why].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, n]) => `${n}x ${k}`).join('\n    ') : ''}`);
     if (flag('why')) {
       const all = new Map(); for (const x of rows) for (const [k, n] of x.why) all.set(k, (all.get(k) ?? 0) + n);
