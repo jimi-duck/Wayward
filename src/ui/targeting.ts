@@ -1,3 +1,4 @@
+import { replay } from './replay';
 import { angleDelta, clamp } from '../core/math';
 import type { Sector } from '../render/sector';
 import type { Boss } from '../sim/bosses';
@@ -298,10 +299,9 @@ export class Targeting {
     }
   }
 
+  /** Play `on`'s CSS animation from the start, `off`'s taken away (ui/replay.ts: no forced layout). */
   private retrigger(el: HTMLElement, on: string, off: string): void {
-    el.classList.remove(on, off);
-    void el.offsetWidth;
-    el.classList.add(on);
+    replay(el, on, off);
   }
 
   // ── marks ───────────────────────────────────────────────────────────────
@@ -466,7 +466,8 @@ export class Targeting {
         const top = first && !f.friendly;
         if (top) first = false;
         el.hidden = false;
-        el.className = `thr${a.elite ? ' elite' : ''}${top ? ' top' : ''}${f.dist < 30 && Math.abs(f.rel) > BEHIND ? ' close' : ''}`;
+        const cls = `thr${a.elite ? ' elite' : ''}${top ? ' top' : ''}${f.dist < 30 && Math.abs(f.rel) > BEHIND ? ' close' : ''}`;
+        if (el.className !== cls) el.className = cls;
         el.style.setProperty('--pc', f.friendly ? 'var(--cy)' : NEON_CSS[a.faction]);
         el.style.setProperty('--a', `${((Math.atan2(dy, dx) * 180) / Math.PI + 45).toFixed(0)}deg`);
         el.style.opacity = clamp(1.25 - f.dist / THREAT_RANGE, 0.45, 1).toFixed(2);

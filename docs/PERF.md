@@ -495,3 +495,40 @@ A phone that can't keep up still ends where it was before (about one pixel per C
 drops a tier as before. Measured in the cloud (software WebGL, iPhone 13 landscape emulation): buffer 1125×513
 @1.50, 451k triangles. Not measured: the real GPU cost on a phone; 2.25x the pixels is the main cost and the
 governor is what pays for it. Shots: `/mnt/project-files/vfx/blocky/`.
+
+## Pass 17: the main thread, frame by frame (2026-11-27)
+
+A frame bench, then the HUD's browser work, which was the biggest single cost.
+
+**The bench** (`node tools/frame-bench.mjs`, starts its own dev server). The scripted pilot flies a busy Arcade
+run and the Story's first system through the real renderer and HUD, one step a browser frame, with
+`Math.random` seeded. It splits each frame into the sim step, events, scene updates, three.js's submission and
+the HUD, and a trace adds the browser's style, layout and paint, garbage collection and the worst frames. GL draws
+are stubbed by default (software WebGL would swamp the numbers); `--gpu --nostub` times the software raster
+instead, and `--freeze --shots` takes identical frames to compare pixels. The sim is cheap (0.1–0.2 ms a step).
+
+**Found** (CPU profile and invalidation trace, 1600 × 900 High):
+
+- `html:has(#comms:not([hidden])) #pause` made every HUD text or class change restyle every `div` and `p` on the
+  page: 3 ms a frame on average, spikes up to 125 ms. Now a sibling selector (`#comms:not([hidden]) ~ #pause`),
+  same rule, same result.
+- `Sector.project` (every marker, every frame) and the radar read the canvas's `clientWidth`, which forces a
+  layout after each DOM write: 18% and 13% of the JS profile. Both keep the size from their resize now.
+- Restarting a CSS animation read `offsetWidth` (a forced layout) on every hit flash and lock tick. `ui/replay.ts`
+  takes the class off and puts it back on the next frame instead, so a flash starts one frame (16 ms) later.
+- Threat markers rewrote `className` every frame; now only when it changes. Debris used `Math.hypot`, which
+  allocates in V8 (17 MB in 30 s); now `Math.sqrt`.
+
+**Measured** (45 s, paced at 60 fps, draws stubbed; mean | p99 in ms; before → after):
+
+| Run | HUD | Style | Main thread total | Frames over 8 ms |
+|---|---|---|---|---|
+| Desktop Arcade | 3.32 \| 9.10 → 0.98 \| 2.90 | 3.11 \| 7.43 → 0.92 \| 1.94 | 8.07 \| 16.4 → 5.39 \| 10.9 | 1,150 → 113 |
+| Phone Arcade (844 × 390 @3) | 2.20 → 0.98 | 2.16 → 0.72 | 5.98 \| 13.5 → 4.61 \| 10.1 | 395 → 52 |
+| Phone Story | 1.39 → 0.60 | 1.23 → 0.33 | 5.19 → 4.11 | 116 → 29 |
+
+Desktop Arcade frames over 16.7 ms: 22 → 2. Forced layouts a frame: 1.54 → 0.81. Garbage is about 17 MB/s from the
+game itself (three.js's uniform setters, debris, radar colour strings): a later pass.
+
+**Not measured:** a real device. These are main-thread times in a cloud browser; a phone's CPU is slower, so the
+saving there should be larger in milliseconds, but nobody has timed it.

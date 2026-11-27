@@ -615,6 +615,12 @@ export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): Pil
 
 /** Fly a world already set up (a sortie of a journey) to the end, or maxTime. */
 export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOptions = {}): PilotResult {
+  const g = flySteps(w, seed, strategy, o);
+  for (;;) { const r = g.next(); if (r.done) return r.value; }
+}
+
+/** The pilot as a generator: it yields after every simulated step, so the frame bench (tools/framebench.ts) can draw and let the browser paint between steps. */
+export function* flySteps(w: World, seed: number, strategy: Strategy, o: PilotOptions = {}): Generator<void, PilotResult, void> {
   const maxTime = o.maxTime ?? 900;
   let r = seed * 9301 + 49297;
   const rngPick = () => ((r = (r * 9301 + 49297) % 233280) / 233280);
@@ -697,6 +703,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     while (lostAt.length && w.plates >= lostAt[lostAt.length - 1]!.plates) { hitSum += w.runTime - lostAt.pop()!.t; hitN++; }
     const evs = w.drain();
     o.watch?.(w, evs);
+    yield;
     for (const ev of evs) {
       if (ev.type === 'shipHit') lostAt.push({ plates: ev.plates + 1, t: w.runTime });
       if ((ev.type === 'bossSighted' || ev.type === 'bossArrive') && firstCapital.at < 0) firstCapital.at = Math.round(w.runTime);

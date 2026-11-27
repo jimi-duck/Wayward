@@ -235,6 +235,8 @@ export class Sector {
   }
 
   resize(width: number, height: number, dpr: number, offsetY: number): void {
+    this.cssW = width;
+    this.cssH = height;
     this.rig.resize(width, height, offsetY);
     this.env.setPixelRatio(dpr);
     this.fx.setViewportHeight(height * dpr);
@@ -305,12 +307,19 @@ export class Sector {
   /** What a hull is made of (triangles, metal), for the review world's labels. */
   hullInfo(kind: AlienKind, faction: Faction): { tris: number; capitalTris: number; feel: string } { return this.enemies.hullInfo(kind, faction); }
 
-  /** Where a world point lands on screen, in CSS pixels; null when behind the camera. */
+  /** The canvas's size in CSS pixels, as `resize` last had it. */
+  private cssW = 1;
+  private cssH = 1;
+
+  /**
+   * Where a world point lands on screen, in CSS pixels; null when behind the camera. The size is the one `resize` was
+   * given, never read from the canvas: the HUD calls this dozens of times a frame between its style writes, and each
+   * `clientWidth` read forced the page's layout again (docs/PERF.md, pass 17).
+   */
   project(x: number, y: number, z: number): { x: number; y: number } | null {
-    const c = this.renderer.domElement;
     this.v.set(x, y, z).project(this.rig.camera);
     if (this.v.z > 1) return null;
-    return { x: (this.v.x + 1) / 2 * c.clientWidth, y: (1 - this.v.y) / 2 * c.clientHeight };
+    return { x: (this.v.x + 1) / 2 * this.cssW, y: (1 - this.v.y) / 2 * this.cssH };
   }
 
   /** Seconds the dying hull is still shown after the last plate (render/sector.ts hides her at the last blast). */

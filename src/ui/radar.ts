@@ -34,7 +34,13 @@ export class Radar {
   private pingUntil = 0;
   private pingFrom = 0;
 
-  constructor(private readonly canvas: HTMLCanvasElement) {}
+  /** The scope's width in CSS pixels, read at layout: reading it each draw forced the page's layout (docs/PERF.md, pass 17). */
+  private cssW = 1;
+
+  constructor(private readonly canvas: HTMLCanvasElement) {
+    // the scope changes size with the compact HUD and the touch layout as well as the window
+    if (typeof ResizeObserver === 'function') new ResizeObserver(() => this.layout()).observe(canvas);
+  }
 
   /** Ring the Jump Gate's bearing on the scope for a few seconds: the tank can make the jump now. */
   ping(secs: number): void {
@@ -45,6 +51,7 @@ export class Radar {
   /** Size the backing store to the element. */
   layout(): void {
     const dpr = Math.min(2, window.devicePixelRatio || 1);
+    this.cssW = Math.max(1, this.canvas.clientWidth);
     this.canvas.width = Math.max(1, Math.round(this.canvas.clientWidth * dpr));
     this.canvas.height = Math.max(1, Math.round(this.canvas.clientHeight * dpr));
   }
@@ -59,7 +66,7 @@ export class Radar {
     if (!g || !c.width) return;
     const s = sector.shipNow, h = s.heading;
     const reach = this.reach(world);
-    const W = c.width, C = W / 2, dpr = W / Math.max(1, c.clientWidth);
+    const W = c.width, C = W / 2, dpr = W / this.cssW;
     const R = C - BEZEL * dpr, k = R / reach;
     const fx = Math.cos(h), fz = -Math.sin(h), rx = Math.sin(h), rz = Math.cos(h);
     const to = (x: number, z: number, pin = R - 5 * dpr): [number, number, boolean] => {
