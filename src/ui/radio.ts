@@ -158,6 +158,8 @@ export class Radio {
   events(evs: readonly GameEvent[]): void {
     for (const e of evs) {
       if (e.type === 'ping') this.line(e);
+      // the jump leaves the system's talk behind: no line from it stays on screen into the lane
+      else if (e.type === 'jumped') this.line(null);
       else if (e.type === 'callowayReads' || e.type === 'callowayClose' || e.type === 'callowayLost') this.herLine(callowayText(e));
     }
   }

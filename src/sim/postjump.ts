@@ -42,33 +42,29 @@ export const paintDue = (flags: ReadonlySet<string> | readonly string[]): boolea
 export const PAINTER = 'Ned Varga';
 /** Ned on the radio when the ship comes up on his yard: hold her in the ring and he does the rest. */
 export const PAINT_LINE = '“You must be Juno. Ned here. Sam said you’d come, and I owe him one. Ease her into the ring and I’ll do the rest. No charge.”';
-export const PAINT_NOTICE = ['Reprogrammed', 'Owner lock stripped'] as const;
-/** The special moment after the work (owner 2026-11-06): a second notice, then the title card, with the camera's pan as she flies out of the front. Seconds since she left the ring. */
-export const YARD_REPAINT_AT = 2.8;
-export const YARD_REPAINT = ['Repainted', 'Company grey to yellow'] as const;
-export const YARD_TITLE_AT = 4.2;
 /**
- * Ned's yard is done on autopilot (owner 2026-11-06): once she is in the ring the helm is taken, she is flown to the pad and held
- * while lightning zaps the hull and the HUD glitches (`YARD_ZAP` seconds), then the screen goes dark, reboots with the new colours
- * (the rename reveal), and the autopilot flies her out of the front, handing the helm back `YARD_AUTO_END` seconds after the reboot.
- * She starts to move out `YARD_OUT_AT` seconds after it. The HUD is dark until `YARD_DARK`, then flickers back until `YARD_BOOT`.
+ * Ned's yard is done on autopilot (owner 2026-11-06), as a short cut scene (owner 2026-11-27: "the computers are first disabled with the
+ * sparks, then it goes black, when it gets light the ship is already painted, and there's a message from Ned about the archive"). Once she
+ * is in the ring the helm is taken and she is flown to the pad. Sparks hit the hull and the HUD fails (`YARD_ZAP` seconds); the screen goes
+ * black while she reboots (`YARD_REBOOT`), and the paint is done in the dark. The light comes back on her new colours with the camera on her
+ * flank (render/reveal.ts), the HUD stays dark until `YARD_DARK` and flickers back until `YARD_BOOT`, the new name comes up at
+ * `YARD_TITLE_AT`, and the autopilot flies her out of the front from `YARD_OUT_AT`, handing the helm back at `YARD_AUTO_END`. Seconds after
+ * the light comes back unless named otherwise.
  */
-export const YARD_ZAP = 3.6;
-export const YARD_OUT_AT = 1.4;
-export const YARD_AUTO_END = 5.6;
-export const YARD_DARK = 0.3;
-export const YARD_BOOT = 1.2;
-/** After the zaps the ship shuts down: a dark screen with a rebooting loader (ui/hud.ts reboot) for this long, then the new colours and name. */
-export const YARD_REBOOT = 2.8;
+export const YARD_ZAP = 5;
+export const YARD_REBOOT = 5.5;
+export const YARD_DARK = 2;
+export const YARD_BOOT = 3.4;
+export const YARD_TITLE_AT = 2.6;
+export const YARD_OUT_AT = 3;
+export const YARD_AUTO_END = 8;
 /**
- * After the work, Ned says what he did (owner 2026-11-21: his words in place of the card that explained it), and a little later what he
- * found: a sealed partition in her core, woken by the yard's reboot. The archive's message is in it and comes straight after (owner,
- * 24 November 2026: the yard, the reboot, then the archive tells a better story than waiting on a full tank). Seconds after the work.
+ * Once she is out in the light, Ned says what he found: a sealed core under her decking, woken by the reboot. The archive's message is in
+ * it and opens as soon as he has said so (owner, 27 November 2026: "Ned should say he found something and it opens almost straight
+ * away"). After the camera has settled (render/reveal.ts HOLD_END), so he never talks over the cut scene.
  */
-export const NED_DONE_AT = 8;
-export const NED_PARTITION_AT = 17;
-export const NED_DONE = '“Done. She’s yours. The paint won’t pass a close scan, so keep Custody at a distance.”';
-export const NED_PARTITION = '“One more thing. There’s a sealed core under her decking, older than Kellern. The reboot woke it. It’s sending you something.”';
+export const NED_AT = 7.6;
+export const NED_FOUND = '“She’s yours, Juno. And I found something: a sealed core under her decking. The reboot woke it.”';
 /** Set when Ned has found the partition: the stores list it until the archive is open. */
 export const PARTITION = 'partition_found';
 
@@ -132,6 +128,6 @@ export function paintAt(w: { bk: { yard: unknown } | null; flags: ReadonlySet<st
 /** The objective is the tank, bought at the depot or mined: the first system past Cerro, the lock lifted, a tank short of the jump, not docked yet, and Cyrite to buy with. */
 export function refuelAt(w: { bk: { def: { first?: boolean }; port: unknown; docks: number } | null; flags: ReadonlySet<string>; fuel: number; jumpCost: number; cyrite: number; fluidPrice: number; gateWhy?: string }): boolean {
   const b = w.bk;
-  // the relay by the gate comes first (the archive points at it); the tank after
-  return w.gateWhy !== 'wake the relay' && !!b?.def.first && !!b.port && b.docks === 0 && painted(w.flags) && w.fuel < w.jumpCost && w.cyrite >= w.fluidPrice;
+  // Ned and his find come first, then the relay by the gate (the archive points at it); the tank after
+  return w.gateWhy !== 'wake the relay' && w.gateWhy !== 'Ned’s yard first' && !!b?.def.first && !!b.port && b.docks === 0 && painted(w.flags) && w.fuel < w.jumpCost && w.cyrite >= w.fluidPrice;
 }

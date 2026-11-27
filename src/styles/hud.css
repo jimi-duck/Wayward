@@ -72,10 +72,11 @@
 /* the jump: the HUD steps back for the fly-through, and a pale teal veil closes over the view at the end of it */
 #hud, #touch { transition: opacity .45s var(--ez); }
 #app.warping #hud, #app.warping #touch { opacity: 0; }
-/* Ned's yard: the ship is shut down. The view outside stays, a little darker; a rebooting loader sits low in the middle (ui/hud.ts reboot). */
-#reboot { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0; transition: opacity .45s ease;
-  background: radial-gradient(ellipse at 50% 55%, rgba(var(--void-rgb), .5), rgba(var(--void-rgb), .82)); display: grid; place-items: end center; padding-bottom: 20vh; }
-#reboot.on { opacity: 1; }
+/* Ned's yard: the ship is shut down. A cut to black (owner 2026-11-27), a rebooting loader low in the middle (ui/hud.ts reboot); the paint is
+   done in the dark, and the light comes back slowly on her new colours. */
+#reboot { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0; transition: opacity 1.6s ease-in;
+  background: #000; display: grid; place-items: end center; padding-bottom: 20vh; }
+#reboot.on { opacity: 1; transition: opacity .7s ease-out; }
 .rb-box { display: grid; justify-items: center; gap: 10px; min-width: min(360px, 70vw); }
 #rb-t { font: 600 calc(var(--fs) * 1.25)/1 var(--font-rail); letter-spacing: .34em; text-indent: .34em; text-transform: uppercase; color: var(--cy); }
 .rb-bar { display: block; width: 100%; height: 4px; background: rgba(var(--void-rgb), .8); box-shadow: 0 0 0 1px var(--rim-cyan) inset; overflow: hidden; }

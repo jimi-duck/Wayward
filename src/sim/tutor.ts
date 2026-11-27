@@ -193,6 +193,8 @@ function parley(w: World, tu: Tutor): void {
   const card = CARD_BY_ID.story_raiders;
   if (!card) return;
   tu.parley = 1;
+  // what Sam had still to say about the haul is out of date: the raiders are here
+  w.dropLessonLines();
   w.openComms(card);
 }
 

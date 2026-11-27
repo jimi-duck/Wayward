@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { ARC_END, HOLD_END, LOCK_AT, RenameReveal, SWEEP_END } from '../src/render/reveal';
+import { ARC_END, HOLD_END, RenameReveal } from '../src/render/reveal';
 import { CARD_BY_ID } from '../src/sim/comms';
-import { NED_DONE_AT, NED_PARTITION_AT } from '../src/sim/postjump';
+import { NED_AT } from '../src/sim/postjump';
 
 // The rename reveal is presentation only: the `ship_stolen` flag is the livery, and the reveal plays once, when the
 // flag turns on in play, never on a load.
@@ -20,32 +20,27 @@ describe('rename reveal', () => {
   it('shows a loaded ochre hull at once, with no sweep or arc', () => {
     const r = new RenameReveal();
     const { frames } = run(r, 100, 104);
-    expect(frames.every((f) => f.livery === 1 && f.sweep === null && f.arc === 0)).toBe(true);
+    expect(frames.every((f) => f.livery === 1 && f.arc === 0)).toBe(true);
     expect(r.active).toBe(false);
   });
 
-  it('plays once when the lock lifts: grey, one sweep, the arc held on her flank, then back', () => {
+  it('plays once when the paint is done: already painted, the arc held on her flank, then back (owner 2026-11-27: no painting animation)', () => {
     const r = new RenameReveal();
     run(r, 10, 11, { stolen: false });
-    const a = run(r, 11, 11 + LOCK_AT - 0.05);
-    expect(a.last).toMatchObject({ livery: 0, sweep: null });
-    const b = run(r, 11 + LOCK_AT + 0.02, 11 + SWEEP_END - 0.05);
-    const sweeps = b.frames.map((f) => f.sweep!);
-    expect(sweeps.every((s) => s !== null && s >= -1 && s <= 1)).toBe(true);
-    expect(sweeps[sweeps.length - 1]!).toBeGreaterThan(sweeps[0]!);
-    const c = run(r, 11 + SWEEP_END, 11 + ARC_END + 0.05);
-    expect(c.last.livery).toBe(1);
+    const a = run(r, 11, 11.2);
+    expect(a.frames.every((f) => f.livery === 1)).toBe(true);
+    const c = run(r, 11.2, 11 + ARC_END + 0.05);
     expect(c.last.arc).toBeCloseTo(1, 2);
     // a pause (a menu) holds the view where it is
     const d = run(r, 11 + ARC_END + 0.1, 11 + ARC_END + 3, { paused: true });
     expect(d.frames.every((f) => f.arc > 0.99)).toBe(true);
-    // held a moment on her flank, then the camera comes back and the reveal ends, ochre; no card
+    // held a moment on her flank, then the camera comes back and the reveal ends
     const e = run(r, 11 + ARC_END + 0.1, 11 + HOLD_END + 1.7);
-    expect(e.last).toEqual({ livery: 1, sweep: null, arc: 0 });
+    expect(e.last).toEqual({ livery: 1, arc: 0 });
     expect(r.active).toBe(false);
     // it never plays again while the flag stays on
     const f = run(r, 20, 30);
-    expect(f.frames.every((x) => x.livery === 1 && x.sweep === null && x.arc === 0)).toBe(true);
+    expect(f.frames.every((x) => x.livery === 1 && x.arc === 0)).toBe(true);
   });
 
   it('keeps the camera still when a hostile gun is in range', () => {
@@ -53,7 +48,6 @@ describe('rename reveal', () => {
     run(r, 0, 1, { stolen: false });
     const { frames, last } = run(r, 1, 1 + ARC_END + 0.5, { calm: false });
     expect(frames.every((f) => f.arc === 0)).toBe(true);
-    expect(frames.some((f) => f.sweep !== null)).toBe(true);
     expect(last.livery).toBe(1);
   });
 
@@ -68,9 +62,8 @@ describe('rename reveal', () => {
   it('takes its time: a long, wide arc, and no card over it (owner 2026-10-31)', () => {
     expect(ARC_END).toBeGreaterThanOrEqual(5);
     expect(HOLD_END).toBeGreaterThan(ARC_END);
-    // Ned speaks after the reveal, never over the arc, and finds the partition after that (owner 2026-11-21: no card says what the reveal showed)
-    expect(NED_DONE_AT).toBeGreaterThan(HOLD_END);
-    expect(NED_PARTITION_AT).toBeGreaterThan(NED_DONE_AT);
+    // Ned speaks once the camera has settled, never over the arc (owner 2026-11-21: no card says what the reveal showed)
+    expect(NED_AT).toBeGreaterThan(HOLD_END);
     expect(CARD_BY_ID.story_sam!.choices.find((c) => c.id === 'code')!.win?.follow).toBeUndefined();
     // mid-arc the camera is still moving
     const r = new RenameReveal();
@@ -84,7 +77,7 @@ describe('rename reveal', () => {
     const r = new RenameReveal();
     run(r, 0, 1, { stolen: false });
     const { frames } = run(r, 1, 4, { reduced: true });
-    expect(frames.every((f) => f.livery === 1 && f.sweep === null && f.arc === 0)).toBe(true);
+    expect(frames.every((f) => f.livery === 1 && f.arc === 0)).toBe(true);
   });
 
   it('does not replay after a load mid-reveal', () => {
@@ -93,6 +86,6 @@ describe('rename reveal', () => {
     run(r, 1, 1.8);
     r.reset();
     const { frames } = run(r, 1.8, 5);
-    expect(frames.every((f) => f.livery === 1 && f.sweep === null && f.arc === 0)).toBe(true);
+    expect(frames.every((f) => f.livery === 1 && f.arc === 0)).toBe(true);
   });
 });
