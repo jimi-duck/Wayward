@@ -44,12 +44,20 @@ describe('FixedStepLoop', () => {
     }
   });
 
-  it('clamps a stalled frame to three steps instead of fast-forwarding', () => {
+  it('clamps a stalled frame to six steps instead of fast-forwarding', () => {
     const { loop, log } = rig();
-    expect(loop.advance(5)).toBe(3);
-    expect(log.frameDts.at(-1)).toBeCloseTo(0.05);
+    expect(loop.advance(5)).toBe(6);
+    expect(log.frameDts.at(-1)).toBeCloseTo(0.1);
     // and carries no backlog into the next frame
     expect(loop.advance(1 / 60)).toBe(1);
+  });
+
+  it('keeps real time at 12 frames a second (no slow motion on a slow device)', () => {
+    const { loop, log } = rig();
+    for (let i = 0; i < 120; i++) loop.advance(1 / 12);
+    // ten seconds of frames simulate ten seconds
+    expect(log.steps).toBeGreaterThanOrEqual(598);
+    expect(log.steps).toBeLessThanOrEqual(601);
   });
 
   it('ignores zero, negative and NaN intervals', () => {

@@ -147,8 +147,8 @@ export const BULWARK_POINTS = 400;
 export const BULWARK_RESTOCK = 25;
 
 // ── the run ───────────────────────────────────────────────────────────────
-/** Seconds the wreck drifts before the run report. */
-export const DYING = 1.8;
+/** Seconds the wreck drifts before the run report: long enough to see her go, short enough not to feel like loading (was 1.8; 2026-11-27). */
+export const DYING = 1.2;
 
 // The kill chain: score only. Each hull kill inside the window adds one;
 // breaking rock keeps it alive without adding. Every five is another 25%.
