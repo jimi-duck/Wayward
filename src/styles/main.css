@@ -1574,8 +1574,10 @@ html.photo #photo-hint { display: block; animation: ph-hint 4s linear forwards; 
 @keyframes ph-hint { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
 html.photo #hud, html.photo #pause, html.photo #touch, html.photo #pause-b, html.photo #rv-labels, html.photo #rv-btn, html.photo #rv { visibility: hidden; }
 
-/* a card on the table hides the pause card: its words must not show through the glass */
-html:has(#comms:not([hidden])) #pause { display: none; }
+/* a card on the table hides the pause card: its words must not show through the glass. #comms comes before #pause in
+   #app: a sibling rule, not html:has(), which had the browser restyle every div on the page whenever the HUD changed a
+   line of text (docs/PERF.md, pass 17) */
+#comms:not([hidden]) ~ #pause { display: none; }
 
 /* ── the pause card: a flight terminal (owner's mockups, 18 November 2026) ──
    Wide and quiet: the title and the ship's id with bare photo and settings icons; the camera row (three views, the chosen

@@ -59,7 +59,8 @@ export class DebrisField {
       const x = cx + wrap(this.base[i * 3]! + this.drift[i * 3]! * t - cx, BOX) - h;
       const y = this.base[i * 3 + 1]! + this.drift[i * 3 + 1]! * t;
       const z = cz + wrap(this.base[i * 3 + 2]! + this.drift[i * 3 + 2]! * t - cz, BOX) - h;
-      const d = Math.hypot(x - cx, z - cz);
+      // sqrt, not Math.hypot: hypot boxes its numbers, and this runs for every chip every frame (docs/PERF.md, pass 17)
+      const dx = x - cx, dz = z - cz, d = Math.sqrt(dx * dx + dz * dz);
       // a chip near the ship melts to nothing rather than popping
       const k = Math.min(1, Math.max(0, (d - CLEAR_NEAR) / (CLEAR_FAR - CLEAR_NEAR)));
       const s = this.size[i]! * k * k * (3 - 2 * k);

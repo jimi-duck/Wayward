@@ -1,4 +1,5 @@
 import { SCAN_LINE } from '../sim/floor';
+import { replay } from './replay';
 import { CONTRACT_ID, ratio, type Cargo } from '../sim/contract';
 import { clamp } from '../core/math';
 import type { SystemKind } from '../content/systems';
@@ -968,10 +969,9 @@ export class Hud {
     this.aim.layout([$('systems'), $('sensors'), $('objective'), $('log'), $('centre'), $('fire'), $('torp'), $('roll'), $('brk')]);
   }
 
+  /** Play a class's CSS animation again from the start (ui/replay.ts: no forced layout). */
   private retrigger(el: HTMLElement, cls: string): void {
-    el.classList.remove(cls);
-    void el.offsetWidth;
-    el.classList.add(cls);
+    replay(el, cls);
   }
 
   private gateTimer = 0;
