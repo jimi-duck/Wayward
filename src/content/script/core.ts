@@ -32,7 +32,7 @@ export const core = (id: string, stop: string, on: Row['on'], text: string, extr
 
 export const CORE_ROWS: Row[] = [
   // ── Act II · the Reach: alone, and out of practice. Sam is still the warm voice; she speaks after him, one line a stop ──
-  // Northfold: the lead Gran's letter used to give, then the ghost
+  // Northfold: the lead the old letter used to give, then the ghost
   core('nf_core_ilse', 'northfold', free(8), '“Ada had a watch partner. Ilse Marrow. If she’s alive, she’s at Halden’s Reach.”'),
   core('nf_core_ghost', 'northfold', after('nf_sam_g1', 3), '“That isn’t a relay.”', { stale: CORE_STALE }),
   // Halden's Reach: Ilse half remembered, then the engine
