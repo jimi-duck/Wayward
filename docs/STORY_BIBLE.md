@@ -150,7 +150,7 @@ Acts in code: `act()` in `sim/story.ts`. Act I until the first jump; Act II from
 the Reach; Act III from the Hollows (`CHOICE_REGION`, tier 2) and through the
 Threshold. Chapter saves are written at each gate crossed.
 
-Tiers: the three-region chart (`?short`) maps Reach, Marches, Hollows; beats
+Tiers: the three-region chart (no longer started, but a saved one still plays) maps Reach, Marches, Hollows; beats
 there read `Beat.region`. Every new beat in this plan sets both `long` and, only
 where the old chart can play it, `region`.
 

@@ -362,7 +362,7 @@ Reported: much worse in Chrome than Safari, worst in the first minute. Nothing i
 - The HUD's glass blurred the live canvas under every box each frame (`backdrop-filter`, about 6 px). A phone already went without it; the desktop now does too, with the fill a little darker. Pop-ups keep their blur (the game is paused behind them).
 - `derive()` (`sim/evidence.ts`), run every step on the road, copied the flag set dozens of times: 100 to 360 us a step, now 20 to 34 us (`sim/threads.ts` reads a set as it is).
 
-**Not measured:** Chrome's GPU time. If it is still slow, try `?quality=low`, `?nospace` and `?classic` in the address bar and a DevTools Performance recording of the first 60 s.
+**Not measured:** Chrome's GPU time. If it is still slow, try `?quality=low`, and `?nospace` in the address bar and a DevTools Performance recording of the first 60 s.
 
 ## Pass 10: the Story's first system (2026-11-06)
 
