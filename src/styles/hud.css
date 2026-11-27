@@ -301,7 +301,9 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 #tgt-card.unk .tc-s { font-size: calc(var(--fs) * .9); }
 
 /* ── in the world: the gunsight, the target, marks ────────────────────── */
-#world { position: absolute; inset: 0; overflow: hidden; }
+/* its own compositor layer: the marks, brackets and pointers move every frame, and inside the HUD's layer each move
+   repainted the corner pools and text under it, at the screen's full density (docs/PERF.md pass 19) */
+#world { position: absolute; inset: 0; overflow: hidden; will-change: transform; }
 
 /* where the lasers go; it lights when the target is in the line of fire */
 #reticle { position: absolute; left: 0; top: 0; width: 26px; height: 26px; margin: -13px 0 0 -13px; opacity: .5;

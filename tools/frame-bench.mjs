@@ -31,6 +31,8 @@ const PORT = Number(arg('port', 5231));
 const VIEWS = {
   desktop: { viewport: { width: 1600, height: 900 }, deviceScaleFactor: 1, tier: 'high' },
   phone: { viewport: { width: 844, height: 390 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, tier: 'phone' },
+  // the laptop of pass 18: a 1440 x 661 window on a screen of ratio 2
+  laptop: { viewport: { width: 1440, height: 661 }, deviceScaleFactor: 2, tier: 'high' },
 };
 
 const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--port', String(PORT), '--strictPort'], { stdio: ['ignore', 'pipe', 'pipe'] });

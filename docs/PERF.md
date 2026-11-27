@@ -631,3 +631,24 @@ seconds in `tests/quality.test.ts`.
 
 **Not measured:** a real laptop GPU. The model assumes the 52 ms frame is almost all fill; if part of it is fixed GPU
 work (the 4096 shadow map, triangles), the governor takes a further step, then Medium at about the same pixel ratio.
+
+## Pass 19: still about 19 fps on Low (2026-11-27)
+
+A screen recording after pass 18 (Arcade, same laptop, a MacBook Air going by its name): 14–20 fps in flight on every
+tier, Low at one pixel per CSS pixel included, and 60 fps on the title (which draws no 3D and no HUD). The frame barely
+changes with the tier, so the 3D picture's pixels are not what holds it back on this machine; something that costs the
+same on every tier is.
+
+**Found** (cloud, `?quality=low`, a 1440 × 661 window at ratio 2, GL draws stubbed, Chrome's layer tree and trace):
+the HUD was one composited layer the size of the screen, and the marks, brackets and pointers that move every frame
+were painted into it, so the layer repainted every frame (77 paints in 60 frames), corner pools and text with it, at
+the screen's full density. `#world` (the moving marks) now has its own layer (`will-change: transform`): the HUD's
+layer paints 0 times in 60 frames, `#world` alone repaints, and Chrome's raster work falls from 77 to 25 ms a second
+in Arcade (16 to 7.6 in the Story's first system). Screenshots at desktop and phone sizes: the HUD's pixels are the same.
+
+**`?perf` Test.** One button holds the tier and times the whole frame, then each layer off in turn and half size, about
+three seconds each, and prints one line of frame rates; the readout also names the GPU the browser drew with. A layer
+whose removal lifts the rate is the cost; nothing lifting it says the page or the machine.
+
+**Not measured:** the laptop. Chrome's GPU raster of the HUD is a likely share of a cost that does not change with the
+tier, but nobody has timed it on that machine; the Test line from it would say where the rest goes.
