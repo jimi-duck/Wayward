@@ -31,6 +31,7 @@
     "pilot:upgrades": "vitest run --config tools/vitest.config.ts tools/upgrades.pilot.ts",
     "pilot:forks": "vitest run --config tools/vitest.config.ts tools/forks.pilot.ts",
     "pilot:perf": "vitest run --config tools/vitest.config.ts tools/perf.pilot.ts",
+    "pilot:fingerprint": "vitest run --config tools/vitest.config.ts tools/fingerprint.pilot.ts",
     "art:brief": "vitest run --config tools/vitest.config.ts tools/art-brief.pilot.ts",
     "art:prep": "python3 tools/art-prep.py",
     "pilot:variety": "vitest run --config tools/vitest.config.ts tools/variety.pilot.ts",

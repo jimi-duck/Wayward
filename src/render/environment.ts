@@ -6,7 +6,7 @@ import {
 import { setGasLight } from './gas';
 import { MidGas } from './midgas';
 import { Belt } from './belt';
-import { bakeSky, detailTile, dirOf, FarBodies, Parallax, skyFor, SUN_AZ, SUN_EL, type Sky } from './sky';
+import { bakeSky, detailTile, repaintDetailTile, dirOf, FarBodies, Parallax, skyFor, SUN_AZ, SUN_EL, type Sky } from './sky';
 import { Starfield } from './starfield';
 import { Phenomena } from './phenomena';
 import { Depth } from './depth';
@@ -239,6 +239,23 @@ export class Environment {
     }
   }
 
+  /** Paint the current sky's backdrop again (and the reflections taken from it), into a fresh target. `lost`: the old one went with the GPU context, so it is dropped, not freed. */
+  private rebakeSky(lost = false): void {
+    if (!this.sky) return;
+    const old = this.baked;
+    this.baked = bakeSky(this.renderer, this.sky);
+    this.dome.uniforms.uMap!.value = this.baked.texture;
+    this.scene.environment = this.reflect.update(this.baked.texture, this.sunCol);
+    this.field.setSkyMap(this.baked.texture);
+    if (!lost) old?.dispose();
+  }
+
+  /** The GPU context was lost and came back: whatever was baked once into a render target is empty, so bake it again. */
+  restoreContext(): void {
+    this.rebakeSky(true);
+    if (this.dome.defines.DETAIL !== undefined) repaintDetailTile(this.renderer);
+  }
+
   /** A new sky: repaint the backdrop and put up its far bodies. */
   setSky(sky: Sky): void {
     this.sky = sky;
@@ -352,12 +369,7 @@ export class Environment {
       const f = camera.getWorldDirection(this.fwd), h = this.sky.hero;
       h.az = (Math.atan2(f.z, f.x) * 180) / Math.PI + 30;
       h.el = Math.min(-2, (Math.asin(f.y) * 180) / Math.PI + 4);
-      const old = this.baked;
-      this.baked = bakeSky(this.renderer, this.sky);
-      this.dome.uniforms.uMap!.value = this.baked.texture;
-      this.scene.environment = this.reflect.update(this.baked.texture, this.sunCol);
-      this.field.setSkyMap(this.baked.texture);
-      old?.dispose();
+      this.rebakeSky();
     }
     this.far?.face(camera.getWorldDirection(this.fwd));
     this.phenomena.update(dt, this.motion);

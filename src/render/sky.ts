@@ -598,6 +598,16 @@ export function detailTile(renderer: WebGLRenderer): Texture {
   tile = new WebGLRenderTarget(1024, 512, { magFilter: LinearFilter, minFilter: LinearFilter, generateMipmaps: false, depthBuffer: false });
   tile.texture.wrapS = RepeatWrapping;
   tile.texture.wrapT = MirroredRepeatWrapping;
+  paintTile(renderer, tile);
+  return tile.texture;
+}
+
+/** After a lost GPU context: paint the detail tile again into the target its materials already hold. */
+export function repaintDetailTile(renderer: WebGLRenderer): void {
+  if (tile) paintTile(renderer, tile);
+}
+
+function paintTile(renderer: WebGLRenderer, tile: WebGLRenderTarget): void {
   const pass = bakePass();
   pass.uniforms.uMode!.value = 1;
   const prev = renderer.getRenderTarget();
@@ -605,7 +615,6 @@ export function detailTile(renderer: WebGLRenderer): Texture {
   renderer.render(pass.scene, pass.camera);
   renderer.setRenderTarget(prev);
   pass.uniforms.uMode!.value = 0;
-  return tile.texture;
 }
 
 // ── the far bodies ────────────────────────────────────────────────────────

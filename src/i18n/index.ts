@@ -26,9 +26,16 @@ export const LANG_NAME: Record<Lang, string> = { en: 'English', de: 'Deutsch' };
 let DE: Dict = {};
 let loading: Promise<void> | null = null;
 
-/** Fetch the German dictionary (once). The game waits for it before its first paint in German. */
+/**
+ * Fetch the German dictionary (once). The game waits for it before its first paint in German. A fetch that fails
+ * (offline, or a tab left open across a deploy) leaves the game in English, as a missing line would, and the next
+ * call tries again.
+ */
 export function loadDe(): Promise<void> {
-  return (loading ??= import('./de').then((m) => { DE = m.DE; }));
+  return (loading ??= import('./de').then(
+    (m) => { DE = m.DE; },
+    (e: unknown) => { loading = null; console.warn('German text could not be loaded; showing English.', e); },
+  ));
 }
 
 const KEY = 'wayward.lang';

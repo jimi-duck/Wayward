@@ -325,13 +325,16 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
         diffuseColor.rgb *= 1.0 - 0.22 * smoothstep(0.5, 0.95, kitN);`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         float kitR = texture2D(uKitBump, vKitP.zy).g * kitW.x + texture2D(uKitBump, vKitP.xz).g * kitW.y + texture2D(uKitBump, vKitP.xy).g * kitW.z;
-        roughnessFactor = clamp(roughnessFactor + (kitR - 0.58) * 1.0 + (0.5 - kitC.g) * 0.2, 0.14, 1.0);`)
+        roughnessFactor = clamp(roughnessFactor + (kitR - 0.58) * 1.0 + (0.5 - kitC.g) * 0.2, 0.14, 1.0);
+        // kit:roughness`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         // close up, a finer relief from the same map at seven times the scale, faded out by screen size before it shimmers
         vec3 kitD = vKitP * 7.0;
         float kitHD = texture2D(uKitBump, kitD.zy).r * kitW.x + texture2D(uKitBump, kitD.xz).r * kitW.y + texture2D(uKitBump, kitD.xy).r * kitW.z;
         float kitNear = 1.0 - smoothstep(0.08, 0.35, length(fwidth(kitD)));
-        normal = kitPerturb(-vViewPosition, normal, (kitH + (kitHD - 0.5) * 0.18 * kitNear) * uKitStrength, faceDirection);`);
+        float kitBump = (kitH + (kitHD - 0.5) * 0.18 * kitNear) * uKitStrength;
+        // kit:bump
+        normal = kitPerturb(-vViewPosition, normal, kitBump, faceDirection);`);
     if (worn > 0) wearShader(shader, painted, !!o.shade);
   };
   // the scale and the bump strength are uniforms, not part of the shader text, so they stay out of the key: every hull size then shares
@@ -409,12 +412,11 @@ function wearShader(shader: { vertexShader: string; fragmentShader: string }, pa
       ${shade && painted ? 'wCol = mix(wCol, wCol * vec3(1.14, 0.88, 0.66), smoothstep(0.5, 0.72, wFbm(wp * 0.9 + 8.0)) * 0.7);' : ''}
       diffuseColor.rgb = wCol;
       float wDirt = (wGrime + wSoot + wScorch) * uWorn;`)
-    .replace('roughnessFactor = clamp(roughnessFactor + (0.5 - kitC.g) * 0.5, 0.2, 1.0);', `roughnessFactor = clamp(roughnessFactor + (0.5 - kitC.g) * 0.5, 0.2, 1.0);
+    .replace('// kit:roughness', `
       roughnessFactor = clamp(mix(roughnessFactor, 0.46, wBare) + wDirt * 0.3, 0.25, 1.0);`)
     .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
       metalnessFactor = mix(metalnessFactor, 0.7, wBare * ${painted ? '1.0' : '0.5'});`)
-    .replace('normal = kitPerturb(-vViewPosition, normal, kitH * uKitStrength, faceDirection);',
-      'normal = kitPerturb(-vViewPosition, normal, kitH * uKitStrength - (wDent.x * 0.03 + wScr * 0.0008) * uWorn, faceDirection);');
+    .replace('// kit:bump', 'kitBump -= (wDent.x * 0.03 + wScr * 0.0008) * uWorn;');
 }
 
 // ── building ──────────────────────────────────────────────────────────────

@@ -43,6 +43,7 @@ import { Stage, makeStage } from './stage';
 import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_LINE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_REPAINT_AT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR, SAM_RELAY, NED_DONE, NED_DONE_AT, NED_PARTITION, NED_PARTITION_AT, PARTITION } from './postjump';
 import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
+import { RelayWake } from './relaywake';
 import { Cordon, HEARING_IN, HEARING_LAUNCH } from './cordon';
 import { Gathering } from './gathering';
 import { Speak, SPEAK_FAILED, SPEAK_FLAG, SPOKEN } from './speak';
@@ -518,7 +519,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.paintCalled = false; this.yardT = 0; this.yardAt = Infinity; this.yardBeat = 0; this.yardPhase = 0; this.wakeHerald = false;
     this.recoverT = 0;
-    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.laneOpened = false; this.burial = null; this.buried = false; this.guardsSent = false; this.adriftTold = false; this.jamTold = false; this.hungryTold = false; this.twistTold = false; this.noise = 0; this.knots = 0; this.jamT = 0; this.hunters = new Set(); this.waveHulls = new Set(); this.pulsed = false; this.cover = null; this.coverT = 0; this.allies = 1; this.mainLines = new Set(); this.listenAt = Infinity;
+    this.placeHold = 0; this.placeHoldOf = ''; this.mover = null; this.escort = null; this.anchor = null; this.uplink = 0; this.relay = new RelayWake(this); this.mainLines = new Set(); this.listenAt = Infinity;
     this.radioQ = [];
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false; this.ghostWait = 0; this.ghostAge = 0;
@@ -860,7 +861,7 @@ export class World implements EncounterHost {
     } else stepShip(s, c, this.hull, dt);
     if (held) this.recoverT += dt;
     if (this.bk?.def.first && this.alive) this.stepFirst();
-    if (this.bk && this.alive) { this.stepStoryPlace(dt); this.stepScars(); this.stepRelay(dt); }
+    if (this.bk && this.alive) { this.stepStoryPlace(dt); this.stepScars(); this.relay.step(dt); }
     if (this.nowCard && !this.comms && !this.call && this.phase === 'play' && this.busy() !== 'fight' && !this.floor.holding && this.floor.mayMoment(this.runTime, 0)) { const d = this.nowCard; this.nowCard = null; this.openComms(d); }
     this.flushRadio();
     if (this.space) this.stepSpace(dt, s);
@@ -2198,284 +2199,26 @@ export class World implements EncounterHost {
   private mainLines = new Set<string>();
   private listenAt = Infinity;
 
-  /** A road gate's relay that she wakes herself (sim/uplink.ts): every relay but the Narrows', until it is awake. */
-  get wakeRelay(): { x: number; z: number } | null {
-    const b = this.bk;
-    if (!b || b.def.script === 'narrows' || this.uplink >= 1 || this.flags.has(relayKey(b.def)) || (b.def.first && !painted(this.flags))) return null;
-    // a refused relay she agreed to leave dark (content/road.ts LEG_RELAYS)
-    if (b.def.twist === 'refused' && this.flags.has(`relay_dark_${b.def.script}`)) return null;
-    return relayOf(b);
-  }
-
+  /** The stop's Warden relay, woken by her (sim/relaywake.ts): its state lives there, and these say what it is now. */
+  private relay = new RelayWake(this);
+  /** A road gate's relay that she wakes herself (sim/relaywake.ts). */
+  get wakeRelay(): { x: number; z: number } | null { return this.relay.wakeRelay; }
   /** She is in the relay's ring and the charge is running. */
-  get uplinking(): boolean {
-    const rl = this.wakeRelay;
-    // (a given relay: the locals wake it, and she only has to hold near it)
-    return !!rl && this.phase === 'play' && !this.floor.hush && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < (this.given ? GIVEN_R : UPLINK_R);
-  }
-
-  /** A given relay (content/road.ts LEG_RELAYS) whose locals stand with her: they wake it while she holds near. */
-  get given(): boolean {
-    return this.bk?.def.twist === 'given' && this.flags.has(GIVEN_FLAG);
-  }
-
-  /** The uplink: inside the relay's ring the charge runs; each stage is told, and the first two send a wave. */
-  private stepRelay(dt: number): void {
-    const rl = this.wakeRelay, b = this.bk;
-    // a woken relay opens the lane: the trade comes through the gate again (a reload of the system finds it open, without the voice)
-    if (b && !this.laneOpened && b.def.script !== 'narrows' && relayOf(b) && this.flags.has(relayKey(b.def))) this.openLane(this.uplink >= 1);
-    if (!rl || !b || this.phase !== 'play') return;
-    this.stepTwist(rl, dt);
-    this.stepHunters(rl, dt);
-    this.stepPulse(rl);
-    this.stepCover(rl, dt);
-    // a rock or a guard on the mast holds the charge; a tether hunter drags it
-    const blk = this.uplinkBlock;
-    // (a loud relay charges at half rate while she drifts quiet, World.quiet)
-    // (a chorus relay charges faster for every relay she woke on the way, World.chorus)
-    const r = stepUplink(this.uplink, this.uplinking, (!blk ? 1 : blk === 'Drive the hunter off the relay' ? HUNTED_RATE : 0) * (this.quiet ? LOUD_QUIET_RATE : 1) * this.chorus, dt);
-    if (b.def.twist === 'loud' && r.charge > this.uplink && !this.quiet) this.stepNoise(dt);
-    // a hungry relay's core drinks the jump fluid as it charges (content/road.ts LEG_RELAYS)
-    if (b.def.twist === 'hungry' && r.charge > this.uplink) this.fuel = Math.max(0, this.fuel - (r.charge - this.uplink) * HUNGRY_FEED);
-    this.uplink = r.charge;
-    if (!r.stage) return;
-    // woken, the relay overrides the lock: what Custody sent for it breaks off (a hunter would otherwise circle the gate's field for ever)
-    if (r.stage === 3) for (const a of this.aliens) if (this.waveHulls.has(a.id)) { a.fleeing = true; a.mode = 'leave'; }
-    const gate = b.def.first ? -1 : Math.max(0, GATES.findIndex((g) => g.script === b.def.script) - 1);
-    const reach = !!(b.def.script && REACH_RELAYS[b.def.script]);
-    // (nothing human lives in the Hollows: at a loud relay the Thren its noise draws are the whole fight, World.stepNoise)
-    // (and at the Threshold, Calloway's own guns are the fight: content/script/threshold.ts)
-    const loud = b.def.twist === 'loud', last = b.def.twist === 'threshold';
-    const wave = loud || last ? [] : uplinkWave(r.stage, waveTier(!!b.def.first, reach, gate));
-    // (topped up to WAVE_CROWD hostile hulls on her, hunters first: a hot system sends fewer)
-    let room = Math.max(0, WAVE_CROWD - this.aliens.filter((a) => !a.ward && !a.fleeing && this.committed(a)).length);
-    const sized = [...wave].sort((p, q) => Number(!!q.hunter) - Number(!!p.hunter)).map((w) => { const n = Math.min(w.n, room); room -= n; return { ...w, n }; }).filter((w) => w.n > 0);
-    const hunted = sized.some((w) => w.hunter);
-    // the first system has no stop script: the woken relay is told here, and Sam follows it
-    if (r.stage === 3 && b.def.first) {
-      this.flags.add(relayKey(b.def));
-      // (its own notice says the gate is open: the gate's "open · fly through" would say it twice)
-      this.holdNoted = 'open';
-      this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Warden key accepted', reason: 'Jump Gate open', main: true });
-      this.radioLines('sam_relay', tr('Sam Okoro'), 'miners', [tr(SAM_RELAY)]);
-    }
-    // (elsewhere the last stage is told by the stop's own row: "Warden key accepted", content/script/arrivals.ts)
-    // a split relay: this mast is awake, the next is marked (the core wakes on the third)
-    const split = b.def.twist === 'split';
-    if (split) {
-      b.split = r.stage;
-      if (r.stage < 3) { const m = SPLIT_MASTS[r.stage]!; b.drift = this.backFrom(m.back, m.across); }
-    }
-    if (r.stage < 3 && split) this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Mast awake', reason: hunted ? 'a tether hunter is coming' : 'fly to the next mast', main: true });
-    else if (r.stage < 3) this.events.push(r.stage === 1
-      ? { type: 'storyNotice', tone: 'amber', headline: 'Relay waking', reason: loud ? 'its song carries' : last ? 'the last lane stirs' : 'Custody traced the uplink', main: true }
-      : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: hunted ? 'a tether hunter is coming' : reach || loud || last ? 'the core is warming' : 'more Custody inbound', main: true });
-    const rows = (h: boolean) => sized.filter((w) => !!w.hunter === h).map((w) => ({ variant: w.variant, n: w.n, from: 'ahead' as const }));
-    if (rows(false).length) for (const id of this.applyOutcome({ text: '', spawn: rows(false) }, 0, [])) this.waveHulls.add(id);
-    if (hunted) for (const id of this.applyOutcome({ text: '', spawn: rows(true) }, 0, [])) { this.hunters.add(id); this.waveHulls.add(id); }
-    // the locals she helped come out at the first wave (content/waves.ts COVER)
-    if (r.stage === 1 && !this.cover) {
-      // (at the Threshold, everyone who came: their guns fire the faster for each)
-      this.allies = last ? ALLIES.filter((f) => this.flags.has(f)).length : 1;
-      const c = last ? (this.allies ? THRESHOLD_COVER : undefined) : COVER.find((x) => x.stop === b.def.script && this.flags.has(x.flag));
-      if (c) { this.cover = c; this.radioLines(`cover_${c.stop}`, tr(c.from), c.caller, [tr(c.line)], 2); }
-    }
-  }
-
-  /** Tether hunters (content/waves.ts): hulls that make for the mast and hold the charge while they sit by it. */
-  private hunters = new Set<number>();
-  /** Every hull a relay's waves sent, so they break off once it is awake. */
-  private waveHulls = new Set<number>();
-  /** Whether this wake's damping pulse has gone, and the locals flying cover (null: none), and their next shot. */
-  private pulsed = false;
-  private cover: CoverRow | null = null;
-  private coverT = 0;
-  /** How many guns fly the cover (the allies who came, at the Threshold; 1 elsewhere). */
-  private allies = 1;
-
-  /** Hostile hulls near the mast that hold the charge: a guard on a guarded relay, or a tether hunter. */
-  private onMast(rl: { x: number; z: number }): Alien[] {
-    const guarded = this.bk?.def.twist === 'guarded';
-    return this.aliens.filter((a) => !a.ward && !a.fleeing && (guarded || this.hunters.has(a.id)) && Math.hypot(a.x - rl.x, a.z - rl.z) < GUARD_HOLD);
-  }
-
-  /** A hunter closes on the mast on top of its own flying, and settles there. */
-  private stepHunters(rl: { x: number; z: number }, dt: number): void {
-    if (!this.hunters.size) return;
-    for (const id of this.hunters) {
-      const al = this.aliens.find((a) => a.id === id);
-      if (!al) { this.hunters.delete(id); continue; }
-      if (al.fleeing || al.snare > 0) continue;
-      const dx = rl.x - al.x, dz = rl.z - al.z, d = Math.hypot(dx, dz);
-      if (d <= HUNT_SIT) continue;
-      const v = Math.min(d - HUNT_SIT, HUNT_PULL * dt);
-      al.x += (dx / d) * v; al.z += (dz / d) * v;
-    }
-  }
-
-  /**
-   * The relay's damping pulse: once a wake, once its lamps are lit, it throws the hulls crowding its ring outward and snares them a
-   * moment. It goes by itself when a guard or a hunter sits on the mast, or when the ring is crowded while she holds the key.
-   */
-  private stepPulse(rl: { x: number; z: number }): void {
-    if (this.pulsed || this.uplink < 1 / 3 - 1e-9) return;
-    const near = this.aliens.filter((a) => !a.ward && !a.fleeing && this.committed(a) && Math.hypot(a.x - rl.x, a.z - rl.z) < PULSE_R);
-    if (!this.onMast(rl).length && !(this.uplinking && near.length >= PULSE_CROWD)) return;
-    this.pulsed = true;
-    for (const a of near) {
-      const dx = a.x - rl.x, dz = a.z - rl.z, d = Math.hypot(dx, dz) || 1;
-      a.vx = (dx / d) * PULSE_PUSH; a.vz = (dz / d) * PULSE_PUSH;
-      // (thrown past the mast's hold, so the charge runs again while they come back)
-      const out = Math.max(d, GUARD_HOLD + 20);
-      a.x = rl.x + (dx / d) * out; a.z = rl.z + (dz / d) * out;
-      a.snare = Math.max(a.snare, PULSE_SNARE);
-    }
-    this.events.push({ type: 'relayPulse', x: rl.x, z: rl.z, r: PULSE_R });
-    this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Relay pulse', reason: 'the ring is clear for now', main: true });
-  }
-
-  /** The locals' guns: a shot at the nearest hostile hull near the mast every few seconds, for the rest of the wake. */
-  private stepCover(rl: { x: number; z: number }, dt: number): void {
-    if (!this.cover || (this.coverT -= dt) > 0) return;
-    this.coverT = COVER_EVERY / Math.max(1, this.allies);
-    let best: Alien | null = null, bd = COVER_R;
-    for (const a of this.aliens) {
-      if (a.ward || a.fleeing || !this.committed(a)) continue;
-      const d = Math.hypot(a.x - rl.x, a.z - rl.z);
-      if (d < bd) { bd = d; best = a; }
-    }
-    if (!best) return;
-    this.events.push({ type: 'flak', x: best.x, y: best.y, z: best.z });
-    this.hurtAlien(best, COVER_DMG, 'hazard', best.x, best.y, best.z);
-  }
-
-  /** A buried relay's rock, while it sits on the mast (sim/uplink.ts); whether a guarded relay's picket has been sent. */
-  private burial: Bulwark | null = null;
-  private buried = false;
-  private guardsSent = false;
-  private adriftTold = false;
-  private jamTold = false;
-  private hungryTold = false;
-  private twistTold = false;
-  /** A loud relay's noise (0 to 1, a knot comes when it fills) and the knots it has drawn this wake. */
-  private noise = 0;
-  private knots = 0;
-  private jamT = 0;
-
-  /** She is at a loud relay, in its ring and drifting slow enough that the charge runs quiet (content/road.ts LEG_RELAYS). */
-  get quiet(): boolean {
-    return this.bk?.def.twist === 'loud' && this.uplinking && Math.hypot(this.ship.vx, this.ship.vz) < topSpeed(this.hull) * LOUD_STILL;
-  }
-
-  /** A chorus relay's rate (content/road.ts LEG_RELAYS): every relay she woke answers it (1 anywhere else). */
-  get chorus(): number {
-    return this.bk?.def.twist === 'chorus' ? chorusRate(wardenRelays(this.flags)) : 1;
-  }
-
-  /** What the HUD says while the charge runs (English, for t()): a loud relay tells her whether she is being heard; a chorus that the others answer. */
-  get uplinkLine(): string {
-    if (this.bk?.def.twist === 'chorus' && this.chorus > 1) return 'Waking it · your relays answer';
-    if (this.bk?.def.twist !== 'loud') return 'Waking the relay';
-    return this.quiet ? 'Waking it quietly' : 'Waking it loud · the Thren hear';
-  }
-
-  /** Loud charging fills the noise; when it fills, a Thren knot comes for the mast (a few a wake), and it breaks off when the relay wakes. */
-  private stepNoise(dt: number): void {
-    if (this.knots >= LOUD_MAX || (this.noise += dt / LOUD_FILL) < 1) return;
-    this.noise = 0; this.knots++;
-    for (const id of this.applyOutcome({ text: '', spawn: [{ variant: 'mote', n: LOUD_KNOT, from: 'around' }] }, 0, [])) this.waveHulls.add(id);
-    this.events.push({ type: 'storyNotice', tone: 'red', headline: 'Thren knot', reason: 'drawn by the relay’s noise', main: true });
-  }
-
-  /** A jammed relay's static is bursting now (content/road.ts LEG_RELAYS): on a fixed cycle from the arrival. */
-  get jammed(): boolean {
-    return this.bk?.def.twist === 'jammed' && this.runTime % JAM_CYCLE >= JAM_QUIET;
-  }
-
-  /** An offset from where the relay stands, back toward where she came in and across (sim/breakout.ts laneBack). */
-  private backFrom(back: number, across: number): { x: number; z: number } { return laneBack(this.bk!.lane, back, across); }
-
-  /** A relay's twist (content/road.ts REACH_RELAYS): the rock on a buried mast, held where it sits; the picket on a guarded one, when she comes near. */
-  private stepTwist(rl: { x: number; z: number }, dt: number): void {
-    const tw = this.bk?.def.twist;
-    if (tw === 'buried') {
-      if (!this.buried) { this.buried = true; this.burial = this.field.bury(rl.x, rl.z, BURIED_R, BURIED_HP); }
-      // (the rock is pinned: the field never wraps it round the ship, sim/field.ts)
-      if (this.burial && !this.field.bulwarks.includes(this.burial)) {
-        this.burial = null;
-        this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Relay clear', reason: 'hold in its ring', main: true });
-      }
-    }
-    if (tw === 'adrift') {
-      // the mast tumbles on a slow loop out from where it stood: she keeps in its ring as it goes (it steadies once awake)
-      const a = (this.runTime / ADRIFT_LOOP) * Math.PI * 2;
-      this.bk!.drift = this.backFrom(ADRIFT_OUT + ADRIFT_A * Math.sin(a), ADRIFT_B * Math.sin(2 * a));
-      if (!this.adriftTold && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < ADRIFT_TELL) {
-        this.adriftTold = true;
-        this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Relay adrift', reason: 'keep in its ring as it tumbles', main: true });
-      }
-    }
-    if (tw === 'jammed' && this.jammed) {
-      // a burst of static: lightning on the mast while it lasts (the charge waits it out, World.uplinkBlock)
-      if ((this.jamT -= dt) <= 0) {
-        this.jamT = JAM_STRIKE;
-        // a crackle down the mast, top to foot, jagged
-        const pts: number[] = [];
-        for (let k = 0; k <= 6; k++) pts.push(rl.x + this.rng.range(-2.5, 2.5), 40 - k * 7, rl.z + this.rng.range(-2.5, 2.5));
-        this.events.push({ type: 'arc', points: pts });
-      }
-      if (!this.jamTold && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < ADRIFT_TELL) {
-        this.jamTold = true;
-        this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Relay jammed', reason: 'wake it between the bursts', main: true });
-      }
-    }
-    if (tw === 'hungry' && !this.hungryTold && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < UPLINK_R) {
-      this.hungryTold = true;
-      this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Relay hungry', reason: 'its core drinks your jump fluid', main: true });
-    }
-    if (tw === 'chorus' && !this.twistTold && this.chorus > 1 && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < UPLINK_R) {
-      this.twistTold = true;
-      this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Relays answering', reason: 'every one you woke', main: true });
-    }
-    if (tw === 'loud' && !this.twistTold && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < UPLINK_R) {
-      this.twistTold = true;
-      this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Relay loud', reason: 'drift slow to wake it quietly', main: true });
-    }
-    if (tw === 'guarded' && !this.guardsSent && Math.hypot(this.ship.x - rl.x, this.ship.z - rl.z) < GUARD_WAKE) {
-      this.guardsSent = true;
-      for (let i = 0; i < GUARDS; i++) {
-        const a = (i / GUARDS) * Math.PI * 2;
-        this.spawnHostile('picket', { x: rl.x + Math.cos(a) * 30, y: 0, z: rl.z + Math.sin(a) * 30 }, null, true);
-      }
-      this.events.push({ type: 'storyNotice', tone: 'red', headline: 'Relay guarded', reason: 'drive them off the mast', main: true });
-    }
-  }
-
-  /** Why the uplink cannot run at a relay with a twist ('' when it can): the HUD's objective says what to do (English, for t()). */
-  get uplinkBlock(): string {
-    const rl = this.wakeRelay;
-    if (!rl) return '';
-    if (this.burial) return 'Mine the relay clear';
-    if (this.jammed) return 'Wait for the static to pass';
-    if (this.bk?.def.twist === 'refused' && !this.flags.has(`relay_ok_${this.bk.def.script}`)) return 'Hear the locals out first';
-    if (this.bk?.def.twist === 'hungry' && this.fuel <= 0.05) return STARVED;
-    const sit = this.onMast(rl);
-    if (sit.length) return this.bk?.def.twist === 'guarded' && !sit.some((a) => this.hunters.has(a.id)) ? 'Drive the guards off the relay' : 'Drive the hunter off the relay';
-    return '';
-  }
-
-  /** The lane is open on this sortie (World.openLane). */
-  laneOpened = false;
-
-  /** A woken relay's lane: hulls come through the gate (sim/traffic.ts), and one of them says so on the radio a little after the key. */
-  private openLane(voice: boolean): void {
-    this.laneOpened = true;
-    if (!this.traffic) this.traffic = new Traffic(this, { n: 0, patrols: false, routes: [], busy: false });
-    this.traffic.openLane(this);
-    if (!voice) return;
-    const line = LANE_LINES[(GATES.findIndex((g) => g.script === this.bk?.def.script) + 1) % LANE_LINES.length]!;
-    this.radioLines('lane_open', tr('Hauler captain'), 'frontier', [tr(line)], 6);
-  }
+  get uplinking(): boolean { return this.relay.uplinking; }
+  /** A given relay whose locals stand with her. */
+  get given(): boolean { return this.relay.given; }
+  /** She is at a loud relay, drifting slow enough that the charge runs quiet. */
+  get quiet(): boolean { return this.relay.quiet; }
+  /** A chorus relay's rate (1 anywhere else). */
+  get chorus(): number { return this.relay.chorus; }
+  /** What the HUD says while the charge runs (English, for t()). */
+  get uplinkLine(): string { return this.relay.uplinkLine; }
+  /** A jammed relay's static is bursting now. */
+  get jammed(): boolean { return this.relay.jammed; }
+  /** Why the uplink cannot run now ('' when it can), for the HUD (English, for t()). */
+  get uplinkBlock(): string { return this.relay.uplinkBlock; }
+  /** The lane is open on this sortie (sim/relaywake.ts openLane). */
+  get laneOpened(): boolean { return this.relay.laneOpened; }
 
   /** Where the relay mast stands that the gate waits on, while it waits on it (the HUD names its range). */
   get gateRelay(): { x: number; z: number } | null {
@@ -2525,7 +2268,7 @@ export class World implements EncounterHost {
   arrivalLine: { tone: 'teal' | 'amber' | 'red' | 'white'; reason: string } | null = null;
   private gateLet = false;
   /** The hold's reason last told to her ('' when none): a new reason is told again, and the gate opening is told once. */
-  private holdNoted = '';
+  holdNoted = '';
 
   /** The Narrows' scene (sim/narrows.ts): where it stands, when the gate went down, the blockade's hulls, and what is done. */
   private narrows: NarrowsState | null = null;
@@ -4024,7 +3767,7 @@ export class World implements EncounterHost {
   }
 
   /** Returns true if the hull was destroyed. `quiet` skips the hit flash (damage over time). */
-  private hurtAlien(al: Alien, dmg: number, src: Weapon, x: number, y: number, z: number, quiet = false): boolean {
+  hurtAlien(al: Alien, dmg: number, src: Weapon, x: number, y: number, z: number, quiet = false): boolean {
     if (!this.aliens.includes(al)) return false;
     // a cloaked hull is out of reach of everything: shots, blasts, mines, a ram, flak, a well
     if (cloaked(al)) return false;

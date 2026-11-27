@@ -94,6 +94,15 @@ export function bakeAtlas(renderer: WebGLRenderer, size: number): Texture {
   return baked.texture;
 }
 
+/** The GPU context was lost and came back: the baked target is empty, so bake it again at the same size. */
+export function rebakeAtlas(renderer: WebGLRenderer): void {
+  if (!baked) return;
+  const size = baked.width;
+  // (not disposed: its GPU objects went with the old context, and freeing them again only draws warnings)
+  baked = null;
+  bakeAtlas(renderer, size);
+}
+
 const VERT = /* glsl */ `
   attribute vec4 iPos;  // centre, size
   attribute vec4 iCol;  // colour, alpha

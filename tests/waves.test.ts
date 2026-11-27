@@ -44,7 +44,9 @@ function settle(w: World, x: number, z: number): void {
   sit(w, FLOOR.arrival + 0.5, x - 300, z);
 }
 
-const hunters = (w: World) => (w as unknown as { hunters: Set<number> }).hunters;
+const hunters = (w: World) => relay(w).hunters;
+/** The relay's own state (sim/relaywake.ts). */
+const relay = (w: World) => (w as unknown as { relay: { hunters: Set<number>; pulsed: boolean } }).relay;
 
 describe('waves that grow', () => {
   it('come from rows by tier: none at the core, a hunter in the second wave from the middle legs', () => {
@@ -75,7 +77,7 @@ describe('waves that grow', () => {
     expect(hunters(w).size).toBe(1);
     const id = [...hunters(w)][0]!;
     // it closes on the mast (the pulse is spent first, so it may sit)
-    (w as unknown as { pulsed: boolean }).pulsed = true;
+    relay(w).pulsed = true;
     for (let i = 0; i < 40 && w.uplinkBlock !== 'Drive the hunter off the relay'; i++) sit(w, 0.5, rl!.x - 20, rl!.z, notices);
     expect(w.uplinkBlock).toBe('Drive the hunter off the relay');
     // it drags the charge to a third, it does not stop it
@@ -86,9 +88,9 @@ describe('waves that grow', () => {
       expect(w.uplink - held).toBeLessThan((3 / UPLINK_TIME) * HUNTED_RATE + 1e-6);
     }
     // a fresh pulse throws it past the mast's hold
-    (w as unknown as { pulsed: boolean }).pulsed = false;
+    relay(w).pulsed = false;
     sit(w, STEP, rl!.x - 20, rl!.z, notices);
-    expect((w as unknown as { pulsed: boolean }).pulsed).toBe(true);
+    expect(relay(w).pulsed).toBe(true);
     const al = w.aliens.find((a) => a.id === id)!;
     expect(Math.hypot(al.x - rl!.x, al.z - rl!.z)).toBeGreaterThan(GUARD_HOLD);
     expect(w.uplinkBlock).toBe('');

@@ -1,5 +1,7 @@
 import { Scene, Vector3, type Group, type InstancedMesh, type Object3D, type WebGLRenderer } from 'three';
 import { rendererTone } from './tone';
+import { rebakeGas } from './gas';
+import { rebakeAtlas } from './puffs';
 import { COSMETICS } from '../content/unlocks';
 import { clamp, lerp } from '../core/math';
 import { HOLD_MAX, JUMP_T, type SortieDef } from '../sim/breakout';
@@ -281,6 +283,13 @@ export class Sector {
    * and uploads the textures, instead of leaving them to the first frame after
    * Start. Behind the title only: the canvas is blanked again.
    */
+  /** After a lost GPU context: three.js uploads meshes and textures again by itself, but not what was baked once into a target. */
+  restoreContext(): void {
+    this.env.restoreContext();
+    rebakeGas(this.renderer);
+    rebakeAtlas(this.renderer);
+  }
+
   warmFrame(): void {
     // Draw everything once, hidden pools and the gallery included (and casting, so the sun's depth
     // programs link too): compiling is not enough, a buffer or texture is uploaded by the first draw.
