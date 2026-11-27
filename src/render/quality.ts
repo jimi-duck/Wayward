@@ -71,15 +71,20 @@ export function tierIndex(name: string | null | undefined): number {
   return TIERS.findIndex((t) => t.name === name);
 }
 
+/** The shape of the kept record: 3 since a lower tier, like a smaller size, has to earn its place (docs/PERF.md pass 27). */
+const KEPT = 3;
+
 /** A tier this device settled on is kept a fortnight: long enough to start right, short enough that an update or a new browser is judged again. */
 const KEEP_MS = 14 * 24 * 3600 * 1000;
 
 /** The tier, ceiling and drawing size (pixels per CSS pixel) this device settled on last time, if recent. */
 export function keptTier(key: string, now = Date.now()): { tier: number; ceil: number; dpr?: number; thirty?: boolean } | null {
   try {
-    const v = JSON.parse(localStorage.getItem(key) ?? 'null') as { tier?: string; ceil?: number; at?: number; dpr?: number; thirty?: boolean } | null;
+    const v = JSON.parse(localStorage.getItem(key) ?? 'null') as { tier?: string; ceil?: number; at?: number; dpr?: number; thirty?: boolean; v?: number } | null;
     const tier = tierIndex(v?.tier);
     if (!v || tier < 0 || typeof v.ceil !== 'number' || typeof v.at !== 'number' || now - v.at > KEEP_MS) return null;
+    // a record from before a step down had to earn its place (KEPT) is judged again from the top
+    if (v.v !== KEPT) return null;
     const dpr = typeof v.dpr === 'number' && v.dpr > 0 && v.dpr <= 4 ? v.dpr : undefined;
     return { tier, ceil: Math.max(tier, Math.min(TIERS.length - 1, v.ceil)), ...(dpr ? { dpr } : {}), ...(v.thirty === true ? { thirty: true } : {}) };
   } catch { return null; }
@@ -90,7 +95,7 @@ export function keptTier(key: string, now = Date.now()): { tier: number; ceil: n
  * settled rather than spending its first seconds finding it again.
  */
 export function saveTier(key: string, tier: TierName, ceil: number, dpr?: number, thirty = false): void {
-  try { localStorage.setItem(key, JSON.stringify({ tier, ceil, at: Date.now(), ...(dpr ? { dpr: Math.round(dpr * 1000) / 1000 } : {}), ...(thirty ? { thirty } : {}) })); } catch { /* not kept */ }
+  try { localStorage.setItem(key, JSON.stringify({ tier, ceil, at: Date.now(), v: KEPT, ...(dpr ? { dpr: Math.round(dpr * 1000) / 1000 } : {}), ...(thirty ? { thirty } : {}) })); } catch { /* not kept */ }
 }
 
 /** The drawing scales a phone steps through before it gives up a tier (docs/PERF.md pass 15). */
@@ -102,8 +107,17 @@ export const SCALES = [1, 0.85, 0.75, 0.67] as const;
  * steps: it drops a tier as before.
  */
 export const WIDE = [1, 0.85, 0.75, 0.67, 0.5] as const;
-/** The least a computer draws on Low, in pixels per CSS pixel: half (Chrome on an M1 went from 17–19 fps to 32–34 there). */
-const LOW_FLOOR = 0.49;
+/**
+ * The least a computer draws on Low, in pixels per CSS pixel: three quarters. Half was tried (pass 23); once the rock
+ * shader was cheap it bought Chrome on an M1 little, and the owner found the picture blurry (docs/PERF.md pass 27).
+ */
+const LOW_FLOOR = 0.74;
+/**
+ * How much faster a computer's frames must come once it draws smaller, or the size is put back: drawing a quarter of the
+ * pixels bought Chrome on an M1 only 20 to 24 fps once its rock shader was cheap (docs/PERF.md pass 26), a blurred picture
+ * for nothing. A smaller size that reaches an even 30 is kept whatever it bought.
+ */
+const PAYS = 1.3;
 
 export class QualityGovernor {
   private index: number;
@@ -113,8 +127,12 @@ export class QualityGovernor {
   private top = 0;
   /** The size reached its step by climbing (so a verdict there means the climb failed). */
   private climbed = false;
-  /** Out of steps at the lowest tier: hold an even 30 rather than judder. Kept for the session. */
+  /** Nothing left to give that pays (the lowest tier, or a lower one bought too little): hold an even 30 rather than judder. */
   thirty = false;
+  /** The last step down in size, and the frame it was taken from, until the new size has been judged. */
+  private tried: { from: number; avg: number; tier?: number; ceil?: number } | null = null;
+  /** Drawing smaller bought too little on this tier: the size stays, and the next verdict moves the tier. */
+  private flat = false;
   private avg = 0;
   private jitter = 0;
   private samples = 0;
@@ -148,6 +166,15 @@ export class QualityGovernor {
     this.top = 0;
     this.climbed = false;
     this.thirty = false;
+    this.tried = null;
+    this.flat = false;
+    this.restart();
+  }
+
+  /** Hold the governor still for a while (the readout's Test), keeping the size and the even 30 as they are. */
+  freeze(on: boolean): void {
+    this.locked = on;
+    this.tried = null;
     this.restart();
   }
 
@@ -183,6 +210,7 @@ export class QualityGovernor {
   /** Try the size or tier above (the page calls this at a quiet moment). Returns true when it moved. */
   stepUp(): boolean {
     if (!this.wantsUp) return false;
+    this.tried = null;
     if (this.step > this.top) {
       this.step--;
       this.climbed = true;
@@ -239,11 +267,33 @@ export class QualityGovernor {
     // room to spare: keeping up with the display, steadily (a 30fps cap is not room)
     if (settled && this.avg <= ROOM && this.jitter < CALM) this.steady += dt;
     else this.steady = 0;
-    if (this.locked || this.thirty || !settled) return false;
+    if (this.locked || !settled) return false;
+    if (this.tried) {
+      const t = this.tried;
+      this.tried = null;
+      // the step down bought too little and still misses an even 30. A tier: take it back, and hold an even 30 there (Chrome
+      // on an M1 drew High at full size about as fast as Low: docs/PERF.md pass 27). A size: put it back, and judge the tier
+      if (t.avg / this.avg < PAYS && this.avg > CAP_30 * 1.05) {
+        if (t.tier !== undefined) {
+          this.index = t.tier;
+          this.ceil = Math.max(this.ceil, t.ceil ?? t.tier);
+          this.step = t.from;
+          this.top = 0;
+          this.thirty = true;
+          this.restart(SETTLE_MOVE);
+          return true;
+        }
+        this.step = t.from;
+        this.flat = true;
+        this.restart(SETTLE_MOVE);
+        return true;
+      }
+    }
+    if (this.thirty) return false;
     if (this.avg <= SLOW || this.cappedAt30()) return false;
     // first draw a little smaller, which is hard to see, before giving up the look of a tier
     const list = this.scales();
-    if (this.step < list.length - 1) {
+    if (this.step < list.length - 1 && !this.flat) {
       // a size reached by climbing and found slow is never climbed back to on this tier
       if (this.climbed) this.top = this.step + 1;
       this.climbed = false;
@@ -253,6 +303,7 @@ export class QualityGovernor {
       if (!this.breathe) {
         const need = ROOM / this.avg, now = list[this.step]!;
         while (next < list.length - 1 && (list[next]! / now) ** 2 > need) next++;
+        this.tried = { from: this.step, avg: this.avg };
       }
       this.step = next;
       this.restart(SETTLE_MOVE);
@@ -263,11 +314,13 @@ export class QualityGovernor {
       this.thirty = true;
       return true;
     }
-    const dpr = this.dpr();
+    const dpr = this.dpr(), was = { from: this.step, avg: this.avg, tier: this.index, ceil: this.ceil };
     this.index--;
     // too slow here: never try this tier again on this device
     this.ceil = Math.min(this.ceil, this.index);
     this.enter(dpr);
+    // a computer judges the lower tier as it judges a smaller size: it has to pay
+    if (!this.breathe) this.tried = was;
     this.restart(SETTLE_MOVE);
     return true;
   }
@@ -276,8 +329,8 @@ export class QualityGovernor {
   private scales(): readonly number[] {
     if (this.breathe) return SCALES;
     const base = Math.min(this.screen() || 1, this.tier.dprCap);
-    // a computer keeps at least one pixel per CSS pixel, except on Low, the last stop, where a soft picture beats a
-    // juddering one (Chrome on an M1 drew Low at 17–19 fps, half size at 32–34: docs/PERF.md pass 22)
+    // a computer keeps at least one pixel per CSS pixel, except on Low, the last stop, where a slightly soft picture beats
+    // a juddering one (docs/PERF.md passes 22 and 27)
     const floor = this.index === 0 ? LOW_FLOOR : 0.99;
     const n = WIDE.filter((s) => base * s >= floor).length;
     return WIDE.slice(0, Math.max(1, n));
@@ -295,6 +348,8 @@ export class QualityGovernor {
   private enter(dpr: number): void {
     this.top = 0;
     this.climbed = false;
+    this.tried = null;
+    this.flat = false;
     if (this.breathe) { this.step = 0; return; }
     const list = this.scales(), base = Math.min(this.screen() || 1, this.tier.dprCap);
     const i = list.findIndex((s) => base * s <= dpr + 0.01);

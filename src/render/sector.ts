@@ -31,6 +31,7 @@ import { krailRGB, PickupView } from './pickups';
 import { Post } from './post';
 import type { QualityTier } from './quality';
 import { ROCK_FINE, RockView } from './rocks';
+import { kitAnisotropy } from './kit';
 import { RockFx } from './rockfx';
 import { EnemyView, NEON, wreck } from './enemies';
 import { ShipView } from './ships';
@@ -162,6 +163,10 @@ export class Sector {
   private wispT = 0;
   /** An opaque panel (the port) fills the view: nothing behind it needs drawing. */
   blind = false;
+  /** False while a panel hides the whole view and the scene is not drawn: such a frame says nothing about the machine. */
+  get drawing(): boolean {
+    return !(this.blind || (this.covered && this.bayK > COVERED));
+  }
   /** Layers the phone readout has switched off. Empty unless `?perf` is open. */
   readonly off = new Set<PerfLayer>();
 
@@ -236,6 +241,7 @@ export class Sector {
     this.warp.setDetail(tier.name === 'low');
     this.debris.setCount(tier.debris);
     ROCK_FINE.value = tier.name === 'low' ? 0 : 1;
+    kitAnisotropy(tier.name === 'low' ? 2 : 8);
   }
 
   resize(width: number, height: number, dpr: number, offsetY: number): void {
@@ -847,7 +853,7 @@ export class Sector {
     this.env.fight(this.fightFaction ? NEON[this.fightFaction] : null, this.fightK);
 
     // the refit bay is opaque and covers the whole view once the ship has settled under it: nothing to draw, and phones animate its cards more smoothly without a full frame behind them
-    if (this.blind || (this.covered && this.bayK > COVERED)) return;
+    if (!this.drawing) return;
     if (this.off.size) { this.drawProbed(dt); return; }
     if (!this.post?.render(dt)) this.renderer.render(this.scene, this.rig.camera);
   }

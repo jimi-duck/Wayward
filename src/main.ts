@@ -87,8 +87,8 @@ function boot(review: typeof import('./review') | null): void {
   const quality = new QualityGovernor(pinned >= 0 ? pinned : firstTier(), pinned >= 0, settled?.ceil, coarse, () => window.devicePixelRatio || 1);
   // and at the drawing size it settled on, so a visit does not open with seconds of slow frames while it is found again
   if (pinned < 0 && settled?.dpr) quality.startAt(settled.dpr);
-  // a device that settled on an even 30 at the bottom starts there, not with twenty seconds of ragged frames first
-  if (pinned < 0 && settled?.thirty && quality.tier.name === 'low') quality.thirty = true;
+  // a device that settled on an even 30 starts there, not with twenty seconds of ragged frames first
+  if (pinned < 0 && settled?.thirty) quality.thirty = true;
   const keepTier = () => { if (pinned < 0 && !saver) saveTier(TIER_KEY, quality.tier.name, quality.ceiling, quality.drawn, quality.thirty); };
   // Battery saver (a switch on the title's Settings and the pause card): the low tier and 30 frames a second. Kept per device.
   const SAVER_KEY = 'wayward.saver';
@@ -151,7 +151,8 @@ function boot(review: typeof import('./review') | null): void {
   // ?perf: the phone readout (frame, CPU and GPU time) with switches to take one layer out at a time; docs/PERF.md
   const perf = params.has('perf') ? new PerfReadout(el('debug'), {
     renderer, quality, off: sector.off, fit, scene: () => sector.scene,
-    pin: (i) => { quality.pin(i); shownTier = quality.tier; matchTier(renderer, quality.tier); sector.setTier(quality.tier); fit(); void sector.warm(); },
+    pin: (i) => { quality.pin(i); shownTier = quality.tier; matchTier(renderer, quality.tier); sector.setTier(quality.tier); fit(); void sector.warm(); loop.minInterval = saver || quality.thirty ? 1 / 30 : 0; },
+    uncap: (on) => { loop.minInterval = !on && (saver || quality.thirty) ? 1 / 30 : 0; },
   }) : null;
   // the console's text sizes change once the web fonts arrive
   document.fonts?.ready.then(fit);
@@ -767,6 +768,9 @@ function boot(review: typeof import('./review') | null): void {
       const system = world.mode === 'breakout' ? world.sortie.system : '';
       if (world.run !== lastRun || system !== lastSystem || (wasPaused && !loop.paused)) { lastRun = world.run; lastSystem = system; quality.hold(GRACE); }
       wasPaused = loop.paused;
+      // the refit bay or the port hides the scene: those quick empty frames would read as room to climb (Chrome on an M1
+      // went up to Medium in the bay and judged it again in flight: docs/PERF.md pass 26), so they are not measured
+      if (!sector.drawing) { if (!loop.paused) quality.hold(GRACE); return; }
       // down at once when the frames are too slow; up only while the world is held (a pop-up, the pause card), never in flight
       const moved = !loop.paused ? quality.sample(dt) : started && !settling && !bay.open && quality.stepUp();
       if (moved && quality.tier === shownTier) {
@@ -780,6 +784,7 @@ function boot(review: typeof import('./review') | null): void {
         sector.setTier(quality.tier);
         fit();
         void sector.warm();
+        loop.minInterval = saver || quality.thirty ? 1 / 30 : 0;
         keepTier();
       }
     },

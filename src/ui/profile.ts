@@ -2,7 +2,7 @@
 // The ?perf Profile button: for a couple of seconds every draw is wrapped in a GPU timer query (EXT_disjoint_timer_query,
 // which Chrome and Firefox offer; Safari does not), and the time is summed by what was drawn: the stone shader, the stars,
 // the sky dome and so on. One line of the dearest few says what to rebuild on a browser that is slow at it (docs/PERF.md
-// pass 25). Queries split the GPU's work, so the sums run a little high; the order is what counts.
+// pass 25). Queries split the GPU's work, so the sums run high (far too high on Chrome on a Mac): shares are shown.
 
 import { Material, ShaderMaterial, type Object3D } from 'three';
 
@@ -97,9 +97,11 @@ export class DrawProfile {
   }
 
   private finish(): void {
-    const total = [...this.ms.values()].reduce((a, b) => a + b, 0) / FRAMES;
+    // as shares of the whole: Chrome on an M1 summed 769 ms a frame for a 17 ms frame (each query splits the GPU's work
+    // and is timed with its wait), so only the proportions mean anything (docs/PERF.md pass 26)
+    const sum = [...this.ms.values()].reduce((a, b) => a + b, 0) || 1;
     const top = [...this.ms].sort((a, b) => b[1] - a[1]).slice(0, 8)
-      .map(([k, v]) => `${k} ${(v / FRAMES).toFixed(1)}ms/${Math.round((this.draws.get(k) ?? 0) / FRAMES)}`);
-    this.result = `profile (gpu ms/frame, draws): all ${total.toFixed(1)} · ${top.join(' · ')}`;
+      .map(([k, v]) => `${k} ${Math.round((v / sum) * 100)}%/${Math.round((this.draws.get(k) ?? 0) / FRAMES)}`);
+    this.result = `profile (share of gpu, draws a frame): ${top.join(' · ')}`;
   }
 }
