@@ -2383,6 +2383,8 @@ export class World implements EncounterHost {
     else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet), from: o.objective.from };
     else if ('card' in o) {
       const def = CARD_BY_ID[o.card];
+      // a note ADA-1 gives back says so as it comes: "Memory restored", and the relay (the wake's own herald is told in stepComms)
+      if (def?.herald && def.id !== WAKE_BEAT) this.events.push({ type: 'storyNotice', tone: 'teal', headline: def.herald.headline, reason: def.herald.reason });
       // an urgent card opens now in a fight, where the desk would hold it (the Narrows' note: the gate's reboot waits on it); otherwise the desk
       if (def && o.urgent && this.busy() === 'fight' && !this.comms && !this.call && this.phase === 'play') this.openComms(def);
       // a card earned at a story place opens as she finishes there (sim/script.ts `now`)

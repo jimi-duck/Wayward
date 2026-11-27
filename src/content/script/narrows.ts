@@ -25,7 +25,7 @@ export const NARROWS_ROWS: Row[] = [
   { id: 'nr_lit', stop: STOP, on: { on: 'near', site: 'relay', within: 200 }, do: { wall: 'relay_narrows' } },
   { ...notice('nr_key', { on: 'near', site: 'relay', within: 200 }, 'teal', 'Warden key accepted', 'the relay is waking'), urgent: true },
   // urgent, with the key's notice: if the pursuit has caught her here, the note still comes, or the gate would never start its reboot (road pilot, 22 November 2026)
-  { id: 'nr_note', stop: STOP, on: { on: 'after', row: 'nr_key', delay: 2 }, do: { card: 'warden_note_1' }, main: true, urgent: true },
+  { id: 'nr_note', stop: STOP, on: { on: 'after', row: 'nr_key', delay: 2 }, wall: 'rec_closing', do: { card: 'warden_note_1' }, main: true, urgent: true },
 
   // ── 3 · Gate down: the world starts the reboot as the note closes (`narrows_reboot`) ──
   { id: 'nr_hold', stop: STOP, on: { on: 'flag', flag: 'narrows_reboot' }, do: { objective: { main: 'Hold out', quiet: 'The damping field is down' } } },
