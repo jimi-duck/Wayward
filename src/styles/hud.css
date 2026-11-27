@@ -76,6 +76,15 @@
 #reboot { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0; transition: opacity .45s ease;
   background: radial-gradient(ellipse at 50% 55%, rgba(var(--void-rgb), .5), rgba(var(--void-rgb), .82)); display: grid; place-items: end center; padding-bottom: 20vh; }
 #reboot.on { opacity: 1; }
+/* A device's first run: the start-up screen over a held world while the quality is found (main.ts calibrate). Nearly opaque,
+   so the steps behind it are not seen; the same loader as the reboot, centred. Above the HUD and the pause card, under ?perf. */
+#calib { position: absolute; inset: 0; z-index: 7; pointer-events: none; opacity: 0; visibility: hidden; transition: opacity .5s ease, visibility 0s linear .5s;
+  background: radial-gradient(ellipse at 50% 50%, rgba(var(--void-rgb), .9), rgba(var(--void-rgb), .97)); display: grid; place-items: center; }
+#calib.on { opacity: 1; visibility: visible; transition: none; pointer-events: auto; }
+#cb-t { font: 600 calc(var(--fs) * 1.25)/1 var(--font-rail); letter-spacing: .34em; text-indent: .34em; text-transform: uppercase; color: var(--cy); }
+#cb-i { transition: width .25s linear; }
+#cb-s { font: 500 calc(var(--fs) * .9)/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink); opacity: .85; text-align: center; }
+@media (max-height: 520px) { #cb-t { font-size: 14px; } #cb-s { font-size: 10px; } }
 .rb-box { display: grid; justify-items: center; gap: 10px; min-width: min(360px, 70vw); }
 #rb-t { font: 600 calc(var(--fs) * 1.25)/1 var(--font-rail); letter-spacing: .34em; text-indent: .34em; text-transform: uppercase; color: var(--cy); }
 .rb-bar { display: block; width: 100%; height: 4px; background: rgba(var(--void-rgb), .8); box-shadow: 0 0 0 1px var(--rim-cyan) inset; overflow: hidden; }

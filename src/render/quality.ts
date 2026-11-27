@@ -53,6 +53,8 @@ export const TIERS: readonly QualityTier[] = [
 const EMA = 0.05;
 /** Seconds of measured frames before a verdict. In seconds, not frames: at 19fps a count of 180 frames took ten. */
 const SETTLE = 3;
+/** The verdict window while the start-up screen hides the picture (`quick`): a held, still scene gives steady frames sooner. */
+const SETTLE_QUICK = 1;
 // Longer frames are stalls (a tab switch, a notification), not measurements.
 // Generous, so a phone that really runs at 15fps still gets measured.
 const STALL = 0.1;
@@ -66,6 +68,8 @@ const CALM = 0.002;
 const UP_AFTER = 30;
 /** After the governor moves, the first frames pay for new buffers or shaders, not for the new size: skip them. */
 const SETTLE_MOVE = 0.5;
+/** The same behind the start-up screen: the frames there are a held scene, and nobody is waiting to fly. */
+const SETTLE_MOVE_QUICK = 0.3;
 
 export function tierIndex(name: string | null | undefined): number {
   return TIERS.findIndex((t) => t.name === name);
@@ -127,6 +131,8 @@ export class QualityGovernor {
   private top = 0;
   /** The size reached its step by climbing (so a verdict there means the climb failed). */
   private climbed = false;
+  /** Judge on a shorter window: the start-up screen is up and the world is held, so nobody sees the steps (main.ts). */
+  quick = false;
   /** Nothing left to give that pays (the lowest tier, or a lower one bought too little): hold an even 30 rather than judder. */
   thirty = false;
   /** The last step down in size, and the frame it was taken from, until the new size has been judged. */
@@ -169,6 +175,11 @@ export class QualityGovernor {
     this.tried = null;
     this.flat = false;
     this.restart();
+  }
+
+  /** A verdict has been reached where it stands, with no step waiting to be judged: the start-up screen may lift. */
+  get quiet(): boolean {
+    return this.measured >= (this.quick ? SETTLE_QUICK : SETTLE) && !this.tried;
   }
 
   /** Hold the governor still for a while (the readout's Test), keeping the size and the even 30 as they are. */
@@ -219,7 +230,7 @@ export class QualityGovernor {
       this.index++;
       this.enter(dpr);
     }
-    this.restart(SETTLE_MOVE);
+    this.restart(this.quick ? SETTLE_MOVE_QUICK : SETTLE_MOVE);
     return true;
   }
 
@@ -263,7 +274,7 @@ export class QualityGovernor {
       this.jitter += (Math.abs(dt - this.avg) - this.jitter) * EMA;
     }
     this.measured += dt;
-    const settled = this.measured >= SETTLE;
+    const settled = this.measured >= (this.quick ? SETTLE_QUICK : SETTLE);
     // room to spare: keeping up with the display, steadily (a 30fps cap is not room)
     if (settled && this.avg <= ROOM && this.jitter < CALM) this.steady += dt;
     else this.steady = 0;
@@ -280,12 +291,12 @@ export class QualityGovernor {
           this.step = t.from;
           this.top = 0;
           this.thirty = true;
-          this.restart(SETTLE_MOVE);
+          this.restart(this.quick ? SETTLE_MOVE_QUICK : SETTLE_MOVE);
           return true;
         }
         this.step = t.from;
         this.flat = true;
-        this.restart(SETTLE_MOVE);
+        this.restart(this.quick ? SETTLE_MOVE_QUICK : SETTLE_MOVE);
         return true;
       }
     }
@@ -306,7 +317,7 @@ export class QualityGovernor {
         this.tried = { from: this.step, avg: this.avg };
       }
       this.step = next;
-      this.restart(SETTLE_MOVE);
+      this.restart(this.quick ? SETTLE_MOVE_QUICK : SETTLE_MOVE);
       return true;
     }
     if (this.index === 0) {
@@ -321,7 +332,7 @@ export class QualityGovernor {
     this.enter(dpr);
     // a computer judges the lower tier as it judges a smaller size: it has to pay
     if (!this.breathe) this.tried = was;
-    this.restart(SETTLE_MOVE);
+    this.restart(this.quick ? SETTLE_MOVE_QUICK : SETTLE_MOVE);
     return true;
   }
 

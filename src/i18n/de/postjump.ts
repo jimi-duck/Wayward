@@ -95,6 +95,8 @@ export const POSTJUMP: Record<string, string> = {
   'Reach Ned’s yard': 'Neds Werft erreichen',
   'Rebooting': 'Neustart',
   'Ship systems restoring': 'Schiffssysteme werden wiederhergestellt',
+  'Initialising': 'Initialisierung',
+  'Tuning ship systems to this device': 'Schiffssysteme werden auf dein Gerät abgestimmt',
   'Autopilot · Ned is working': 'Autopilot · Ned arbeitet',
   'Make her yours': 'Mach sie zu deinem Schiff',
   'free': 'kostenlos',

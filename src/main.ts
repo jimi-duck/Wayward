@@ -49,6 +49,8 @@ import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18
 
 /** Seconds the quality governor ignores after a new system or a closed panel. */
 const GRACE = 2;
+/** The start-up screen (main.ts calibrate): the frames skipped first, the least and most it stays up, and its bar's pace, in seconds. */
+const CALIB_GRACE = 0.6, CALIB_MIN = 1.5, CALIB_MAX = 9, CALIB_TYPICAL = 5;
 /**
  * A new Story journey is the Warden's Road: Cerro to the Threshold as fixed stops (docs/ROAD.md). The generated chart
  * (?classic, ?short) was taken out as a way in on 2026-11-27; a journey saved on it still loads and plays.
@@ -643,6 +645,10 @@ function boot(review: typeof import('./review') | null): void {
   /** Launch from the start card: the arcade, a new journey, or (`resume`) the saved one. */
   const launch = (mode: 'breakout' | 'arcade' = 'breakout', resume = false) => {
     if (started) return;
+    launchRun(mode, resume);
+    if (started) calibrate();
+  };
+  const launchRun = (mode: 'breakout' | 'arcade', resume: boolean) => {
     if (mode !== profile.mode) {
       profile.mode = mode;
       persist(profile);
@@ -687,7 +693,7 @@ function boot(review: typeof import('./review') | null): void {
     {
       layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), brk: el('brk'), roll: el('roll'),
     },
-    () => (started ? (photo ? setPhoto(false) : panelOpen() ? undefined : settingsOpen() ? showSettings(false) : logOpen() ? showLog(false) : setPaused(!loop.paused)) : menuEnter()),
+    () => (started ? (calib >= 0 ? undefined : photo ? setPhoto(false) : panelOpen() ? undefined : settingsOpen() ? showSettings(false) : logOpen() ? showLog(false) : setPaused(!loop.paused)) : menuEnter()),
     () => openBay(),
   );
 
@@ -766,29 +772,63 @@ function boot(review: typeof import('./review') | null): void {
     measure(dt) {
       // a new system, or a panel just closed: the first frames are slow for their own reasons, so the governor waits
       const system = world.mode === 'breakout' ? world.sortie.system : '';
-      if (world.run !== lastRun || system !== lastSystem || (wasPaused && !loop.paused)) { lastRun = world.run; lastSystem = system; quality.hold(GRACE); }
+      if (world.run !== lastRun || system !== lastSystem || (wasPaused && !loop.paused)) { lastRun = world.run; lastSystem = system; quality.hold(calib >= 0 ? CALIB_GRACE : GRACE); }
       wasPaused = loop.paused;
+      if (calib >= 0) { calibFrame(dt); return; }
       // the refit bay or the port hides the scene: those quick empty frames would read as room to climb (Chrome on an M1
       // went up to Medium in the bay and judged it again in flight: docs/PERF.md pass 26), so they are not measured
       if (!sector.drawing) { if (!loop.paused) quality.hold(GRACE); return; }
       // down at once when the frames are too slow; up only while the world is held (a pop-up, the pause card), never in flight
-      const moved = !loop.paused ? quality.sample(dt) : started && !settling && !bay.open && quality.stepUp();
-      if (moved && quality.tier === shownTier) {
-        // only the drawing size moved (or the frame rate settled on 30): no new shaders
-        fit();
-        loop.minInterval = saver || quality.thirty ? 1 / 30 : 0;
-        keepTier();
-      } else if (moved) {
-        shownTier = quality.tier;
-        matchTier(renderer, quality.tier);
-        sector.setTier(quality.tier);
-        fit();
-        void sector.warm();
-        loop.minInterval = saver || quality.thirty ? 1 / 30 : 0;
-        keepTier();
-      }
+      if (!loop.paused ? quality.sample(dt) : started && !settling && !bay.open && quality.stepUp()) applyQuality();
     },
   });
+  /** The governor moved: a new drawing size, an even 30, or a new tier (new shaders). */
+  const applyQuality = () => {
+    if (quality.tier !== shownTier) {
+      shownTier = quality.tier;
+      matchTier(renderer, quality.tier);
+      sector.setTier(quality.tier);
+      void sector.warm();
+    }
+    fit();
+    loop.minInterval = saver || quality.thirty ? 1 / 30 : 0;
+    keepTier();
+  };
+  /**
+   * A device's first run (nothing kept): an in-theme start-up screen holds the world while the governor finds the tier and
+   * size this device can carry, judged on a shorter window, so its steps are never seen in flight (owner 2026-11-27: better
+   * than playing the first seconds at a quality that is still moving). Later visits start where this one settled.
+   */
+  let calib = -1;
+  const calibrate = () => {
+    if (settled || pinned >= 0 || saver || dev) return;
+    calib = 0;
+    quality.quick = true;
+    quality.hold(CALIB_GRACE);
+    loop.paused = true;
+    el('cb-t').textContent = t('Initialising');
+    el('cb-s').textContent = t('Tuning ship systems to this device');
+    el('cb-i').style.width = '0%';
+    el('calib').classList.add('on');
+  };
+  const calibFrame = (dt: number) => {
+    // the world stays held under the screen, whatever a key or a card asked for meanwhile
+    loop.paused = true;
+    calib += dt;
+    if (sector.drawing && quality.sample(dt)) applyQuality();
+    el('cb-i').style.width = `${Math.round(Math.min(0.94, calib / CALIB_TYPICAL) * 100)}%`;
+    if ((calib > CALIB_MIN && quality.quiet) || calib > CALIB_MAX) calibrated();
+  };
+  const calibrated = () => {
+    calib = -1;
+    quality.quick = false;
+    el('cb-i').style.width = '100%';
+    el('calib').classList.remove('on');
+    // back to what the launch asked for: the how-to card in the Arcade, flight in a new journey
+    loop.paused = document.documentElement.classList.contains('paused') || panelOpen();
+    input.reset();
+    keepTier();
+  };
   loop.minInterval = saver || quality.thirty ? 1 / 30 : 0;
   // the player's device settings: touch layout, auto-fire, the stick, the compact HUD, the camera view (ui/prefs.ts)
   const prefs = new DevicePrefs(coarse, haptics, sector.rig);
