@@ -123,6 +123,13 @@ export async function bench(o: BenchOptions): Promise<{ lastDraws: string[]; sho
         const a = now(); step(dt, input); stepMs += now() - a;
       };
       let last: World['phase'] | null = null;
+      // a program linked during play is a stall on a phone: name it on the frame it happened
+      const known = new Set(info.programs ?? []);
+      const compiled = (): string => {
+        const fresh = (info.programs ?? []).filter((p) => !known.has(p));
+        for (const p of fresh) known.add(p);
+        return fresh.map((p) => `compile:${p.name}`).join(',');
+      };
       try {
         const g = flySteps(w, o.seed + restarts, { kind: 'random' }, {
           maxTime: w.runTime + (frames - rows.length) / 60 + 1,
@@ -161,7 +168,7 @@ export async function bench(o: BenchOptions): Promise<{ lastDraws: string[]; sho
               ...(o.gpu && !ext ? { gpu: finishMs } : {}),
               step: stepMs, react: b - a, prep: c - b - drawMs, draw: drawMs, hud: d - c, total: stepMs + (d - a),
               calls: info.render.calls, tris: info.render.triangles, programs: info.programs?.length ?? 0,
-              events: events.length ? [...new Set(events.map((e) => e.type))].join(',') : '',
+              events: [events.length ? [...new Set(events.map((e) => e.type))].join(',') : '', compiled()].filter(Boolean).join(','),
             });
             if (rows.length % 60 === 0) heap.push(mem());
             stepMs = 0;

@@ -586,3 +586,8 @@ its id, which moves the bench's seeded world, so the check held the sequence sti
 
 The frame times are within run-to-run noise here (the seeded worlds differ, as above); the garbage and GC counts
 are the reliable part. Also a few fewer draws: a double-sided glow is one draw, not two.
+
+**Shader links in play.** The bench now names any program linked mid-run (`linked in play:`). In 45 s of each of the
+four runs, none: the warm-up behind the title covers everything these runs drew. The odd 20–40 ms frame left (about one
+in 45 s) has no compile, GC or style work behind it in the trace; it may be the cloud machine, and only a real device
+can say.
