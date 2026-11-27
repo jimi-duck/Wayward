@@ -3,6 +3,7 @@ import './singlepass';
 import { NoToneMapping, PCFShadowMap, SRGBColorSpace, WebGLRenderer } from 'three';
 import type { QualityTier } from './quality';
 import { installAerial } from './aerial';
+import { installOrphan } from './orphan';
 import { rendererTone } from './tone';
 
 // Medium and high tiers render through the post chain, which anti-aliases
@@ -17,6 +18,8 @@ export function createRenderer(canvas: HTMLCanvasElement, tier: QualityTier): We
     stencil: false,
     depth: true,
   });
+  // a buffer rewritten whole each frame gets fresh storage, so the driver never waits for the GPU to finish with it
+  installOrphan(renderer.getContext() as WebGL2RenderingContext);
   // The link check asks the driver for each program's log the first time it is used, which
   // makes the browser finish compiling right there, in the frame. Shipped shaders do not
   // need it; ?debug=1 and the dev server keep it for anyone writing one.

@@ -10,15 +10,18 @@
 //
 //  · A frame longer than MAX_FRAME is clamped, never simulated in full. A
 //    stalled tab or a sleeping laptop is not time the field should have moved
-//    through. At 0.05s that is three steps, the same cap the original had.
+//    through. The original capped at 0.05s (three steps), which meant a device
+//    drawing fewer than 20 frames a second played in slow motion: at 12 fps
+//    the whole game, a death included, ran at 60% speed. At 0.1s the game
+//    keeps real time down to 10 fps; the steps are cheap (docs/PERF.md pass 20).
 //  · A held frame (freeze) stops the simulation clock and keeps drawing, so
 //    the weight it lends a kill is not paid for in score, cooldowns or
 //    difficulty. The frame a dreadnought comes apart on is the one worth
 //    looking at.
 
 export const STEP = 1 / 60;
-const MAX_FRAME = 0.05;
-const MAX_STEPS = 4;
+const MAX_FRAME = 0.1;
+const MAX_STEPS = 7;
 // The longest a single freeze may hold, from the original's HITSTOP_MAX.
 const FREEZE_MAX = 0.11;
 // Frame intervals are not exact multiples of STEP, so an accumulator that

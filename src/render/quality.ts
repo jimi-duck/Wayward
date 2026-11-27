@@ -74,18 +74,20 @@ export function tierIndex(name: string | null | undefined): number {
 /** A tier this device settled on is kept a fortnight: long enough to start right, short enough that an update or a new browser is judged again. */
 const KEEP_MS = 14 * 24 * 3600 * 1000;
 
-/** The tier and ceiling this device settled on last time, if recent. */
-export function keptTier(key: string, now = Date.now()): { tier: number; ceil: number } | null {
+/** The tier, ceiling and drawing size (pixels per CSS pixel) this device settled on last time, if recent. */
+export function keptTier(key: string, now = Date.now()): { tier: number; ceil: number; dpr?: number } | null {
   try {
-    const v = JSON.parse(localStorage.getItem(key) ?? 'null') as { tier?: string; ceil?: number; at?: number } | null;
+    const v = JSON.parse(localStorage.getItem(key) ?? 'null') as { tier?: string; ceil?: number; at?: number; dpr?: number } | null;
     const tier = tierIndex(v?.tier);
     if (!v || tier < 0 || typeof v.ceil !== 'number' || typeof v.at !== 'number' || now - v.at > KEEP_MS) return null;
-    return { tier, ceil: Math.max(tier, Math.min(TIERS.length - 1, v.ceil)) };
+    const dpr = typeof v.dpr === 'number' && v.dpr > 0 && v.dpr <= 4 ? v.dpr : undefined;
+    return { tier, ceil: Math.max(tier, Math.min(TIERS.length - 1, v.ceil)), ...(dpr ? { dpr } : {}) };
   } catch { return null; }
 }
 
-export function saveTier(key: string, tier: TierName, ceil: number): void {
-  try { localStorage.setItem(key, JSON.stringify({ tier, ceil, at: Date.now() })); } catch { /* not kept */ }
+/** Keep the tier, ceiling and drawing size, so the next visit starts where this one settled rather than at full size. */
+export function saveTier(key: string, tier: TierName, ceil: number, dpr?: number): void {
+  try { localStorage.setItem(key, JSON.stringify({ tier, ceil, at: Date.now(), ...(dpr ? { dpr: Math.round(dpr * 1000) / 1000 } : {}) })); } catch { /* not kept */ }
 }
 
 /** The drawing scales a phone steps through before it gives up a tier (docs/PERF.md pass 15). */
@@ -186,6 +188,22 @@ export class QualityGovernor {
     }
     this.restart(SETTLE_MOVE);
     return true;
+  }
+
+  /** Pixels per CSS pixel drawn now (the tier's ratio on this screen, times the drawing size). */
+  get drawn(): number {
+    return this.dpr();
+  }
+
+  /**
+   * Start at the drawing size this device settled on last time (`keptTier`), not at full size: without it, every
+   * visit began with a few seconds of slow frames while the governor found the size again.
+   */
+  startAt(dpr: number): void {
+    if (!(dpr > 0)) return;
+    const list = this.scales(), base = Math.min(this.screen() || 1, this.tier.dprCap);
+    const i = list.findIndex((s) => base * s <= dpr + 0.01);
+    this.step = i < 0 ? list.length - 1 : i;
   }
 
   /** Skip the next `seconds` of frames: a new sky or a closed panel makes a few slow frames that are not the machine. */

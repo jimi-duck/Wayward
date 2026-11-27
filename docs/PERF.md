@@ -652,3 +652,33 @@ whose removal lifts the rate is the cost; nothing lifting it says the page or th
 
 **Not measured:** the laptop. Chrome's GPU raster of the HUD is a likely share of a cost that does not change with the
 tier, but nobody has timed it on that machine; the Test line from it would say where the rest goes.
+
+### Pass 19, part two: start at the size the device settled on
+
+Reported after #640: better, but still slow, most of all at the start of an Arcade run. Since pass 18 a laptop mostly
+moves its drawing size rather than its tier, and only the tier was kept between visits (`wayward.tier`), so every visit
+began at full size: two seconds of grace and three of measuring at about 19 fps before the size came down. The kept
+record now holds the pixels per CSS pixel the device last drew at too (`saveTier`, written on every move), and the
+governor starts there (`startAt`). It still climbs back at a quiet moment when there is room. Not measured on the laptop.
+
+## Pass 20: an Apple M1 at 9–15 fps on Low (2026-11-27)
+
+A second recording, with pass 19's readout: Apple M1 (ANGLE over Metal, Chrome), Low pinned, 1439 × 661 at ratio 1,
+about 100 draws and 250k triangles, our CPU work 5 ms, 9–15 fps, the GPU timer 100–150 ms. That GPU has room for
+many times this; a frame that costs the same on every tier and leaves the CPU idle points at the GPU process waiting,
+not drawing. Also reported: after the ship dies, the run report takes a long time to come.
+
+**Slow motion below 20 fps.** The loop clamped a frame to 0.05 s (three steps), so under 20 fps the whole game ran slow:
+at 12 fps, at 60% speed. That is part of "sluggish", and it stretched the 1.8 s death drift to about 3 s. The clamp is
+now 0.1 s (six steps; a step costs about 0.2 ms), so the game keeps real time down to 10 fps; a stall longer than that
+is still dropped. The death drift is 1.2 s (was 1.8).
+
+**Buffers rewritten whole** (`render/orphan.ts`). Counting WebGL calls in an Arcade frame on Low: about 1,000 calls,
+nothing unusual, except 58 `bufferSubData` a frame rewriting about 340 KB of vertex buffers in full (instance matrices
+and colours, sparks, dust, streaks), most of them made with the static hint. Writing into storage the GPU may still be
+reading makes a driver wait or copy; Metal through ANGLE is the likely place for that to stall. A rewrite of a whole
+buffer now asks for new storage instead (`bufferData`, dynamic: "orphaning"), so nothing waits. Frames 20 and 44 of the
+frame bench (`--freeze --nostub`, Arcade, Low): byte for byte identical with and without it.
+
+**Not measured:** the M1. Orphaning is the standard cure for this stall, but whether it is this laptop's stall only the
+laptop can say; the `?perf` Test line will show it.

@@ -85,7 +85,9 @@ function boot(review: typeof import('./review') | null): void {
   // a phone's governor breathes: it draws a little smaller before it gives up a tier, and holds an even 30 at the bottom
   // a computer's governor draws smaller before it gives up a tier too, but never below one pixel per CSS pixel
   const quality = new QualityGovernor(pinned >= 0 ? pinned : firstTier(), pinned >= 0, settled?.ceil, coarse, () => window.devicePixelRatio || 1);
-  const keepTier = () => { if (pinned < 0 && !saver) saveTier(TIER_KEY, quality.tier.name, quality.ceiling); };
+  // and at the drawing size it settled on, so a visit does not open with seconds of slow frames while it is found again
+  if (pinned < 0 && settled?.dpr) quality.startAt(settled.dpr);
+  const keepTier = () => { if (pinned < 0 && !saver) saveTier(TIER_KEY, quality.tier.name, quality.ceiling, quality.drawn); };
   // Battery saver (a switch on the title's Settings and the pause card): the low tier and 30 frames a second. Kept per device.
   const SAVER_KEY = 'wayward.saver';
   let saver = false;
@@ -768,6 +770,7 @@ function boot(review: typeof import('./review') | null): void {
         // only the drawing size moved (or the frame rate settled on 30): no new shaders
         fit();
         loop.minInterval = saver || quality.thirty ? 1 / 30 : 0;
+        keepTier();
       } else if (moved) {
         shownTier = quality.tier;
         matchTier(renderer, quality.tier);
