@@ -704,3 +704,22 @@ in an Arcade fight on Low, the rest real movement of edge markers.
 
 **Not measured:** Chrome on the M1. The `?perf` Test line run in Chrome would show whether any one layer holds the
 cost, or none does (then it is Chrome's own compositing).
+
+## Pass 22: the Test line from Chrome on the M1 (2026-11-27)
+
+Two runs of the `?perf` Test in Chrome on the owner's MacBook Air (Arcade and Story, Low at 1439 × 661, MSAA on):
+
+    all 19 · -Post 19 · -Shadow 20 · -Sky 17 · -Stars 19 · -Rocks 22 · -Debris 16 · -HUD 17 · -½ res 32 · bare 53 · empty 60
+    all 17 · -Post 18 · -Shadow 18 · -Sky 18 · -Stars 21 · -Rocks 22 · -Debris 17 · -HUD 16 · -½ res 34 · bare 48 · empty 60
+
+No one layer holds the time. Half size nearly doubles the rate; with no picture the page keeps 60. Fitting the first run
+to "fixed + pixels" gives about 24 ms a frame that does not shrink with size and about 28 ms of pixels at full size:
+both several times what an M1 needs (Safari draws High at this size at 60 fps). A GPU that is slow at everything
+alike, in Chrome and Brave but not Safari, is what an Intel build of Chrome running translated (Rosetta) on an Apple
+chip would look like, a common leftover of moving apps from an older Mac. Not confirmed: the readout now prints the
+browser's own architecture (`browser arm-64` or `browser x86-64`, from client hints) to tell.
+
+**Low may draw a little smaller on a computer.** Low was held at one pixel per CSS pixel, so a computer that is still
+slow there had nothing left. Low now steps down to two thirds of that (`LOW_FLOOR`, WIDE 0.85, 0.75, 0.67) before it
+stops; other tiers keep the floor of one. From the fit above, about 27 fps instead of 17–19 on that laptop; a slightly
+soft picture over a juddering one. Not measured there.

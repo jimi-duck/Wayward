@@ -64,6 +64,8 @@ export class PerfReadout {
   /** The last self-test's line, kept under the readout. */
   private tested = '';
   private readonly gpuName: string;
+  /** The browser's own build (arm or x86, from client hints): an x86 Chrome on an Apple chip runs translated, and slow. */
+  private arch = '';
 
   constructor(private readonly el: HTMLElement, private readonly hooks: PerfHooks) {
     this.gl = hooks.renderer.getContext() as WebGL2RenderingContext;
@@ -71,6 +73,8 @@ export class PerfReadout {
     // which GPU the browser drew with (a browser that fell back to software says so here)
     const info = this.gl.getExtension('WEBGL_debug_renderer_info') as { UNMASKED_RENDERER_WEBGL: number } | null;
     this.gpuName = String((info ? this.gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : this.gl.getParameter(this.gl.RENDERER)) ?? '?').replace(/^ANGLE \((.*)\)$/, '$1').slice(0, 80) + ` · msaa ${this.gl.getContextAttributes()?.antialias ? 'on' : 'off'}`;
+    const hints = (navigator as Navigator & { userAgentData?: { getHighEntropyValues(h: string[]): Promise<{ architecture?: string; bitness?: string }> } }).userAgentData;
+    hints?.getHighEntropyValues(['architecture', 'bitness']).then((h) => { if (h.architecture) this.arch = ` · browser ${h.architecture}${h.bitness ? `-${h.bitness}` : ''}`; }).catch(() => {});
     el.hidden = false;
     el.classList.add('pf');
     el.replaceChildren();
@@ -169,7 +173,7 @@ export class PerfReadout {
       `cpu ${(this.cpuSum / (this.cpuN || 1)).toFixed(1)}ms · gpu ${this.ext ? (this.gpuN ? `${(this.gpuSum / this.gpuN).toFixed(1)}ms` : '…') : 'n/a'}`,
       `tier ${q.tier.name} ${q.pinned ? 'pinned' : 'auto'} · ${c.width}×${c.height} @${r.getPixelRatio().toFixed(2)}${q.scale < 1 ? ` (size ${q.scale})` : ''}`,
       `draws ${info.calls} · tris ${(info.triangles / 1000).toFixed(0)}k · off ${off}`,
-      this.gpuName,
+      this.gpuName + this.arch,
       ...(this.test ? [`testing… ${this.test.out.join(' · ')}`] : this.tested ? [this.tested] : []),
     ].join('\n');
     this.frames.length = 0;
