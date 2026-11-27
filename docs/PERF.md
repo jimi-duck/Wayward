@@ -733,3 +733,23 @@ Low at 17–19 fps at full size and 32–34 at half. Low on a computer now steps
 already did) instead of a ragged rate. The kept record starts the next visit at the size it settled on. The HUD is page
 text and stays sharp; the 3D picture is softer on that machine only. Safari on the same laptop stays on High.
 Not measured on the laptop: the 30 is from the Test's half-size reading, not a run at this build.
+
+## Pass 24: the rock shader on Chrome (2026-11-27)
+
+The owner's Test in Chrome during a fight, Low at size 0.75: `all 19 · -Post 22 · -Shadow 24 · -Sky 25 · -Stars 22 ·
+-Rocks 44 · -Debris 27 · -HUD 19 · -½ res 47 · bare 60 · empty 60`. Hiding the rocks more than doubles the rate: the stone
+shader (`lavaRock`, every rock, bulwark, chunk and far rock) is the cost. It works out about 21 three-dimensional simplex
+noises a pixel. Safari runs it at 60 on the same laptop; Chrome's Metal path runs this kind of arithmetic far slower.
+
+**Same picture, less work.** A noise term faded to nothing (by `lod`, the stone one pixel covers, or by a uniform that
+is zero for this kind of rock) is no longer worked out at all: the fine grain, speckle, crumble, the small craters and
+pores on far stone, mineral inclusions on rocks that have none, and the geode's facets on any rock but a rich one.
+Frames 20 and 44 of the frame bench (`--freeze --nostub`, Arcade, Low, laptop size): byte for byte identical.
+
+**Low drops the finest grain** (`ROCK_FINE`, a shared uniform set by `Sector.setTier`). On Low the fine terms and the top
+two octaves of the base noise are skipped: about 8 noises a rock pixel instead of 21. Low draws at a reduced size where
+that grain is under a pixel anyway; in the bench frames about 2% of pixels change, by a shade. Other tiers unchanged.
+
+**Not measured:** Chrome on the M1. The bench's scene has little rock on screen (the software timing moved 2%); the
+owner's had a lot. From the Test line, rocks were about 30 ms of a 52 ms frame, so cutting their work by about 2.5×
+should bring Low from 19 fps to somewhere in the thirties.
