@@ -15,6 +15,7 @@ const LAYERS: ReadonlyArray<[PerfLayer, string]> = [
   ['post', 'Post'], ['shadow', 'Shadow'], ['sky', 'Sky'], ['far', 'Stars'], ['rocks', 'Rocks'], ['debris', 'Debris'], ['hud', 'HUD'], ['half', '½ res'],
 ];
 const TIERS = ['low', 'phone', 'medium', 'high'] as const;
+const AUTO = 'auto';
 
 interface TimerExt { TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number }
 
@@ -22,8 +23,8 @@ export interface PerfHooks {
   readonly renderer: WebGLRenderer;
   readonly quality: QualityGovernor;
   readonly off: Set<PerfLayer>;
-  /** Pin a tier (0 low, 1 phone, 2 medium, 3 high). */
-  pin(index: number): void;
+  /** Pin a tier (0 low, 1 phone, 2 medium, 3 high), or `null` to hand it back to the governor. */
+  pin(index: number | null): void;
   /** Re-size the drawing buffer (after ½ res is switched). */
   fit(): void;
 }
@@ -66,7 +67,8 @@ export class PerfReadout {
       }
       el.append(r);
     };
-    row(TIERS.map((n) => [n, n[0]!.toUpperCase() + n.slice(1)] as [string, string]), (id) => hooks.pin(TIERS.indexOf(id as typeof TIERS[number])));
+    // a tier button pins that tier for the session (the governor stops judging); Auto hands it back
+    row([[AUTO, 'Auto'], ...TIERS.map((n) => [n, n[0]!.toUpperCase() + n.slice(1)] as [string, string])], (id) => hooks.pin(id === AUTO ? null : TIERS.indexOf(id as typeof TIERS[number])));
     row(LAYERS, (id) => {
       const l = id as PerfLayer;
       if (hooks.off.has(l)) hooks.off.delete(l); else hooks.off.add(l);
@@ -138,12 +140,12 @@ export class PerfReadout {
     const mean = f.reduce((s, v) => s + v, 0) / n;
     const worst = f[f.length - 1] ?? 0;
     const slow = f.filter((v) => v > 1 / 50).length;
-    const r = this.hooks.renderer, info = r.info.render, c = r.domElement;
+    const r = this.hooks.renderer, info = r.info.render, c = r.domElement, q = this.hooks.quality;
     const off = [...this.hooks.off].join(' ') || 'none';
     this.text.textContent = [
       f.length ? `fps ${(1 / mean).toFixed(0)} · frame ${ms(mean)} · worst ${ms(worst)} · slow ${Math.round((slow / n) * 100)}%` : 'frames over 1 s: too slow to time',
       `cpu ${(this.cpuSum / (this.cpuN || 1)).toFixed(1)}ms · gpu ${this.ext ? (this.gpuN ? `${(this.gpuSum / this.gpuN).toFixed(1)}ms` : '…') : 'n/a'}`,
-      `tier ${this.hooks.quality.tier.name} · ${c.width}×${c.height} @${r.getPixelRatio().toFixed(2)}`,
+      `tier ${q.tier.name} ${q.pinned ? 'pinned' : 'auto'} · ${c.width}×${c.height} @${r.getPixelRatio().toFixed(2)}${q.scale < 1 ? ` (size ${q.scale})` : ''}`,
       `draws ${info.calls} · tris ${(info.triangles / 1000).toFixed(0)}k · off ${off}`,
     ].join('\n');
     this.frames.length = 0;
@@ -153,8 +155,9 @@ export class PerfReadout {
   }
 
   private paint(): void {
-    const tier = this.hooks.quality.tier.name;
-    for (const n of TIERS) this.buttons.get(n)?.classList.toggle('on', n === tier);
+    const q = this.hooks.quality, tier = q.tier.name;
+    this.buttons.get(AUTO)?.classList.toggle('on', !q.pinned);
+    for (const n of TIERS) this.buttons.get(n)?.classList.toggle('on', q.pinned && n === tier);
     for (const [l] of LAYERS) this.buttons.get(l)?.classList.toggle('on', this.hooks.off.has(l));
   }
 }

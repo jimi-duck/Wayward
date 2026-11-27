@@ -52,6 +52,12 @@ class ShaftsEffect extends Effect {
     super('Shafts', /* glsl */ `
       uniform vec2 uSun; uniform float uOn; uniform vec3 uTint;
       void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth, out vec4 outputColor) {
+        float fall = 1.0 - smoothstep(0.05, 0.95, length((uv - uSun) * vec2(aspect, 1.0)));
+        // the shafts hang in the distance: nothing within a few hundred metres (a near rock, the ship) is hazed over
+        float far = smoothstep(0.9995, 0.99995, depth);
+        // a pixel the shafts cannot reach (far from the sun on screen, or near) skips the march: the same picture,
+        // without 22 reads on most of the screen (docs/PERF.md pass 18)
+        if (fall * far * uOn <= 0.0) { outputColor = inputColor; return; }
         vec2 step = (uv - uSun) * (0.8 / 22.0);
         vec2 p = uv;
         float acc = 0.0, w = 1.0;
@@ -62,9 +68,6 @@ class ShaftsEffect extends Effect {
           w *= 0.94;
         }
         acc /= 22.0;
-        float fall = 1.0 - smoothstep(0.05, 0.95, length((uv - uSun) * vec2(aspect, 1.0)));
-        // the shafts hang in the distance: nothing within a few hundred metres (a near rock, the ship) is hazed over
-        float far = smoothstep(0.9995, 0.99995, depth);
         outputColor = vec4(inputColor.rgb + uTint * acc * fall * uOn * far, inputColor.a);
       }`, {
       attributes: EffectAttribute.CONVOLUTION | EffectAttribute.DEPTH,
