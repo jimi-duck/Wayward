@@ -3,7 +3,7 @@
     {
       "id": "pirate_toll",
       "name": "Break the Pirate Toll",
-      "blurb": "A toll beacon is blocking the lane, and the Gutter denies placing it.",
+      "blurb": "A toll beacon is blocking the gate, and the Gutter denies placing it.",
       "group": "frontier",
       "kinds": [
         "transit",
@@ -61,7 +61,7 @@
         "spoil": 0.7
       },
       "win": {
-        "text": "Toll beacon destroyed · the lane is open",
+        "text": "Toll beacon destroyed · the gate is open",
         "chits": 110,
         "standing": {
           "frontier": 1,
@@ -80,7 +80,7 @@
       },
       "after": {
         "won": {
-          "text": "The toll is gone · supplies cost less on this lane",
+          "text": "The toll is gone · supplies cost less here",
           "market": {
             "supplies": 0.85,
             "days": 12
@@ -88,7 +88,7 @@
           "flag": "toll_broken"
         },
         "lost": {
-          "text": "The toll remains · prices rise on this lane",
+          "text": "The toll remains · prices rise here",
           "market": {
             "supplies": 1.2,
             "days": 8
@@ -160,7 +160,7 @@
           "flag": "drop_made"
         },
         "lost": {
-          "text": "The patrol caught the drop · the lane is under tighter watch",
+          "text": "The patrol caught the drop · the gate is under tighter watch",
           "pushNear": 0.5
         }
       }
@@ -241,7 +241,7 @@
       "tier": "important",
       "from": "Dispatch · mining guild",
       "title": "Break the Pirate Toll",
-      "text": "“A toll beacon on our lane, four ships, one captain. Drop the captain and the rest may scatter.”",
+      "text": "“Mining guild dispatch. Pirates have put a toll beacon on our gate, Wayward: four ships, one captain. Every hauler pays or turns back, and our crews can’t afford either. Drop the captain and the rest may scatter.”",
       "lines": [
         {
           "if": {
@@ -296,7 +296,7 @@
       "tier": "important",
       "from": "A runner · no name",
       "title": "Nothing to Declare",
-      "text": "“Custody holds the hospice ring’s medicine at the patrol line. Three ships sweeping. Slip between them, hold at the drop, then leave.”",
+      "text": "“Custody is holding the hospice ring’s medicine at the patrol line, Wayward. People are dying while it sits there. Three ships sweeping. Slip between them, hold at the drop, then get out.”",
       "cargo": "A patrol · three hulls, a crate of medicine",
       "choices": [
         {
@@ -342,7 +342,7 @@
       "tier": "routine",
       "from": "A prospector",
       "title": "Follow the Cyrite Vein",
-      "text": "“I found a vein, and the Gutter found me. Stay on my wing until I’m there and I’ll share it.”",
+      "text": "“I found a Cyrite vein, the first in years out here, and the Gutter found me. Stay on my wing until I’m there and I’ll share it.”",
       "cargo": "A prospector · slow, sure of herself",
       "choices": [
         {

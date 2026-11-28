@@ -259,7 +259,7 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_voice_direct', kind: 'warning', caller: 'unknown', tier: 'major',
     from: 'The Voice · every terminal at once', title: 'WE WOULD LIKE TO ASK',
-    text: '“JUNO. WE KEPT THE KEYS. THEY KEEP THE LANES. YOU CARRY WHY. WHO DO YOU TRUST WITH IT?”',
+    text: '“JUNO. WE KEPT THE KEYS. THEY KEEP THE GATES. YOU CARRY WHY. WHO DO YOU TRUST WITH IT?”',
     lines: [
       { if: { flag: 'voice_delivered' }, text: '“THE PARTS ARRIVED. WE ARE GRATEFUL. WE ARE NOT SORRY.”' },
       { if: { flag: 'voice_opened' }, text: '“YOU OPENED THE CASE. GOOD. WE WOULD HAVE.”' },
