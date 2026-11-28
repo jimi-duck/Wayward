@@ -30,7 +30,7 @@ describe('the voices stay in step', () => {
     }
     expect(b.jumpT).toBeGreaterThanOrEqual(0);
     const at = (s: string) => log.indexOf(s);
-    const order = ['cue_hr_ilse', 'done:skiff', 'card:story_order', 'cue_hr_canister', 'done:canister', 'story_hr_paper', 'story_hr_relay_say'];
+    const order = ['cue_hr_ilse', 'done:skiff', 'card:story_order', 'cue_hr_canister', 'done:canister', 'scene_hr_relay_say', 'story_hr_paper'];
     for (const o of order) expect(at(o), `${o} in ${log.join(' | ')}`).toBeGreaterThanOrEqual(0);
     expect(order.map(at)).toEqual([...order.map(at)].sort((x, y) => x - y));
   });

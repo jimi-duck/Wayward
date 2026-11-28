@@ -58,15 +58,15 @@ function fly(i: number, card: string, answer: string, secs = 240): { pings: stri
 describe('the replies', () => {
   it('Pike answers a refusal and a sale', () => {
     const no = fly(1, 'sc_declare', 'no');
-    expect(no.pings).toContain('“No offence taken. The Line’s patient.”');
+    expect(no.pings).toContain('“No offence taken. The Quiet Line has waited seventy years for the gates to open. We can wait for you too.”');
     const sold = fly(1, 'sc_declare', 'sell');
-    expect(sold.pings).toContain('“Custody paid you thirty-five. The hospice paid the rest.”');
-    expect(sold.pings).not.toContain('“Medicine through, and nobody saw you. Good. I’ll call again.”');
+    expect(sold.pings).toContain('“Custody paid you thirty-five for my medicine. The hospice paid the rest, in people. I hope the Cyrite keeps you warm.”');
+    expect(sold.pings).not.toContain('“The medicine reached the hospice, and nobody saw you do it. People out here will live because of that. I’ll call again, Wayward.”');
   });
 
   it('hester answers a refusal at Miners’ Gap', () => {
     const no = fly(4, 'sc_toll', 'no');
-    expect(no.pings).toContain('“Understood. We’ll find another way. We always do.”');
+    expect(no.pings).toContain('“Understood. You’ve got your own trouble. We’ll find another way. Since the gates closed, we always do.”');
   });
 
   it('say nothing off the road', () => {

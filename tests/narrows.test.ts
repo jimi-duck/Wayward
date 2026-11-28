@@ -71,7 +71,7 @@ describe('the Narrows', () => {
     return { w, log, seen };
   }
 
-  const ORDER = ['say:The Narrows g', 'say:That’s the re', 'notice:Warden key accepted', 'card:warden_note_1', 'say:I’ll remember', 'card:story_calloway_narrows', 'say:Kind Regard', 'notice:Signal lost'];
+  const ORDER = ['say:This is Inspe', 'say:Juno, that’s ', 'notice:Warden key accepted', 'card:warden_note_1', 'say:That gate was', 'card:story_calloway_narrows', 'say:Kind Regard', 'notice:Signal lost'];
   const inOrder = (log: string[]) => {
     const at = (s: string) => log.findIndex((l) => l.startsWith(s));
     for (const o of ORDER) expect(at(o), `${o} in ${log.join(' | ')}`).toBeGreaterThanOrEqual(0);

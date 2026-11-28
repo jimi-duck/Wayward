@@ -373,7 +373,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_warden', handover: true, kind: 'rumour', caller: 'miners',
     from: 'Ilse Marrow · retired Gate Warden', title: 'I was on the relay that night',
-    text: '“So you’re the one with the file. I ran the Narrows relay seventy years ago. The gates never failed. We were told to switch them off.”',
+    text: '“So you’re the one carrying Ada’s file. I ran the Narrows relay seventy years ago. The gates never failed, whatever the Continuance says. We were told to switch them off, and we did.”',
     cargo: 'An old Warden’s skiff · no guns',
     // a key piece of the story is handed over, not haggled for: one answer (the owner, 31 October 2026)
     choices: [
@@ -383,7 +383,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_ledger', handover: true, kind: 'rumour', caller: 'kellern',
     from: 'Adam Brook · Kellern Mining, accounts', title: 'The real books',
-    text: '“I keep Kellern’s real books. Every unit of Krail the Scatter never got is in here. Take them. Someone should.”',
+    text: '“I keep Kellern’s real books, Wayward. Not the ones they show the auditors. Every unit of Krail the outer systems were promised and never got is in here, and who was paid to keep it. Take them. Someone should.”',
     cargo: 'A clerk’s shuttle · a data spike',
     choices: [
       { id: 'take', label: 'Take the ledger', tone: 'help', hint: 'It goes in the file.', win: { text: '“For my father.” · the ledger goes in the file', flag: ['frag_ledger', 'brook_met', 'clue_sig_reach'], standing: { kellern: -1 } } },
@@ -397,7 +397,7 @@ export const STORY_CARDS: CardDef[] = [
     from: 'Ilse Marrow · The order', title: 'The order',
     letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1']], sign: '— Authorised: L. C.' },
     text: 'Effective at once.\nThe outer relays at the Narrows and beyond are to be powered down.\nWardens on watch will surrender their keys to the attending officer.\nThe closure is to be recorded as a failure from neglect.',
-    side: { from: 'Ilse Marrow', lines: ['“The gates didn’t fail. We were told to switch them off. This is the order. I kept it all these years. Take it.”'] },
+    side: { from: 'Ilse Marrow', lines: ['“The gates didn’t fail, Juno. They blamed the Krail, and neglect. We were told to switch them off. This is the order. I kept it seventy years. Take it.”'] },
     cargo: 'An old Warden’s skiff · no guns',
     choices: [
       { id: 'take', label: 'Take the paper', tone: 'help', hint: '', win: { text: 'The signed order · in the file', flag: ['frag_order', 'clue_order_sig', 'copy_warden'], standing: { miners: 1 }, hunt: -0.5 } },
@@ -406,12 +406,12 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_handwriting', kind: 'rumour', caller: 'miners', glass: 'cyan',
     from: 'Ilse Marrow · Ada Aster', title: 'Ada Aster',
-    text: '“Those are Ada Aster’s lamps. She stood watch with me at the Narrows. Is her old core still in there? It used to argue with her.”',
+    text: '“Those are Ada Aster’s lamps. She stood watch with me at the Narrows, the night we switched it all off. They told her family she was lost in service. Is her old core still in there? It used to argue with her.”',
     cargo: 'An old Warden’s skiff · no guns',
     choices: [
       { id: 'grandmother', label: 'She was my grandmother', tone: 'help', hint: 'Your family only said she was lost in service.',
         win: { text: 'Ada Aster · Ilse knew her', flag: 'ada_named',
-          radio: { from: 'Ilse Marrow', caller: 'miners', delay: 0.8, text: '“Lost in service. That’s all they ever told anyone. Go to the Narrows. Ada left it listening for you.”' } } },
+          radio: { from: 'Ilse Marrow', caller: 'miners', delay: 0.8, text: '“Lost in service. That’s all they ever told anyone, and it was a lie. She didn’t die that night, Juno. Go to the Narrows. Ada left it listening for you.”' } } },
     ],
   }),
   story({
@@ -420,7 +420,7 @@ export const STORY_CARDS: CardDef[] = [
     from: 'Ilse Marrow · recorded', title: 'The order',
     letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1']], sign: '— Authorised: L. C.' },
     text: 'Effective at once.\nThe outer relays at the Narrows and beyond are to be powered down.\nWardens on watch will surrender their keys to the attending officer.\nThe closure is to be recorded as a failure from neglect.',
-    side: { from: 'Ilse Marrow · recorded', lines: ['“You cut me off. Fair enough. I’m sending it anyway, the paper they made us sign. The key in your hull is Ada Aster’s. Go to the Narrows.”'] },
+    side: { from: 'Ilse Marrow · recorded', lines: ['“You cut me off. Fair enough, you’ve no reason to trust anyone. I’m sending it anyway: the order they made us sign the night the gates went dark. The key in your hull is Ada Aster’s. Go to the Narrows.”'] },
     cargo: 'A recorded message · no reply',
     choices: [
       { id: 'take', label: 'Take the paper', tone: 'help', hint: '', win: { text: 'The signed order · in the file · Ada Aster · the archive has a name', flag: ['frag_order', 'clue_order_sig', 'ada_named'] } },
@@ -430,14 +430,14 @@ export const STORY_CARDS: CardDef[] = [
     // Brook's arrest at Copperline, as the road plays it: one card for the player who bought or won the ledger, one for the player who did not
     id: 'story_brook_road', kind: 'warning', caller: 'custody',
     from: 'Adam Brook · in Custody transport', title: 'They took the clerk',
-    text: '“They traced the ledger back to me. I’m in a Custody transport, ten minutes from a cell. Please. You’ve got the only copy.”',
+    text: '“Wayward, it’s Adam Brook. They traced the ledger back to me. I’m in a Custody transport, ten minutes from a cell, and people who go in there don’t come out. Please. You’ve got the only copy.”',
     cargo: 'A Custody transport · two escorts',
     choices: BROOK_CHOICES(),
   }),
   story({
     id: 'story_brook_declined', kind: 'warning', caller: 'custody',
     from: 'Adam Brook · in Custody transport', title: 'They took the clerk',
-    text: '“You turned my books down, and they came for me anyway. I’m in a Custody transport. Please. I’ve got nobody else.”',
+    text: '“It’s Adam Brook. You turned my books down, and they came for me anyway. Someone saw us talking. I’m in a Custody transport, heading for a cell. Please. I’ve got nobody else.”',
     cargo: 'A Custody transport · two escorts',
     choices: BROOK_CHOICES(),
   }),
@@ -447,7 +447,7 @@ export const STORY_CARDS: CardDef[] = [
     // Ashgrove at the Narrows' gate: the registry's answers, in his words
     id: 'narrows_checkpoint', kind: 'checkpoint', caller: 'custody',
     from: 'Inspector Ashgrove · Offices of Peace · Kind Regard', title: 'Checkpoint',
-    text: '“Afternoon. Ashgrove, Offices of Peace, on the Kind Regard. Let’s not make this a long day for either of us. Send your registry, please.”',
+    text: '“Afternoon. Inspector Ashgrove, Offices of Peace, on the Kind Regard. Nobody has come through the Narrows in years, so you’ll forgive my interest. Let’s not make this a long day. Send your registry, please.”',
     ships: [{ variant: 'lancer', n: 1 }, { variant: 'picket', n: 2 }], cargo: 'Custody blockade · the Kind Regard',
     choices: [
       { id: 'codes', label: 'Transmit Sam’s codes', tone: 'bluff', hint: 'A Kellern code on a Kellern hull. Likely, the first time.', odds: { base: 0.8, heat: -0.25 },
@@ -465,7 +465,7 @@ export const STORY_CARDS: CardDef[] = [
     id: 'warden_note_1', herald: { headline: 'Memory restored', reason: 'The Narrows relay' }, kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
     from: 'Recovered by ADA-1 · Ada’s memory 1 of 8', title: 'Ada’s memory 1 of 8',
     letter: { head: [['To', 'Whoever the relays let through'], ['From', 'A. Aster, Narrows watch'], ['Kept in', 'Narrows relay, Warden channel']], sign: '— A.' },
-    text: 'The Narrows was mine the night they closed it. They told me to switch it off and forget the key. I switched it off. I never forgot.\nEight relays on this road still know my key. Each one keeps a piece of what I saw.\nEach will say my name out loud when you pass, and they’ll hear it.\nThis gate will go dark while it remembers me. Sorry about that part. Hold on, then keep moving.\nFind the Drift. They never stopped moving.',
+    text: 'The Narrows was mine the night they closed it. They told me to switch it off and forget the key. I switched it off. I never forgot.\nEight relays on this road still know my key. Each one keeps a piece of what I saw.\nEach will say my name out loud when you pass, and they’ll hear it.\nThey told everyone the Krail ran out. It never did. Hold on to that, and keep moving.\nFind the Drift. They never stopped moving.',
     cargo: 'The Wayward · a note kept in the relay',
     choices: [
       { id: 'close', label: 'Close the note', tone: 'help', hint: '', win: { text: 'Ada’s memory 1 of 8 · on the Wall', flag: 'warden_note_1' } },
@@ -477,7 +477,7 @@ export const STORY_CARDS: CardDef[] = [
     // their first encounter (owner, 14 November 2026): she studies Juno; nothing is bargained, and nothing she says changes the fight
     id: 'story_calloway_narrows', kind: 'warning', caller: 'calloway',
     from: 'Governor Idris Calloway · CCV Patience', title: 'The Narrows',
-    text: '“This is Governor Idris Calloway. You’re carrying Ada Aster’s key in a hull that isn’t yours. I’d like to know why. I’m not asking you to stop. Not yet.”',
+    text: '“This is Governor Idris Calloway. You’ve opened a gate the Continuance closed seventy years ago, with Ada Aster’s key, in a hull that isn’t yours. I’d like to know why. I’m not asking you to stop. Not yet.”',
     cargo: 'The Patience · watching',
     lines: [
       { if: { flag: 'relay_broadcast' }, text: '“Her relay just told the whole Reach a name. Say it to me.”' },
@@ -492,7 +492,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_brook_arrest', kind: 'warning', caller: 'custody',
     from: 'Adam Brook · in Custody transport', title: 'They took the clerk',
-    text: '“They traced the ledger back to me. I’m in a Custody transport, ten minutes from a cell. Please. You’ve got the only copy.”',
+    text: '“Wayward, it’s Adam Brook. They traced the ledger back to me. I’m in a Custody transport, ten minutes from a cell, and people who go in there don’t come out. Please. You’ve got the only copy.”',
     cargo: 'A Custody transport · one escort',
     choices: [
       { id: 'rescue', label: 'Break him out', tone: 'fight', hint: 'Fight the escort. Custody hears of it.', win: { text: 'Brook is aboard the shuttle · Custody marks you', flag: 'brook_free', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }], standing: { custody: -1 } } },
