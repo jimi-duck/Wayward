@@ -22,10 +22,10 @@ export interface Chatter {
 }
 
 export const CHATTER: Chatter[] = [
-  { id: 'lane_notice', from: 'Lane control', caller: 'custody', on: ['arrive'], kind: ['port', 'contested', 'gate'], text: '“Traffic advisory: all hulls hold to the marked lane. Inspections are random.”' },
-  { id: 'lane_dark', from: 'Lane beacon', caller: 'unknown', on: ['arrive'], kind: ['transit', 'edge'], text: '“No traffic reported. No traffic expected.”' },
+  { id: 'lane_notice', from: 'Gate Control', caller: 'custody', on: ['arrive'], kind: ['port', 'contested', 'gate'], text: '“Traffic advisory: all hulls hold to the marked approach. Inspections are random.”' },
+  { id: 'lane_dark', from: 'Gate beacon', caller: 'unknown', on: ['arrive'], kind: ['transit', 'edge'], text: '“No traffic reported. No traffic expected.”' },
   { id: 'claim_chatter', from: 'Claim crew', caller: 'miners', on: ['arrive', 'calm'], kind: ['mining'], text: '“Third pass on this seam and it’s still thin. Try the far side.”' },
-  { id: 'pit_boss', from: 'Pit boss', caller: 'miners', on: ['arrive'], kind: ['mining'], text: '“Cutters off the lane, please. Somebody is working that rock.”' },
+  { id: 'pit_boss', from: 'Pit boss', caller: 'miners', on: ['arrive'], kind: ['mining'], text: '“Cutters off the approach, please. Somebody is working that rock.”' },
   { id: 'depot_ping', from: 'Depot', caller: 'frontier', on: ['arrive'], kind: ['port'], text: '“Dock is open. Two berths free, one isn’t what it says.”' },
   { id: 'net_notice', from: 'Net relay', caller: 'office', on: ['arrive', 'calm'], netted: true, text: '“This system is under Offices of Peace protection. Welcome.”' },
   { id: 'net_static', from: 'Relay ghost', caller: 'unknown', on: ['calm'], netted: false, text: '“…unregistered carrier… no, never mind. Carry on.”' },
@@ -41,6 +41,6 @@ export const CHATTER: Chatter[] = [
   { id: 'cargo_cheer', from: 'Barge', caller: 'frontier', on: ['haul'], text: '“That’s a lot of iron on one hull. The dock pays by the Cyrite, not the pound.”' },
   { id: 'drift_hum', from: 'Drift fleet', caller: 'unknown', on: ['calm'], kind: ['transit', 'edge', 'mining'], text: '“We’re only passing. The ships are old, and so are we.”' },
   { id: 'pilot_wave', from: 'Passing freighter', caller: 'guild', on: ['calm'], text: '“Clear sky ahead of you. Don’t tell anyone I said that.”' },
-  { id: 'wake_report', from: 'Weather desk', caller: 'office', on: ['calm', 'arrive'], text: '“Dust is thin and the lanes are quiet. A good day to be nobody.”' },
+  { id: 'wake_report', from: 'Weather desk', caller: 'office', on: ['calm', 'arrive'], text: '“Dust is thin and the gates are quiet. A good day to be nobody.”' },
   { id: 'edge_voice', from: 'Edge relay', caller: 'unknown', on: ['arrive', 'calm'], kind: ['edge', 'gate'], text: '“Past here the charts are wishes. Fly carefully.”' },
 ];

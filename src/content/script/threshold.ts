@@ -23,7 +23,7 @@ const came = (id: string, d: number, from: string, caller: string, text: string,
 
 export const THRESHOLD_ROWS: Row[] = [
   // 1 · approach
-  radio('th_thane', STOP, free(4), CPS, 'office', '“Commissioner Thane, on every band. The Scatter’s terrorist will open the last lane tonight. What follows is hers.”'),
+  radio('th_thane', STOP, free(4), CPS, 'office', '“Commissioner Thane, on every band. The Scatter’s terrorist will open the last gate tonight. What follows is hers.”'),
 
   // 2 · they gather
   notice('th_gather', STOP, after('th_thane', 20), 'white', 'They gather', 'the Thren close round the gate'),

@@ -47,13 +47,13 @@ function add(cat: SignCat, lines: readonly string[], row: SignRow = {}, per: Rec
 // A. Official Continuance broadcasts
 add('official', [
   'The Severance keeps you safe',
-  'The lanes are closed. The systems are secure.',
+  'The gates are closed. The systems are secure.',
   'Order through separation.',
   'The Continuance protects what remains.',
   'Unauthorised transit endangers everyone.',
   'Stability is the price of survival.',
   'Trust the closure. Trust the Continuance.',
-  'The old lanes brought only chaos.',
+  'The old gates brought only chaos.',
   'Your safety is our highest priority.',
   'Separation today. Security tomorrow.',
 ]);
@@ -63,12 +63,12 @@ SLOGANS.forEach((line, leg) => { if (leg > 0) add('official', [line], { w: 4, le
 // B. Defaced government broadcasts: the official line, altered
 add('defaced', [
   'The Severance keeps you [safe|prisoners]',
-  'The lanes are closed. [The systems are secure.|We are left to die.]',
+  'The gates are closed. [The systems are secure.|We are left to die.]',
   '[Order|Tyranny] through separation.',
   'The Continuance [protects|abandoned] what remains.',
   '[Stability is the price of survival.|How many must die for your stability?]',
   '[Trust the closure. Trust the Continuance.|Trust was the first thing they stole.]',
-  'The old lanes brought [only chaos|us together].',
+  'The old gates brought [only chaos|us together].',
   'Your [safety|silence] is our highest priority.',
 ]);
 
@@ -87,7 +87,7 @@ add('resistance', [
   'The Continuance feeds while we starve.',
   'Your order is built on our suffering.',
   'We were not sacrificed. We were betrayed.',
-  'They closed the lanes. They opened the graves.',
+  'They closed the gates. They opened the graves.',
   'You cannot bury the truth forever.',
 ], {}, { 10: { relays: 1 }, 11: { relays: 1 }, 13: { relays: 2 }, 14: { relays: 2 } });
 // what the Scatter writes over each leg's billboard once Ada's key has spoken (sim/scars.ts)

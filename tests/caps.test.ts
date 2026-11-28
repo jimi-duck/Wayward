@@ -4,11 +4,11 @@ import { STORY_CARDS } from '../src/content/story';
 import { CARDS } from '../src/content/cards';
 import type { CardDef } from '../src/sim/comms';
 
-// The writing caps (docs/COPY.md, "One voice at a time"): a Voice is 20 words, a Moment 60, a Signal's headline 3
+// The writing caps (docs/COPY.md, "The owner's voice"): a Voice is 32 words, a Moment 100, a Signal's headline 3
 // and its reason 6. A written document (a card with a `letter`, the archive and Ada's notes) is read, not glanced at:
-// 110 words. The middle dot is a separator, not a word.
+// 160 words. The middle dot is a separator, not a word.
 
-const CAPS = { voice: 20, moment: 60, document: 110, headline: 3, reason: 6 } as const;
+const CAPS = { voice: 32, moment: 100, document: 160, headline: 3, reason: 6 } as const;
 const words = (s: string): number => s.replace(/[“”"·]/g, ' ').trim().split(/\s+/).filter(Boolean).length;
 const over = (s: string, cap: number) => (words(s) > cap ? [`${words(s)}/${cap}: ${s}`] : []);
 /** The owner's own copy, kept as written (ADA-1's wake, 28 November 2026). */

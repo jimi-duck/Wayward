@@ -93,7 +93,7 @@ export class SummaryPanel {
     const pic = r.escaped ? artImg('debrief', 'castoff', 'sum-pic') : null;
     $('summary').querySelector('.sum-pic')?.remove();
     if (pic) $('summary').querySelector('.panel')!.prepend(pic);
-    $('sum-t').textContent = t(r.escaped ? 'Into the lane' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run complete');
+    $('sum-t').textContent = t(r.escaped ? 'Through the gate' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run complete');
     // what did it: the kicker already says hull breach
     $('sum-s').textContent = r.escaped ? t('Escaped with {n} Cyrite remaining', { n: r.cyriteLeft }) : damageWord(r.cause || 'rock');
     $('sum-score').textContent = fmt(r.score);

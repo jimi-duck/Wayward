@@ -449,7 +449,7 @@ function claim(j: Journey, s: StarSystem, c: Carry, from: string): string[] {
       // the road is one gate out of each stop: a new lane would skip a stop and its job, so it pays as a find
       if (roadRegion(j.chart, regionOf(s))) { bank(c, PLACE_CYRITE); lines.push(`+${PLACE_CYRITE} Cyrite`); break; }
       const to = openShortcut(j.chart, from);
-      lines.push(to ? t('New lane: {a} to {b}', { a: sysById(j.chart, from).name, b: to.name }) : t('The lane it showed leads nowhere new'));
+      lines.push(to ? t('New gate: {a} to {b}', { a: sysById(j.chart, from).name, b: to.name }) : t('The gate it showed leads nowhere new'));
       break;
     }
     case 'favour': bank(c, cy(PLACE_CHITS)); lines.push(t('+{n} Cyrite · favours owed', { n: cy(PLACE_CHITS) })); break;
@@ -585,7 +585,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   const eat = days * RATION + survivalOf(j.survival).voyage.wear;
   let penalty = 0;
   if (c.supplies >= eat) { c.supplies -= eat; j.hungry = 0; }
-  else { c.supplies = 0; j.hungry++; penalty++; lines.push(t('Out of supplies in the lane · a plate down')); }
+  else { c.supplies = 0; j.hungry++; penalty++; lines.push(t('Out of supplies between gates · a plate down')); }
   c.plates = Math.max(1, c.plates - penalty);
   j.carry = c;
   j.at = to;
@@ -623,13 +623,13 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     if (how) { j.calloway.ending = how; note(j, t(ENDING_LINES[how])); lines.unshift(t(ENDING_LINES[how])); }
     note(j, t('Through the Threshold · into the Scatter'));
     j.ending = null;
-    return { kind: 'through', lines: [t('The old lane opens. Beyond it, the Scatter.'), ...lines] };
+    return { kind: 'through', lines: [t('The old gate opens. Beyond it, the Scatter.'), ...lines] };
   }
   // the keys from the Voice close the lane behind you
   const held = keysDelay(c.flags);
   if (held > 0) {
     j.hunt.delay += held;
-    if (!c.flags.includes(KEYS_NOTED)) { c.flags.push(KEYS_NOTED); lines.push(t('A lane closes behind you · Calloway is held up')); }
+    if (!c.flags.includes(KEYS_NOTED)) { c.flags.push(KEYS_NOTED); lines.push(t('A gate closes behind you · Calloway is held up')); }
   }
   // with every system flown she reads your route a little better, unless the echoes left behind make it lie
   const echo = effects(c.levels).echo;

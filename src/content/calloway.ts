@@ -16,7 +16,7 @@ export type Trick = 'lie' | 'bluff' | 'decoy' | 'dark' | 'run' | 'fight' | 'plan
 
 /** Each trick, in words (her file on the chart, the last meeting's lines). */
 export const TRICK_WORDS: Record<Trick, string> = {
-  lie: 'false headings', bluff: '“the file is already out”', decoy: 'stores dumped as a decoy', dark: 'going dark', run: 'running for the lane',
+  lie: 'false headings', bluff: '“the file is already out”', decoy: 'stores dumped as a decoy', dark: 'going dark', run: 'running for the gate',
   fight: 'turning to fight', plan: 'false flight plans', fleet: 'Drift fleets that lie for you',
 };
 
@@ -76,7 +76,7 @@ export const CALLOWAY_FACE: Face = { skin: '#d9b59c', hair: 'swept', hairColour:
 export const HUNCH_LINES: Record<string, string> = {
   port: '“You always stop at a dock, Juno. So I just watch the docks.”',
   mining: '“You never pass up a rock field. Neither do I, now.”',
-  transit: '“You like the quiet lanes. They’re quiet for me too.”',
+  transit: '“You like the quiet systems. They’re quiet for me too.”',
   contested: '“You fly into every fight. That makes you easy to find.”',
   straight: '“You never turn aside, Juno. I knew where you were going.”',
 };
@@ -118,8 +118,8 @@ export const OFFERS: CardDef[] = [
     text: '“You’re always short of stores, Juno. Tell me your destination and a tender will resupply you. No tricks. I want you alive.”',
     choices: [
       { id: 'accept', label: 'Take the stores', tone: 'trade', hint: 'Receive 4 supplies, but Calloway learns your destination.', win: { text: 'The tender hands over 4 supplies · Calloway knows your destination', supplies: 4, heat: -0.2, hunt: -1.5 } },
-      { id: 'lie', label: 'Take the stores and give a false destination', tone: 'bluff', hint: 'Get the stores and send her toward the wrong lane; she may check your story.', odds: { base: 0.5, heat: -0.2, learn: 'lie' },
-        win: { text: 'You receive the stores · Calloway takes the wrong lane', supplies: 4, hunt: 0.5 },
+      { id: 'lie', label: 'Take the stores and give a false destination', tone: 'bluff', hint: 'Get the stores and send her toward the wrong gate; she may check your story.', odds: { base: 0.5, heat: -0.2, learn: 'lie' },
+        win: { text: 'You receive the stores · Calloway takes the wrong gate', supplies: 4, hunt: 0.5 },
         lose: { text: '“That’s not where you’re going.” · the tender pulls away', hunt: -1 } },
       { id: 'refuse', label: 'Refuse', tone: 'refuse', hint: 'You will need to find your own.', win: { text: '“Then count it carefully.”' } },
     ],

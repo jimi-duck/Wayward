@@ -2,7 +2,7 @@
 // (content/missions.ts, content/script/, content/endings.ts). Short and informal, like the English.
 export const REWORK: Record<string, string> = {
   // ── endings ──
-  'In the swarm lane, Sable hears every word. She sends one pattern back.': 'In der Schwarmbahn hört Sable jedes Wort. Sie schickt ein Muster zurück.',
+  'At the swarm gate, Sable hears every word. She sends one pattern back.': 'In der Schwarmbahn hört Sable jedes Wort. Sie schickt ein Muster zurück.',
   'Owen Pike reads about the sale, and shuts the Quiet Line for good.': 'Owen Pike liest vom Verkauf und macht die Stille Linie für immer dicht.',
   'The registry is yours, so the buyer gets a clean hull, and pays for it.': 'Das Register gehört dir, also bekommt der Käufer einen sauberen Rumpf und zahlt dafür.',
   'Somewhere in the Hollows, the Offices go looking for a swarm-raised pilot. You told them where.': 'Irgendwo in den Hollows suchen die Offices eine Pilotin, die im Schwarm aufwuchs. Du hast ihnen gesagt, wo.',
@@ -235,7 +235,7 @@ export const REWORK: Record<string, string> = {
 
   // ── the road: purposes, replies and echoes ──
   'a lifeboat, and raiders': 'ein Rettungsboot und Plünderer',
-  'a lane only Tarik drew': 'eine Bahn, die nur Tarik zeichnete',
+  'a gate only Tarik drew': 'eine Bahn, die nur Tarik zeichnete',
   'forty sealed in a cradle': 'vierzig eingeschlossen in einer Wiege',
   'a tug for your registry': 'ein Schlepper für dein Register',
   '“Forty-one. I’ll say your name every time I count them.”': '„Einundvierzig. Ich sag deinen Namen jedes Mal, wenn ich sie zähle.“',

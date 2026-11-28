@@ -76,7 +76,7 @@ export const REGIONS: RegionDef[] = [
     gate: 'The Rift', last: false, tier: 1, net: 0.55, thren: { none: 0.15 }, drifts: 2, port: 0.9, heatRate: 0.85, ahead: 1.3,
   },
   {
-    name: 'The Hollows', blurb: 'Voice foundries and Thren lanes. Nothing human lives here.',
+    name: 'The Hollows', blurb: 'Voice foundries and Thren paths. Nothing human lives here.',
     cols: [['mining', 'transit', 'contested'], ['contested', 'transit', 'mining']],
     sizes: [2, 2],
     holders: { mining: ['voice', 'none'], contested: ['voice', 'thren'], transit: ['thren', 'none'], port: ['none'] },
@@ -137,7 +137,7 @@ export const REGIONS_LONG: RegionDef[] = [
     names: { pre: ['Dice', 'Penny', 'Marrow', 'Toll', 'Rum', 'Gilt', 'Jack', 'Wager', 'Lucky', 'Salt', 'Tinker', 'Nine'], post: ['harbour', 'quay', 'port', 'street', 'cross', 'haven', 'pier', 'market', 'reach', 'mere', 'fell', 'watch'] },
   },
   {
-    name: 'The Hollows', blurb: 'Voice foundries and Thren lanes. Nothing human lives here.',
+    name: 'The Hollows', blurb: 'Voice foundries and Thren paths. Nothing human lives here.',
     cols: cycle(9, ['mining', 'transit', 'contested'], ['contested', 'transit', 'mining']), sizes: sizes(9, 2),
     holders: { mining: ['voice', 'none'], contested: ['voice', 'thren'], transit: ['thren', 'none'], port: ['none'] },
     gate: 'The Seam', last: false, tier: 2, net: 0.44, calloway: { risk: 0.75 }, thren: { thren: 0.8, none: 0.35, voice: 0.1 }, drifts: 0, port: 0.35, heatRate: 0.7, ahead: 1.6, quiet: 0.3,

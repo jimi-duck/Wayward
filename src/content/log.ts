@@ -8,15 +8,15 @@
 
 export const JUNO_LOG: Readonly<Record<string, string>> = {
   // the Reach
-  northfold: 'One lane open. The voice in my ship says the rest will follow.',
+  northfold: 'One gate open. The voice in my ship says the rest will follow.',
   halden: 'Old Wardens retire here. One of them kept paper.',
   marlow: 'Kellern counts everything. Someone here counted honestly.',
-  branford: 'Hester’s lane. Pirates want a toll, and the Net wants me.',
+  branford: 'Hester’s gate. Pirates want a toll, and the Net wants me.',
   copperline: 'Last Kellern port. After this, their books stop mattering.',
   narrows: 'My grandmother watched this gate the night they shut it.',
   // the Marches
   m_wake: 'Cut off for seventy years, and they still send lifeboats.',
-  m_kessel: 'They lost kin the night the lanes closed. I have the file.',
+  m_kessel: 'They lost kin the night the gates closed. I have the file.',
   m_tamsin: 'Kellern wants its debt back, with me attached.',
   m_walk: 'A fleet that never stops, keeping the names of the lost.',
   m_gannet: 'Kellern is boarding the rigs of people who stood by me.',
@@ -28,7 +28,7 @@ export const JUNO_LOG: Readonly<Record<string, string>> = {
   b_graveyard: 'A field of ships that met something and stopped.',
   b_kessler: 'A Warden wreck, recorder still running. It heard that night.',
   b_kiln: 'Someone sold my heading. I want to know who.',
-  b_tarik: 'A man who draws the burned lanes back by hand.',
+  b_tarik: 'A man who draws the burned routes back by hand.',
   scrapgate: 'A gate built out of ships. My grandmother’s key still fits.',
   // the Drift Deep
   d_longwater: 'The Drift never stops. Maybe they remember the pattern.',
@@ -46,7 +46,7 @@ export const JUNO_LOG: Readonly<Record<string, string>> = {
   y_keel: 'Sam, through three relays. His brother works these yards.',
   y_torch: 'The crews may strike. Draper’s men come either way.',
   y_davit: 'Whoever has been paying me is about to say hello.',
-  breaker: 'One of the machines that shut the lanes. Up close.',
+  breaker: 'One of the machines that shut the gates. Up close.',
   // the Free Ports
   f_saltquay: 'Gutter ports. They trade anything, and they kept the names.',
   f_duarte: 'A berth and no questions. The Guild wants a friend.',
@@ -56,16 +56,16 @@ export const JUNO_LOG: Readonly<Record<string, string>> = {
   f_nine: 'Static, then my grandmother’s voice. Then something else’s.',
   tollgate: 'Calloway shut the gate behind me. She wants a name.',
   // the Hollows
-  h_ashdeep: 'Nothing human out here. This is where the lanes began.',
+  h_ashdeep: 'Nothing human out here. This is where the gates began.',
   h_forge: 'The pattern on the scope is talking, and I carry what it follows.',
   h_vault: 'Kellern’s tug has come for the ship. The account is due.',
   h_cairn: 'Two voices, each wanting something only I can give.',
-  h_cinder: 'The swarm lane. The drones are opening the gates for it.',
+  h_cinder: 'The swarm gate. The drones are opening the gates for it.',
   h_gaunt: 'The Governor’s aide holds a key, and wants my plan.',
   seam: 'The relay is awake, and asking ADA-1 for my grandmother’s key.',
   // the Last Lanes
   l_lastlight: 'One relay left. Then I decide what the file is for.',
-  l_toll: 'An archivist at the end of every lane, with three questions.',
+  l_toll: 'An archivist at the end of every road, with three questions.',
   l_gap: 'Who am I to carry this? He will write it down.',
   l_dimrim: 'What has it cost other people? I know some of the names.',
   l_step: 'What is it for? Everyone wants to hear my answer.',

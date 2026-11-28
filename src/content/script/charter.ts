@@ -15,7 +15,7 @@ const BONDED = { not: [CHARTER_FORGED] };
 export const CHARTER_ROWS: Row[] = [
   // ── the Reach: who may move ──
   radio('ch_mother', 'northfold', free(55), 'A mother at Northfold', 'frontier', '“My girl needs the clinic at Halden. Bonded, no pass. They turned us back at the gate.”', { stale: 200 }),
-  notice('ch_lane', 'northfold', leave(), 'amber', 'Work lane', 'Bonded hulls wait for a pass', { if: BONDED }),
+  notice('ch_lane', 'northfold', leave(), 'amber', 'Work queue', 'Bonded hulls wait for a pass', { if: BONDED }),
   notice('ch_berth_halden', 'halden', near(320), 'amber', 'Service berth', 'No Charter · Bonded side only', { if: BONDED }),
   notice('ch_berth_marlow', 'marlow', near(320), 'amber', 'Service berth', 'No Charter · Bonded side only', { if: BONDED }),
   notice('ch_berth_nine', 'y_nine', near(320), 'amber', 'Service berth', 'No Charter · Bonded side only', { if: BONDED }),

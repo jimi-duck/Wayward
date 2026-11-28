@@ -63,7 +63,7 @@ export const POSTJUMP: Record<string, string> = {
   // Ned's yard (owner 2026-11-05): Sam's code overrides the autopilot; Ned, in a yard of his own, reprograms, repaints and renames her for nothing
   '“At least you’ll have your freedom. Don’t dock. Ned’s yard first. Go, Juno.”': '„Wenigstens bist du frei. Nicht andocken. Erst zu Neds Werft. Los, Juno.“',
   'Juno, it’s me. Keep this off the open channel.\nThis code overrides the autopilot. The debt’s still there, and they’ll be looking for you, but this is your chance to get out.\nHead to Ned’s yard, he owes me one. He’ll reprogram her and mask your code, at least for now. It isn’t much, but it’s a start.': 'Juno, ich bin’s. Das bleibt aus dem offenen Kanal raus.\nDer Code überschreibt den Autopiloten. Die Schulden sind noch da, und sie werden nach dir suchen, aber das ist deine Chance rauszukommen.\nFlieg zu Neds Werft, er schuldet mir was. Er programmiert sie um und tarnt deine Kennung, zumindest fürs Erste. Ist nicht viel, aber ein Anfang.',
-  'Ned’s yard · off the lane': 'Neds Werft · abseits der Bahn',
+  'Ned’s yard · off the route': 'Neds Werft · abseits der Bahn',
   'Reprogrammed, repainted, renamed': 'Umprogrammiert, lackiert, umbenannt',
   'Work done': 'Erledigt',
   'She’s the Wayward now': 'Sie ist jetzt die Wayward',
