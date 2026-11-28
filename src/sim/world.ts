@@ -40,7 +40,7 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { ARCADE_EDGE, STORY_EDGE, EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_LINE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR, SAM_RELAY, NED_AT, NED_FOUND, PARTITION } from './postjump';
+import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_LINE, YARD_ZAP, YARD_REBOOT, YARD_OUT_AT, YARD_AUTO_END, YARD_DARK, YARD_BOOT, YARD_TITLE_AT, PAINTED, RENAMED, PAINTER, STOLEN, STOLEN_NOTICE, SAM_RELAY, NED_AT, NED_FOUND, PARTITION } from './postjump';
 import { HOLD_R, RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
 import { RelayWake } from './relaywake';
@@ -88,7 +88,6 @@ import { ARCADE_PRICE } from '../content/web';
 import { blockOf, install as bayInstall, quickPicks, stockLevels, type BayCtx, type Block } from './bay';
 import { feelBudgets, overRatings, weightFuel } from './budgets';
 import { PressureWatch } from './pressure';
-import { JumpWatch } from './jumpready';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
 import { planStop, type Stop } from './stop';
 import { reasonOf, type Advice } from './advice';
@@ -452,8 +451,6 @@ export class World implements EncounterHost {
   behind = Infinity;
   /** Wanted and Calloway, as warnings (sim/pressure.ts). */
   private watch = new PressureWatch();
-  /** The tank against the jump's need (sim/jumpready.ts); a new one each system. */
-  private jumpWatch = new JumpWatch();
   huntDelay = 0;
   stall = 0;
   /** A named captain (sim/captains.ts): seconds into the sortie they find you; whether they have, their ship is the one fighting, and how it went. */
@@ -544,7 +541,6 @@ export class World implements EncounterHost {
     this.captainAt = def.quiet ? Infinity : def.notice.captain?.at ?? Infinity;
     this.behind = def.behind;
     this.watch = new PressureWatch();
-    this.jumpWatch = new JumpWatch();
     this.heard = new Set();
     // the course is laid out from where the ship is now
     const b = this.bk, s = this.ship;
@@ -1016,8 +1012,6 @@ export class World implements EncounterHost {
     // the Archive keeps a photograph of a den once it has been seen, and of a seed once she has come near it
     if (this.den && this.den.state !== 'dark') this.flags.add('raider_den');
     if (this.thrSeed && Math.hypot(this.ship.x - this.thrSeed.x, this.ship.z - this.thrSeed.z) < 220) this.flags.add('thren_seed');
-    const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
-    if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
     // Calloway's route lines ("change your route") are for the free chart: the road is one fixed line, so only Wanted speaks there
     if (!b.def.quiet) this.events.push(...this.watch.step({
       t: this.runTime, heat: b.heat, cap: Math.max(1, Math.round(pursuitCap(b.heat) * this.survival.pursuit.cap)),
@@ -1160,20 +1154,8 @@ export class World implements EncounterHost {
       this.holdNoted = 'open';
       this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Jump Gate open', reason: 'fly through' });
     }
-    // the story is still talking: the drive waits for the line, and the HUD says why
-    const listen = inReach && !gateHeld && this.listening();
-    if (listen) this.gateWhy = 'the radio first';
-    const near = inReach && !gateHeld && !listen;
-    if (near && this.fuel >= this.jumpCost && this.phase === 'play') {
-      if (b.spool === 0) this.events.push({ type: 'spool' });
-      b.spool += dt * (1 - JAM_SPOOL * this.navNoise);
-      if (b.spool >= b.spoolNeed && dl < b.lane.r) this.jump();
-    } else if (near) {
-      if (this.fuel < this.jumpCost && b.nagT <= 0) {
-        b.nagT = 6;
-        this.events.push({ type: 'needFuel', have: Math.floor(this.fuel), need: this.jumpCost });
-      }
-    } else b.spool = Math.max(0, b.spool - dt * 2);
+    // an open gate takes her as she flies through the ring: no fluid, no charge, no wait for the radio (owner, 28 November 2026)
+    if (inReach && !gateHeld && this.phase === 'play' && dl < b.lane.r) this.jump();
   }
 
   /**
@@ -1331,7 +1313,6 @@ export class World implements EncounterHost {
     const since = t - this.stolenAt, name = b.def.name;
     if (this.stolenSaid === 0 && since >= STOLEN.sam) {
       this.stolenSaid = 1;
-      if (this.fuel < this.jumpCost) this.events.push({ type: 'ping', id: 'stolen_sam', from: tr('Sam Okoro'), caller: 'miners', text: tr(b.port && this.cyrite >= this.fluidPrice ? STOLEN_SAM : STOLEN_SAM_POOR), moment: 'calm', system: name });
     }
     if (this.stolenSaid === 1 && since >= STOLEN.notice) {
       this.stolenSaid = 2;
@@ -1575,10 +1556,11 @@ export class World implements EncounterHost {
     this.ship.invuln = Math.max(this.ship.invuln, 2);
   }
 
-  /** Into the lane: the drive burns the fluid and the ship is gone. */
+  /** Into the lane: the ship is gone (the drive burns no fluid since 28 November 2026). */
   private jump(): void {
     const b = this.bk!, s = this.ship;
-    this.fuel -= this.jumpCost;
+    // the beats this stop still owed are carried on, as a gate that let her go always did
+    this.script?.release(this.flags, this.tankCap ? this.fuel / this.tankCap : 0);
     this.settleJobs('lane');
     this.run.escaped = true;
     this.run.cyriteLeft = this.cyrite;
@@ -1743,7 +1725,8 @@ export class World implements EncounterHost {
   private stepFieldWall(): void {
     const b = this.bk;
     if (!b) return;
-    const rings = [...(this.fieldDown ? [] : [b.lane]), ...(b.port ? [b.port] : [])];
+    // (the Jump Gate has no damping field since 28 November 2026, owner: "I dislike that safe zone"; the depot keeps its own)
+    const rings = [...(b.port ? [b.port] : [])];
     const inside = (x: number, z: number) => rings.some((k) => Math.hypot(x - k.x, z - k.z) < SAFE_R);
     for (const list of [this.bolts, this.torps, this.shots, this.webs] as Array<Array<{ x: number; z: number }>>) {
       for (let i = list.length - 1; i >= 0; i--) if (inside(list[i]!.x, list[i]!.z)) list.splice(i, 1);
@@ -1771,12 +1754,11 @@ export class World implements EncounterHost {
     return this.aliens.filter((a) => this.committed(a) && Math.hypot(a.x - s.x, a.z - s.z) < SELF_REPAIR.danger).length;
   }
 
-  /** Inside the Jump Gate's or the depot's safe ring: nothing hurts the ship here and hostile hulls keep out. */
+  /** Inside the depot's safe ring (or a meeting's): nothing hurts the ship here and hostile hulls keep out. The Jump Gate has none. */
   get safe(): 'lane' | 'port' | 'place' | null {
     const b = this.bk;
     if (!b || !this.alive) return null;
     const s = this.ship;
-    if (!this.fieldDown && Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < SAFE_R) return 'lane';
     if (b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < SAFE_R) return 'port';
     // a meeting: the civilian hull's beacon holds every gun cold inside its ring, so she can hold alongside while hunted
     const sp = this.storyPlace;
@@ -2032,15 +2014,15 @@ export class World implements EncounterHost {
     const o = sc.owed(this.flags, this.tankCap ? this.fuel / this.tankCap : 0);
     const slow = b.def.script === 'slowdoor' && this.runTime - this.desk.arrived < SLOW_DOOR;
     if (!o.any && !slow) return null;
-    const lit = this.flags.has(relayFlag(b.def.script ?? ''));
-    const resetting = lit && !o.handshake && !slow;
-    const call = !o.handshake && !slow && !lit ? this.callHold() : null;
-    this.gateWho = call?.who ?? '';
+    // a gate is open unless a relay or a place still waits on her (owner, 28 November 2026: "they should just be always open"); a call
+    // owed or a woken relay's reset no longer holds it, the beats left are carried on as she jumps (World.jump)
+    if (!o.handshake && !slow) return null;
+    this.gateWho = '';
     // a beat that waits on a story place: the gate names the place (sim/places.ts)
     const at = o.handshake ? sc.owedPlace(this.flags, this.tankCap ? this.fuel / this.tankCap : 0) : null;
     const place = at ? STORY_PLACES.find((p) => p.id === at) : undefined;
     if (place) { this.gateWho = tr(place.name); return { why: '{who} first', paint: false, handshake: true, slow: false, resetting: false }; }
-    return { why: o.handshake ? (this.wakeRelay ? 'wake the relay' : 'reach the relay mast') : slow ? 'the gate is opening' : lit ? 'resetting after the key' : call!.why, paint: false, handshake: o.handshake, slow, resetting };
+    return { why: o.handshake ? (this.wakeRelay ? 'wake the relay' : 'reach the relay mast') : 'the gate is opening', paint: false, handshake: o.handshake, slow, resetting: false };
   }
 
   /**
@@ -3023,7 +3005,7 @@ export class World implements EncounterHost {
     const arena: Arena = { bulwarks: this.field.bulwarks, rocks: this.field.rocks, aliens: this.aliens, bolts: this.bolts, notice: this.stats.notice };
     const well = this.encounter?.id === 'anomaly' && live(this.encounter) && !this.encounter.anchored ? this.encounter : null;
     const meet = this.storyPlace, held = meet && 'hold' in meet.def.act ? [{ x: meet.x, z: meet.z, r: meet.def.r }] : [];
-    const safe = !!this.safe, keep = this.bk ? [...(this.fieldDown ? [] : [this.bk.lane]), ...(this.bk.port ? [this.bk.port] : []), ...(this.bk.audit ? [this.bk.audit] : []), ...held] : [];
+    const safe = !!this.safe, keep = this.bk ? [...(this.bk.port ? [this.bk.port] : []), ...(this.bk.audit ? [this.bk.audit] : []), ...held] : [];
     // the pack calls its plays before anyone moves (sim/tactics.ts)
     if (this.alive && !safe) this.pack.step(dt, this.aliens, s, this.rng);
     for (let i = this.aliens.length - 1; i >= 0; i--) {

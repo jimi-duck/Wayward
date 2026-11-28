@@ -11,9 +11,6 @@ import type { PressureEvent } from './pressure';
 
 export type GameEvent =
   | PressureEvent
-  /** The tank reached what the jump needs / fell short of it again (sim/jumpready.ts). */
-  | { type: 'jumpReady'; have: number; need: number }
-  | { type: 'jumpLost'; have: number; need: number }
   | { type: 'bolt'; x: number; z: number; heading: number }
   | { type: 'torpedo'; x: number; z: number; heading: number; target: number | null }
   /** A rock took a hit at (x, y, z): `rx`, `rz` is its centre, `hp` what is left of it (0 to 1), `src` the weapon (a string: the sim's Weapon names). */
@@ -109,7 +106,6 @@ export type GameEvent =
   | { type: 'patched'; plates: number }
   | { type: 'docked'; name: string }
   | { type: 'spool' }
-  | { type: 'needFuel'; have: number; need: number }
   | { type: 'jumped'; x: number; z: number }
   | { type: 'comms'; id: string; tier: 'major'; kind: string; from: string; title: string; slow: boolean }
   /** A lighter card, as a call that rides along; and its channel closing (lapsed: nobody answered). */

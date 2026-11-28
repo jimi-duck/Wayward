@@ -225,12 +225,9 @@ function buildLane(): Group {
 
 /** Where the ring's centre floats above the flight plane. */
 const GATE_Y = 7;
-/** The lane of light's motes and how far beyond the gate they run (units). */
-const LANE_MOTES = 160;
-const LANE_LEN = 1400;
-/** How far back down the course toward the system it runs, and its height under the flight plane (in the gate's group). */
-const LANE_IN = 600;
-const LANE_Y = -3;
+/** The gate's waking (owner, 28 November 2026): the relay's bolt flies this long, then the skin takes this long to settle open. */
+const BOLT_T = 0.7;
+const WAKE_T = 3.2;
 const MEMBRANE_R = 44;
 const smooth01 = (x: number) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
 
@@ -241,20 +238,60 @@ const MEMBRANE_VERT = /* glsl */ `
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;
-// inside the ring (radius 16.4): slow rings and a cool-white middle, scaled by uSkin. Outside it: one thin bright wave, uPulse 0 to 1 as it runs out.
+// inside the ring (radius 16.4) the skin of an open gate: deep water lit from within, slow caustics drifting over it, a brighter
+// lip at the rim, scaled by uOpen. uWake 0 to 1 is the waking: a flash round the rim, rings closing on the centre, a burst, and
+// the skin fills in behind it. uSkin is the crossing's blaze; outside the ring, uPulse 0 to 1 runs one thin bright wave out.
 const MEMBRANE_FRAG = /* glsl */ `
   uniform float uSkin;
   uniform float uPulse;
   uniform float uTime;
+  uniform float uOpen;
+  uniform float uWake;
   varying vec2 vP;
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float noise(vec2 p) {
+    vec2 i = floor(p), f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+  }
+  float fbm(vec2 p) { return 0.55 * noise(p) + 0.3 * noise(p * 2.03 + 7.1) + 0.15 * noise(p * 4.1 + 3.3); }
   void main() {
     float r = length(vP);
-    float inner = 1.0 - step(16.4, r);
     float x = r / 16.4;
-    float rip = 0.55 + 0.45 * sin(x * 22.0 - uTime * 7.0);
-    vec3 skin = mix(vec3(0.05, 0.4, 0.52), vec3(0.8, 1.45, 1.65), pow(max(1.0 - x, 0.0), 2.6)) * (0.45 + 0.55 * rip);
-    float edge = smoothstep(0.55, 1.0, x) * 0.5;
-    vec3 col = skin * uSkin * inner * (1.0 + edge);
+    float inner = 1.0 - smoothstep(0.985, 1.0, x);
+    vec3 col = vec3(0.0);
+    // the open skin: a domain-warped drift, thin bright caustic lines where it folds, light gathered toward the centre
+    if (uOpen > 0.001 && x < 1.0) {
+      vec2 q = vP / 16.4;
+      float t = uTime;
+      vec2 w = vec2(fbm(q * 2.2 + vec2(t * 0.05, -t * 0.04)), fbm(q * 2.2 + vec2(-t * 0.045, t * 0.06) + 4.0));
+      float n = fbm(q * 3.4 + w * 1.6 + vec2(0.0, t * 0.03));
+      float caustic = pow(max(1.0 - abs(n * 2.0 - 1.0), 0.0), 6.0);
+      float stand = 0.5 + 0.5 * sin(x * 19.0 - t * 1.4 + n * 3.0);
+      vec3 deep = vec3(0.015, 0.12, 0.17), lit = vec3(0.45, 0.95, 1.1);
+      float core = pow(max(1.0 - x, 0.0), 1.8);
+      vec3 skin = mix(deep, lit, core * 0.55 + caustic * 0.35 + stand * 0.08);
+      float lip = smoothstep(0.8, 0.99, x) * (0.6 + 0.4 * stand);
+      skin += vec3(0.2, 0.7, 0.8) * lip;
+      col += skin * uOpen * inner * 0.5;
+    }
+    // the waking
+    if (uWake >= 0.0 && uWake <= 1.0) {
+      float k = uWake;
+      // the bolt strikes the rim: a flash all round it, gone in a third of a second
+      float rd = (1.0 - x) * 9.0;
+      float rim = exp(-rd * rd) * (1.0 - smoothstep(0.0, 0.3, k));
+      // rings close on the centre, the front bright and the water behind it shivering
+      float front = 1.0 - smoothstep(0.05, 0.5, k);
+      float e = x - front;
+      float en = e / 0.05;
+      float ring = exp(-en * en) * step(k, 0.55);
+      float trail = (e > 0.0 ? exp(-e * 9.0) * (0.5 + 0.5 * sin(e * 70.0 - uTime * 9.0)) : 0.0) * step(k, 0.6) * (1.0 - k);
+      // they meet: a burst at the centre
+      float burst = exp(-x * x * 9.0) * smoothstep(0.45, 0.56, k) * (1.0 - smoothstep(0.56, 0.9, k));
+      col += vec3(0.8, 1.8, 2.1) * (rim * 1.5 + ring * 1.4 + trail * 0.45) * inner + vec3(1.1, 1.8, 2.0) * burst * 1.3;
+    }
+    col += vec3(0.8, 1.45, 1.65) * uSkin * inner * pow(max(1.0 - x, 0.0), 1.4);
     if (uPulse >= 0.0 && uPulse <= 1.0) {
       float ring = 16.8 + uPulse * 26.0;
       float w = 0.9 + uPulse * 2.2;
@@ -262,7 +299,7 @@ const MEMBRANE_FRAG = /* glsl */ `
       float k = exp(-e * e) * (1.0 - uPulse) * (1.0 - uPulse);
       col += vec3(0.9, 2.2, 2.6) * k * 2.0;
     }
-    if (max(col.r, max(col.g, col.b)) < 0.01) discard;
+    if (max(col.r, max(col.g, col.b)) < 0.004) discard;
     gl_FragColor = vec4(col, 1.0);
   }
 `;
@@ -544,8 +581,7 @@ export class BreakoutView {
   private readonly gate = new Group();
   /** 0 to 1: how shut the gate looks (eased). */
   private shut = 0;
-  /** The gate's damping field, 0 while the Narrows gate is down. */
-  private fieldOn = 1;
+  private readonly tmpV = new Vector3();
   private faced: unknown = null;
   private readonly port = new Group();
   /** The depots built lately, by holder's look and name, oldest first; one shows. Built the first time a system wants it. */
@@ -567,10 +603,14 @@ export class BreakoutView {
   private readonly tether: Line;
   /** The uplink line from her keel to a relay she is waking (sim/uplink.ts). */
   private readonly uplinkLine: Line;
-  /** The lane of light: a woken relay's gate is live again, and motes of teal run out through it along the way on (sim/uplink.ts). */
-  private readonly laneLight: Points;
-  private readonly laneBeam: Mesh;
-  private laneLit = 0;
+  /** The gate's waking: the relay's bolt (a core and a glow), the flare where it strikes, and the clock since it was fired (-1: none). */
+  private readonly bolt: Mesh;
+  private readonly boltHead: Sprite;
+  private readonly boltFlare: Sprite;
+  private wakeT = -1;
+  /** How open the gate's skin is, 0 to 1 (eased); and whether it was open last frame, and for which system (null before the first look). */
+  private open = 0;
+  private wasOpen: { b: unknown; open: boolean } | null = null;
   /** The repair gantry (sim/gantry.ts) and its lamp. */
   private readonly gantry = new Group();
   private readonly gantryLamp = (materials().lamp as MeshBasicMaterial).clone();
@@ -600,7 +640,6 @@ export class BreakoutView {
   private readonly throat: Mesh;
   private readonly laneRing: Mesh;
   private readonly portRing: Mesh;
-  private readonly laneField: Mesh;
   private readonly lanehaze: Sprite;
   private readonly portField: Mesh;
   private readonly portDome: Mesh;
@@ -621,12 +660,11 @@ export class BreakoutView {
     this.throat.geometry.rotateY(Math.PI / 2);
     this.throat.position.y = GATE_Y;
     this.laneRing = flatRing(16, 0.3, CYAN, 0.5);
-    this.laneField = flatRing(SAFE_R, 0.3, CYAN, 0.1);
     this.laneRing.position.y = 0.2;
     this.gate.add(this.throat);
     this.membrane = new Mesh(new CircleGeometry(MEMBRANE_R, 56).rotateY(Math.PI / 2), new ShaderMaterial({
       vertexShader: MEMBRANE_VERT, fragmentShader: MEMBRANE_FRAG,
-      uniforms: { uSkin: { value: 0 }, uPulse: { value: -1 }, uTime: { value: 0 } },
+      uniforms: { uSkin: { value: 0 }, uPulse: { value: -1 }, uTime: { value: 0 }, uOpen: { value: 0 }, uWake: { value: -1 } },
       transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide, toneMapped: false, fog: false,
     }));
     this.membrane.position.y = GATE_Y;
@@ -638,34 +676,22 @@ export class BreakoutView {
     this.lanehaze.scale.setScalar(110);
     this.lanehaze.position.y = GATE_Y;
     this.gate.add(this.lanehaze);
-    this.lane.add(this.laneRing, this.laneField);
-    // the lane of light: three strands of motes out of the throat and away beyond the gate, along the course (turned each frame)
+    this.lane.add(this.laneRing);
+    // the relay's bolt: a thin bright core along a unit cylinder (stretched and turned each frame), a glow at its head, a flare at the gate
     {
-      const n = LANE_MOTES, g = new BufferGeometry();
-      g.setAttribute('position', new Float32BufferAttribute(new Float32Array(n * 3), 3));
-      this.laneLight = new Points(g, new PointsMaterial({ map: glow, color: new Color(0.15, 0.75, 0.85), size: 3, sizeAttenuation: true, transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
-      this.laneLight.frustumCulled = false;
-      this.laneLight.visible = false;
-      this.lane.add(this.laneLight);
-      // and a soft beam under the motes: two crossed ribbons, bright at the throat and gone into the dark at the far end
-      // it runs from down the course (where the trade comes in) through the ring and away beyond, below the flight plane like a runway
-      const beam = new BufferGeometry(), w = 2.2, xs = [-LANE_IN, 0, LANE_LEN], lit = [0, 1, 0];
-      const pos: number[] = [], col: number[] = [], idx: number[] = [];
-      for (const k of [0, 1]) {
-        // two crossed ribbons: one flat, one upright
-        for (let i = 0; i < 3; i++) {
-          for (const sgn of [-1, 1]) { pos.push(xs[i]!, LANE_Y + (k ? sgn * w : 0), k ? 0 : sgn * w); col.push(lit[i]!, lit[i]!, lit[i]!); }
-        }
-        const o = k * 6;
-        idx.push(o, o + 2, o + 3, o, o + 3, o + 1, o + 2, o + 4, o + 5, o + 2, o + 5, o + 3);
-      }
-      beam.setAttribute('position', new Float32BufferAttribute(pos, 3));
-      beam.setAttribute('color', new Float32BufferAttribute(col, 3));
-      beam.setIndex(idx);
-      this.laneBeam = new Mesh(beam, new MeshBasicMaterial({ color: new Color(0.08, 0.42, 0.5), vertexColors: true, transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false, side: DoubleSide, toneMapped: false, fog: false }));
-      this.laneBeam.frustumCulled = false;
-      this.laneBeam.visible = false;
-      this.lane.add(this.laneBeam);
+      const core = new CylinderGeometry(0.35, 0.35, 1, 6, 1, true);
+      core.translate(0, 0.5, 0);
+      core.rotateX(Math.PI / 2);
+      this.bolt = new Mesh(core, new MeshBasicMaterial({ color: new Color(0.7, 1.9, 2.2), transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
+      this.bolt.frustumCulled = false;
+      this.bolt.visible = false;
+      scene.add(this.bolt);
+      this.boltHead = new Sprite(new SpriteMaterial({ map: glow, color: new Color(0.6, 1.6, 1.9), transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
+      this.boltHead.visible = false;
+      scene.add(this.boltHead);
+      this.boltFlare = new Sprite(new SpriteMaterial({ map: glow, color: new Color(0.5, 1.3, 1.5), transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
+      this.boltFlare.visible = false;
+      scene.add(this.boltFlare);
     }
     // the depot stands off to one side of its berth; the cyan ring is where you dock
     this.portRing = flatRing(9, 0.25, CYAN, 0.6);
@@ -932,50 +958,65 @@ export class BreakoutView {
       if (this.auditFaced !== b) { this.auditFaced = b; this.audit.rotation.y = b.audit.face ?? Math.atan2(-(ship.z - b.audit.z), ship.x - b.audit.x) + Math.PI; }
       (this.auditRing.material as MeshBasicMaterial).opacity = 0.22 + 0.1 * Math.sin(this.time * 1.7);
     }
-    // the throat brightens as the tank fills and blazes while the drive spools
-    const ready = world.fuel >= b.jumpCost ? 1 : 0.35;
-    const spool = Math.min(1, b.spool / b.spoolNeed);
-    const shut = world.gateWhy !== '' && spool === 0 && !jump;
+    // the gate (owner, 28 November 2026): shut while a relay or a place still waits on her, open for good once it does not. Opening in
+    // sight is a moment: a woken relay fires a bolt into the ring, the strike runs rings in to the centre, and the skin fills and stays
+    const shut = world.gateWhy !== '' && !jump;
     this.shut += ((shut ? 1 : 0) - this.shut) * Math.min(1, dt * 3);
-    // the lane of light, once the relay is awake (not the Narrows: its gate reboots on its own scene)
-    const live = b.def.script !== 'narrows' && !!relayOf(b) && world.flags.has(relayKey(b.def));
-    this.laneLit = Math.max(0, Math.min(1, this.laneLit + (live ? dt / 3 : -dt)));
-    this.laneLight.visible = this.laneBeam.visible = this.laneLit > 0;
-    if (this.laneLight.visible) {
-      const pos = this.laneLight.geometry.attributes.position as Float32BufferAttribute;
-      for (let i = 0; i < LANE_MOTES; i++) {
-        const strand = i % 3, a = (strand / 3) * Math.PI * 2 + this.time * 0.35;
-        // each mote runs out along the axis and round its strand's slow spiral; the far ones thin into the dark
-        const u = ((i / LANE_MOTES) + this.time * 0.03) % 1, x = -LANE_IN + u * (LANE_IN + LANE_LEN), r = 1.5 + Math.max(0, x / LANE_LEN) * 12;
-        pos.setXYZ(i, x, LANE_Y + Math.sin(a + u * 14) * r, Math.cos(a + u * 14) * r);
-      }
-      pos.needsUpdate = true;
-      // the way on: from the start through the gate (the course starts at the origin, sim/breakout.ts course())
-      this.laneLight.rotation.y = this.laneBeam.rotation.y = Math.atan2(-b.lane.z, b.lane.x);
-      (this.laneLight.material as PointsMaterial).opacity = 0.85 * this.laneLit;
-      (this.laneBeam.material as MeshBasicMaterial).opacity = this.laneLit * (0.8 + 0.2 * Math.sin(this.time * 1.3));
+    const nowOpen = !shut;
+    if (this.wasOpen?.b !== b) this.wasOpen = { b, open: nowOpen };
+    else if (nowOpen && !this.wasOpen.open) { this.wasOpen.open = true; this.wakeT = relay && Math.hypot(relay.x - b.lane.x, relay.z - b.lane.z) < 2500 ? 0 : BOLT_T; }
+    else this.wasOpen.open = nowOpen;
+    const calm = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (this.wakeT >= 0 && calm) this.wakeT = BOLT_T + WAKE_T;
+    if (this.wakeT >= 0) this.wakeT += dt;
+    const waking = this.wakeT >= 0 && this.wakeT < BOLT_T + WAKE_T;
+    const wk = waking ? Math.max(-1, (this.wakeT - BOLT_T) / WAKE_T) : -1;
+    // the skin: shut, gone; waking, it fills in once the rings meet; open, it stays
+    const openGoal = shut ? 0 : waking ? (wk < 0.5 ? 0 : smooth01((wk - 0.5) / 0.5)) : 1;
+    this.open = waking ? openGoal : this.open + (openGoal - this.open) * Math.min(1, dt * 2);
+    // the bolt: from the top of the mast to the heart of the ring; the head flies, the core follows and fades after the strike
+    const top = this.mastLamps.length ? this.mastLamps[this.mastLamps.length - 1]!.getWorldPosition(this.tmpV) : null;
+    const boltOn = waking && !!top && this.wakeT < BOLT_T + 1.2;
+    this.bolt.visible = this.boltHead.visible = boltOn;
+    if (boltOn && top) {
+      const gx = b.lane.x, gy = GATE_Y - 1.5, gz = b.lane.z;
+      const fly = smooth01(this.wakeT / BOLT_T), fade = 1 - smooth01((this.wakeT - BOLT_T) / 1.2);
+      const hx = top.x + (gx - top.x) * fly, hy = top.y + (gy - top.y) * fly, hz = top.z + (gz - top.z) * fly;
+      const len = Math.hypot(hx - top.x, hy - top.y, hz - top.z);
+      this.bolt.position.copy(top);
+      this.bolt.lookAt(hx, hy, hz);
+      this.bolt.scale.set(1 + 0.6 * (1 - fade), 1 + 0.6 * (1 - fade), Math.max(0.01, len));
+      (this.bolt.material as MeshBasicMaterial).opacity = (this.wakeT < BOLT_T ? 0.9 : 0.9 * fade) * (0.85 + 0.15 * Math.sin(this.time * 40));
+      this.boltHead.position.set(hx, hy, hz);
+      this.boltHead.scale.setScalar(this.wakeT < BOLT_T ? 9 : 9 * fade);
+      (this.boltHead.material as SpriteMaterial).opacity = this.wakeT < BOLT_T ? 0.9 : 0.9 * fade;
     }
-    this.throat.rotation.x += dt * (0.2 + spool * 3);
-    (this.lanehaze.material as SpriteMaterial).opacity = 0.022 + 0.034 * ready + 0.15 * spool;
-    (this.throat.material as MeshBasicMaterial).opacity = (1 - 0.8 * this.shut) * (0.015 + 0.025 * ready + 0.18 * spool + 0.4 * (jump?.flare ?? 0));
-    // (the flat marker rings on the plane let go as the jump begins: nothing cuts across the view)
+    // the strike's flare at the ring, a short swell
+    const fl = waking && wk >= 0 ? Math.max(0, 1 - wk / 0.25) : 0;
+    this.boltFlare.visible = fl > 0.01;
+    if (this.boltFlare.visible) {
+      this.boltFlare.position.set(b.lane.x, GATE_Y - 1.5, b.lane.z);
+      this.boltFlare.scale.setScalar(30 + 50 * (1 - fl));
+      (this.boltFlare.material as SpriteMaterial).opacity = 0.7 * fl;
+    }
+    this.throat.rotation.x += dt * 0.2;
+    (this.lanehaze.material as SpriteMaterial).opacity = 0.022 + 0.034 * this.open + 0.1 * fl;
+    (this.throat.material as MeshBasicMaterial).opacity = (1 - 0.8 * this.shut) * (0.015 + 0.025 * this.open + 0.4 * (jump?.flare ?? 0));
+    // (the flat marker ring on the plane lets go as the jump begins: nothing cuts across the view)
     const away = jump ? 1 - smooth01(jump.t / 0.3) : 1;
-    (this.laneRing.material as MeshBasicMaterial).opacity = (0.25 + 0.25 * ready + 0.12 * Math.sin(this.time * 3) * ready) * away;
-    // the light strips: dim while the tank is short, full when ready, brighter as the drive spools
-    // a gate that is holding her (world.gateWhy) shows it: the strips go a dull, low amber and the throat stays dark, from any distance
-    (materials().strip as MeshBasicMaterial).color.copy(STRIP).multiplyScalar(0.4 + 0.45 * ready + 0.4 * spool + 1.5 * (jump?.flare ?? 0)).lerp(HELD, this.shut * 0.85);
-    // the skin: fills in as the drive charges, blazes at the crossing, then a ripple runs out of the ring
-    const skin = jump ? (0.6 + 0.4 * smooth01(jump.t / 0.2)) * (1 - smooth01((jump.t - jump.cross - 0.15) / 0.55)) : spool * ready * 0.55;
+    (this.laneRing.material as MeshBasicMaterial).opacity = (0.25 + 0.25 * this.open + 0.12 * Math.sin(this.time * 3) * this.open) * away;
+    // the light strips: full when open, a dull low amber while the gate holds her (world.gateWhy), from any distance
+    (materials().strip as MeshBasicMaterial).color.copy(STRIP).multiplyScalar(0.4 + 0.45 * this.open + 0.8 * fl + 1.5 * (jump?.flare ?? 0)).lerp(HELD, this.shut * 0.85);
+    // the crossing: the skin blazes, then a ripple runs out of the ring (the waking sends one too as its rings meet)
+    const skin = jump ? (0.6 + 0.4 * smooth01(jump.t / 0.2)) * (1 - smooth01((jump.t - jump.cross - 0.15) / 0.55)) : 0;
     const u = (this.membrane.material as ShaderMaterial).uniforms;
     u.uSkin!.value = skin;
-    u.uPulse!.value = jump && jump.t > jump.cross ? (jump.t - jump.cross) / 0.9 : -1;
+    u.uOpen!.value = this.open * (jump ? 1 - smooth01((jump.t - jump.cross) / 0.6) : 1);
+    u.uWake!.value = wk;
+    u.uPulse!.value = jump && jump.t > jump.cross ? (jump.t - jump.cross) / 0.9 : wk >= 0.55 ? (wk - 0.55) / 0.45 : -1;
     u.uTime!.value = this.time;
-    this.membrane.visible = skin > 0.01 || (jump !== null && jump.t > jump.cross && jump.t < jump.cross + 1);
-    // the damping field's edge: a thin teal line, a little brighter while you are inside it
+    this.membrane.visible = skin > 0.01 || this.open > 0.01 || wk >= 0 || (jump !== null && jump.t > jump.cross && jump.t < jump.cross + 1);
     const inside = world.safe ? 0.08 : 0;
-    // the Narrows' gate down (world.fieldDown): no field at all while it reboots
-    this.fieldOn += ((world.fieldDown ? 0 : 1) - this.fieldOn) * Math.min(1, dt * 2);
-    (this.laneField.material as MeshBasicMaterial).opacity = (0.09 + inside + 0.02 * Math.sin(this.time * 1.2)) * away * this.fieldOn;
     // the depot shield while a fight is on: the edge brightens and a faint dome fades in
     this.shieldLevel += ((world.shield ? 1 : 0) - this.shieldLevel) * Math.min(1, dt * 6);
     (this.portField.material as MeshBasicMaterial).opacity = 0.09 + inside + 0.02 * Math.sin(this.time * 1.2 + 1) + 0.3 * this.shieldLevel;

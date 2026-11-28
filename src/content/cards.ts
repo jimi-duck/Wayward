@@ -715,7 +715,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'depot_hail', kind: 'rumour', caller: 'frontier', trigger: 'scene', tier: 'major',
     from: 'Frontier Supply Depot', title: 'Berth open',
-    text: '“Depot control. Fuel, plating and stores at posted prices, and a berth free. Slow into the ring and we take you in.”',
+    text: '“Depot control. Plating and stores at posted prices, and a berth free. Slow into the ring and we take you in.”',
     cargo: 'Depot office · fuel, plating, stores',
     choices: [
       { id: 'dock', label: 'Dock at the depot', tone: 'trade', hint: 'Slow inside the ring to dock.', win: { text: 'Berth open · slow into the ring' } },

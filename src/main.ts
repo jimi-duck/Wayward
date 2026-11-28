@@ -195,7 +195,7 @@ function boot(review: typeof import('./review') | null): void {
   const chart = new ChartPanel();
   const course = new CoursePanel();
   // `?debug=1` also leaves the chart and the journey on window, for the screenshot scripts
-  if (params.get('debug') === '1') (window as unknown as { __ui: unknown }).__ui = { chart, course, journey: () => journey };
+  if (params.get('debug') === '1') (window as unknown as { __ui: unknown }).__ui = { chart, course, journey: () => journey, world: () => world };
   const ending = new EndingPanel();
   const jobDone = new JobDone();
   /** Jobs paid at a port, waiting for their pop-up (one at a time). */
@@ -355,7 +355,7 @@ function boot(review: typeof import('./review') | null): void {
     const d = world.sortie;
     if (d.home) world.train(); // every new Story journey starts with the training
     if (!d.home && started) settle();
-    hud.note(world, d.home ? t('Clear the yards · head for the Jump Gate') : d.first && !lockLifted(j.carry.flags) ? t('Dock at the company port') : `${d.name} · ${t('Need {n} jump fluid to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
+    hud.note(world, d.home ? t('Clear the yards · head for the Jump Gate') : d.first && !lockLifted(j.carry.flags) ? t('Dock at the company port') : `${d.name} · ${t('Jump to {name}', { name: t(d.dest) })}`);
   };
   /** Between systems: the chart, to plot the next jump. */
   const openChart = (lines: string[]) => {

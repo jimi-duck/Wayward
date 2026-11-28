@@ -6,7 +6,7 @@ import { World } from '../src/sim/world';
 import { guideTarget, sidePlaces } from '../src/sim/guide';
 import { places } from '../src/sim/breakout';
 import { paintHull, toBreach } from './paint';
-import { lockLifted, painted, paintAt, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK, YARD_ZAP, YARD_REBOOT, YARD_AUTO_END, PARTITION } from '../src/sim/postjump';
+import { lockLifted, painted, paintAt, STOLEN, STOLEN_NOTICE, SUPPLY_DEPOT, AUDIT_DOCK, YARD_ZAP, YARD_REBOOT, YARD_AUTO_END, PARTITION } from '../src/sim/postjump';
 import { WAKE_BEAT } from '../src/content/story';
 import { FIRST_SECURITY_MAX, SECURITY_FROM, SECURITY_TO, SECURITY_GAP, SECURITY_DELAY, TRAFFIC_CLEAR, TRAFFIC_N } from '../src/sim/traffic';
 import { goalOf } from '../src/sim/goal';
@@ -144,15 +144,13 @@ describe('after Sam’s code', () => {
     expect(calls).toBe(0);
   }, 30000);
 
-  it('then Sam names the depot, the hull is reported stolen, and only then does Custody come', () => {
+  it('the hull is reported stolen, and only then does Custody come (no word on the tank: a jump takes no fluid)', () => {
     const w = quiet();
     run(w, 200);
     w.fuel = 0;
     w.cyrite = 36;
     w.flags.add('ship_stolen');
     expect(w.bk!.docks).toBe(0);
-    expect(refuelAt(w)).toBe(true);
-    expect(goalOf(w).goal).toBe('Fill the tank: buy fluid at the depot or mine Cyrite');
     const said: string[] = [];
     let firstHull = Infinity;
     const t0 = w.runTime;
@@ -166,9 +164,8 @@ describe('after Sam’s code', () => {
       w.events.length = 0;
       if (firstHull === Infinity && custody(w).length) firstHull = w.runTime - t0;
     }
-    expect(said).toEqual([`sam@${STOLEN.sam}`, `notice@${STOLEN.notice}`]);
+    expect(said).toEqual([`notice@${STOLEN.notice}`]);
     expect(firstHull).toBeGreaterThanOrEqual(STOLEN.pursuit - 0.1);
-    expect(STOLEN_SAM).toMatch(/depot/);
   });
 
   it('no pursuit banner in the first system: its own notice says it', () => {
@@ -184,11 +181,10 @@ describe('after Sam’s code', () => {
     expect(banner).toBe(false);
   });
 
-  it('once the tank is full, the gate is the objective again', () => {
+  it('an empty tank never stands between her and the gate', () => {
     const w = quiet();
     w.flags.add('ship_stolen');
-    w.fuel = w.jumpCost;
-    expect(refuelAt(w)).toBe(false);
+    w.fuel = 0;
     expect(goalOf(w).goal).toMatch(/Jump Gate/);
   });
 });
@@ -286,7 +282,6 @@ describe('the paint bay (owner 2026-11-05)', () => {
     const w = afterCode();
     w.fuel = 0;
     expect(paintAt(w)).toBe(true);
-    expect(refuelAt(w)).toBe(false);
     expect(goalOf(w).goal).toBe('Fly to Ned’s yard: free reprogram, repaint and rename');
   });
 

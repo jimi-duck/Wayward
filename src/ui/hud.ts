@@ -23,7 +23,7 @@ import { heard } from './heard';
 import { damageWord } from './panels';
 import { Notifier, NoticePlates, type Notice } from './notify';
 import { blockOf, cheapest, quickPicks } from '../sim/bay';
-import { lockLifted, paintAt, refuelAt } from '../sim/postjump';
+import { lockLifted, paintAt } from '../sim/postjump';
 import { recovering } from '../sim/recovery';
 
 /** A name put into the objective list's HTML: shown as text, whatever it holds (written as the browser writes it back, so the list's compare holds). */
@@ -293,10 +293,7 @@ export class Hud {
           else this.notify(world, { type: 'warning', headline: 'Job failed', reason: e.name, key: `jobend:${e.id}` });
           break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
-        case 'jumpReady': this.jumpReady(world); break;
-        case 'jumpLost': this.notify(world, { type: 'warning', headline: 'Jump fluid short', reason: `${e.have}/${e.need}`, key: 'jumplost' }); break;
         case 'spool': this.banner(t('Jump Gate'), t('Jump drive charging'), t('Fly through the gate'), 1.6, 'calm'); break;
-        case 'needFuel': this.banner(t('Ship system'), t('Not enough jump fluid'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
         case 'jumped': this.jumpedRun = world.run; this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
         case 'pickup': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'power': this.note(world, `${t(POWER_LABEL[e.kind])} · ${t(POWER_HINT[e.kind])}`, 'gain'); break;
@@ -530,11 +527,7 @@ export class Hud {
     hide($('sys-score'), !!b);
     const th = $('obj-threat');
     if (!b) { hide(th, true); hide($('heat'), true); return; }
-    // the tank, in the status panel: jump fluid toward the jump; and the purse (Cyrite) beside it
-    const fuel = $('sys-fuel'), need = world.jumpCost;
-    text($('v-fuel'), `${Math.floor(world.fuel)}/${need}`);
-    $('g-fuel').style.setProperty('--v', Math.min(1, world.fuel / need).toFixed(2));
-    fuel.classList.toggle('ready', world.fuel >= need);
+    // the purse (Cyrite) in the status panel; jump fluid is not on the HUD (owner, 28 November 2026: a jump takes none)
     text($('v-purse'), String(Math.floor(world.cyrite)));
     // the contract's load, aboard from the first minute: the hold as a count of the quota (the opening's training holds it)
     const cg = cargoOf(world);
@@ -609,7 +602,7 @@ export class Hud {
       text(vr, arms.rack === 0 ? `${Math.max(0, arms.reload).toFixed(1)}s` : t(locked ? 'Lock' : 'Ready'));
     }
 
-    hide($('sys-fuel'), !world.bk);
+    hide($('sys-fuel'), true);
     hide($('sys-purse'), !world.bk);
 
     // mines: laid by themselves, out of a rack
@@ -779,7 +772,6 @@ export class Hud {
         ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), t('Docking clamps'));
       } else {
         // the one thing to do now, and at most two quiet lines under it
-        const ready = world.fuel >= world.jumpCost;
         // what the stop asks now (sim/world.ts storyGoal): its line while its beat is to come, then the way out
         const goal = world.storyGoal();
         // the first system past Cerro: the audit dock is the course until Sam's code has lifted the owner lock
@@ -808,27 +800,22 @@ export class Hud {
           text($('obj-t'), t(sp.def.verb));
           text($('obj-left'), hold && dsp <= sp.def.r ? `${Math.ceil(hold * (1 - sp.held))} s` : range(dsp));
           ticks($('obj-p'), hold && dsp <= sp.def.r ? sp.held : Math.max(0, 1 - dsp / bk.def.lane), 30);
-        } else if (refuelAt(world)) {
-          // the first system past Cerro with a short tank: fill it first (buy at the depot or mine), the gate comes after
-          text($('obj-t'), t('Fill the tank'));
-          text($('obj-left'), `${Math.floor(world.fuel)}/${world.jumpCost}`);
-          ticks($('obj-p'), world.fuel / world.jumpCost, 30);
         } else {
-          // a stop's script names the next place (sim/script.ts); the chase and an empty tank still come first
-          const named = !bk.chase && ready ? goal.main : undefined;
+          // a stop's script names the next place (sim/script.ts); the chase still comes first
+          const named = !bk.chase ? goal.main : undefined;
           // the gate waits on a relay not yet answered: the mast is the course, with its range
           const mast = world.gateRelay;
           // a gate rebooting or opening: its countdown is the number on the right, and the bar fills as it runs
           const gt = world.gateTimer;
           // a relay she wakes herself (sim/uplink.ts): the uplink is the objective, ahead of the stop's own line, and its charge the bar
           const wake = mast && world.wakeRelay ? world.uplink : -1;
-          text($('obj-t'), wake >= 0 ? t(world.uplinkBlock || (world.uplinking ? world.uplinkLine : 'Wake the relay')) : mast ? named ?? t('Reach the relay mast') : named ?? t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
+          text($('obj-t'), wake >= 0 ? t(world.uplinkBlock || (world.uplinking ? world.uplinkLine : 'Wake the relay')) : mast ? named ?? t('Reach the relay mast') : named ?? t(bk.chase ? 'Escape to the Jump Gate' : 'Head for the Jump Gate'));
           // the gate's range only beside a line about the gate: a story line ("find the Warden's record") never borrows it (the owner read 25 km as a story place's)
           const gateLine = !named || goal.out;
-          text($('obj-left'), gt ? clock(gt.left) : wake >= 0 && (world.uplinking || wake > 0) ? `${Math.floor(wake * 100)}%` : mast ? range(Math.hypot(mast.x - s.x, mast.z - s.z)) : !ready ? `${Math.floor(world.fuel)}/${world.jumpCost}` : gateLine ? range(dl) : '');
+          text($('obj-left'), gt ? clock(gt.left) : wake >= 0 && (world.uplinking || wake > 0) ? `${Math.floor(wake * 100)}%` : mast ? range(Math.hypot(mast.x - s.x, mast.z - s.z)) : gateLine ? range(dl) : '');
           ticks($('obj-p'), gt ? 1 - gt.left / gt.total : wake >= 0 ? wake : 1 - dl / bk.def.lane, 30);
         }
-        text($('obj-s'), world.letterDue ? '' : recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact')
+        text($('obj-s'), world.letterDue ? '' : recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase ? t('Reinforcements inbound · break contact')
           // the charge is running: ADA-1 is the one talking to it, unless she has been let rest (sentient-ship plan)
           : world.uplinking ? t(world.flags.has('implant_burned') ? 'Warden key · by hand' : 'ADA-1 · talking to the relay')
           : world.gateWhy === 'resetting after the key' ? t('Jump Gate resetting')
@@ -838,11 +825,7 @@ export class Hud {
         const lines: string[] = [];
         if (paintAt(world)) {
           lines.push(`${t('Make her yours')} · ${t('free')}`);
-        } else if (refuelAt(world)) {
-          // two ways to fill it, on one line (a phone shows only the first): buy, or mine
-          const pt = bk.port!;
-          lines.push(`${t('Buy fluid at {port}', { port: esc(pt.name) })} · <b>${range(Math.hypot(pt.x - s.x, pt.z - s.z))}</b> · ${t('or mine Cyrite')}`);
-        } else if (!ready && !aud && !paintAt(world) && !world.letterDue) lines.push(world.storyPlace || world.wakeRelay ? `${t('Jump fluid')} · <b>${Math.floor(world.fuel)}/${world.jumpCost}</b>` : `${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
+        }
         lines.push(...goal.quiet);
         // first, so a phone (which shows one line) shows it while it lasts
         if (this.hintOn(world)) lines.unshift(`<span class="hint">${this.hintLine!.text}</span>`);
@@ -860,7 +843,7 @@ export class Hud {
         if (e && e.dormant && e.place) lines.push(`${t('Off the course')} · ${t(e.place)} · <b>${range(Math.hypot(e.x - s.x, e.z - s.z))}</b>`);
         const sc = world.stage;
         if (sc?.onScope) lines.push(`${t('On the scope')} · ${t(sc.def.name)} · <b>${range(Math.hypot(sc.x - s.x, sc.z - s.z))}</b>`);
-        if (bk.port && bk.docks === 0 && !refuelAt(world) && !paintAt(world)) lines.push(`${t('Dock at {port} (optional)', { port: esc(bk.port.name) })} · <b>${range(Math.hypot(bk.port.x - s.x, bk.port.z - s.z))}</b>`);
+        if (bk.port && bk.docks === 0 && !paintAt(world)) lines.push(`${t('Dock at {port} (optional)', { port: esc(bk.port.name) })} · <b>${range(Math.hypot(bk.port.x - s.x, bk.port.z - s.z))}</b>`);
         const html = lines.slice(0, 2).map((l) => `<li>${l}</li>`).join('');
         const list = $('obj-list');
         if (list.innerHTML !== html) list.innerHTML = html;
@@ -988,22 +971,6 @@ export class Hud {
   }
 
   private gateTimer = 0;
-
-  /**
-   * The tank can make the jump (sim/jumpready.ts): a short calm banner, one pulse on the fluid readout and the objective's
-   * ticks, the Jump Gate's pointer and scope bearing marked for a few seconds. In a hard fight the banner is shorter,
-   * so it does not sit over what is coming. The pulses are CSS and stand still with reduced motion.
-   */
-  private jumpReady(world: World): void {
-    const hot = !!world.bk && wantedPips(world.bk.heat) >= 4;
-    this.banner(t('Ship system'), t('Jump ready'), t('Head for the Jump Gate'), hot ? 0.9 : 1.6, 'calm');
-    for (const [id, cls] of [['sys-fuel', 'cue'], ['obj-p', 'cue'], ['objective', 'cue']] as const) this.retrigger($(id), cls);
-    const gate = $('ptr-lane');
-    gate.classList.add('ping');
-    clearTimeout(this.gateTimer);
-    this.gateTimer = window.setTimeout(() => gate.classList.remove('ping'), GATE_PING_S * 1000);
-    this.radar.ping(GATE_PING_S);
-  }
 
   /** The Wanted bar pulses once: gold, or red when ships are on their way. */
   private heatPulse(inbound: boolean): void {

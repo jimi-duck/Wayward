@@ -21,8 +21,8 @@ export interface Stop { fuel: number; supplies: number; plate: number; cyrite: n
 export function planStop(v: StopView): Stop {
   let spare = Math.max(0, v.cyrite);
   const out: Stop = { fuel: 0, supplies: 0, plate: 0, cyrite: 0 };
-  // the tank to the jump, as far as the purse goes
-  const units = Math.max(0, Math.min(Math.ceil(v.jumpCost - v.fuel), Math.floor(spare / v.fluidPrice)));
+  // a jump takes no fluid (owner, 28 November 2026): none is bought for it
+  const units = 0;
   out.fuel = units;
   spare -= units * v.fluidPrice;
   out.cyrite -= units * v.fluidPrice;
