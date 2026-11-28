@@ -165,7 +165,7 @@ describe('chapter one: from the gate through the story chain', () => {
 });
 
 describe('chapter one: the way out of the first system', () => {
-  it.each(SEEDS.slice(0, 6))('seed %i: the tank arrives dry, mining the worked-out field fills it, and the Jump Gate takes the ship', (seed) => {
+  it.each(SEEDS.slice(0, 6))('seed %i: the tank arrives dry and the Jump Gate takes the ship all the same', (seed) => {
     const j = newJourney(seed);
     const w0 = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
     w0.train(); w0.skipTraining();
@@ -176,22 +176,7 @@ describe('chapter one: the way out of the first system', () => {
     j.carry.flags.push('archive_woke', 'ship_stolen', 'relay_first');
     const w = new World(5, { mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
     w.skipTraining();
-    expect(w.fuel).toBeLessThan(w.jumpCost);
-    // a pilot who only mines: the nearest rock, the laser, the drops, until the tank holds the jump
-    let t = 0;
-    for (; t < 60 * 420 && w.fuel < w.jumpCost && w.phase !== 'over'; t++) {
-      if (w.phase === 'comms') { w.answer(0); continue; }
-      const pk = w.pickups[0];
-      const rock = w.field.rocks.filter((r) => Math.hypot(r.x - w.ship.x, r.z - w.ship.z) < 900).sort((a, b) => Math.hypot(a.x - w.ship.x, a.z - w.ship.z) - Math.hypot(b.x - w.ship.x, b.z - w.ship.z))[0];
-      const goal = pk && Math.hypot(pk.x - w.ship.x, pk.z - w.ship.z) < 120 ? pk : rock;
-      if (!goal) break;
-      face(w, goal);
-      const d = Math.hypot(goal.x - w.ship.x, goal.z - w.ship.z);
-      w.ship.invuln = 1;
-      w.step(STEP, input({ fire: goal === rock && d < 40, thrust: d > (goal === rock ? 22 : 0) ? 1 : 0 }));
-    }
-    expect(w.fuel, `tank after ${(t / 60).toFixed(0)} s`).toBeGreaterThanOrEqual(w.jumpCost);
-    expect(t / 60, 'it takes minutes, not a quarter of an hour').toBeLessThan(300);
+    // a jump takes no fluid (owner, 28 November 2026): she goes straight out on whatever the tank holds
     // and out
     const l = w.bk!.lane;
     w.ship.x = l.x; w.ship.z = l.z; w.ship.vx = w.ship.vz = 0;

@@ -105,19 +105,16 @@ export function postJump(def: SortieDef): SortieDef {
 }
 
 /**
- * After the paint, in seconds of play: Sam names the depot (only if the tank is short), the company reports the hull stolen, a few
+ * After the paint, in seconds of play: the company reports the hull stolen, a few
  * seconds on the Wanted note explains it (once a profile, main.ts), and the first Custody hull comes. Nothing hunts her before the
  * paint (owner, 5 November 2026; sim/world.ts `stolen`).
  */
 export const STOLEN = { sam: 20, notice: 38, explain: 4, pursuit: 70 } as const;
-/** Sam's line once the registry card is closed: the short tank and where to fill it (the depot, or the rock when she cannot pay). */
-export const STOLEN_SAM = '“One more thing, your tank’s nearly dry. Buy fluid at the Frontier depot or mine some Cyrite on the way. Fill up, then the gate.”';
-export const STOLEN_SAM_POOR = '“One more thing, your tank’s nearly dry and you can’t pay for fluid. Mine the veined rock on the way. The refinery fills the tank first.”';
-/** The amber notice that tells her the pursuit has started, and why. */
 /** The depot's word on the approach, on the radio (no card): what it sells, and how to dock. */
-export const DEPOT_LINE = '“Depot control. Fuel, plating and stores at posted prices. Slow into the ring to dock.”';
+export const DEPOT_LINE = '“Depot control. Plating and stores at posted prices. Slow into the ring to dock.”';
 /** Sam, once the relay in the first system has opened her gate on the Warden key (sim/uplink.ts). */
 export const SAM_RELAY = '“The gate’s open. First lane anyone’s opened in seventy years. One down, Juno. Go.”';
+/** The amber notice that tells her the pursuit has started, and why. */
 export const STOLEN_NOTICE = ['Hull reported stolen', 'Kellern has called in Custody'] as const;
 
 /** The objective is the paint bay: the first system past Cerro, the lock lifted, the hull not yet repainted. */
@@ -125,9 +122,3 @@ export function paintAt(w: { bk: { yard: unknown } | null; flags: ReadonlySet<st
   return !!w.bk?.yard && paintDue(w.flags);
 }
 
-/** The objective is the tank, bought at the depot or mined: the first system past Cerro, the lock lifted, a tank short of the jump, not docked yet, and Cyrite to buy with. */
-export function refuelAt(w: { bk: { def: { first?: boolean }; port: unknown; docks: number } | null; flags: ReadonlySet<string>; fuel: number; jumpCost: number; cyrite: number; fluidPrice: number; gateWhy?: string }): boolean {
-  const b = w.bk;
-  // Ned and his find come first, then the relay by the gate (the archive points at it); the tank after
-  return w.gateWhy !== 'wake the relay' && w.gateWhy !== 'Ned’s yard first' && !!b?.def.first && !!b.port && b.docks === 0 && painted(w.flags) && w.fuel < w.jumpCost && w.cyrite >= w.fluidPrice;
-}

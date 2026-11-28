@@ -12,7 +12,7 @@ export const POSTJUMP: Record<string, string> = {
   '“Cease fire. That’s a working hull. Next shot calls security.”': '„Feuer einstellen. Das ist ein Arbeitsschiff. Der nächste Schuss ruft die Wache.“',
   '“Fire on civilian traffic. Patrol is on its way. Stand down.”': '„Beschuss auf zivilen Verkehr. Die Streife ist unterwegs. Waffen runter.“',
   'Berth open': 'Liegeplatz frei',
-  '“Depot control. Fuel, plating and stores at posted prices, and a berth free. Slow into the ring and we take you in.”': '„Depotkontrolle. Treibstoff, Panzerung und Vorräte zu Listenpreisen, ein Liegeplatz ist frei. Bremse im Ring ab, dann holen wir dich rein.“',
+  '“Depot control. Plating and stores at posted prices, and a berth free. Slow into the ring and we take you in.”': '„Depotkontrolle. Panzerung und Vorräte zu Listenpreisen, ein Liegeplatz ist frei. Bremse im Ring ab, dann holen wir dich rein.“',
   'Depot office · fuel, plating, stores': 'Depotbüro · Treibstoff, Panzerung, Vorräte',
   'Dock at the depot': 'Am Depot andocken',
   'Slow inside the ring to dock.': 'Im Ring abbremsen zum Andocken.',
@@ -26,8 +26,6 @@ export const POSTJUMP: Record<string, string> = {
   'Wait for the clerks.': 'Auf die Schreiber warten.',
   'Holding · the clerks are slow': 'Wartet · die Schreiber sind langsam',
   'Not your file to wait for.': 'Auf diese Akte wartest du nicht.',
-  '“One more thing, your tank’s nearly dry. Buy fluid at the Frontier depot or mine some Cyrite on the way. Fill up, then the gate.”': '„Noch was, dein Tank ist fast leer. Kauf Fluid am Frontier-Depot oder bau unterwegs etwas Cyrit ab. Erst volltanken, dann zum Tor.“',
-  '“One more thing, your tank’s nearly dry and you can’t pay for fluid. Mine the veined rock on the way. The refinery fills the tank first.”': '„Noch was, dein Tank ist fast leer, und Geld für Fluid hast du keins. Bau unterwegs Adergestein ab. Die Raffinerie füllt zuerst den Tank.“',
   'Hull reported stolen': 'Schiff als gestohlen gemeldet',
   'Kellern has called in Custody': 'Kellern hat Custody gerufen',
   'Buy fluid at {port}': 'Fluid kaufen bei {port}',
@@ -37,7 +35,7 @@ export const POSTJUMP: Record<string, string> = {
   '“The gate’s open. First lane anyone’s opened in seventy years. One down, Juno. Go.”': '„Das Tor ist offen. Die erste Bahn, die seit siebzig Jahren jemand geöffnet hat. Eins geschafft, Juno. Los.“',
   // one voice at a time (owner 2026-10-31): the Wanted explainer as a hint line
   'Wanted rises while you fight or linger · bottom right': 'Die Fahndung steigt, wenn du kämpfst oder trödelst · unten rechts',
-  '“Depot control. Fuel, plating and stores at posted prices. Slow into the ring to dock.”': '„Depotkontrolle. Fluid, Panzerung und Vorräte zu festen Preisen. Langsam in den Ring, dann docken wir dich an.“',
+  '“Depot control. Plating and stores at posted prices. Slow into the ring to dock.”': '„Depotkontrolle. Panzerung und Vorräte zu festen Preisen. Langsam in den Ring, dann docken wir dich an.“',
   // living traffic: patrols that look you over (sim/traffic.ts)
   'Custody patrol': 'Custody-Patrouille',
   'Routine check': 'Routinekontrolle',

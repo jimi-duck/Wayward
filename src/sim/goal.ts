@@ -1,6 +1,6 @@
 import { ENCOUNTERS } from './encounters';
 import { lessonOf } from './tutor';
-import { lockLifted, paintAt, refuelAt } from './postjump';
+import { lockLifted, paintAt } from './postjump';
 import type { World } from './world';
 
 // ── the one line the pause card shows ─────────────────────────────────────
@@ -24,13 +24,11 @@ export function goalOf(w: World): Goal {
   const sp = w.storyPlace;
   if (sp && !w.bk?.chase) return { goal: sp.def.verb, jobs, scope };
   const story = w.storyGoal().main;
-  // the HUD's rule: an empty tank comes before the stop's line
-  if (story && (!w.bk || w.fuel >= w.jumpCost)) return { goal: story, jobs, scope };
+  if (story) return { goal: story, jobs, scope };
   if (w.bk && !lockLifted(w.flags) && w.seenPlaces().some((p) => p.kind === 'audit')) return { goal: 'Dock at the company port', jobs, scope };
   // the first system's gate waits on its Warden relay (the archive points at it)
   if (w.bk?.def.first && w.gateWhy === 'wake the relay') return { goal: 'Wake the Warden relay by the Jump Gate', jobs, scope };
-  if (refuelAt(w)) return { goal: 'Fill the tank: buy fluid at the depot or mine Cyrite', jobs, scope };
-  if (w.bk) return { goal: w.fuel >= w.jumpCost ? 'Head for the Jump Gate and jump' : 'Mine Cyrite to fill the jump tank', jobs, scope };
+  if (w.bk) return { goal: 'Head for the Jump Gate and jump', jobs, scope };
   if (e && !e.done && !e.dormant) return { goal: ENCOUNTERS[e.id].name, jobs };
   return { goal: 'Collect Cyrite to upgrade while fighting off hostile ships', jobs };
 }

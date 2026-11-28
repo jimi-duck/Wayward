@@ -71,15 +71,22 @@ describe('a ship that is short or heavy', () => {
   });
 });
 
-describe('the gate and the depot keep their own', () => {
+describe('the depot keeps its own (the Jump Gate has no field since 28 November 2026)', () => {
   const idle = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' } as const;
+
+  it('the Jump Gate is no safe ring', () => {
+    const { w } = story();
+    const lane = w.bk!.lane;
+    w.ship.x = lane.x + 10; w.ship.z = lane.z;
+    expect(w.safe).toBeNull();
+  });
 
   it('hurts nothing inside the ring, and the alert is clear', () => {
     const { w } = story();
     w.bk!.nextPursuit = Infinity; w.cardNext = Infinity;
-    const lane = w.bk!.lane;
+    const lane = w.bk!.port!;
     w.ship.x = lane.x + 10; w.ship.z = lane.z;
-    expect(w.safe).toBe('lane');
+    expect(w.safe).toBe('port');
     const plates = w.plates;
     (w as unknown as { hitShip(s: string, x: number, z: number): void }).hitShip('test', lane.x, lane.z);
     expect(w.plates).toBe(plates);
@@ -91,7 +98,7 @@ describe('the gate and the depot keep their own', () => {
   it('holds our guns cold inside the ring too, and fires again outside', () => {
     const { w } = story();
     w.bk!.nextPursuit = Infinity; w.cardNext = Infinity;
-    const lane = w.bk!.lane, trigger = { ...idle, fire: true, torpedo: true };
+    const lane = w.bk!.port!, trigger = { ...idle, fire: true, torpedo: true };
     w.ship.x = lane.x + 30; w.ship.z = lane.z;
     w.step(1 / 60, idle);
     // the lane's registry check, if it calls: submit to the scan (showing the registry needs a registration that has passed one)
@@ -111,7 +118,7 @@ describe('the gate and the depot keep their own', () => {
   it('is a wall: fire from outside stops at the ring, and rock is kept out', () => {
     const { w } = story();
     w.bk!.nextPursuit = Infinity; w.cardNext = Infinity;
-    const lane = w.bk!.lane;
+    const lane = w.bk!.port!;
     w.field.rocks = [];
     w.ship.x = lane.x + 200; w.ship.z = lane.z + 200;
     const bolt = { x: lane.x + SAFE_R + 2, y: 0, z: lane.z, vx: -60, vy: 0, vz: 0, life: 2, dmg: 1, pierce: 0, hit: [], homing: 0 };

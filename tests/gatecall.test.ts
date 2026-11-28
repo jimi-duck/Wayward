@@ -4,8 +4,6 @@ import { STEP } from '../src/core/loop';
 import { newJourney, sortieDef } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { t } from '../src/i18n';
-import { readFileSync } from 'node:fs';
-import { migrate } from '../src/meta/save';
 
 // A shut Jump Gate always says why, and what to do: never a bare "a call is coming in".
 
@@ -55,64 +53,18 @@ describe('a shut Jump Gate', () => {
     for (const why of whys) expect(t(why, { who: 'X' })).not.toMatch(/\{who\}/);
   }, 60000);
 
-  it('says to clear the hostiles while one keeps the call from coming, counts down, and lets her go short of the ring', () => {
-    // (Kessel Hold's call waits on its moot now, a place with no clock: Stillwater's is a call alone)
-    const j = at('Stillwater');
-    const def = { ...sortieDef(j), pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, situation: null, place: null, thren: 0, calloway: Infinity };
-    const w = new World(5, { mode: 'breakout', sortie: def, carry: j.carry });
-    const seen = new Set<string>();
-    let eta = 0, open = -1;
-    for (let i = 0; i < Math.round(240 / STEP); i++) {
-      w.ship.invuln = 99;
-      // she waits a third of the lane short of the gate, as a player who stops to see what happens would
-      if (i === Math.round(40 / STEP)) { w.ship.x = w.bk!.lane.x - Math.hypot(w.bk!.lane.x, w.bk!.lane.z) / 3; w.ship.z = w.bk!.lane.z; w.ship.vx = 0; w.ship.vz = 0; }
-      // a hostile hangs about her the whole time
-      if (i > Math.round(40 / STEP) && i % 60 === 0 && !w.aliens.some((a) => !a.fleeing && Math.hypot(a.x - w.ship.x, a.z - w.ship.z) < 120)) {
-        (w as unknown as { applyOutcome(o: object, n: number, c: unknown[]): number[] }).applyOutcome({ text: '', spawn: [{ variant: 'picket', n: 1, from: 'ahead' }] }, 0, []);
-        for (const a of w.aliens) { a.x = w.ship.x + 60; a.z = w.ship.z; a.hp = 1e6; }
+  it('never holds her for a call, a reset or the radio: only a relay or a place keeps a gate shut (owner, 28 November 2026)', () => {
+    for (const name of ['Stillwater', 'Kessel Hold']) {
+      const j = at(name);
+      const def = { ...sortieDef(j), pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, situation: null, place: null, thren: 0, calloway: Infinity };
+      const w = new World(5, { mode: 'breakout', sortie: def, carry: j.carry });
+      for (let i = 0; i < Math.round(120 / STEP) && w.phase !== 'over'; i++) {
+        w.ship.invuln = 99;
+        w.step(STEP, NO_INPUT);
+        w.events.length = 0;
+        if (w.comms) w.answer(w.comms.def.choices[0]!.id);
+        expect(w.gateWhy).not.toMatch(/call|hostiles|hold still|resetting|radio/);
       }
-      w.step(STEP, NO_INPUT);
-      w.events.length = 0;
-      if (w.gateWhy) seen.add(w.gateWhy);
-      if (w.gateWhy) eta = Math.max(eta, w.gateEta);
-      if (w.comms) w.answer(w.comms.def.choices[0]!.id);
-      if (i > Math.round(41 / STEP) && !w.gateWhy && open < 0) open = w.runTime;
     }
-    expect([...seen].some((x) => x.startsWith('clear the hostiles'))).toBe(true);
-    // the wait has an end the HUD shows, and it ends
-    expect(eta).toBeGreaterThan(60);
-    expect(open).toBeGreaterThan(40);
-    expect(open).toBeLessThan(40 + 95);
-  }, 60000);
-
-  it('brings the call to her at the gate even with a job taken (a taken job used to keep it away for good)', () => {
-    // a journey the pilot flew to Kessel Hold (tools/road.pilot.ts style), saved as it arrived, and loaded as a save is
-    const j = migrate(JSON.parse(readFileSync(new URL('./fixtures/road-kessel.json', import.meta.url), 'utf8')))!;
-    const def = sortieDef(j);
-    const w = new World(5000, { mode: 'breakout', sortie: def, carry: j.carry });
-    const W = w as unknown as { call: { choices: unknown[] } | null; stage?: { taken: boolean } };
-    let took = false, moot = -1, open = -1;
-    for (let i = 0; i < Math.round(240 / STEP); i++) {
-      w.ship.invuln = 99;
-      if (i === Math.round(40 / STEP)) { w.ship.x = w.bk!.lane.x - Math.hypot(w.bk!.lane.x, w.bk!.lane.z) * 0.55; w.ship.z = w.bk!.lane.z; w.ship.vx = 0; w.ship.vz = 0; }
-      // nothing hostile comes near her: the call has nothing to wait for but the job
-      for (const a of w.aliens) if (Math.hypot(a.x - w.ship.x, a.z - w.ship.z) < 400) { a.x = w.ship.x + 3000; a.z = w.ship.z + 3000; }
-      w.step(STEP, NO_INPUT);
-      w.events.length = 0;
-      if (W.call) { w.answer(0); }
-      // the moot is a place now: she goes among its rigs, as a player would
-      if (w.gateWhy === '{who} first') atPlace(w);
-      // a relay to wake (sim/uplink.ts): she sits in its ring until it is awake
-      if (w.gateWhy === 'wake the relay' || w.gateWhy === 'reach the relay mast') atRelay(w);
-      took = took || !!W.stage?.taken;
-      if (w.comms) { if (w.comms.def.id === 'story_moot' && moot < 0) moot = w.runTime; w.answer(w.comms.def.choices[0]!.id); }
-      if (i > Math.round(41 / STEP) && !w.gateWhy && open < 0) open = w.runTime;
-    }
-    expect(took).toBe(true);
-    expect(moot).toBeGreaterThan(0);
-    // the call came while the gate was still holding for it, not after the hold ran out
-    expect(moot).toBeLessThan(40 + 90);
-    // (once the relay is awake the gate holds at most LIT_HOLD, 10 s, for a beat owed: owner, 25 November 2026)
-    expect(open).toBeGreaterThanOrEqual(moot - 10);
   }, 60000);
 });

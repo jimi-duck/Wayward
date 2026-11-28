@@ -4,8 +4,7 @@ import { SUPPLIES_MAX } from '../src/sim/breakout';
 import { SUPPLIES_TARGET, planStop, stopIdle, type StopView } from '../src/sim/stop';
 import { World } from '../src/sim/world';
 
-// The port's sensible stop (sim/stop.ts): the tank up to the jump first, then
-// what is most pressing as far as the purse reaches.
+// The port's sensible stop (sim/stop.ts): what is most pressing as far as the purse reaches (no fluid: a jump takes none).
 
 const prices = { cyrite: 1, plate: 6, supplies: 2 };
 const view = (o: Partial<StopView> = {}): StopView => ({ prices, cyrite: 0, jumpCost: 20, fuel: 20, fluidPrice: 2, supplies: SUPPLIES_TARGET, plates: 3, maxPlates: 3, ...o });
@@ -16,12 +15,8 @@ describe('the sensible stop', () => {
     expect(stopIdle(planStop(view({ cyrite: 0, supplies: 0, plates: 0 })))).toBe(true);
   });
 
-  it('fills the tank to the jump first, as far as the purse reaches', () => {
-    // 6 short at 2 a unit
-    expect(planStop(view({ fuel: 14, cyrite: 12, supplies: 0 }))).toMatchObject({ fuel: 6, supplies: 0, cyrite: -12 });
-    expect(planStop(view({ fuel: 14, cyrite: 5, supplies: 0 }))).toMatchObject({ fuel: 2, cyrite: -4 });
-    // never past the jump
-    expect(planStop(view({ fuel: 19, cyrite: 99, supplies: SUPPLIES_TARGET }))).toMatchObject({ fuel: 1, cyrite: -2 });
+  it('buys no jump fluid: a jump takes none (owner, 28 November 2026)', () => {
+    expect(planStop(view({ fuel: 0, cyrite: 12, supplies: SUPPLIES_TARGET }))).toMatchObject({ fuel: 0, cyrite: 0 });
   });
 
   it('puts supplies next, then the hull, from what is left', () => {
@@ -53,8 +48,8 @@ describe('the sensible stop', () => {
     const did = w.sensibleStop();
     expect(did).toEqual(plan);
     expect(w.cyrite).toBe(30 + plan.cyrite);
-    expect(w.fuel).toBe(w.jumpCost);
-    expect(plan.fuel).toBeGreaterThan(0);
+    expect(w.fuel).toBe(w.jumpCost - 4);
+    expect(plan.fuel).toBe(0);
     expect(w.supplies).toBe(2 + plan.supplies);
     expect(w.plates).toBe(1 + plan.plate);
     // asked again, there is nothing left it can do

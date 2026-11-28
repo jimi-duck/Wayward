@@ -1,5 +1,12 @@
 # The Story economy
 
+> **28 November 2026 (owner).** A jump takes no jump fluid: the gate wants her through the ring, nothing more. Fluid stays aboard
+> as an item (cards, hungry relays, trades), is off the HUD and the objectives, and the depot no longer sells it. A Jump Gate is
+> open unless a relay or a story place still waits on her (the first system's Ned and letter too): no drive charge, no hold for a
+> call, a reset or the radio, and no damping field round the ring. When a shut gate opens in sight, its relay fires a bolt into
+> the ring, rings close on the centre and the skin fills and stays (`render/breakout.ts`). The Narrows reboot and the Slow Door
+> keep their own timed scenes. Older text below that says otherwise is history.
+
 Two things to find a use for, one thing to find. Written after the user's
 notes that food, scrap parts and ore felt loose, that money had no point if it
 did not build the ship, and then that fuel and upgrade money being the same

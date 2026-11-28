@@ -45,7 +45,8 @@ type Entry = { key: 'bay' | 'fuel' | 'supplies' | 'cast'; ok: boolean; go: () =>
 type Buyable = 'fuel' | 'supplies';
 
 /** The rows the arrows walk (keys of the entries, left to right). */
-const ROWS: Entry['key'][][] = [['bay'], ['fuel', 'supplies'], ['cast']];
+// no jump fluid on sale (owner, 28 November 2026: a jump takes none)
+const ROWS: Entry['key'][][] = [['bay'], ['supplies'], ['cast']];
 
 /** The lane out of here, for the departure line (the lane itself is plotted on the chart). */
 export interface Course {
@@ -105,7 +106,7 @@ export class PortPanel {
     x.onclick = guarded(this.opened, () => this.leave());
     x.onpointerdown = (e) => e.stopPropagation();
     // the header's two words are shortcuts: Trade walks to the stores, Refit opens the bay
-    const jump: Record<string, () => void> = { trade: () => this.pick('fuel'), refit: () => this.act('bay') };
+    const jump: Record<string, () => void> = { trade: () => this.pick('supplies'), refit: () => this.act('bay') };
     for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>('#port .dk-nav button'))) {
       b.onclick = guarded(this.opened, () => jump[b.dataset.go ?? '']?.());
       b.onpointerdown = (e) => e.stopPropagation();
@@ -198,11 +199,9 @@ export class PortPanel {
     this.entries = p.entries;
     if (!this.entries.find((e) => e.key === this.sel)?.ok) this.sel = this.entries.find((e) => e.ok)?.key ?? 'cast';
     // what the ship holds: Cyrite, then the two things bought here, each with its one button
-    const short = Math.max(0, Math.ceil(w.jumpCost - w.fuel));
     const cell = (ico: string, k: string, v: string, sub?: string, cls = '', act?: HTMLElement) => h('span', `ps-c ${cls}`, '', pic(ico, 'ps-pic'), h('span', 'ps-t', '', h('span', 'k', k), h('b', '', v), ...(sub ? [h('span', 'ps-sub', sub)] : [])), ...(act ? [act] : []));
     $('port-stock').replaceChildren(
       cell('ico-cyrite', t('Cyrite'), num(Math.floor(w.cyrite))),
-      cell('ico-fluid', t('Jump fluid'), `${num(Math.floor(w.fuel))}/${w.jumpCost}`, p.sub.fuel, `buyc ${short ? 'short' : 'ok'}`, p.act.fuel),
       cell('ico-supplies', t('Supplies'), `${w.supplies}/${w.supplyMax}`, p.sub.supplies, 'buyc', p.act.supplies),
     );
     // the ship's trouble and where it is mended: the stores here, the weight in the bay
@@ -213,28 +212,27 @@ export class PortPanel {
     // the services
     $('port-bay').replaceChildren(...p.bay);
     $('port-msg').textContent = this.msg;
-    this.departure(w, short);
+    this.departure(w);
     this.mark();
   }
 
-  /** The departure block: where the lane goes, and whether the tank can make it. */
-  private departure(w: World, short: number): void {
+  /** The departure block: where the lane goes. */
+  private departure(w: World): void {
     const c = this.course, lanes = c?.lanes() ?? [];
     const now = c ? lanes.find((x) => x.id === c.current()) ?? lanes[0] : undefined;
     const dest = now?.name ?? (w.bk ? t(w.bk.def.dest) : '');
     $('port-dest').textContent = dest ? t('Bound for {dest}', { dest }) : t('Out of the system');
-    // the jump asks what the world asks (the lane's cost and the ship's weight): the one number the strip and the jump check share
-    const meta = [now ? plural(now.days, '{n} day', '{n} days') : '', t('{n} jump fluid', { n: w.jumpCost }), now?.note].filter(Boolean).join(' · ');
+    const meta = [now ? plural(now.days, '{n} day', '{n} days') : '', now?.note].filter(Boolean).join(' · ');
     $('port-dmeta').textContent = meta;
     const st = $('port-dstat');
-    st.className = `pd-stat ${short ? 'short' : 'ok'}`;
-    st.replaceChildren(...(short ? [pic('warn', 'warnico')] : []), document.createTextNode(short ? t('Need {n} more jump fluid to jump', { n: short }) : t('Ready to jump')));
+    st.className = 'pd-stat ok';
+    st.replaceChildren(document.createTextNode(t('Ready to jump')));
     $('port-pin').replaceChildren(pic('act-pin', 'pinico'));
     this.entries.find((x) => x.key === 'cast')!.el = $('port-x');
   }
 
   /** The port's entries and the rows that show them. */
-  private plan(w: World): { entries: Entry[]; bay: HTMLElement[]; act: Record<Buyable, HTMLElement>; sub: Record<Buyable, string> } {
+  private plan(w: World): { entries: Entry[]; bay: HTMLElement[]; act: Partial<Record<Buyable, HTMLElement>>; sub: Partial<Record<Buyable, string>> } {
     const P = w.prices;
     // the first visit of the training: only the bay is open, and it says to start there (sim/tutor.ts)
     const first = needsTorpedoFit(w);
@@ -255,7 +253,7 @@ export class PortPanel {
     bay.onpointerdown = (e) => e.stopPropagation();
     remember('bay', true, bay, () => { this.close(); this.onBay?.(); });
     // a purchase: one Fill button that tops the store up as far as the Cyrite reaches; the line under the count says what it costs
-    const act = {} as Record<Buyable, HTMLElement>, sub = {} as Record<Buyable, string>;
+    const act: Partial<Record<Buyable, HTMLElement>> = {}, sub: Partial<Record<Buyable, string>> = {};
     const buy = (key: Buyable, price: number, done: boolean, did: (n: number, c: number) => string) => {
       const most = this.most(w, key);
       const ok = !first && w.canBuy(key);
@@ -274,9 +272,6 @@ export class PortPanel {
         this.render();
       });
     };
-    buy('fuel', w.fluidPrice, w.fuel >= w.tankCap, (n, c) => t('Bought {n} jump fluid · −{c} Cyrite', { n, c: num(c) }));
-    // no Charter at a Kellern port: the Bonded rate (sim/charter.ts), said once on the fuel line
-    if (w.bondedRate && !first) sub.fuel = `${sub.fuel} · ${t('Bonded rate · posted {p}', { p: num(w.postedFluid) })}`;
     buy('supplies', P.supplies, w.supplies >= w.supplyMax, (n, c) => t('Bought {n} supplies · −{c} Cyrite', { n, c: num(c) }));
     entries.push({ key: 'cast', ok: true, go: () => this.leave() });
     return { entries, bay: [bay], act, sub };

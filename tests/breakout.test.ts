@@ -201,19 +201,12 @@ describe('the Breakout', () => {
     expect(w.supplies).toBe(0);
   });
 
-  it('will not jump without the Cyrite, and jumps once the drive has spooled', () => {
+  it('jumps on an empty tank once the drive has spooled, and keeps its fluid (owner, 28 November 2026)', () => {
     const w = quiet();
     const b = w.bk!;
     b.blockade = 'done';
     w.ship.x = b.lane.x; w.ship.z = b.lane.z;
-    w.fuel = JUMP_COST - 1;
-    w.cyrite = 50;
-    run(w, SPOOL + 1);
-    expect(w.phase).toBe('play');
-    expect(w.drain().some((e) => e.type === 'needFuel')).toBe(true);
-    // Cyrite in the purse is no help to the drive
-    expect(w.fuel).toBe(JUMP_COST - 1);
-    w.fuel = JUMP_COST + 3;
+    w.fuel = 3;
     w.cyrite = 3;
     run(w, SPOOL + JUMP_T + 1);
     expect(w.phase).toBe('over');
@@ -224,23 +217,17 @@ describe('the Breakout', () => {
     expect(w.run.cause).toBe('escaped');
   });
 
-  it('charges the drive on the way in and goes through the ring as soon as it reaches it', () => {
+  it('goes through an open ring the instant it is there, with no charge (owner, 28 November 2026)', () => {
     const w = quiet();
     const b = w.bk!;
     b.blockade = 'done';
-    w.fuel = JUMP_COST + 1;
-    // inside the approach, outside the ring: the drive charges, the ship does not go
+    w.fuel = 0;
+    // near the ring but not in it: nothing happens
     w.ship.x = b.lane.x - (APPROACH - 20); w.ship.z = b.lane.z;
     w.ship.vx = w.ship.vz = 0;
     run(w, 2);
-    expect(b.spool).toBeGreaterThan(1.5);
     expect(b.jumpT).toBe(-1);
-    // outside it, nothing charges
-    w.ship.x = b.lane.x - APPROACH - 50;
-    run(w, 1);
-    expect(b.spool).toBeLessThan(1.6);
-    // charged, and in the ring: through, the instant it is there
-    b.spool = b.spoolNeed;
+    // in the ring: through
     w.ship.x = b.lane.x; w.ship.z = b.lane.z;
     run(w, 2 * STEP);
     expect(b.jumpT).toBeGreaterThan(0);
