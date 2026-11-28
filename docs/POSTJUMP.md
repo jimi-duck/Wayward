@@ -106,7 +106,7 @@ One thing at a time, in seconds of play after the paint is on (`STOLEN`):
 2. **+20 s:** Sam names the short tank: the depot if she can pay, the veined rock if not
    (`STOLEN_SAM`, `STOLEN_SAM_POOR`). Only when the tank is short.
 3. **+38 s:** an amber notice, "Hull reported stolen · Kellern has called in Custody".
-   ADA-1's card ("Systems returning. I can hear the ship again…", answer "Finish what?") opens right after Ned's
+   ADA-1's card ("Systems returning. I can feel the ship again…", answer "Let’s do it. How?") opens right after Ned's
    line about the partition, at a free moment.
 4. **+70 s:** the first Custody hull, from behind.
 

@@ -53,7 +53,7 @@
 
 **The ship: four systems.** The refit bay is a web of upgrade nodes in **Guns** (weapons, armour), **Rig** (mining, cargo, tractor), **Signals** (sensors, hacking, jammer, spoofer) and **Contacts** (trade, people). Prices climb with every part (tier base 20/27/36/48 Cyrite, +25% per level of that part, +7% per level fitted on the whole ship), so there is always something to buy and it is never cheap. Some job answers need a fitted module: **Jammer** and **Transponder spoofer** (Signals, max 1 each), **Ore tractor** (Rig, max 2). That is how a build opens "another way" through a job.
 
-**Pop-ups.** Every message is one of four kinds (`docs/DESIGN-GUIDELINES.md`): a **Moment** (a card; pauses the world; at most 60 words; 2 to 3 answers), a **Voice** (a person on the radio; no pause; at most 20 words), a **Signal** (a short notice: headline of 3 words, one reason line of 6) or **Ambient** (the HUD objective and hint lines). A "floor" paces them so only one speaks at a time: 10 s between radio lines, 15 s of quiet after a card, 20 s between cards. A job's call rings 20 s after a story card (3 to 4 s after arrival if none is waiting).
+**Pop-ups.** Every message is one of four kinds (`docs/DESIGN-GUIDELINES.md`): a **Moment** (a card; pauses the world; at most 60 words; 2 to 3 answers), a **Voice** (a person on the radio; no pause; at most 20 words), a **Signal** (a short notice: headline of 3 words, one reason line of 6) or **Ambient** (the HUD objective and hint lines). A "floor" paces them so only one speaks at a time on the radio and one on the notices: 6 s between radio lines, 15 s of quiet after a card, 20 s between cards. A job's call rings 20 s after a story card (3 to 4 s after arrival if none is waiting).
 
 ---
 

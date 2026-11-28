@@ -54,7 +54,7 @@ describe('story jumps follow the chart', () => {
     expect(courseView(j)!.next.name).toBe('Northfold');
     expect(lines('audit').map((l) => l.main)).toEqual(['Jump to Northfold']);
     const lead = CARD_BY_ID.story_wake!.choices[0]!.label;
-    expect(lead).toBe('Finish what?');
+    expect(lead).toBe('Let’s do it. How?');
   });
 
   const total = newJourney(5, false, 'road').chart.systems.length;

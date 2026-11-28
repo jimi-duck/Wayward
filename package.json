@@ -36,7 +36,8 @@
     "art:prep": "python3 tools/art-prep.py",
     "pilot:variety": "vitest run --config tools/vitest.config.ts tools/variety.pilot.ts",
     "pilot:arcade": "vitest run --config tools/vitest.config.ts tools/arcade.pilot.ts",
-    "pilot:feel": "vitest run --config tools/vitest.config.ts tools/feel.pilot.ts"
+    "pilot:feel": "vitest run --config tools/vitest.config.ts tools/feel.pilot.ts",
+    "pilot:lag": "vitest run --config tools/vitest.config.ts tools/lag.pilot.ts --silent=false"
   },
   "engines": {
     "node": ">=22"

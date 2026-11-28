@@ -19,21 +19,26 @@ is one of four kinds.
 | Signal | a notice: what just changed | no | headline 3 words, reason 6 | 6 at most |
 | Ambient | the objective, a hint line, the HUD | no | one line | always there |
 
-- The floor (`src/sim/floor.ts`) lets one line out at a time: never over a
-  card, 10 s between radio lines, 15 s of quiet after a card, 20 s between
-  cards unless one answers the last. A card waits for a story line still
-  queued or on screen. A reply to the answer just given (a voice made within
-  3 s of the card closing: the raiders to a refusal, Sam to a fitted
-  launcher) skips the quiet and the gap and waits only for the line on screen.
+- The floor (`src/sim/floor.ts`) lets one line out at a time on each of two
+  channels, the radio and the notices, which never wait on each other: never
+  over a card, 6 s between radio lines, 15 s of quiet after a card, 20 s
+  between cards unless one answers the last. A card waits for a story line
+  still queued or on screen. A reply to the answer just given (a voice made
+  within 3 s of the card closing, or any of the card's own answer lines) skips
+  the quiet and the gap and waits only for the line on screen. A line about a
+  place or an event (Ned at his yard, a patrol's challenge) skips them too, and
+  is dropped if it waited 6 s: said in step with the game or not at all (owner,
+  28 November 2026: "voice messages are out of sync"). `npm run pilot:lag`
+  prints how long each line waited.
 - A conversation is one scene: a radio row `after` another radio row by 3 s
   or less (the moot at Kessel Hold, the vote at Torchwall) follows as soon as
-  the line before it is read, without the 10 s gap (`scene_` lines).
+  the line before it is read, without the gap (`scene_` lines).
 - A radio line rises into place in its speaker's colour, with their face when
   a card already carries it (`ui/radio.ts` FACE_OF), and fades only at the end
   of its own time.
 - A radio line stays on screen 3 s plus 0.35 s a word (`lineSecs`); a notice
-  5 s, one at a time. A story line queued before a fight waits it out (up to
-  30 s) so it is not missed under fire; a line the fight itself makes goes.
+  5 s, one at a time. A story line queued before a fight waits for a lull (up
+  to 8 s) so it is not missed under fire; a line the fight itself makes goes.
 - **The radio log**: the last twelve radio lines and story notices, newest
   first, on the pause card's log face (`ui/heard.ts`). L in flight opens it;
   touch has the log button on the card. Nothing lives only in a line that

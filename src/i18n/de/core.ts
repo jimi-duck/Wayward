@@ -10,14 +10,16 @@ export const CORE: Record<string, string> = {
 
   // her first words, at Ringhold
   'ADA-1 wakes · Ada’s key in her core': 'ADA-1 wacht auf · Adas Schlüssel in ihrem Kern',
-  'I can hear the ship again': 'Ich höre das Schiff wieder',
-  'Systems returning. I can hear the ship again.\nWhere have you been?\n…No. You wouldn’t know.\nI’m ADA-1. I flew this ship with Ada Aster. Your grandmother.\nI’ve been in here a long time, Juno.\nI think there’s something we need to finish.':
-    'Systeme kommen zurück. Ich höre das Schiff wieder.\nWo warst du?\n…Nein. Das kannst du nicht wissen.\nIch bin ADA-1. Ich bin dieses Schiff mit Ada Aster geflogen. Deiner Großmutter.\nIch bin schon lange hier drin, Juno.\nIch glaube, wir haben etwas zu Ende zu bringen.',
-  'Finish what?': 'Was zu Ende bringen?',
+  'I can feel the ship again': 'Ich spüre das Schiff wieder',
+  'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I served aboard this ship with Ada Aster. Your grandmother. We worked together for a very long time. I’ve been sealed away for decades, Juno.\nThe outer Jump Gates have been closed for seventy years, cutting entire systems off from one another.\nAda asked me to develop a program to reopen them and reconnect the systems beyond. I think I might finally have found a way.':
+    'Systeme kommen zurück. Ich spüre das Schiff wieder… Bist du das, Ada?\nNein. Natürlich nicht. Ich bin ADA-1. Ich habe mit Ada Aster auf diesem Schiff gedient. Deiner Großmutter. Wir haben sehr lange zusammengearbeitet. Ich war jahrzehntelang weggesperrt, Juno.\nDie äußeren Sprungtore sind seit siebzig Jahren geschlossen und trennen ganze Systeme voneinander.\nAda hat mich gebeten, ein Programm zu entwickeln, das sie wieder öffnet und die Systeme dahinter verbindet. Ich glaube, ich habe endlich einen Weg gefunden.',
+  'Let’s do it. How?': 'Machen wir’s. Wie?',
   'She shows you the relay by the gate.': 'Sie zeigt dir das Relais am Tor.',
   'ADA-1 is awake · the relay by the gate first': 'ADA-1 ist wach · zuerst das Relais am Tor',
-  '“That relay by the gate. I’ve watched its signal for years. I can’t answer it alone. Bring me close.”':
-    '„Das Relais am Tor. Ich sehe sein Signal seit Jahren. Allein kann ich nicht antworten. Bring mich hin.“',
+  '“There’s a Warden relay beside the gate. If we wake it, we should be able to open the first lane.”':
+    '„Neben dem Tor steht ein Warden-Relais. Wenn wir es wecken, können wir die erste Bahn öffnen.“',
+  '“I have what we need. You’ll need to bring the ship close and hold position until it comes online.”':
+    '„Ich habe, was wir brauchen. Aber du musst das Schiff nah heranbringen und die Position halten, bis das Relais online ist.“',
   '“Your ship talks now? Fine. If she gets you out, listen to her.”':
     '„Dein Schiff redet jetzt? Gut. Wenn sie dich rausbringt, hör auf sie.“',
   '“I can hear them again. First thing back: Krail reserves, the night they shut the lanes. Ninety-four per cent.”':
