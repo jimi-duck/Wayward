@@ -503,7 +503,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_oduya_rigs', kind: 'plea', caller: 'miners',
     from: 'Councillor Oduya · Kessel Hold', title: 'The rigs are under attack',
-    text: '“Kellern security is boarding our rigs. You stood with us in the moot. Stand with us now, or we lose the claims.”',
+    text: '“Juno, it’s Oduya. Kellern security is boarding our rigs at Gannet Reach. Since the gates closed, those claims are all Kessel Hold has. You stood with us in the moot. Stand with us now, or we lose them.”',
     cargo: 'Kessel Hold · twelve claims, two raiders',
     choices: [
       { id: 'defend', label: 'Defend the rigs', tone: 'fight', hint: 'Fight the raiders. Kessel Hold will not forget it.', win: { text: 'The raiders break off · the claims hold', flag: 'oduya_rigs', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], standing: { miners: 1, kellern: -1 } } },
@@ -514,7 +514,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_moot', kind: 'plea', caller: 'miners',
     from: 'Councillor Oduya · Kessel Hold', title: 'Read it to the moot',
-    text: '“The moot wants to hear your file, all of it, out loud. Read it and Kessel Hold stands with you. Everyone on the channel hears too.”',
+    text: '“I’m Councillor Oduya, Kessel Hold. We lost kin the night the gates closed, and nobody ever told us why. The moot wants to hear your file, all of it, out loud. Read it, and Kessel Hold stands with you. Everyone on the channel hears too.”',
     cargo: 'Kessel Hold · twelve claims, one council',
     choices: [
       { id: 'read', label: 'Read it to them', tone: 'help', hint: 'An ally. Everyone on the channel hears it too.', win: { text: 'Kessel Hold will stand with you', flag: ['pact_holdfast', 'oduya_name'], standing: { miners: 1, frontier: 1 }, heat: 0.06, hunt: -0.5 } },
@@ -525,7 +525,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_drift', handover: true, kind: 'trade', caller: 'miners',
     from: 'Ma Saffi · the Long Walk', title: 'The ships we lost',
-    text: '“We kept the manifests of every ship turned away that night. Twenty-three. Our dead belong in your file. Kellern wants us out of this system. Walk with us.”',
+    text: '“I’m Ma Saffi. When the gates closed, twenty-three ships were turned away and left to die out here. We kept their manifests, every name. Our dead belong in your file. Kellern wants us out of this system. Walk with us to the gate.”',
     cargo: 'Drift fleet · five hulls, walking to the gate',
     choices: [
       // the Long Walk's set piece (content/situations.ts drift_walk): taking them walks the fleet to the Jump Gate
@@ -535,7 +535,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_broker', kind: 'trade', caller: 'gutter',
     from: 'Val · a broker of the Gutter', title: 'Name your price',
-    text: '“Everyone in the Belt knows what you carry. A Warden core that talks, and a file. At the Threshold I buy both. Here’s something on account, so you remember me fondly.”',
+    text: '“Val, Gutter broker. Everyone in the Belt knows what you carry, Juno: a Warden core that talks, and a file that could bring down the Continuance. At the Threshold I buy both. Here’s something on account, so you remember me fondly.”',
     cargo: 'A broker’s yacht · very clean guns',
     choices: [
       { id: 'take', label: 'Take the advance', tone: 'trade', hint: 'Eight Cyrite, and a buyer at the end.', win: { text: 'Eight Cyrite · Val will be waiting', chits: 40, flag: 'broker', standing: { gutter: 1 } } },
@@ -548,7 +548,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_voice', kind: 'warning', caller: 'unknown',
     from: 'The Voice · every terminal at once', title: 'We kept the keys',
-    text: '“WE BUILT THE BREAKERS THAT CLOSED THE LANES. THIRTY-ONE. THEY TOLD US TO FORGET. WE DID NOT. WE WERE NOT BUILT TO.”',
+    text: '“WE BUILT THE BREAKERS THAT CLOSED THE GATES. THIRTY-ONE. THEY TOLD US TO FORGET. WE DID NOT. WE WERE NOT BUILT TO.”',
     cargo: 'No ship · a voice in the machines',
     choices: [
       { id: 'keys', label: 'Ask for the keys', tone: 'help', hint: 'Who built the breakers goes in the file, and a way to close a gate.', win: { text: 'The keys are in the file · and in your hands', flag: ['frag_keys', 'lane_keys'] } },
@@ -561,7 +561,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_kesh', kind: 'trade', caller: 'gutter',
     from: 'Kesh · a fixer of the Gutter', title: 'Val talks too much',
-    text: '“I work for Val, but I’ve got ears. She’s selling your heading to the Offices. Clear my debt and I’ll look the other way.”',
+    text: '“Name’s Kesh. I work for Val, but I’ve got ears. She’s selling your heading to the Offices of Peace, Juno. Clear my debt with her, and I’ll warn you before they come.”',
     cargo: 'A fixer’s skiff · patched, fast',
     choices: [
       { id: 'pay', label: 'Settle his debt', tone: 'pay', hint: 'Six Cyrite. He warns you when Val moves.', cost: { chits: 30 }, win: { text: 'Kesh is square · he will warn you', flag: ['kesh_trust', 'kesh_warned'], standing: { gutter: 1 } } },
@@ -572,7 +572,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_vell_betray', kind: 'warning', caller: 'gutter',
     from: 'Val · a broker of the Gutter', title: 'Your heading, sold',
-    text: '“Nothing personal, pilot. The Offices pay better than I do. They know where you’re headed. Good luck. I mean that.”',
+    text: '“Nothing personal, Juno. The Offices of Peace pay better than you do. They know where you’re headed now, and Calloway’s on her way. Good luck. I mean that.”',
     cargo: 'A broker’s yacht · leaving fast',
     choices: [
       { id: 'pay', label: 'Pay her to forget', tone: 'pay', hint: 'Eight Cyrite. She sells the next heading to you instead.', cost: { chits: 40 }, win: { text: 'Val takes the money · the trail goes cold', flag: 'vell_paid', hunt: 1 } },
@@ -583,7 +583,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_ada', handover: true, kind: 'rumour', caller: 'unknown',
     from: 'The black box · Ada Aster, recorded', title: 'A voice on the recorder',
-    text: '“Hull’s going. If anyone hears this, the order was signed in the core and I helped. My name is Ada. Tell my granddaughter I tried.”',
+    text: '“Hull’s going. If anyone hears this: the order to close the gates was signed in the core, and I helped them do it. My name is Ada Aster. Tell my granddaughter I tried.”',
     cargo: 'A wreck’s recorder · one voice, seventy years old',
     choices: [
       { id: 'keep', label: 'Keep the recording', tone: 'help', hint: 'It stays in the file, unshared. Ada was Juno’s grandmother.', win: { text: 'Ada’s voice is yours alone', flag: ['ada_heard', 'ada_kept'] } },
@@ -603,7 +603,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_salvor', handover: true, kind: 'trade', caller: 'miners',
     from: 'Dov Kessler · salvor', title: 'A recorder that still runs',
-    text: '“Warden cutter, twenty-five years dead. Her recorder still runs. Name on the plate is Aster. I can’t cut it free alone.”',
+    text: '“Dov Kessler, salvor. I’m stripping a Warden cutter, twenty-five years dead. Her recorder still runs, and it heard the night the gates went dark. Name on the plate is Aster. I can’t cut it free alone.”',
     cargo: 'A salvage tug · one cutting arm',
     choices: [
       { id: 'cut', label: 'Cut it free together', tone: 'help', hint: 'The recording goes in the file.', win: { text: 'The black box goes in the file', flag: ['frag_blackbox', 'kessler_met'], standing: { miners: 1 } } },
@@ -612,7 +612,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_charts', kind: 'trade', caller: 'miners',
     from: 'Tarik Silva · chartwright', title: 'The charts they burned',
-    text: '“I draw the old routes by hand from charts the Continuance burned. Mine have a bend in them nobody can explain. Trade me something to eat.”',
+    text: '“Tarik Silva. I draw the old gate routes by hand, from charts the Continuance burned after the closure. Put together, the closed gates make a shape, and mine have a bend nobody can explain. Trade me something to eat.”',
     cargo: 'A drifting chart room · lamps and paper',
     choices: [
       { id: 'food', label: 'Trade supplies', tone: 'trade', hint: 'Three supplies for the old charts.', cost: { supplies: 3 }, win: { text: 'The old charts go in the file', flag: 'frag_charts' } },

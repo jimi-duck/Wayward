@@ -109,7 +109,7 @@ export const CORE: Record<string, string> = {
   'Given back by ADA-1 from the Tollgate relay. Two Wardens are listed. Neither is minuted as saying anything.': 'Von ADA-1 aus dem Tollgate-Relais zurückgeholt. Zwei Warden sind aufgeführt. Von keinem ist ein Wort protokolliert.',
   'What does the record of the room say?': 'Was sagt das Protokoll des Raums?',
   // the legs, Marches to Free Ports
-  '“No Sam past the Narrows. Just me. I’m out of practice at company.”': '„Hinter den Narrows kein Sam mehr. Nur ich. Ich bin aus der Übung mit Gesellschaft.“',
+  '“No Sam past the Narrows, Juno. Just me. Seventy years these systems have been on their own, and so have I. I’m out of practice at company.”': '„Kein Sam hinter den Narrows, Juno. Nur ich. Siebzig Jahre waren diese Systeme auf sich gestellt, und ich auch. Ich bin aus der Übung, was Gesellschaft angeht.“',
   '“Ada used to say a moot is a fight with chairs. She went to every one.”': '„Ada hat immer gesagt, ein Moot ist eine Prügelei mit Stühlen. Sie war bei jedem.“',
   '“It’s tumbling. Keep with it. I’ll keep talking.”': '„Es trudelt. Bleib dran. Ich rede weiter.“',
   '“She says she never read the names out. She did. To me.”': '„Sie schreibt, sie hat die Namen nie vorgelesen. Hat sie. Mir.“',

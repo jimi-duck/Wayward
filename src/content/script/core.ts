@@ -56,7 +56,7 @@ export const CORE_ROWS: Row[] = [
   core('nr_core_tea', 'narrows', { on: 'flag', flag: 'narrows_gate_open' }, '“She drank her tea cold on this watch. Said hot tea made her sleepy.”', { stale: CORE_STALE }),
 
   // ── Act II · the Marches and the Belt: remembering. Sam is gone, so she is the voice aboard; the Belt holds Ada's death ──
-  core('mw_core', 'm_wake', after('mw_edge', 4), '“No Sam past the Narrows. Just me. I’m out of practice at company.”', { stale: CORE_STALE }),
+  core('mw_core', 'm_wake', after('mw_edge', 4), '“No Sam past the Narrows, Juno. Just me. Seventy years these systems have been on their own, and so have I. I’m out of practice at company.”', { stale: CORE_STALE }),
   memory('mk_core_mem', 'm_kessel', 'mk_relay', '“Ada used to say a moot is a fight with chairs. She went to every one.”'),
   core('ri_core_adrift', 'rift', { on: 'near', site: 'mast', within: 300 }, '“It’s tumbling. Keep with it. I’ll keep talking.”', { stale: CORE_STALE }),
   // a gate relay gives back three things: Ada's note, the record (a Wall row, set by the note's row) and her own memory of it

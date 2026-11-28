@@ -42,5 +42,5 @@ export const CHATTER: Chatter[] = [
   { id: 'drift_hum', from: 'Drift fleet', caller: 'unknown', on: ['calm'], kind: ['transit', 'edge', 'mining'], text: '“We’re only passing. The ships are old, and so are we.”' },
   { id: 'pilot_wave', from: 'Passing freighter', caller: 'guild', on: ['calm'], text: '“Clear sky ahead of you. Don’t tell anyone I said that.”' },
   { id: 'wake_report', from: 'Weather desk', caller: 'office', on: ['calm', 'arrive'], text: '“Dust is thin and the gates are quiet. A good day to be nobody.”' },
-  { id: 'edge_voice', from: 'Edge relay', caller: 'unknown', on: ['arrive', 'calm'], kind: ['edge', 'gate'], text: '“Past here the charts are wishes. Fly carefully.”' },
+  { id: 'edge_voice', from: 'Edge relay', caller: 'unknown', on: ['arrive', 'calm'], kind: ['edge', 'gate'], text: '“Automated warning. You are leaving charted space. No Continuance chart past this point has been updated in seventy years. Fly carefully.”' },
 ];

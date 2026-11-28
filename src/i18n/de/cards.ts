@@ -543,5 +543,5 @@ export const CARDS: Record<string, string> = {
   'Weather desk': 'Wetterdienst',
   '“Dust is thin and the gates are quiet. A good day to be nobody.”': '„Wenig Staub und ruhige Spuren. Ein guter Tag, um niemand zu sein.“',
   'Edge relay': 'Rand-Relais',
-  '“Past here the charts are wishes. Fly carefully.”': '„Hinter hier sind die Karten Wunschdenken. Flieg vorsichtig.“',
+  '“Automated warning. You are leaving charted space. No Continuance chart past this point has been updated in seventy years. Fly carefully.”': '„Automatische Warnung. Du verlässt kartierten Raum. Keine Karte der Continuance wurde hinter diesem Punkt in siebzig Jahren aktualisiert. Flieg vorsichtig.“',
 };
