@@ -93,7 +93,8 @@ export class RelayWake {
       // in the old letter). The Wall has it at once; then Sam
       this.w.flags.add('clue_reserves');
       this.w.radioLines('core_first', tr(ADA), 'core', [tr(CORE_FIRST)], 2);
-      this.w.radioLines('sam_relay', tr('Sam Okoro'), 'miners', [tr(SAM_RELAY)], 12);
+      // (queued before the hauler's lane line, 6 s after the key: Sam's word follows ADA-1's at once)
+      this.w.radioLines('sam_relay', tr('Sam Okoro'), 'miners', [tr(SAM_RELAY)], 5);
     }
     // (elsewhere the last stage is told by the stop's own row: "Warden key accepted", content/script/arrivals.ts)
     // a split relay: this mast is awake, the next is marked (the core wakes on the third)
@@ -102,10 +103,10 @@ export class RelayWake {
       b.split = r.stage;
       if (r.stage < 3) { const m = SPLIT_MASTS[r.stage]!; b.drift = this.backFrom(m.back, m.across); }
     }
-    if (r.stage < 3 && split) this.w.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Mast awake', reason: hunted ? 'a tether hunter is coming' : 'fly to the next mast', main: true });
+    if (r.stage < 3 && split) this.w.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Mast awake', reason: hunted ? 'a tether hunter is coming' : 'fly to the next mast' });
     else if (r.stage < 3) this.w.events.push(r.stage === 1
       ? { type: 'storyNotice', tone: 'amber', headline: 'Relay waking', reason: loud ? 'its song carries' : last ? 'the last lane stirs' : 'Custody traced the uplink', main: true }
-      : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: hunted ? 'a tether hunter is coming' : reach || loud || last ? 'the core is warming' : 'more Custody inbound', main: true });
+      : { type: 'storyNotice', tone: 'amber', headline: 'Relay dish turning', reason: hunted ? 'a tether hunter is coming' : reach || loud || last ? 'the core is warming' : 'more Custody inbound' });
     const rows = (h: boolean) => sized.filter((w) => !!w.hunter === h).map((w) => ({ variant: w.variant, n: w.n, from: 'ahead' as const }));
     if (rows(false).length) for (const id of this.w.applyOutcome({ text: '', spawn: rows(false) }, 0, [])) this.waveHulls.add(id);
     if (hunted) for (const id of this.w.applyOutcome({ text: '', spawn: rows(true) }, 0, [])) { this.hunters.add(id); this.waveHulls.add(id); }
@@ -167,7 +168,7 @@ export class RelayWake {
       a.snare = Math.max(a.snare, PULSE_SNARE);
     }
     this.w.events.push({ type: 'relayPulse', x: rl.x, z: rl.z, r: PULSE_R });
-    this.w.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Relay pulse', reason: 'the ring is clear for now', main: true });
+    this.w.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Relay pulse', reason: 'the ring is clear for now' });
   }
 
   /** The locals' guns: a shot at the nearest hostile hull near the mast every few seconds, for the rest of the wake. */
@@ -303,13 +304,13 @@ export class RelayWake {
   /** The lane is open on this sortie (World.openLane). */
   laneOpened = false;
 
-  /** A woken relay's lane: hulls come through the gate (sim/traffic.ts), and one of them says so on the radio a little after the key. */
+  /** A woken relay's lane: hulls come through the gate (sim/traffic.ts), and one of them says so on the radio a little after the key, if the radio has room. */
   private openLane(voice: boolean): void {
     this.laneOpened = true;
     if (!this.w.traffic) this.w.traffic = new Traffic(this.w, { n: 0, patrols: false, routes: [], busy: false });
     this.w.traffic.openLane(this.w);
     if (!voice) return;
     const line = LANE_LINES[(GATES.findIndex((g) => g.script === this.w.bk?.def.script) + 1) % LANE_LINES.length]!;
-    this.w.radioLines('lane_open', tr('Hauler captain'), 'frontier', [tr(line)], 6);
+    this.w.radioLines('lane_open', tr('Hauler captain'), 'frontier', [tr(line)], 15);
   }
 }

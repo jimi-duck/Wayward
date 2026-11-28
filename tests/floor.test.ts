@@ -165,11 +165,17 @@ describe('lines tied to an event', () => {
     const out = play(f, 2, 8);
     expect(out[0]![1]).toBe('patrol_1');
     expect(out[0]![0]).toBeLessThanOrEqual(HOLD + 0.1);
+    // after a card it skips the quiet (it is about now), if it is still true; one that outlived its moment under the card is dropped
     const g = new Floor();
     g.opened(0, 'card');
     g.take([voice('warn_x')], 0);
     g.closed(1);
-    expect(play(g, 1, 30).map(([, id]) => id)).toEqual([]);
+    expect(play(g, 1, 30).map(([, id]) => id)).toEqual(['warn_x']);
+    const h = new Floor();
+    h.opened(0, 'card');
+    h.take([voice('warn_x')], 0);
+    h.closed(FLOOR.live + 1);
+    expect(play(h, FLOOR.live + 1, 30).map(([, id]) => id)).toEqual([]);
   });
 });
 
@@ -217,5 +223,31 @@ describe('notices stay current', () => {
     expect(told).not.toContain('Jump Gate holding');
     expect(told).toContain('Jump Gate open');
     expect(told).toContain('Relay found');
+  });
+});
+
+describe('in step with the game (owner, 28 November 2026: "voice messages are out of sync")', () => {
+  it('a notice on screen never holds a voice back: the radio and the notices are two channels', () => {
+    const f = new Floor();
+    f.take([signal('Relay waking'), voice('story_x')], 0);
+    const out = play(f, 0, 3);
+    expect(out.map(([, id]) => id)).toEqual(['Relay waking', 'story_x']);
+    expect(out[1]![0]).toBeLessThan(0.1);
+  });
+
+  it('a card’s own answer lines keep the time the card set, through its quiet', () => {
+    const f = new Floor();
+    f.opened(0, 'card');
+    f.closed(0);
+    f.take([voice('radio_Then we do')], 6);
+    expect(play(f, 6, 2)[0]?.[0]).toBeLessThan(6.1);
+  });
+
+  it('a line about a place is said as she gets there, through a card’s quiet', () => {
+    const f = new Floor();
+    f.opened(0, 'card');
+    f.closed(0);
+    f.take([voice('paint_bay')], 2);
+    expect(play(f, 2, 2)[0]?.[0]).toBeLessThan(2.1);
   });
 });

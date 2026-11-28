@@ -2548,6 +2548,8 @@ export class World implements EncounterHost {
   /** The floor (sim/floor.ts): this step's radio lines and notices join the queue, and one may go out. */
   private speak(): void {
     this.floor.fight = !!this.bk && this.phase === 'play' && this.busy() === 'fight';
+    // the stored message follows Ned's line: no radio chatter slips in between them
+    this.floor.cardDue = this.wakeHerald && !this.cardsSeen.has(WAKE_BEAT);
     this.floor.take(this.events, this.runTime);
     const e = this.floor.step(this.runTime, this.phase === 'play' && !this.call && this.alive);
     if (e) {
