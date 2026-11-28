@@ -30,7 +30,8 @@ export function chipsOf(w: World, trade: Tradeoff): Chip[] {
   const worst = feel.findIndex((c) => c.tone === 'loss');
   const first = worst >= 0 ? feel.splice(worst, 1) : [];
   const chips: Chip[] = [...gains.slice(0, 1), ...first];
-  if (trade.jumpFluid !== 0) {
+  // (jump fluid is gone from play since 28 November 2026: a part's weight shows as handling only)
+  if (false as boolean) {
     const stuck = trade.jumpFluid > 0 && w.fuel < trade.jumpFluid;
     const n = `${trade.jumpFluid > 0 ? '+' : '−'}${Math.abs(trade.jumpFluid)}`;
     chips.push({ tone: stuck ? 'stop' : trade.jumpFluid > 0 ? 'loss' : 'gain', fluid: true, text: stuck ? `${n} ${t('jump fluid')} · ${t("can't jump yet")}` : `${n} ${t('jump fluid')}` });

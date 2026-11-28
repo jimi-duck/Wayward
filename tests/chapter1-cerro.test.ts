@@ -89,7 +89,6 @@ describe('chapter one: Cerro, on every seed', () => {
     run(w, 4);
     expect(w.tutor!.done).toBe(true);
     expect(w.bk!.chase).not.toBeNull();
-    expect(w.fuel).toBeGreaterThanOrEqual(w.jumpCost);
     expect(lessonOf(w)).toBeNull();
     // and the gate is where the HUD says, a short run on: flying there jumps
     const l = w.bk!.lane;

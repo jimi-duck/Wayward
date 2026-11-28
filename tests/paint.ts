@@ -56,6 +56,6 @@ export function atRelay(w: World): boolean {
   for (let i = f.bulwarks.length - 1; i >= 0; i--) if (Math.hypot(f.bulwarks[i]!.x - rl.x, f.bulwarks[i]!.z - rl.z) < 1) f.bulwarks.splice(i, 1);
   for (let i = w.aliens.length - 1; i >= 0; i--) if (!w.aliens[i]!.ward && Math.hypot(w.aliens[i]!.x - rl.x, w.aliens[i]!.z - rl.z) < 120) w.aliens.splice(i, 1);
   // a hungry relay's starved core: she has mined to feed it
-  if (w.uplinkBlock === STARVED) w.fuel = Math.max(w.fuel, 20);
+  if (w.uplinkBlock === STARVED) w.cyrite = Math.max(w.cyrite, 20);
   return true;
 }

@@ -37,10 +37,10 @@ export const ARRIVAL_ROWS: Row[] = [
   objective('sg_gate', 'scrapgate', flag('warden_note_3'), 'Jump to Longwater', 'Ask the Drift where the closures run.'),
 
   // ── Arrival 4 · the Slow Door: three minutes. The gate takes SLOW_DOOR seconds to open (sim/world.ts) ──
-  objective('sd_obj', 'slowdoor', arrive(), 'Hold at the Slow Door', 'Opening · 3:00'),
+  objective('sd_obj', 'slowdoor', arrive(), 'Wake the relay', 'the door’s relay still answers'),
   radio('sd_ossie', 'slowdoor', free(4), 'Ossie Raine', 'miners', '“We’re crossing with you. Forty-one aboard. Stay between us and whatever comes.”', { if: { has: ['ferry_met'] } }),
   notice('sd_motes', 'slowdoor', arrive(40), 'white', 'UNKNOWN', 'motes gathering on the gate', { wall: 'slow_motes' }),
-  objective('sd_hint', 'slowdoor', after('sd_motes'), undefined, 'Don’t fire. A full tank draws them.'),
+  objective('sd_hint', 'slowdoor', after('sd_motes'), undefined, 'Don’t fire. Let them pass.'),
   notice('sd_dense', 'slowdoor', after('sd_motes', 8), 'white', 'They thicken', 'toward your tank', { if: { full: true } }),
   radio('sd_ossie_2', 'slowdoor', after('sd_motes', 14), 'Ossie Raine', 'miners', '“They’re not touching us. They’re touching you. What are you carrying?”', { if: { has: ['ferry_met'] } }),
   radio('sd_ashe', 'slowdoor', free(30), 'Ossie Raine', 'miners', '“Ashe is off at the last port. Nobody reports this crossing.”', { if: { has: ['agent_exposed'] } }),

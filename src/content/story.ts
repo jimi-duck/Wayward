@@ -727,7 +727,7 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'Mirren’s Pier · off every chart since the Severance',
     choices: [
       { id: 'wake', label: 'Wake it', tone: 'trade', hint: 'The lane opens. The pier is on the charts.', win: { text: 'The pier will be seen · wake the relay', flag: 'relay_ok_f_mirren', standing: { guild: -1 } } },
-      { id: 'dark', label: 'Leave it dark', tone: 'help', hint: 'The long way round burns jump fluid.', win: { text: 'Dark it stays · the long way round', flag: 'relay_dark_f_mirren', fuel: -6, standing: { guild: 1 } } },
+      { id: 'dark', label: 'Leave it dark', tone: 'help', hint: 'The gate opens without it.', win: { text: 'Dark it stays · the long way round', flag: 'relay_dark_f_mirren', standing: { guild: 1 } } },
     ],
   }),
   story({
@@ -836,8 +836,8 @@ export const STORY_CARDS: CardDef[] = [
     text: '“Every lane ends here. The toll is what you carry, or what you are.”',
     cargo: 'A toll platform · one lit window',
     choices: [
-      { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Six Cyrite. He tops up the tank.', cost: { chits: 30 }, win: { text: 'Toll paid · the tank is topped up', fuel: 10 } },
-      { id: 'name', label: 'Say who you are', tone: 'bluff', hint: 'Free, if he cares.', odds: { base: 0.45, standing: { guild: 0.1 } }, win: { text: '“Then the lane is yours.” · the tank is topped up', flag: 'oren_asked', fuel: 10, heat: 0.05 }, lose: { text: 'He bars the window' } },
+      { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Six Cyrite. He tops up your stores.', cost: { chits: 30 }, win: { text: 'Toll paid · your stores topped up', supplies: 3 } },
+      { id: 'name', label: 'Say who you are', tone: 'bluff', hint: 'Free, if he cares.', odds: { base: 0.45, standing: { guild: 0.1 } }, win: { text: '“Then the lane is yours.” · your stores topped up', flag: 'oren_asked', supplies: 3, heat: 0.05 }, lose: { text: 'He bars the window' } },
       { id: 'run', label: 'Run the gate', tone: 'fight', hint: 'The platform’s guns wake.', win: { text: 'The platform opens fire', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }] } },
     ],
   }),

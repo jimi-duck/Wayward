@@ -37,10 +37,10 @@ export const SPLIT_MASTS: ReadonlyArray<{ back: number; across: number }> = [{ b
 export const JAM_CYCLE = 14;
 export const JAM_QUIET = 9;
 export const JAM_STRIKE = 0.35;
-/** A hungry relay: the jump fluid its core drinks over a whole wake. */
+/** A hungry relay: the Cyrite its core drinks over a whole wake (jump fluid is gone from play, owner 28 November 2026). */
 export const HUNGRY_FEED = 8;
 /** What the HUD asks while a hungry relay's core is starved (English, for t()). */
-export const STARVED = 'Feed the core: fill the tank';
+export const STARVED = 'Feed the core: bring Cyrite';
 /** A loud relay (the Hollows): below this share of her top speed she is quiet, and the charge runs at the quiet rate with no noise. */
 export const LOUD_STILL = 0.2;
 export const LOUD_QUIET_RATE = 0.5;

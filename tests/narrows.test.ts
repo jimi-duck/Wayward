@@ -71,7 +71,7 @@ describe('the Narrows', () => {
     return { w, log, seen };
   }
 
-  const ORDER = ['say:The Narrows g', 'say:That’s the re', 'notice:Warden key accepted', 'card:warden_note_1', 'notice:Jump Gate rebooting', 'say:I’ll remember', 'notice:CCV Patience inbound', 'card:story_calloway_narrows', 'say:Kind Regard', 'notice:Jump Gate open', 'say:This is wher', 'notice:Signal lost'];
+  const ORDER = ['say:The Narrows g', 'say:That’s the re', 'notice:Warden key accepted', 'card:warden_note_1', 'say:I’ll remember', 'card:story_calloway_narrows', 'say:Kind Regard', 'notice:Signal lost'];
   const inOrder = (log: string[]) => {
     const at = (s: string) => log.findIndex((l) => l.startsWith(s));
     for (const o of ORDER) expect(at(o), `${o} in ${log.join(' | ')}`).toBeGreaterThanOrEqual(0);
@@ -82,7 +82,7 @@ describe('the Narrows', () => {
     }
   };
 
-  it('plays one scene in order: locked, the key, the gate down, the Patience, the way out', () => {
+  it('plays one scene in order: locked, the key, the gate open, the Patience, the way out', () => {
     const { w, log, seen } = play(7);
     inOrder(log);
     // the stop's own line is the jump's title card's, not a notice under it
@@ -96,15 +96,13 @@ describe('the Narrows', () => {
     expect(log.slice(log.indexOf('notice:Warden key accepted')).filter((l) => l === 'notice:Jump Gate holding')).toEqual([]);
   }, 60000);
 
-  it('takes the gate down for 90 s with its field off, and the blockade comes', () => {
+  it('opens the gate the moment the key is in, and the blockade comes (owner, 28 November 2026)', () => {
     const { w, seen } = play(3);
     expect(seen.down).toBeGreaterThan(0);
-    expect(seen.held).toBe(true);
     expect(seen.hulls).toBeGreaterThanOrEqual(3);
-    // the card pauses the world, so the gate opens 90 s of flying after it went down
-    expect(seen.open - seen.down).toBeGreaterThanOrEqual(90 - 1e-6);
-    expect(seen.open - seen.down).toBeLessThan(92);
-    expect(w.fieldDown).toBe(false);
+    // open with the key: nothing more to wait for
+    expect(w.flags.has('narrows_gate_open')).toBe(true);
+    expect(seen.open - seen.down).toBeLessThan(1);
     expect(w.flags.has('ashgrove_met')).toBe(true);
   }, 60000);
 

@@ -48,7 +48,7 @@ describe('the sensible stop', () => {
     const did = w.sensibleStop();
     expect(did).toEqual(plan);
     expect(w.cyrite).toBe(30 + plan.cyrite);
-    expect(w.fuel).toBe(w.jumpCost - 4);
+    expect(w.fuel).toBe(0);
     expect(plan.fuel).toBe(0);
     expect(w.supplies).toBe(2 + plan.supplies);
     expect(w.plates).toBe(1 + plan.plate);
@@ -58,43 +58,11 @@ describe('the sensible stop', () => {
 });
 
 describe('jump fluid at a port', () => {
-  const dock = (): World => {
+  it('is not sold: there is no jump fluid in play (owner, 28 November 2026)', () => {
     const w = new World(3, { mode: 'breakout' });
-    w.field.rocks = []; w.field.bulwarks = [];
-    w.cardNext = Infinity; w.bk!.nextPursuit = Infinity; w.portCalled = true;
-    w.ship.x = w.bk!.port!.x; w.ship.z = w.bk!.port!.z; w.ship.vx = w.ship.vz = 0;
-    for (let i = 0; i < 90 && w.phase !== 'dock'; i++) w.step(STEP, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
-    return w;
-  };
-
-  it('sells a unit for the port’s price in Cyrite, up to what the tank holds', () => {
-    const w = dock();
-    const price = w.fluidPrice;
-    expect(price).toBeGreaterThanOrEqual(1);
-    w.fuel = 4; w.cyrite = price * 2 + 1;
-    expect(w.buy('fuel')).toBe(true);
-    expect(w.fuel).toBe(5);
-    expect(w.cyrite).toBe(price + 1);
-    w.cyrite = price - 1;
+    w.cyrite = 999;
     expect(w.canBuy('fuel')).toBe(false);
-    w.cyrite = 999; w.fuel = w.tankCap;
-    expect(w.canBuy('fuel')).toBe(false);
-  });
-
-  it('is never touched by an upgrade: the bay spends the purse only', () => {
-    const w = dock();
-    w.fuel = 3; w.cyrite = 500;
-    expect(w.openBay()).toBe(true);
-    expect(w.install('ph_emitters')).toBeNull();
-    expect(w.fuel).toBe(3);
-    expect(w.cyrite).toBeLessThan(500);
-    // and the other way: a jump short of fluid is not helped by a full purse
-    w.closeBay();
-    expect(w.fuel).toBeLessThan(w.jumpCost);
-  });
-
-  it('never sells in the Arcade', () => {
-    const w = new World(3);
-    expect(w.canBuy('fuel')).toBe(false);
+    w.fuel = 5;
+    expect(w.fuel).toBe(0);
   });
 });

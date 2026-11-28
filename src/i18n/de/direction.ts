@@ -334,5 +334,5 @@ export const DIRECTION: Record<string, string> = {
   'Give her Ada’s file': 'Gib ihr Adas Akte',
   'What she has wanted since the Narrows. She reads it, and lets you through.': 'Was sie seit den Narrows will. Sie liest sie und lässt dich durch.',
   'She reads Ada’s file · the field drops': 'Sie liest Adas Akte · das Feld fällt',
-  '“Kind Regard, carry on. I want to see what she does with ninety seconds.”': '„Kind Regard, weitermachen. Ich will sehen, was sie mit neunzig Sekunden anfängt.“',
+  '“Kind Regard, carry on. I want to see what she does with an open gate.”': '„Kind Regard, weitermachen. Ich will sehen, was sie mit einem offenen Tor anfängt.“',
 };

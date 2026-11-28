@@ -255,12 +255,10 @@ describe('comms in the Breakout', () => {
   it('calls in a favour later', () => {
     const w = quiet();
     w.cyrite = 5;
-    w.fuel = 5;
     w.openComms(CARD_BY_ID.fuel_runner!);
     w.answer('favour');
-    // six more, refined into the tank
-    expect(w.fuel).toBe(11);
-    expect(w.cyrite).toBe(5);
+    // six more, all in the purse (no tank since 28 November 2026)
+    expect(w.cyrite).toBe(11);
     expect(w.flags.has('owes_runner')).toBe(true);
     run(w, 59);
     expect(w.call).toBeNull();
