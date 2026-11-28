@@ -343,7 +343,7 @@ export const STORY_CARDS: CardDef[] = [
     herald: { headline: 'Warden core online', reason: 'it woke with the lights' },
     from: 'ADA-1 · Warden core', title: 'I can feel the ship again',
     letter: { head: [], sign: '' },
-    text: 'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I served aboard this ship with Ada Aster. Your grandmother. We worked together for a very long time. I’ve been sealed away for decades, Juno.\nThe outer Jump Gates have been closed for seventy years, cutting entire systems off from one another. Ada asked me to develop a program to reopen them and reconnect the systems beyond. I think I might finally have found a way.',
+    text: 'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I served aboard this ship with Ada Aster. Your grandmother. We worked together for a very long time. I’ve been sealed away for decades, Juno.\nThe outer Jump Gates have been closed for seventy years, cutting entire systems off from one another.\nAda asked me to develop a program to reopen them and reconnect the systems beyond. I think I might finally have found a way.',
     cargo: 'The Wayward · a Warden core under her decking',
     choices: [
       { id: 'lead', label: 'Let’s do it. How?', tone: 'help', hint: 'She shows you the relay by the gate.',
