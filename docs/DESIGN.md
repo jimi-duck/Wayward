@@ -433,6 +433,17 @@ system has its **work lane**: six Bonded haulers queued by the live gate. By eve
 leg's Continuance slogan (`SLOGANS`); past the Narrows, once `relay_broadcast` is set, the Scatter has struck it out and written
 its own line across it in ochre (`OVERS`). None of it is saved or solid.
 
+### The gate signs (2026-11-28)
+
+Beside each live gate stand three displays that cycle through a library of lines (`content/gatesigns.ts`: official, defaced
+`[old|new]`, resistance, Krail, civilian, Warden, rare). `sim/signs.ts` picks (`pickSign`: a rare line 4% of changes, else a category
+by weight, then a line; never the same twice); `render/signs.ts` draws each panel once per change and fades it (8 to 12 s hold).
+The mix moves from the Continuance's voice to the truth as `wardenRelays` grow (`MIX_EARLY` to `MIX_LATE` over `MIX_SPAN`); the
+panel (big board, altered display, old transmission), the holder and a lean per gate bend it. A line's own terms: `needs` a flag
+(`clue_reserves`, the 94%), `relays` woken (ripening a relay later or sooner per gate), `legs`, `gate: dark|lit` (sealed Warden
+lines show only while that gate's relay sleeps). To add a line, add a row and its German twin (`i18n/de/signs.ts`). Bench:
+`tools/signs.html`. Nothing is saved.
+
 A meeting's ring (a hull alongside) is a damping field like the gate's: nobody fires inside it, and hostiles circle outside
 ("A civilian beacon holds every gun cold"), so a hunted pilot can still talk.
 

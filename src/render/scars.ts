@@ -1,10 +1,13 @@
-import { CanvasTexture, Color, Group, LinearFilter, MeshBasicMaterial, Sprite, SpriteMaterial, SRGBColorSpace, type Material, type Scene } from 'three';
+import { Color, Group, MeshBasicMaterial, type Material, type Scene } from 'three';
 import type { World } from '../sim/world';
 import type { Scars } from '../sim/scars';
-import { t } from '../i18n';
 import { materials } from './breakout';
 import { Kit, metal, seeded, type V3 } from './kit';
 import { thinFog } from './monuments';
+import { SignPanel } from './signs';
+import { SIGNS } from '../content/gatesigns';
+import { signCtx, type SignCtx } from '../sim/signs';
+import { relayKey } from '../sim/breakout';
 
 // ── the Severance, where she can see it ───────────────────────────────────
 // The dead gate, the Bonded work lane and the Continuance's billboard
@@ -99,57 +102,23 @@ function hauler(seed: number): Group {
   return k.build(mats(), 0.5);
 }
 
-/** The billboard: the slogan in the Continuance's clean caps, and, once the Scatter has heard Ada's key, a line sprayed over it. */
-function boardTexture(line: string, over: string | null): CanvasTexture {
-  const c = document.createElement('canvas');
-  c.width = 1024; c.height = 256;
-  const g = c.getContext('2d')!;
-  g.fillStyle = 'rgba(6, 18, 22, 0.82)';
-  g.fillRect(0, 40, 1024, 150);
-  g.strokeStyle = 'rgba(120, 200, 210, 0.55)';
-  g.lineWidth = 3;
-  g.strokeRect(6, 42, 1012, 146);
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  // the slogan as large as fits the panel
-  let px = 72;
-  do { g.font = `600 ${px}px "Barlow Condensed", "Barlow", sans-serif`; px -= 4; } while (px > 30 && g.measureText(line.toUpperCase()).width > 940);
-  g.fillStyle = over ? 'rgba(170, 210, 214, 0.55)' : 'rgba(200, 236, 240, 0.95)';
-  g.fillText(line.toUpperCase(), 512, 100);
-  g.font = '500 26px "Share Tech Mono", monospace';
-  g.fillStyle = 'rgba(150, 200, 205, 0.7)';
-  g.fillText(t('Continuance Public Service').toUpperCase(), 512, 160);
-  if (over) {
-    // the struck line, then the Scatter's own words in WAYWARD's ochre, a little crooked
-    g.strokeStyle = 'rgba(217, 154, 39, 0.9)';
-    g.lineWidth = 7;
-    g.beginPath(); g.moveTo(90, 106); g.lineTo(934, 92); g.stroke();
-    g.save();
-    g.translate(560, 214); g.rotate(-0.04);
-    g.font = '700 58px "Barlow Condensed", "Barlow", sans-serif';
-    g.fillStyle = 'rgba(217, 154, 39, 0.95)';
-    g.fillText(over.toUpperCase(), 0, 0);
-    g.restore();
-  }
-  const tex = new CanvasTexture(c);
-  tex.colorSpace = SRGBColorSpace;
-  tex.minFilter = LinearFilter;
-  return tex;
-}
-
 export class ScarView {
   private readonly root = new Group();
   private dead: Group | null = null;
   private readonly queue: Group[] = [];
-  private readonly board: Sprite;
-  private boardKey = '';
+  /** The displays by the live gate: the big board, the one someone altered, the old transmission along from them. */
+  private readonly signs: SignPanel[];
+  private signsAt = '';
+  private world: World | null = null;
+  private readonly ctx = (): SignCtx => {
+    const b = this.world!.bk!;
+    return signCtx(this.world!.flags, b.def, relayKey(b.def));
+  };
   private time = 0;
 
   constructor(private readonly scene: Scene) {
-    this.board = new Sprite(new SpriteMaterial({ color: new Color(1, 1, 1), transparent: true, depthWrite: false, toneMapped: false, fog: false }));
-    this.board.scale.set(56, 14, 1);
-    this.board.visible = false;
-    this.root.add(this.board);
+    this.signs = [new SignPanel(0, 41, 56, 14), new SignPanel(1, 41, 44, 11), new SignPanel(2, 41, 44, 11)];
+    for (const p of this.signs) this.root.add(p.sprite);
     scene.add(this.root);
   }
 
@@ -176,21 +145,26 @@ export class ScarView {
       h.rotation.set(0, q.yaw, 0);
     });
 
-    if (s.board) {
-      const key = `${s.board.line}|${s.board.over ?? ''}`;
-      if (key !== this.boardKey) {
-        this.boardKey = key;
-        const m = this.board.material as SpriteMaterial;
-        m.map?.dispose();
-        m.map = boardTexture(t(s.board.line), s.board.over ? t(s.board.over) : null);
-        m.needsUpdate = true;
+    const bd = s.board, bk = world.bk;
+    if (bd && bk) {
+      this.world = world;
+      const key = `${bk.def.script ?? ''}|${bd.x | 0}|${bd.z | 0}`;
+      if (key !== this.signsAt) {
+        // a new gate: its board opens on the leg's own slogan, the others on whatever the gate's pool gives
+        this.signsAt = key;
+        const c = this.ctx();
+        this.signs.forEach((p, i) => p.reset(c, i === 0 ? SIGNS.find((d) => d.cat === 'official' && d.text === bd.line) : undefined));
       }
-      this.board.visible = true;
-      this.board.position.set(s.board.x, BOARD_Y, s.board.z);
-      // a broadcast panel's slow refresh: it dips for a beat now and then
-      (this.board.material as SpriteMaterial).opacity = Math.sin(this.time * 0.7) > 0.97 ? 0.6 : 1;
-    } else this.board.visible = false;
+      // the panels side by side across the view, below the flight plane: the board, the altered display beside it, the old transmission beyond
+      const rx = -bd.fz, rz = bd.fx;
+      for (const [i, p] of this.signs.entries()) {
+        const along = [0, 14, -4][i]!, across = [0, -40, -62][i]!, y = [BOARD_Y, BOARD_Y - 7, BOARD_Y - 15][i]!;
+        p.sprite.visible = true;
+        p.sprite.position.set(bd.x + bd.fx * along + rx * across, y, bd.z + bd.fz * along + rz * across);
+        p.update(dt, this.ctx);
+      }
+    } else for (const p of this.signs) p.sprite.visible = false;
   }
 
-  dispose(): void { this.scene.remove(this.root); }
+  dispose(): void { this.scene.remove(this.root); for (const p of this.signs) p.dispose(); }
 }
