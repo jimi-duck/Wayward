@@ -849,3 +849,22 @@ It lifts once a verdict comes with no step waiting, at the least 1.5 s after lau
 meanwhile is ignored; the world is held throughout.
 
 **Not measured:** how long it stays up on the owner's Mac or iPhone.
+
+## Pass 31: only the start-up verdict is kept, and each launch tries one step better (2026-11-28)
+
+The owner: Chrome often played worse once the game had been played before, even in the Arcade, and better in a private
+window. A private window has no kept record, so it is judged fresh from High at full size. A returning visit started
+from `wayward.tier`, which was written after every move in play, ceiling included. One heavy fight could drop a tier or
+set the even 30, and that stuck for a fortnight: a lowered ceiling is never climbed past, and an even 30 never shows the
+room to climb. Now:
+
+- The record (`KEPT` 4, no ceiling) holds only the start-up screen's verdict. Moves made in play last the visit.
+  Records of 3 are dropped, so the next launch is judged fresh, as a private window is.
+- Each launch first goes back to that verdict (`restore`), whatever the last run's fights did, with every tier open.
+- Behind the screen it then tries one step better (`probe`): off the even 30, else the size above, else the tier above
+  (no higher than High on a computer, Phone on a phone). The first verdict keeps the step, or puts everything back. So a
+  verdict from a bad moment heals by one step each launch, at the cost of one more verdict (about 1.3 s) behind the screen.
+
+A private window also runs Chrome without extensions, which this cannot change.
+
+**Not measured:** the owner's Chrome with and without a kept record.

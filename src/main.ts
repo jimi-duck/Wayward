@@ -79,22 +79,29 @@ function boot(review: typeof import('./review') | null): void {
   }
 
   // ?quality=low|phone|medium|high pins a tier and switches the governor off.
-  // Otherwise a phone starts on Phone and a computer on High, or where this device settled last time (`wayward.tier`):
+  // Otherwise a phone starts on Phone and a computer on High, or where the start-up screen settled last time (`wayward.tier`):
   // the governor steps down under load and up when there is room, never above a tier this device found too slow.
   const params = new URLSearchParams(location.search);
   const pinned = tierIndex(params.get('quality'));
   const coarse = matchMedia('(pointer: coarse)').matches;
   const TIER_KEY = 'wayward.tier';
-  const settled = keptTier(TIER_KEY);
-  const firstTier = () => settled ? settled.tier : tierIndex(coarse ? 'phone' : 'high');
+  // the start-up screen's last verdict (docs/PERF.md pass 31): each launch starts there and tries one step better
+  let verdict = pinned >= 0 ? null : keptTier(TIER_KEY);
+  const fresh = tierIndex(coarse ? 'phone' : 'high');
+  const firstTier = () => verdict ? verdict.tier : fresh;
   // a phone's governor breathes: it draws a little smaller before it gives up a tier, and holds an even 30 at the bottom
   // a computer's governor draws smaller before it gives up a tier too, but never below one pixel per CSS pixel
-  const quality = new QualityGovernor(pinned >= 0 ? pinned : firstTier(), pinned >= 0, settled?.ceil, coarse, () => window.devicePixelRatio || 1);
+  const quality = new QualityGovernor(pinned >= 0 ? pinned : firstTier(), pinned >= 0, undefined, coarse, () => window.devicePixelRatio || 1);
   // and at the drawing size it settled on, so a visit does not open with seconds of slow frames while it is found again
-  if (pinned < 0 && settled?.dpr) quality.startAt(settled.dpr);
+  if (verdict?.dpr) quality.startAt(verdict.dpr);
   // a device that settled on an even 30 starts there, not with twenty seconds of ragged frames first
-  if (pinned < 0 && settled?.thirty) quality.thirty = true;
-  const keepTier = () => { if (pinned < 0 && !saver) saveTier(TIER_KEY, quality.tier.name, quality.ceiling, quality.drawn, quality.thirty); };
+  if (verdict?.thirty) quality.thirty = true;
+  /** Keep the start-up screen's verdict: only that, never a move made in play (a heavy fight kept a device low for a fortnight). */
+  const keepTier = () => {
+    if (pinned >= 0 || saver || quality.pinned || quality.probing) return;
+    verdict = { tier: tierIndex(quality.tier.name), dpr: quality.drawn, ...(quality.thirty ? { thirty: true } : {}) };
+    saveTier(TIER_KEY, quality.tier.name, quality.drawn, quality.thirty);
+  };
   // Battery saver (a switch on the title's Settings and the pause card): the low tier and 30 frames a second. Kept per device.
   const SAVER_KEY = 'wayward.saver';
   let saver = false;
@@ -797,7 +804,6 @@ function boot(review: typeof import('./review') | null): void {
     }
     fit();
     loop.minInterval = saver || quality.thirty ? 1 / 30 : 0;
-    keepTier();
   };
   /**
    * The start-up screen, on every launch from the title (owner 2026-11-27: "always shown"; a game opened fresh played its first
@@ -813,6 +819,13 @@ function boot(review: typeof import('./review') | null): void {
     calibAt = performance.now();
     calibReady = false;
     quality.quick = true;
+    // every launch starts from the last verdict, not from where the last run's fights left it, and tries one step better:
+    // a verdict that came from a bad moment heals a step a launch (a private window, judged fresh, played better: pass 31)
+    if (pinned < 0 && !saver && !quality.pinned) {
+      quality.restore(verdict, fresh);
+      quality.probe(fresh);
+      applyQuality();
+    }
     loop.paused = true;
     el('cb-t').textContent = t('Initialising');
     el('cb-s').textContent = t('Bringing ship systems online');
