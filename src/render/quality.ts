@@ -10,8 +10,10 @@
 // the display (steady, with room to spare) it asks for the tier above, and the
 // page makes the change only at a quiet moment (a pop-up or the pause card), so
 // the picture never shifts in flight. A tier that then proves too slow becomes
-// the device's ceiling, kept with the tier itself, so it is never tried again
-// and the picture does not flicker between two tiers.
+// the ceiling for the rest of the visit, so the picture does not flicker
+// between two tiers. What a visit keeps is only the start-up screen's verdict,
+// and each launch tries one step better than it, so a bad moment never sticks
+// (docs/PERF.md pass 31).
 //
 // One case the original never met, because it only ran on desktop browsers:
 // iOS Low Power Mode, and some Android battery savers, cap the display at
@@ -75,31 +77,37 @@ export function tierIndex(name: string | null | undefined): number {
   return TIERS.findIndex((t) => t.name === name);
 }
 
-/** The shape of the kept record: 3 since a lower tier, like a smaller size, has to earn its place (docs/PERF.md pass 27). */
-const KEPT = 3;
+/**
+ * The shape of the kept record: 4 since it holds only the start-up screen's verdict, with no ceiling. Records of 3 were
+ * written after every move in play, so one heavy fight could keep a device low for a fortnight (docs/PERF.md pass 31).
+ */
+const KEPT = 4;
 
 /** A tier this device settled on is kept a fortnight: long enough to start right, short enough that an update or a new browser is judged again. */
 const KEEP_MS = 14 * 24 * 3600 * 1000;
 
-/** The tier, ceiling and drawing size (pixels per CSS pixel) this device settled on last time, if recent. */
-export function keptTier(key: string, now = Date.now()): { tier: number; ceil: number; dpr?: number; thirty?: boolean } | null {
+/** Where the governor stands: a tier, the pixels per CSS pixel it draws, and whether it holds an even 30. */
+export interface TierState { tier: number; dpr?: number; thirty?: boolean }
+
+/** The tier and drawing size (pixels per CSS pixel) the start-up screen settled on last time, if recent. */
+export function keptTier(key: string, now = Date.now()): TierState | null {
   try {
-    const v = JSON.parse(localStorage.getItem(key) ?? 'null') as { tier?: string; ceil?: number; at?: number; dpr?: number; thirty?: boolean; v?: number } | null;
+    const v = JSON.parse(localStorage.getItem(key) ?? 'null') as { tier?: string; at?: number; dpr?: number; thirty?: boolean; v?: number } | null;
     const tier = tierIndex(v?.tier);
-    if (!v || tier < 0 || typeof v.ceil !== 'number' || typeof v.at !== 'number' || now - v.at > KEEP_MS) return null;
-    // a record from before a step down had to earn its place (KEPT) is judged again from the top
+    if (!v || tier < 0 || typeof v.at !== 'number' || now - v.at > KEEP_MS) return null;
+    // an older record (KEPT) may carry a low moment from play: judged again from the top, as a private window would be
     if (v.v !== KEPT) return null;
     const dpr = typeof v.dpr === 'number' && v.dpr > 0 && v.dpr <= 4 ? v.dpr : undefined;
-    return { tier, ceil: Math.max(tier, Math.min(TIERS.length - 1, v.ceil)), ...(dpr ? { dpr } : {}), ...(v.thirty === true ? { thirty: true } : {}) };
+    return { tier, ...(dpr ? { dpr } : {}), ...(v.thirty === true ? { thirty: true } : {}) };
   } catch { return null; }
 }
 
 /**
- * Keep the tier, ceiling, drawing size and whether it settled on an even 30, so the next visit starts where this one
- * settled rather than spending its first seconds finding it again.
+ * Keep the start-up screen's verdict (the tier, drawing size and whether it holds an even 30), so the next launch starts
+ * there rather than spending its first seconds finding it again. Moves made in play are not kept: they last the visit.
  */
-export function saveTier(key: string, tier: TierName, ceil: number, dpr?: number, thirty = false): void {
-  try { localStorage.setItem(key, JSON.stringify({ tier, ceil, at: Date.now(), v: KEPT, ...(dpr ? { dpr: Math.round(dpr * 1000) / 1000 } : {}), ...(thirty ? { thirty } : {}) })); } catch { /* not kept */ }
+export function saveTier(key: string, tier: TierName, dpr?: number, thirty = false): void {
+  try { localStorage.setItem(key, JSON.stringify({ tier, at: Date.now(), v: KEPT, ...(dpr ? { dpr: Math.round(dpr * 1000) / 1000 } : {}), ...(thirty ? { thirty } : {}) })); } catch { /* not kept */ }
 }
 
 /** The drawing scales a phone steps through before it gives up a tier (docs/PERF.md pass 15). */
@@ -139,6 +147,8 @@ export class QualityGovernor {
   private tried: { from: number; avg: number; tier?: number; ceil?: number } | null = null;
   /** Drawing smaller bought too little on this tier: the size stays, and the next verdict moves the tier. */
   private flat = false;
+  /** Where the governor stood before the start-up screen tried one step better, until that step has been judged. */
+  private probe_: { index: number; step: number; thirty: boolean } | null = null;
   private avg = 0;
   private jitter = 0;
   private samples = 0;
@@ -173,13 +183,59 @@ export class QualityGovernor {
     this.climbed = false;
     this.thirty = false;
     this.tried = null;
+    this.probe_ = null;
     this.flat = false;
     this.restart();
   }
 
+  /**
+   * Stand where a launch starts: the last start-up verdict, or `fresh` (a computer's High, a phone's Phone) with nothing
+   * kept. Moves made in the last run are dropped, and every tier may be tried again.
+   */
+  restore(state: TierState | null, fresh: number): void {
+    if (this.locked) return;
+    this.index = Math.max(0, Math.min(TIERS.length - 1, state ? state.tier : fresh));
+    this.ceil = TIERS.length - 1;
+    this.step = 0;
+    this.top = 0;
+    this.climbed = false;
+    this.tried = null;
+    this.probe_ = null;
+    this.flat = false;
+    this.thirty = state?.thirty === true;
+    if (state?.dpr) this.startAt(state.dpr);
+    this.restart();
+  }
+
+  /**
+   * Behind the start-up screen, try one step better than where it stands: off the even 30, else the size above, else the
+   * tier above (no higher than `limit`). The first verdict keeps it, or puts everything back as it was. So a verdict that
+   * came from a bad moment heals by a step each launch. Returns true when it moved.
+   */
+  probe(limit: number): boolean {
+    if (this.locked) return false;
+    const was = { index: this.index, step: this.step, thirty: this.thirty };
+    if (this.thirty) this.thirty = false;
+    else if (this.step > 0) this.step--;
+    else if (this.index < Math.min(limit, this.ceil)) {
+      const dpr = this.dpr();
+      this.index++;
+      this.enter(dpr);
+    } else return false;
+    this.probe_ = was;
+    this.tried = null;
+    this.restart(this.quick ? SETTLE_MOVE_QUICK : SETTLE_MOVE);
+    return true;
+  }
+
+  /** A step better is still being judged (the start-up screen ran out of time before its verdict). */
+  get probing(): boolean {
+    return this.probe_ !== null;
+  }
+
   /** A verdict has been reached where it stands, with no step waiting to be judged: the start-up screen may lift. */
   get quiet(): boolean {
-    return this.measured >= (this.quick ? SETTLE_QUICK : SETTLE) && !this.tried;
+    return this.measured >= (this.quick ? SETTLE_QUICK : SETTLE) && !this.tried && !this.probe_;
   }
 
   /** Hold the governor still for a while (the readout's Test), keeping the size and the even 30 as they are. */
@@ -279,6 +335,21 @@ export class QualityGovernor {
     if (settled && this.avg <= ROOM && this.jitter < CALM) this.steady += dt;
     else this.steady = 0;
     if (this.locked || !settled) return false;
+    if (this.probe_) {
+      const p = this.probe_;
+      this.probe_ = null;
+      // the step better misses: everything back where the last verdict stood, and judged from there as usual
+      if (this.avg > SLOW && !this.cappedAt30()) {
+        this.index = p.index;
+        this.step = p.step;
+        this.thirty = p.thirty;
+        this.top = 0;
+        this.climbed = false;
+        this.flat = false;
+        this.restart(this.quick ? SETTLE_MOVE_QUICK : SETTLE_MOVE);
+        return true;
+      }
+    }
     if (this.tried) {
       const t = this.tried;
       this.tried = null;

@@ -217,7 +217,7 @@ describe('QualityGovernor on a high-density laptop screen', () => {
   it('a record kept before steps down had to pay is judged again from the top', () => {
     const store = new Map<string, string>();
     vi.stubGlobal('localStorage', { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => { store.set(k, v); } });
-    store.set('t', JSON.stringify({ tier: 'low', ceil: 0, at: Date.now(), dpr: 0.5, thirty: true, v: 2 }));
+    store.set('t', JSON.stringify({ tier: 'low', at: Date.now(), dpr: 0.5, thirty: true, v: 2 }));
     expect(keptTier('t')).toBeNull();
     vi.unstubAllGlobals();
   });
@@ -340,14 +340,14 @@ describe('the size a device settled on is kept between visits', () => {
   it('saves and reads back the drawing size with the tier', () => {
     const store = new Map<string, string>();
     vi.stubGlobal('localStorage', { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => { store.set(k, v); } });
-    saveTier('t', 'high', HIGH, 1.34);
-    expect(keptTier('t')).toEqual({ tier: HIGH, ceil: HIGH, dpr: 1.34 });
-    // a record from before a step down had to pay is judged again from the top
-    store.set('t', JSON.stringify({ tier: 'medium', ceil: MEDIUM, at: Date.now() }));
+    saveTier('t', 'high', 1.34);
+    expect(keptTier('t')).toEqual({ tier: HIGH, dpr: 1.34 });
+    // a record of 3, written after every move in play, is judged again from the top
+    store.set('t', JSON.stringify({ tier: 'medium', ceil: MEDIUM, at: Date.now(), v: 3 }));
     expect(keptTier('t')).toBeNull();
     // a device that settled on an even 30 says so
-    saveTier('t', 'low', 0, 0.5, true);
-    expect(keptTier('t')).toEqual({ tier: 0, ceil: 0, dpr: 0.5, thirty: true });
+    saveTier('t', 'low', 0.5, true);
+    expect(keptTier('t')).toEqual({ tier: 0, dpr: 0.5, thirty: true });
     vi.unstubAllGlobals();
   });
 
@@ -359,5 +359,69 @@ describe('the size a device settled on is kept between visits', () => {
     // still climbs back when there is room
     feed(q, 1 / 60, 2200);
     expect(q.wantsUp).toBe(true);
+  });
+});
+
+describe('each launch starts from the last start-up verdict and tries one step better (pass 31)', () => {
+  it('a run that dropped in a fight starts the next launch back at the verdict, every tier open again', () => {
+    const q = new QualityGovernor(HIGH, false, undefined, false, () => 1);
+    secs(q, 1 / 40, 3.2); // a heavy fight: High is given up for the visit
+    expect(q.tier.name).toBe('medium');
+    expect(q.ceiling).toBe(MEDIUM);
+    q.restore({ tier: HIGH, dpr: 1 }, HIGH);
+    expect(q.tier.name).toBe('high');
+    expect(q.ceiling).toBe(HIGH);
+  });
+
+  it('with nothing kept a launch stands where a fresh visit does, with nothing to try', () => {
+    const q = new QualityGovernor(MEDIUM, false, undefined, false, () => 2);
+    q.restore(null, HIGH);
+    expect(q.tier.name).toBe('high');
+    expect(q.drawn).toBeCloseTo(2);
+    expect(q.probe(HIGH)).toBe(false);
+  });
+
+  it('a step better that holds is kept: a kept Medium heals to High', () => {
+    const q = new QualityGovernor(MEDIUM, false, undefined, false, () => 1);
+    q.quick = true;
+    q.restore({ tier: MEDIUM, dpr: 1 }, HIGH);
+    expect(q.probe(HIGH)).toBe(true);
+    expect(q.tier.name).toBe('high');
+    expect(q.quiet).toBe(false);
+    secs(q, 1 / 60, 2);
+    expect(q.tier.name).toBe('high');
+    expect(q.quiet).toBe(true);
+  });
+
+  it('a step better that misses puts everything back, the even 30 too, in one verdict', () => {
+    const q = new QualityGovernor(HIGH, false, undefined, false, () => 2);
+    q.quick = true;
+    q.restore({ tier: HIGH, dpr: 2, thirty: true }, HIGH);
+    expect(q.thirty).toBe(true);
+    expect(q.probe(HIGH)).toBe(true);
+    expect(q.thirty).toBe(false);
+    // Chrome on an M1: 20fps uncapped whatever it draws
+    secs(q, 1 / 20, 1.5);
+    expect(q.thirty).toBe(true);
+    expect(q.tier.name).toBe('high');
+    expect(q.drawn).toBeCloseTo(2);
+    expect(q.quiet).toBe(false);
+    secs(q, 1 / 30, 1.5);
+    expect(q.quiet).toBe(true);
+  });
+
+  it('tries the size above before the tier above', () => {
+    const q = new QualityGovernor(HIGH, false, undefined, false, () => 2);
+    q.restore({ tier: HIGH, dpr: 1.5 }, HIGH);
+    expect(q.probe(HIGH)).toBe(true);
+    expect(q.tier.name).toBe('high');
+    expect(q.drawn).toBeCloseTo(1.7);
+  });
+
+  it('a phone never tries above Phone at launch', () => {
+    const q = new QualityGovernor(PHONE, false, undefined, true, () => 3);
+    q.restore({ tier: PHONE, dpr: 1.5 }, PHONE);
+    expect(q.probe(PHONE)).toBe(false);
+    expect(q.tier.name).toBe('phone');
   });
 });
