@@ -125,7 +125,7 @@ export const REWRITE: Record<string, string> = {
   'Still open': 'Noch offen',
   "Adam Brook · in Custody transport": "Adam Brook · im Custody-Transport",
   "They took the clerk": "Sie haben den Buchhalter geholt",
-  "“They traced the ledger back to me. I’m in a Custody transport, ten minutes from a cell. Please. You’ve got the only copy.”": "„Sie haben das Hauptbuch zu mir zurückverfolgt. Ich sitze im Custody-Transport, zehn Minuten vor der Zelle. Bitte. Du hast die einzige Kopie.“",
+  '“Wayward, it’s Adam Brook. They traced the ledger back to me. I’m in a Custody transport, ten minutes from a cell, and people who go in there don’t come out. Please. You’ve got the only copy.”': '„Wayward, hier ist Adam Brook. Sie haben das Kassenbuch zu mir zurückverfolgt. Ich sitze in einem Custody-Transport, zehn Minuten vor einer Zelle, und wer da reingeht, kommt nicht wieder raus. Bitte. Du hast die einzige Kopie.“',
   "Break him out": "Hol ihn raus",
   "Brook is aboard the shuttle · Custody marks you": "Brook ist im Shuttle · Custody merkt dich vor",
   "Divert the transport": "Lenk den Transport um",

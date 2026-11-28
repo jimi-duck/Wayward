@@ -77,7 +77,7 @@ describe('Halden’s Reach, and Ilse’s buoy at Tallyhouse', () => {
     const p = fly(at(2), { story_handwriting: 'grandmother' });
     expect(p.pings[0]).toContain('Ilse Marrow, off the hospice ring');
     const sam = p.pings.filter((t) => t.includes('Tallyhouse keeps Kellern’s books') || t.includes('Old Warden families'));
-    expect(sam).toEqual(['“Paper, signed L. C. Tallyhouse keeps Kellern’s books. Someone there will know the hand.”']);
+    expect(sam).toEqual(['“A signed order to shut the gates, Juno. Not a failure. Someone chose this, and signed it L. C. Tallyhouse keeps Kellern’s books. Someone there will know the hand.”']);
   });
 
   it('a player who somehow reaches Tallyhouse without the order hears her recording there, and gets the same flags', () => {
@@ -101,13 +101,13 @@ describe('Tallyhouse and Copperline', () => {
     withOrder.carry.flags.push('frag_order', 'clue_order_sig', 'ada_named');
     const a = fly(withOrder, { story_ledger: 'take' }, 320);
     expect(a.cards).toEqual(['story_ledger']);
-    expect(a.pings).toContain('“L. C. again, on the order and on the money. Whoever that is signed both.”');
+    expect(a.pings).toContain('“L. C. again, Juno. On the order that shut the gates, and on the money that paid for it. Whoever that is, they signed both.”');
     // without the order: Sam reads the initials by what she has when the books are read. If Ilse's buoy came first
     // (the stop is short), the initials match at once; if not, L. C. means nothing until the buoy brings the order
     const without = at(3);
     const b = fly(without, { story_ledger: 'take' }, 320);
-    const nothing = b.pings.indexOf('“L. C. means nothing to me. Remember it anyway.”');
-    const again = b.pings.indexOf('“L. C. again, on the order and on the money. Whoever that is signed both.”');
+    const nothing = b.pings.indexOf('“The transfers are all signed L. C. That means nothing to me yet. Remember it anyway. Somebody was paid well the night the gates went dark.”');
+    const again = b.pings.indexOf('“L. C. again, Juno. On the order that shut the gates, and on the money that paid for it. Whoever that is, they signed both.”');
     expect(nothing >= 0 || again >= 0).toBe(true);
     if (nothing >= 0 && again >= 0) expect(again).toBeGreaterThan(nothing);
     expect(b.cards.slice(0, 2)).toEqual(['story_ledger', 'ilse_recording']);

@@ -38,13 +38,13 @@ export const core = (id: string, stop: string, on: Row['on'], text: string, extr
 export const CORE_ROWS: Row[] = [
   // ── Act II · the Reach: alone, and out of practice. Sam is still the warm voice; she speaks after him, one line a stop ──
   // Northfold: the lead the old letter used to give, then the ghost
-  core('nf_core_ilse', 'northfold', free(8), '“Ada had a watch partner. Ilse Marrow. If she’s alive, she’s at Halden’s Reach.”'),
-  core('nf_core_ghost', 'northfold', after('nf_sam_g1', 3), '“That isn’t a relay.”', { stale: CORE_STALE }),
+  core('nf_core_ilse', 'northfold', free(8), '“Ada had a watch partner the night the gates went dark. Ilse Marrow. If she’s still alive, Juno, she’ll be at Halden’s Reach. She’ll know what really happened.”'),
+  core('nf_core_ghost', 'northfold', after('nf_sam_g1', 3), '“That isn’t a relay echo, Juno. I know what those look like. Something is out there, and it’s keeping its distance.”', { stale: CORE_STALE }),
   // Halden's Reach: Ilse half remembered, then the engine
-  core('hr_core_ilse', 'halden', after('hr_ada', 3), '“Ilse. She cheated at cards on the long watches. I don’t remember her face.”'),
+  core('hr_core_ilse', 'halden', after('hr_paper', 3), '“Ilse. She cheated at cards on the long watches. I remember her voice. I don’t remember her face. Kellern’s lock took more of me than I thought.”'),
   memory('hr_core_mem', 'halden', 'hr_relay', '“She hated that engine. Said it sounded like a dying animal. I said it sounded worse when she flew.”'),
   // Tallyhouse: the initials, then the logs
-  core('ml_core_lc', 'marlow', after('ml_sam_1', 4), '“Ada used to say L. C. had steady hands. I don’t know who L. C. is.”', { if: { has: ['clue_order_sig'] }, stale: CORE_STALE }),
+  core('ml_core_lc', 'marlow', after('ml_sam_1', 4), '“Ada used to say L. C. had steady hands. I don’t know who L. C. is. That memory must be in a relay further out.”', { if: { has: ['clue_order_sig'] }, stale: CORE_STALE }),
   memory('ml_core_mem', 'marlow', 'ml_relay', '“When she couldn’t sleep, she’d ask me to read her the relay logs. Just the numbers.”'),
   // Miners' Gap: the singing (the buried mast is the HUD's to tell; the stop is busy before its relay)
   memory('bf_core_mem', 'branford', 'bf_relay', '“She sang when she fixed things. Badly. I never told her.”'),
@@ -52,7 +52,7 @@ export const CORE_ROWS: Row[] = [
   memory('cl_core_mem', 'copperline', 'cl_relay', '“She always took the port corridor. Said starboard was haunted. It was a loose panel.”'),
 
   // ── the Narrows: her old watch. The key line plays in the fight (as Ada's note does); the tea after it ──
-  core('nr_core_key', 'narrows', after('nr_key', 1), '“This was her watch. I was here. I remember the lights going out.”'),
+  core('nr_core_key', 'narrows', after('nr_key', 1), '“This was her watch, Juno. I was here that night. I remember the lights going out, one gate after another, and Ada not saying a word.”'),
   core('nr_core_tea', 'narrows', { on: 'flag', flag: 'narrows_gate_open' }, '“She drank her tea cold on this watch. Said hot tea made her sleepy.”', { stale: CORE_STALE }),
 
   // ── Act II · the Marches and the Belt: remembering. Sam is gone, so she is the voice aboard; the Belt holds Ada's death ──

@@ -321,7 +321,7 @@ export const DIRECTION: Record<string, string> = {
   '“A yard with no breakers. When the Thren come through, who holds the line? You?”': '„Eine Werft ohne Abwracker. Wenn die Thren kommen, wer hält die Linie? Du?“',
   '“Passes for crew families. You bargained like one of us. Careful.”': '„Pässe für Crew-Familien. Du hast verhandelt wie eine von uns. Vorsicht.“',
   'The Governor wants to know who you are': 'Die Gouverneurin will wissen, wer du bist',
-  '“This is Governor Idris Calloway. You’re carrying Ada Aster’s key in a hull that isn’t yours. I’d like to know why. I’m not asking you to stop. Not yet.”': '„Hier spricht Gouverneurin Idris Calloway. Du trägst Ada Asters Schlüssel in einem Rumpf, der nicht dir gehört. Ich will wissen, warum. Ich sage nicht, dass du anhalten sollst. Noch nicht.“',
+  '“This is Governor Idris Calloway. You’ve opened a gate the Continuance closed seventy years ago, with Ada Aster’s key, in a hull that isn’t yours. I’d like to know why. I’m not asking you to stop. Not yet.”': '„Hier ist Gouverneurin Idris Calloway. Du hast ein Tor geöffnet, das die Continuance vor siebzig Jahren geschlossen hat, mit Ada Asters Schlüssel, in einem Rumpf, der dir nicht gehört. Ich würde gern wissen, warum. Ich bitte dich nicht anzuhalten. Noch nicht.“',
   '“Her relay just told the whole Reach a name. Say it to me.”': '„Ihr Relais hat dem ganzen Reach gerade einen Namen verraten. Sag ihn mir.“',
   'Tell her who you are': 'Sag ihr, wer du bist',
   'Your name, nothing more. She will remember it.': 'Dein Name, mehr nicht. Sie wird ihn sich merken.',
