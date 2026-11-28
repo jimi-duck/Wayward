@@ -345,7 +345,7 @@ export const STORY_CARDS: CardDef[] = [
     herald: { headline: 'Warden core online', reason: 'it woke with the lights' },
     from: 'ADA-1 · Warden core', title: 'I can feel the ship again',
     letter: { head: [], sign: '' },
-    text: 'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I flew this ship with Ada Aster, your grandmother, for a very long time. I’ve been sealed away for decades.\nSeventy years ago, in one night, the outer Jump Gates went dark. The Continuance said the Krail had run out and the gates had failed from neglect. An emergency, until things recovered. Nothing recovered. The emergency never ended, and the worlds beyond were abandoned.\nAda never believed it. I hid what she knew in the gates’ relays.\nShe asked me to open them again. I think I’ve finally found a way.',
+    text: 'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I flew this ship with Ada Aster, your grandmother, for a very long time. I’ve been sealed away for decades.\nSeventy years ago, in one night, the outer Jump Gates went dark. The Continuance said the Krail had run out and the gates had failed from neglect.\nAn emergency, until things recovered. Nothing recovered. The emergency never ended, and the worlds beyond were abandoned.\nAda never believed it. I hid what she knew in the gates’ relays.\nShe asked me to open them again. I think I’ve finally found a way.',
     cargo: 'The Wayward · a Warden core under her decking',
     choices: [
       { id: 'lead', label: 'Let’s do it. How?', tone: 'help', hint: 'She shows you the relay by the gate.',
