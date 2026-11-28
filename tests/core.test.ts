@@ -47,7 +47,7 @@ describe('ADA-1, the Warden core', () => {
     expect(win.flag).not.toContain('clue_reserves');
     // she speaks first, then Sam
     const radio = [win.radio ?? []].flat();
-    expect(radio.map((r) => r.caller)).toEqual(['core', 'miners']);
+    expect(radio.map((r) => r.caller)).toEqual(['core', 'core', 'miners']);
     expect(CORE_FIRST).toContain('Ninety-four');
   });
 
