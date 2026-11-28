@@ -133,10 +133,11 @@ describe('the opening chain beyond the gate', () => {
     expect(wake.caller).toBe('core');
     expect(wake.glass).toBe('ochre');
     expect(wake.letter?.sign).toBe('');
-    expect(wake.text.split(/\s+/).length).toBeLessThan(50);
+    // the owner's own copy (28 November 2026): a short written message, under the document cap
+    expect(wake.text.split(/\s+/).length).toBeLessThan(110);
     expect(wake.text).toContain('Ada Aster');
     expect(wake.text).not.toContain('94');
-    expect(wake.choices.map((c) => c.label)).toEqual(['Finish what?']);
+    expect(wake.choices.map((c) => c.label)).toEqual(['Let’s do it. How?']);
   });
 });
 
