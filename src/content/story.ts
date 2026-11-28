@@ -592,7 +592,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_ferry_agent', kind: 'warning', caller: 'office',
     from: 'Ossie Raine · the Quiet Ferry', title: 'There is an agent aboard',
-    text: '“One of my passengers is Offices. Corin Ashe, just a kid. He’s been watching you since we left, and he looks sick about it. Your call.”',
+    text: '“Juno, it’s Ossie. One of my passengers is Offices of Peace. Corin Ashe, just a kid. He’s been watching you since we left, and he looks sick about it. If he reports, Calloway knows where you are. Your call.”',
     cargo: 'The Quiet Ferry · forty passengers',
     choices: [
       { id: 'expose', label: 'Expose him', tone: 'fight', hint: 'The passengers put him off. The Offices lose a day.', win: { text: 'The agent is put off · the Offices lose a day', flag: ['agent_exposed', 'clue_agent'], hunt: 1 } },
@@ -623,7 +623,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_ferry', kind: 'trade', caller: 'miners',
     from: 'Ossie Raine · the Quiet Ferry', title: 'A gate ahead',
-    text: '“Nobody hunts out here. I can take you a gate ahead. Forty-one passengers, and they’d like the company. Bring some stores and I won’t ask questions.”',
+    text: '“Ossie Raine, the Quiet Ferry. Nobody hunts out here, past where the Net reaches. I can carry you a gate ahead of whoever’s behind you. Forty-one passengers, and they’d like the company. Bring some stores and I won’t ask questions.”',
     cargo: 'A slow ferry · forty-one passengers',
     choices: [
       { id: 'ride', label: 'Ride the ferry', tone: 'trade', hint: 'Four food. Calloway loses a day.', cost: { supplies: 4 }, win: { text: 'The ferry carries you ahead', flag: 'ferry_met', hunt: 1, standing: { miners: 1 } } },
@@ -634,7 +634,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_workorder', handover: true, kind: 'trade', caller: 'kellern',
     from: 'Ben Anand · yard clerk', title: 'The first work order',
-    text: '“Every breaker built here has a work order. The first is BY9-001, countersigned by the Survey. Taking it costs me my pension.”',
+    text: '“Ben Anand, yard records. Every gate breaker built here has a work order, Juno: the machines that shut the gates. The first is BY9-001, countersigned by the Survey. Giving it to you costs me my pension. Take it.”',
     cargo: 'A yard shuttle · a sealed case',
     choices: [
       { id: 'shield', label: 'Take the work order', tone: 'help', hint: 'It goes in the file.', win: { text: '“Then take it.” · the work order goes in the file', flag: ['frag_workorder', 'clue_sig_yards'], standing: { kellern: -1 } } },
@@ -643,7 +643,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_crew', kind: 'plea', caller: 'frontier',
     from: 'Marit Voss · crew steward', title: 'The yard crews',
-    text: '“The committee votes tonight, and they’ll follow your lead. Hester’s people are coming in to hold the line. Either way, it buys you a quiet gate.”',
+    text: '“Marit Voss, yard crews. The committee votes tonight on whether to stop work at the Breaker Yards, and they’ll follow your lead. Hester’s people are coming in to hold the line. Either way, it buys you a quiet gate.”',
     lines: [{ if: { noFlag: 'thread_crews_3' }, text: '“Hester’s people won’t make it in time. We’ll try anyway.”' }],
     cargo: 'A crew barge · two hundred hands',
     choices: [

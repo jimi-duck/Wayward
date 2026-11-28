@@ -118,7 +118,7 @@ export const CORE: Record<string, string> = {
   '“That isn’t static. Something’s singing over me.”': '„Das ist kein Rauschen. Da singt was über mich drüber.“',
   '“They’re older than me. They’re not like me.”': '„Die sind älter als ich. Die sind nicht wie ich.“',
   '“Ada used to say the fence kept people safe. I used to think she believed it.”': '„Ada hat immer gesagt, der Zaun schützt die Leute. Ich dachte mal, sie glaubt das.“',
-  '“I can carry a voice down the lit relays now. Someone’s asking for you.”': '„Ich kann jetzt eine Stimme über die wachen Relais tragen. Jemand fragt nach dir.“',
+  '“Juno, the relays we woke are talking to each other again. I can carry a voice down them now. Someone’s asking for you.”': '„Juno, die Relais, die wir geweckt haben, reden wieder miteinander. Ich kann jetzt eine Stimme über sie tragen. Jemand fragt nach dir.“',
   '“This one drinks Cyrite as it wakes. Keep some aboard.”': '„Dieses hier trinkt Cyrit, während es aufwacht. Behalt etwas an Bord.“',
   '“I checked her sums before she carried them in. They were right. That’s the worst part.”': '„Ich hab ihre Rechnung geprüft, bevor sie sie reingetragen hat. Sie stimmte. Das ist das Schlimmste.“',
   '“Property, not testimony. All those years shut in, and I’m still somebody’s asset.”': '„Eigentum, kein Zeugnis. All die Jahre eingesperrt, und ich bin immer noch jemandes Wert.“',

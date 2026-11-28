@@ -69,7 +69,7 @@ export const CORE_ROWS: Row[] = [
   core('dh_core_voice', 'd_hush', after('dh_voice', 3), '“They’re older than me. They’re not like me.”'),
   core('sd_core_note', 'slowdoor', after('sd_note', 3), '“Ada used to say the fence kept people safe. I used to think she believed it.”'),
   // Keelberth: she carries Sam's voice down the relays she woke (his card follows), then the thirsty relay
-  core('yk_core_voice', 'y_keel', free(2), '“I can carry a voice down the lit relays now. Someone’s asking for you.”'),
+  core('yk_core_voice', 'y_keel', free(2), '“Juno, the relays we woke are talking to each other again. I can carry a voice down them now. Someone’s asking for you.”'),
   core('yk_core_tank', 'y_keel', after('yk_relay_say', 4), '“This one drinks Cyrite as it wakes. Keep some aboard.”', { stale: CORE_STALE }),
   core('br_core_note', 'breaker', after('br_note', 3), '“I checked her sums before she carried them in. They were right. That’s the worst part.”'),
 

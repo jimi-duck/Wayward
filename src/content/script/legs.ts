@@ -170,9 +170,9 @@ const DEEP_ROWS: Row[] = [
   // 3 · Lantern Mile (work): the Survey, something in the dark, moving toward the lanes
   notice('dm_notice', 'd_lantern', arrive(), 'teal', 'Lantern Mile', 'a claim with lamps on it'),
   objective('dm_objective', 'd_lantern', arrive(), 'Lantern Mile · a warm object, moving'),
-  analyst('dm_survey', 'd_lantern', 'job_something_dark_won', '“Your warm object has moved four hundred metres since yesterday. Toward the gate. I’d like you to look again.”'),
+  analyst('dm_survey', 'd_lantern', 'job_something_dark_won', '“Survey Office here. Your warm object has moved four hundred metres since yesterday, toward the gate. Things out here aren’t supposed to move. I’d like you to look again.”'),
   // the claim's relay (spaceways plan, step 6): jammed by the warm thing's static, woken between the bursts
-  radio('dm_relay_say', 'd_lantern', after('dm_objective', 8), ANALYST[0], ANALYST[1], '“There’s a Warden relay on this claim. Whatever’s warm out there jams it in bursts. Work between them.”', { main: true }),
+  radio('dm_relay_say', 'd_lantern', after('dm_objective', 8), ANALYST[0], ANALYST[1], '“There’s a Warden relay on this claim, Wayward. Whatever’s warm out there jams it in bursts. Wait out each burst, then push the connection between them.”', { main: true }),
   { id: 'dm_relay', stop: 'd_lantern', on: relay(), wall: 'relay_d_lantern', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'Lantern Mile’s gate is open' } }, main: true, urgent: true },
   objective('dm_gate', 'd_lantern', leave(), 'Jump to Ninth Fold'),
 
@@ -180,8 +180,8 @@ const DEEP_ROWS: Row[] = [
   notice('dn_notice', 'd_fold', arrive(), 'teal', 'Ninth Fold', 'the ferry’s anchorage'),
   objective('dn_objective', 'd_fold', arrive(), 'Ninth Fold · someone aboard is watching'),
   main('dn_agent', 'd_fold', { on: 'place', place: 'dn_ferry' }, 'story_ferry_agent'),
-  hester('dn_hester', 'd_fold', 'job_missing_payroll_won', '“Somebody took our wages at the Deep. I know it was you. Your name’s in the other column now.”', { if: { not: ['job_missing_payroll_warn'] } }),
-  hester('dn_hester_warn', 'd_fold', 'job_missing_payroll_warn', '“You warned the barges. That’s a month of wages home. I won’t forget it.”'),
+  hester('dn_hester', 'd_fold', 'job_missing_payroll_won', '“Somebody took my crews’ wages at the Deep, Juno. Families went hungry for that. I know it was you. Your name’s in the other column now.”', { if: { not: ['job_missing_payroll_warn'] } }),
+  hester('dn_hester_warn', 'd_fold', 'job_missing_payroll_warn', '“You warned the barges in time. That’s a month of wages home to families who can’t afford to lose it. I won’t forget it.”'),
   objective('dn_gate', 'd_fold', leave(), 'Jump to Hushlight'),
 
   // 5 · Hushlight (breather): the Voice, first contact, in a quiet stop so it lands
@@ -193,19 +193,19 @@ const DEEP_ROWS: Row[] = [
   notice('ds_notice', 'd_still', arrive(), 'amber', 'Stillwater', 'Holdfast rig · raiders closing'),
   objective('ds_objective', 'd_still', arrive(), 'Stillwater · Hester’s own rig'),
   radio('ds_hester', 'd_still', free(4), HESTER[0], HESTER[1], '“My rig, my mother’s name on it. I’m not leaving. So you’re not either, if you’re staying.”'),
-  hester('ds_hester_won', 'd_still', 'job_last_shift_won', '“Still standing. Both of us.”', { if: { not: ['job_last_shift_tow'] } }),
+  hester('ds_hester_won', 'd_still', 'job_last_shift_won', '“Still standing, Juno. Both of us. Kellern wanted that rig empty, and they didn’t get it.”', { if: { not: ['job_last_shift_tow'] } }),
   hester('ds_hester_tow', 'd_still', 'job_last_shift_tow', '“The rig’s gone. All forty of us aren’t. That’s the trade.”'),
   objective('ds_gate', 'd_still', leave(), 'Jump to Kindmere'),
 
   // 7 · Kindmere (reckoning): a signal that answers; the ring, from Tarik's charts or from Drift memory
   notice('dk_notice', 'd_kindmere', arrive(), 'teal', 'Kindmere', 'Holdfast stores · before the Slow Door'),
   objective('dk_objective', 'd_kindmere', arrive(), 'Kindmere · refit before the Slow Door'),
-  radio('dk_tarik', 'd_kindmere', free(20), 'Tarik Silva', 'miners', '“Put every closed relay on one chart. It isn’t a bend. It’s a ring. Thirty years I’ve drawn it.”', { if: { has: ['frag_charts'] }, wall: 'ring_known' }),
+  radio('dk_tarik', 'd_kindmere', free(20), 'Tarik Silva', 'miners', '“Put every closed relay on one chart, Juno. It isn’t a bend. It’s a ring, a fence around something. Thirty years I’ve drawn it, and I never saw it till now.”', { if: { has: ['frag_charts'] }, wall: 'ring_known' }),
   radio('dk_ossie', 'd_kindmere', free(20), 'Ossie Raine', 'miners', '“The old Drift say the closures go all the way round. Like a fence. I never asked what for.”', { if: { not: ['frag_charts'] }, wall: 'ring_known' }),
   // Tarik's bend (standalone), and what Hester's rig means at the stores
   notice('dk_stores', 'd_kindmere', arrive(3), 'teal', 'Holdfast Stores', 'Hester’s rig held · friends’ prices', { if: { has: ['rig_held'] } }),
   radio('dk_bend', 'd_kindmere', flag('job_tarik_bend_won'), 'Tarik Silva', 'miners', '“Still true. Thirty years, and it’s still true. It’s on your chart now.”'),
-  radio('dk_bend_sold', 'd_kindmere', flag('job_tarik_bend_sell'), 'Holdfast Stores', 'miners', '“The Gutter are tolling Tarik’s bend. We know who sold it.”'),
+  radio('dk_bend_sold', 'd_kindmere', flag('job_tarik_bend_sell'), 'Holdfast Stores', 'miners', '“The Gutter are tolling Tarik’s bend now. A route he kept free for thirty years. We know who sold it.”'),
   objective('dk_gate', 'd_kindmere', leave(), 'Jump to the Slow Door'),
 ];
 
@@ -216,7 +216,7 @@ const YARDS_ROWS: Row[] = [
   objective('yc_objective', 'y_cutton', arrive(), 'Next: Yard Nine', 'The Breaker · 6 jumps'),
   // Calloway's question at Cutton is cut (story direction plan): her best scene is the Tollgate
   // the cradle crew (standalone): Joss answers
-  radio('yc_joss', 'y_cutton', flag('job_cradle_crew_won'), 'Joss Peller', 'miners', '“Forty. I counted them twice. Thank you.”'),
+  radio('yc_joss', 'y_cutton', flag('job_cradle_crew_won'), 'Joss Peller', 'miners', '“Forty, Juno. I counted them twice. Kellern sealed them in that cradle and called it a lockdown. Thank you.”'),
   radio('yc_joss_fuel', 'y_cutton', flag('job_cradle_crew_fuel'), 'Joss Peller', 'miners', '“You took the fuel and left us. Fine. We’ll remember.”'),
   objective('yc_gate', 'y_cutton', leave(), 'Jump to Yard Nine'),
 
@@ -225,12 +225,12 @@ const YARDS_ROWS: Row[] = [
   objective('yn_objective', 'y_nine', arrive(), 'Yard Nine · the first work order', 'Kellern yard · refit bay open'),
   main('yn_anand', 'y_nine', { on: 'place', place: 'yn_anand' }, 'story_workorder'),
   // the breaker line: the rest of the orders spill down the chute, and yard security comes for them (content/script/places.ts)
-  radio('yn_spill', 'y_nine', flag('frag_workorder'), 'Ben Anand', 'kellern', '“Security’s purging the archive down the chute. The rest of the orders are spilling. Grab what you can.”'),
+  radio('yn_spill', 'y_nine', flag('frag_workorder'), 'Ben Anand', 'kellern', '“Security’s purging the archive down the chute. Every breaker order is in there, and they’re spilling. Grab what you can before it burns.”'),
   notice('yn_security', 'y_nine', { on: 'place', place: 'yn_order1' }, 'red', 'Yard security', 'they want the orders back'),
   { id: 'yn_chase', stop: 'y_nine', on: { on: 'place', place: 'yn_order1' }, do: { chase: true } },
   notice('yn_order2', 'y_nine', { on: 'place', place: 'yn_order2' }, 'teal', 'Work order aboard', '2 of 4'),
   notice('yn_order3', 'y_nine', { on: 'place', place: 'yn_order3' }, 'teal', 'Work order aboard', '3 of 4'),
-  radio('yn_all', 'y_nine', { on: 'place', place: 'yn_order4' }, 'Ben Anand', 'kellern', '“All of them. BY9-001 to 005. That’s the whole first ring, signed and countersigned.”', { wall: 'orders_all' }),
+  radio('yn_all', 'y_nine', { on: 'place', place: 'yn_order4' }, 'Ben Anand', 'kellern', '“All of them. BY9-001 to 005. The whole first ring of gate breakers, signed by the Continuance and countersigned by the Survey. That’s proof, Juno.”', { wall: 'orders_all' }),
   quill('yn_quill_won', 'y_nine', 'job_needle_won', '“You fly like you’ve got somewhere to be. Pike says you do. Fine. I’m in.”'),
   quill('yn_quill_lost', 'y_nine', 'job_needle_lost', '“You fly like you’ve got somewhere to be. Pike says you do. Fine. I’m in.”'),
   objective('yn_gate', 'y_nine', leave(), 'Jump to Anvil Slip'),
@@ -247,7 +247,7 @@ const YARDS_ROWS: Row[] = [
   main('yk_sam', 'y_keel', free(6), 'story_tam_brother'),
   analyst('yk_survey', 'y_keel', 'job_voice_wire_won', '“The relay that hailed you heard the Narrows handshake. It’s listening to Ada’s route, not to you. Interesting distinction.”'),
   // Keelberth's relay (spaceways plan, step 6): Sam calls through it; hungry, it drinks her jump fluid as it wakes
-  radio('yk_relay_say', 'y_keel', after('yk_objective', 6), SAM[0], SAM[1], '“Juno? I’m on the relay by your gate. It’s thirsty. Feed it and I’ll hear you properly.”', { main: true }),
+  radio('yk_relay_say', 'y_keel', after('yk_objective', 6), SAM[0], SAM[1], '“Juno? It’s Sam, on the relay by your gate. The lit relays are carrying my voice. This one’s thirsty. Feed it Cyrite and I’ll hear you properly.”', { main: true }),
   { id: 'yk_relay', stop: 'y_keel', on: relay(), wall: 'relay_y_keel', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'Sam’s line is clear' } }, main: true, urgent: true },
   objective('yk_gate', 'y_keel', leave(), 'Jump to Torchwall'),
 
