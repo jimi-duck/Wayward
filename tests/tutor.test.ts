@@ -34,7 +34,6 @@ describe('the first minutes', () => {
     expect(w.stats.torpedoes).toBe(false);
     const les = lessonOf(w)!;
     expect(les.mark && Math.hypot(les.mark.x - w.ship.x, les.mark.z - w.ship.z)).toBeLessThan(100);
-    expect(w.fuel + 12).toBeGreaterThanOrEqual(w.jumpCost);
     // the upgrade comes from the purse, not the tank
     expect(w.cyrite).toBe(0);
     expect(w.bk!.nextPursuit).toBeGreaterThan(w.runTime + 20);
@@ -140,7 +139,6 @@ describe('the first minutes', () => {
     expect(cargoOf(w)).toMatchObject({ onboard: 0, delivered: 0 });
     expect(w.cyrite).toBeLessThanOrEqual(CREDIT_START);
     expect(w.bk!.chase).not.toBeNull();
-    expect(w.fuel).toBeGreaterThanOrEqual(w.jumpCost);
     expect(lessonOf(w)).toBeNull();
   });
 
@@ -172,7 +170,6 @@ describe('the first minutes', () => {
     w.skipTraining();
     expect(w.tutor!.done && w.tutor!.skipped).toBe(true);
     expect(w.levels[LESSON_NODE]).toBe(1);
-    expect(w.fuel).toBeGreaterThanOrEqual(w.jumpCost);
   });
 });
 

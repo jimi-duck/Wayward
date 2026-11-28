@@ -128,23 +128,23 @@ describe('the Drift Deep’s relay', () => {
 });
 
 describe('the Breaker Yards’ relay', () => {
-  it('Keelberth: the core drinks her jump fluid as it charges, and starves when the tank is dry', () => {
+  it('Keelberth: the core drinks her Cyrite as it charges, and starves when she has none', () => {
     const w = stop('y_keel');
     expect(w.bk!.def.twist).toBe('hungry');
     hold(w, FLOOR.arrival + 0.5, -300, 0);
-    w.fuel = 30;
-    const f0 = w.fuel, u0 = w.uplink;
+    w.cyrite = 30;
+    const f0 = w.cyrite, u0 = w.uplink;
     hold(w, 6, -15, 0);
     expect(w.uplink).toBeGreaterThan(u0);
-    expect(w.fuel).toBeLessThan(f0);
-    expect(f0 - w.fuel).toBeCloseTo((w.uplink - u0) * HUNGRY_FEED, 3);
+    expect(w.cyrite).toBeLessThan(f0);
+    expect(f0 - w.cyrite).toBeCloseTo((w.uplink - u0) * HUNGRY_FEED, 3);
     // dry: the charge waits and the HUD asks her to feed it
-    w.fuel = 0;
+    w.cyrite = 0;
     const held = w.uplink;
     hold(w, 3, -15, 0);
     expect(w.uplink).toBe(held);
     expect(w.uplinkBlock).toBe(STARVED);
-    w.fuel = 30;
+    w.cyrite = 30;
     hold(w, 2, -15, 0);
     expect(w.uplink).toBeGreaterThan(held);
   });

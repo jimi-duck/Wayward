@@ -58,7 +58,7 @@ export interface Course {
 const PORT_WARN = {
   empty: 'Out of supplies · handling is reduced. Buy more here.',
   low: 'Supplies low · only a few jumps remain before performance drops. Buy more here.',
-  heavy: 'Heavy load · sluggish handling and {n} extra jump fluid per jump. Sell cargo or refit at the Bay to reduce the load.',
+  heavy: 'Heavy load · sluggish handling. Sell cargo or refit at the Bay to reduce the load.',
   hot: 'Guns slow · long cooldown. Fit coolant loops at the Bay to fix this.',
   strained: 'Reactor strained · lower top speed. Fit a reactor core at the Bay to fix this.',
 } as const;

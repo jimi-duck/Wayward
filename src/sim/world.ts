@@ -345,10 +345,11 @@ export class World implements EncounterHost {
   get purse(): number { return this.cyrite; }
   /** Cyrite aboard: money and build material. Rock, scrap and wrecks give it as it is picked up, once the tank is full. */
   cyrite = 0;
-  /** Jump fluid in the drive tank (the Story): the refinery fills it first from what is picked up, the jump burns it, the ports sell a top-up. */
-  fuel = 0;
-  /** What the tank holds: the plotted jump. Over it, what is picked up is Cyrite. */
-  get tankCap(): number { return tankFor(this.jumpCost); }
+  /** Jump fluid: gone from play (owner, 28 November 2026). Always 0: what is picked up is all Cyrite, and nothing gives or takes it. */
+  get fuel(): number { return 0; }
+  set fuel(_v: number) { /* nothing holds jump fluid any more */ }
+  /** What the tank holds: nothing (see `fuel`). */
+  get tankCap(): number { return 0; }
   /** A port's price for one unit of jump fluid, in Cyrite. */
   get fluidPrice(): number { return bondedPrice(this.postedFluid, this.bondedRate); }
   /** The price on the port's board, before any Bonded rate. */
@@ -1405,7 +1406,7 @@ export class World implements EncounterHost {
       m.modeT = (lead?.modeT ?? 0) + i * 0.25;
     }
     this.events.push({ type: 'squad', label: 'Thren swarm' });
-    b.nextSwarm = t + swarmGap(thren, (this.fuel / this.tankCap) * TANK_MAX) * this.rng.range(0.8, 1.2);
+    b.nextSwarm = t + swarmGap(thren, 0) * this.rng.range(0.8, 1.2);
   }
 
   /**
@@ -1934,7 +1935,7 @@ export class World implements EncounterHost {
     const b = this.bk, s = this.ship;
     const place = !b ? 'open' : Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < BLOCKADE_AT ? 'lane' : b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL ? 'port' : 'open';
     return {
-      t: this.runTime, heat: b?.heat ?? 0, cyrite: this.cyrite, fuel: this.fuel, need: b ? this.jumpCost : JUMP_COST, tank: TANK_MAX, chits: this.cyrite,
+      t: this.runTime, heat: b?.heat ?? 0, cyrite: this.cyrite, fuel: 0, need: 0, tank: TANK_MAX, chits: this.cyrite,
       plates: this.plates, maxPlates: this.stats.maxPlates, levels: this.levels, flags: this.flags, standing: this.standing, place,
       hostiles: this.aliens.filter((a) => !a.fleeing && !a.ward && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
       supplies: this.supplies, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
@@ -2007,12 +2008,13 @@ export class World implements EncounterHost {
     if (!sc || !b || this.gateLet) return null;
     // the Narrows: locked by Custody until Ada's key is in, then down while it reboots under her key (sim/narrows.ts)
     if (b.def.script === 'narrows' && this.narrows !== 'done') {
-      const key = this.flags.has(relayFlag('narrows'));
-      if (key) return { why: 'the gate is rebooting', paint: false, handshake: false, slow: true, resetting: false };
+      // the key in, the gate is open (owner, 28 November 2026: "once done with the relay they should be open")
+      if (this.flags.has(relayFlag('narrows')) || this.narrows === 'reboot') return null;
       return { why: 'locked by Custody', paint: false, handshake: true, slow: false, resetting: false };
     }
     const o = sc.owed(this.flags, this.tankCap ? this.fuel / this.tankCap : 0);
-    const slow = b.def.script === 'slowdoor' && this.runTime - this.desk.arrived < SLOW_DOOR;
+    // (the Slow Door's three minutes are gone: its gate opens with its relay, like every other, owner 28 November 2026)
+    const slow = false;
     if (!o.any && !slow) return null;
     // a gate is open unless a relay or a place still waits on her (owner, 28 November 2026: "they should just be always open"); a call
     // owed or a woken relay's reset no longer holds it, the beats left are carried on as she jumps (World.jump)
@@ -2048,8 +2050,7 @@ export class World implements EncounterHost {
   get gateEta(): number {
     // a call or a beat owed: the gate lets her go when the hold runs out, whatever the call is waiting on
     if (this.holdAt < Infinity && !this.gateLet && /^(wait for the call|clear the hostiles|hold still)/.test(this.gateWhy)) return Math.max(0, Math.ceil(GATE_HOLD - (this.runTime - this.holdAt)));
-    if (this.bk?.def.script === 'narrows' && this.narrows !== 'done') return this.narrows === 'reboot' ? Math.max(0, Math.ceil(REBOOT - (this.runTime - this.narrowsAt))) : REBOOT;
-    return this.bk?.def.script === 'slowdoor' && !this.gateLet ? Math.max(0, Math.ceil(SLOW_DOOR - (this.runTime - this.desk.arrived))) : 0;
+    return 0;
   }
 
   /** The gate's countdown while it reboots or opens, for the HUD (null otherwise): seconds left, of how many. */
@@ -2245,11 +2246,6 @@ export class World implements EncounterHost {
       main = leave ? tr(leave) : undefined;
       out = true;
     }
-    if (this.bk?.def.script === 'slowdoor') {
-      const left = Math.ceil(SLOW_DOOR - (this.runTime - this.desk.arrived));
-      const now = left > 0 ? `${tr('Opening')} · ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : tr('Gate open');
-      quiet = quiet.map((q) => (q === tr('Opening · 3:00') ? now : q));
-    }
     return { main, quiet, out };
   }
 
@@ -2287,8 +2283,10 @@ export class World implements EncounterHost {
       this.narrowsAt = t;
       f.add(REBOOTING);
       f.add('ashgrove_met');
-      this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Jump Gate rebooting', reason: 'damping field down' });
-      this.holdNoted = 'the gate is rebooting';
+      // the key opens the gate at once (owner, 28 November 2026); the blockade and the Patience still come while she makes for it
+      f.add(GATE_OPEN);
+      if (this.holdNoted !== 'open') this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Jump Gate open', reason: 'fly through' });
+      this.holdNoted = 'open';
       // a "locked" notice still waiting its turn is out of date now
       this.floor.drop((e) => e.type === 'storyNotice' && e.headline === 'Jump Gate holding');
       // the blockade: the Kind Regard and her pickets, from the gate's side
@@ -2297,22 +2295,17 @@ export class World implements EncounterHost {
     }
     const since = t - this.narrowsAt;
     if (!this.patienceSaid && since >= PATIENCE_AT) {
+      // (no "inbound" notice: her card follows at once and says it, owner 28 November 2026)
       this.patienceSaid = true;
-      this.events.push({ type: 'storyNotice', tone: 'red', headline: 'CCV Patience inbound', reason: 'a Governor’s ship' });
     }
     const card = CARD_BY_ID[PATIENCE];
     if (card && this.patienceSaid && since >= PATIENCE_AT + PATIENCE_CARD && !this.cardsSeen.has(PATIENCE) && this.phase === 'play') { this.openComms(card); return; }
     if (this.cardsSeen.has(PATIENCE) && !this.patienceAnswered) {
       // she studies, she does not bargain (owner, 14 November 2026): the blockade fights on whatever Juno said
       this.patienceAnswered = true;
-      this.events.push({ type: 'ping', id: 'narrows_watch', from: tr('Governor Idris Calloway'), caller: 'calloway', text: tr('“Kind Regard, carry on. I want to see what she does with ninety seconds.”'), moment: 'calm', system: this.bk?.def.name ?? '' });
+      this.events.push({ type: 'ping', id: 'narrows_watch', from: tr('Governor Idris Calloway'), caller: 'calloway', text: tr('“Kind Regard, carry on. I want to see what she does with an open gate.”'), moment: 'calm', system: this.bk?.def.name ?? '' });
     }
-    if (since >= REBOOT && this.cardsSeen.has(PATIENCE)) {
-      this.narrows = 'done';
-      f.add(GATE_OPEN);
-      this.holdNoted = 'open';
-      this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Jump Gate open', reason: 'fly through' });
-    }
+    if (this.patienceAnswered) this.narrows = 'done';
   }
 
   /** A hub beat of the stop's script is still due: a job's call waits for it. */

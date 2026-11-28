@@ -68,7 +68,7 @@ export class RelayWake {
     const r = stepUplink(this.w.uplink, this.uplinking, (!blk ? 1 : blk === 'Drive the hunter off the relay' ? HUNTED_RATE : 0) * (this.quiet ? LOUD_QUIET_RATE : 1) * this.chorus, dt);
     if (b.def.twist === 'loud' && r.charge > this.w.uplink && !this.quiet) this.stepNoise(dt);
     // a hungry relay's core drinks the jump fluid as it charges (content/road.ts LEG_RELAYS)
-    if (b.def.twist === 'hungry' && r.charge > this.w.uplink) this.w.fuel = Math.max(0, this.w.fuel - (r.charge - this.w.uplink) * HUNGRY_FEED);
+    if (b.def.twist === 'hungry' && r.charge > this.w.uplink) this.w.cyrite = Math.max(0, this.w.cyrite - (r.charge - this.w.uplink) * HUNGRY_FEED);
     this.w.uplink = r.charge;
     if (!r.stage) return;
     // woken, the relay overrides the lock: what Custody sent for it breaks off (a hunter would otherwise circle the gate's field for ever)
@@ -295,7 +295,7 @@ export class RelayWake {
     if (this.burial) return 'Mine the relay clear';
     if (this.jammed) return 'Wait for the static to pass';
     if (this.w.bk?.def.twist === 'refused' && !this.w.flags.has(`relay_ok_${this.w.bk.def.script}`)) return 'Hear the locals out first';
-    if (this.w.bk?.def.twist === 'hungry' && this.w.fuel <= 0.05) return STARVED;
+    if (this.w.bk?.def.twist === 'hungry' && this.w.cyrite <= 0.05) return STARVED;
     const sit = this.onMast(rl);
     if (sit.length) return this.w.bk?.def.twist === 'guarded' && !sit.some((a) => this.hunters.has(a.id)) ? 'Drive the guards off the relay' : 'Drive the hunter off the relay';
     return '';

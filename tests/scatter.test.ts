@@ -167,8 +167,8 @@ describe('the Thren in a sortie', () => {
     };
     const full = first(TANK_MAX), dry = first(0);
     expect(full.t).toBeLessThan(120);
-    // drawn by the jump fluid: with a full tank the second swarm comes sooner than with none (the first is on a clock)
-    expect(full.w.bk!.nextSwarm - full.t).toBeLessThan(dry.w.bk!.nextSwarm - dry.t);
+    // (no jump fluid since 28 November 2026: nothing in a tank draws them sooner)
+    expect(dry.t).toBeLessThan(120);
     // close by, the scope and the Jump Gate go strange
     const w = full.w;
     const m = w.aliens.find((a) => a.variant === 'mote')!;

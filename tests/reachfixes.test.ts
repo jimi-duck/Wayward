@@ -61,7 +61,7 @@ describe('the Reach, from the pilot flights', () => {
     expect(sortieDef(at(7)).nemesis.offer).toBeNull();
   });
 
-  it('the Narrows gate holds until the scene has played, then lets her go', () => {
+  it('the Narrows gate lets her go as soon as the key is in (owner, 28 November 2026)', () => {
     const j = at(7);
     j.carry.fuel = 40;
     const w = new World(5, { mode: 'breakout', sortie: { ...quiet(j), blockade: false }, carry: j.carry });
@@ -74,7 +74,6 @@ describe('the Reach, from the pilot flights', () => {
       if (w.comms) w.answer(w.comms.def.choices[0]!.id);
       if (jumpedAt < 0 && w.bk!.jumpT >= 0) jumpedAt = w.runTime;
     }
-    expect(w.flags.has('calloway_asked')).toBe(true);
     expect(jumpedAt).toBeGreaterThan(0);
   });
 });

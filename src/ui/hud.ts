@@ -940,7 +940,7 @@ export class Hud {
     const site = world.siteHere ? [NAMED[world.siteHere]!.name] : [];
     const fx = world.conditions.map((c) => ({ good: REPORT_GOOD.has(c.kind), text: REPORT_TEXT[c.kind] }));
     // the ship's own trouble, quiet and dull gold: the stores and the weight (it flies on, worse)
-    const warn = warns.map((w) => w === 'heavy' && world.weightFuel ? t('Heavy · slower, +{n} jump fluid a jump', { n: world.weightFuel }) : t(SHIP_WARN[w]));
+    const warn = warns.map((w) => t(SHIP_WARN[w]));
     el.replaceChildren(
       ...site.map((l) => { const d = document.createElement('div'); d.textContent = t(l); return d; }),
       ...fx.map((f) => { const d = document.createElement('div'); d.className = f.good ? 'good' : 'bad'; d.textContent = `${f.good ? '+' : '−'} ${t(f.text)}`; return d; }),

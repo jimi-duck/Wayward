@@ -401,8 +401,8 @@ describe('a sortie in the world', () => {
     expect(w.phase).toBe('over');
     const res = w.result();
     expect(res.ended).toBe('jumped');
-    // a jump burns no fluid (owner, 28 November 2026)
-    expect(res.carry.fuel).toBe(o.route.cyrite);
+    // no jump fluid in play (owner, 28 November 2026)
+    expect(res.carry.fuel).toBe(0);
   });
 
   it('opens Calloway’s channel when she arrives, and counts her ship beaten', () => {

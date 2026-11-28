@@ -132,7 +132,7 @@ const BELT_ROWS: Row[] = [
 
   // 5 · Saltmarsh (breather): the first sighting, a river of motes; it turns toward a full tank
   notice('bs_river', 'b_kessler', settle(), 'white', 'UNKNOWN', 'motes like a river · 1 km', { wall: 'saw_thren' }),
-  objective('bs_river_obj', 'b_kessler', after('bs_river'), undefined, 'Wait it out, or burn fluid to run dark.'),
+  objective('bs_river_obj', 'b_kessler', after('bs_river'), undefined, 'Wait it out, or fly dark past it.'),
   notice('bs_turn', 'b_kessler', after('bs_river', 6), 'white', 'It turns', 'toward your tank', { if: { full: true }, wall: 'saw_turn' }),
 
   // 6 · Kiln (pressure): Kesh, if Val is in it; Quiet Line 4, the witness, who names Val

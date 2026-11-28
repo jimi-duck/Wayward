@@ -114,12 +114,12 @@ export const OFFERS: CardDef[] = [
     ],
   }),
   offer({
-    id: 'offer_tank', from: 'Governor Idris Calloway · Offices of Peace', title: 'A full tank',
-    text: '“You’re always short of jump fluid, Juno. Tell me your destination and a tender will refuel you. No tricks. I want you alive.”',
+    id: 'offer_tank', from: 'Governor Idris Calloway · Offices of Peace', title: 'Full stores',
+    text: '“You’re always short of stores, Juno. Tell me your destination and a tender will resupply you. No tricks. I want you alive.”',
     choices: [
-      { id: 'accept', label: 'Take the fluid', tone: 'trade', hint: 'Receive 20 jump fluid, but Calloway learns your destination.', win: { text: 'The tender transfers 20 jump fluid · Calloway knows your destination', fuel: 20, heat: -0.2, hunt: -1.5 } },
-      { id: 'lie', label: 'Take the fluid and give a false destination', tone: 'bluff', hint: 'Get the fluid and send her toward the wrong lane; she may check your story.', odds: { base: 0.5, heat: -0.2, learn: 'lie' },
-        win: { text: 'You receive the fluid · Calloway takes the wrong lane', fuel: 20, hunt: 0.5 },
+      { id: 'accept', label: 'Take the stores', tone: 'trade', hint: 'Receive 4 supplies, but Calloway learns your destination.', win: { text: 'The tender hands over 4 supplies · Calloway knows your destination', supplies: 4, heat: -0.2, hunt: -1.5 } },
+      { id: 'lie', label: 'Take the stores and give a false destination', tone: 'bluff', hint: 'Get the stores and send her toward the wrong lane; she may check your story.', odds: { base: 0.5, heat: -0.2, learn: 'lie' },
+        win: { text: 'You receive the stores · Calloway takes the wrong lane', supplies: 4, hunt: 0.5 },
         lose: { text: '“That’s not where you’re going.” · the tender pulls away', hunt: -1 } },
       { id: 'refuse', label: 'Refuse', tone: 'refuse', hint: 'You will need to find your own.', win: { text: '“Then count it carefully.”' } },
     ],

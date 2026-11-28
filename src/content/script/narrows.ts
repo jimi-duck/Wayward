@@ -1,11 +1,10 @@
 import type { Row } from '../../sim/script';
 
 // ── The Narrows: one scene (docs/ROAD.md) ──────────────────────────────────
-// Custody has locked the Jump Gate. Ada's key at the old relay overrides it,
-// and knocks the gate offline: it reboots under her key for 90 s with its
-// damping field down, the blockade comes for her, and the Patience calls in
-// the middle of it (sim/narrows.ts, run by the world). Then the gate opens and
-// Sam's signal ends. The handshake sets `relay_broadcast`: from then on the
+// Custody has locked the Jump Gate. Ada's key at the old relay overrides it
+// and the gate opens at once; the blockade comes for her, the Patience calls
+// as she makes for the ring (sim/narrows.ts, run by the world), and Sam's
+// signal ends. The handshake sets `relay_broadcast`: from then on the
 // hunt knows the route (sim/calloway.ts), and the Course screen names Calloway.
 
 const STOP = 'narrows';
@@ -27,12 +26,10 @@ export const NARROWS_ROWS: Row[] = [
   // urgent, with the key's notice: if the pursuit has caught her here, the note still comes, or the gate would never start its reboot (road pilot, 22 November 2026)
   { id: 'nr_note', stop: STOP, on: { on: 'after', row: 'nr_key', delay: 2 }, wall: 'rec_closing', do: { card: 'warden_note_1' }, main: true, urgent: true },
 
-  // ── 3 · Gate down: the world starts the reboot as the note closes (`narrows_reboot`) ──
-  { id: 'nr_hold', stop: STOP, on: { on: 'flag', flag: 'narrows_reboot' }, do: { objective: { main: 'Hold out', quiet: 'The damping field is down' } } },
+  // ── 3 · Gate open: the world opens it as the note closes (`narrows_reboot`, `narrows_gate_open`) ──
   radio('nr_ashgrove', ASHGROVE, 'custody', { on: 'flag', flag: 'narrows_reboot' }, '“I’ll remember the hull. Whoever you are.”', { urgent: true }),
-  radio('nr_sam_hold', 'Sam Okoro', 'miners', { on: 'after', row: 'nr_ashgrove', delay: 10 }, '“Juno, the whole Reach just heard her key. Hang on.”', { urgent: true }),
 
-  // ── 4 · The Patience: her card comes in the middle of it (sim/narrows.ts) ──
+  // ── 4 · The Patience: her card comes a moment later (sim/narrows.ts) ──
 
   // ── 5 · The way out ──
   { id: 'nr_gate', stop: STOP, on: { on: 'flag', flag: 'narrows_gate_open' }, do: { objective: { main: 'Jump to Wake', quiet: 'Find the Drift. They never stopped moving.' } } },

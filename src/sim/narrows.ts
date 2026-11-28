@@ -1,19 +1,18 @@
-// ── the Narrows: the gate goes down ────────────────────────────────────────
+// ── the Narrows: the key opens the gate ───────────────────────────────────
 // Custody has locked the Narrows' Jump Gate. Ada's key at the old relay
-// overrides the lock and knocks the gate offline: when her note closes, the
-// gate reboots under her key for REBOOT seconds, its damping field down, and
-// the blockade (the Kind Regard and two pickets) comes for the Wayward. The
-// Patience calls PATIENCE_AT seconds in: Juno and Calloway's first encounter.
-// She asks who Juno is and why she carries Ada's key; nothing is bargained and
-// the fight plays out whatever Juno answers (owner, 14 November 2026). Then the
-// gate opens (`narrows_gate_open`). The world runs it
-// (sim/world.ts `stepNarrows`); the lines are content/script/narrows.ts.
+// overrides the lock: when her note closes, the gate is open at once
+// (`narrows_gate_open`, owner 28 November 2026: no more waiting to fly
+// through) and the blockade (the Kind Regard and two pickets) comes for the
+// Wayward. The Patience calls PATIENCE_AT seconds in: Juno and Calloway's
+// first encounter. She asks who Juno is and why she carries Ada's key; nothing
+// is bargained (owner, 14 November 2026). The world runs it (sim/world.ts
+// `stepNarrows`); the lines are content/script/narrows.ts.
 
 /** Seconds the gate takes to reboot under Ada's key. */
 export const REBOOT = 90;
 /** Seconds into the reboot that the Patience comes on the scope, and her card a moment after. */
-export const PATIENCE_AT = 25;
-export const PATIENCE_CARD = 4;
+export const PATIENCE_AT = 1;
+export const PATIENCE_CARD = 1.5;
 /** The card Calloway calls with. */
 export const PATIENCE = 'story_calloway_narrows';
 /** Set as the reboot starts, and as the gate opens. */

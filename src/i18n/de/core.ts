@@ -117,7 +117,7 @@ export const CORE: Record<string, string> = {
   '“They’re older than me. They’re not like me.”': '„Die sind älter als ich. Die sind nicht wie ich.“',
   '“Ada used to say the fence kept people safe. I used to think she believed it.”': '„Ada hat immer gesagt, der Zaun schützt die Leute. Ich dachte mal, sie glaubt das.“',
   '“I can carry a voice down the lit relays now. Someone’s asking for you.”': '„Ich kann jetzt eine Stimme über die wachen Relais tragen. Jemand fragt nach dir.“',
-  '“Relays drink the same fluid your drive does. Keep the tank up.”': '„Relais trinken dasselbe Fluid wie dein Antrieb. Halt den Tank voll.“',
+  '“This one drinks Cyrite as it wakes. Keep some aboard.”': '„Dieses hier trinkt Cyrit, während es aufwacht. Behalt etwas an Bord.“',
   '“I checked her sums before she carried them in. They were right. That’s the worst part.”': '„Ich hab ihre Rechnung geprüft, bevor sie sie reingetragen hat. Sie stimmte. Das ist das Schlimmste.“',
   '“Property, not testimony. All those years shut in, and I’m still somebody’s asset.”': '„Eigentum, kein Zeugnis. All die Jahre eingesperrt, und ich bin immer noch jemandes Wert.“',
   '“I used to think Ada was always right about relays. Leave it dark.”': '„Ich dachte mal, Ada hatte bei Relais immer recht. Lass es dunkel.“',

@@ -62,32 +62,17 @@ describe('mining', () => {
     expect(w.run.mined).toBe(1);
     expect(w.field.rocks.length).toBe(0);
     run(w, 2);
-    // the rock's Cyrite, and the odd crystal the vein carries, all in the one hold
-    expect(w.cyrite + w.fuel).toBeGreaterThanOrEqual(START_CYRITE + rockYield('rich', 0).cyrite);
-    // the refinery fills the tank first: the purse waits for a full one
-    expect(w.fuel).toBeGreaterThan(START_CYRITE);
-    if (w.fuel < w.tankCap) expect(w.cyrite).toBe(0);
+    // the rock's Cyrite, and the odd crystal the vein carries, all in the purse (no jump fluid since 28 November 2026)
+    expect(w.cyrite).toBeGreaterThanOrEqual(rockYield('rich', 0).cyrite);
+    expect(w.fuel).toBe(0);
   });
 
-  it('refines into the tank first, and the rest is Cyrite for the purse', () => {
+  it('puts every pickup in the purse: there is no tank to fill', () => {
     const w = quiet();
-    w.fuel = w.tankCap - 3;
     w.cyrite = 0;
     priv(w).collect({ id: 1, kind: 'cyrite', x: 0, z: 0, vx: 0, vz: 0, value: 5, age: 0, life: 9 });
-    expect(w.fuel).toBe(w.tankCap);
-    expect(w.cyrite).toBe(2);
-    const e = w.drain().find((x) => x.type === 'cyrite');
-    expect(e && e.type === 'cyrite' ? e.fuel : -1).toBe(3);
-  });
-
-  it('holds exactly the plotted jump, so a full tank sends everything to the purse', () => {
-    const w = quiet();
-    expect(w.tankCap).toBe(w.jumpCost);
-    w.fuel = w.jumpCost;
-    w.cyrite = 0;
-    priv(w).collect({ id: 2, kind: 'cyrite', x: 0, z: 0, vx: 0, vz: 0, value: 4, age: 0, life: 9 });
-    expect(w.fuel).toBe(w.jumpCost);
-    expect(w.cyrite).toBe(4);
+    expect(w.fuel).toBe(0);
+    expect(w.cyrite).toBe(5);
   });
 
   it('a torpedo destroys part of the rock, so it gives less than the lasers', () => {
@@ -98,7 +83,7 @@ describe('mining', () => {
     expect(w.field.rocks.length).toBe(0);
     expect(w.run.mined).toBe(0);
     expect(w.run.blasted).toBe(1);
-    expect(w.cyrite + w.fuel).toBeGreaterThanOrEqual(START_CYRITE + rockYield('rich', 0, TORP_YIELD).cyrite);
+    expect(w.cyrite).toBeGreaterThanOrEqual(rockYield('rich', 0, TORP_YIELD).cyrite);
     expect(rockYield('rich', 0, TORP_YIELD).cyrite).toBeLessThan(rockYield('rich', 0).cyrite);
     expect(rockTake('torpedo')).toBe(TORP_YIELD);
     // the high-yield booster cancels the penalty while it runs
@@ -107,7 +92,7 @@ describe('mining', () => {
     const rb = rockAhead(b, 12, 'rich', 0);
     priv(b).destroyRock(rb, 'torpedo');
     run(b, 2);
-    expect(b.cyrite + b.fuel).toBeGreaterThanOrEqual(START_CYRITE + rockYield('rich', 0).cyrite);
+    expect(b.cyrite).toBeGreaterThanOrEqual(rockYield('rich', 0).cyrite);
     expect(rockTake('laser')).toBe(1);
   });
 });
@@ -120,8 +105,7 @@ describe('the Breakout', () => {
     // the ship starts facing up the screen (-Z): the lane is that way
     expect(b.lane.z).toBeLessThan(0);
     expect(Math.hypot(b.port!.x, b.port!.z)).toBeLessThan(LANE_DIST * 0.6);
-    expect(w.fuel).toBe(START_CYRITE);
-    expect(w.cyrite).toBe(0);
+    expect(w.fuel).toBe(0);
     expect(b.heat).toBe(HEAT_START);
   });
 
@@ -201,17 +185,15 @@ describe('the Breakout', () => {
     expect(w.supplies).toBe(0);
   });
 
-  it('jumps on an empty tank once the drive has spooled, and keeps its fluid (owner, 28 November 2026)', () => {
+  it('jumps with no fluid at all (owner, 28 November 2026)', () => {
     const w = quiet();
     const b = w.bk!;
     b.blockade = 'done';
     w.ship.x = b.lane.x; w.ship.z = b.lane.z;
-    w.fuel = 3;
     w.cyrite = 3;
     run(w, SPOOL + JUMP_T + 1);
     expect(w.phase).toBe('over');
     expect(w.run.escaped).toBe(true);
-    expect(w.fuel).toBe(3);
     expect(w.cyrite).toBe(3);
     expect(w.run.cyriteLeft).toBe(3);
     expect(w.run.cause).toBe('escaped');
