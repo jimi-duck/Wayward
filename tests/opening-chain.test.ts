@@ -134,7 +134,7 @@ describe('the opening chain beyond the gate', () => {
     expect(wake.glass).toBe('ochre');
     expect(wake.letter?.sign).toBe('');
     // the owner's own copy (28 November 2026): a short written message, under the document cap
-    expect(wake.text.split(/\s+/).length).toBeLessThan(110);
+    expect(wake.text.split(/\s+/).length).toBeLessThan(160);
     expect(wake.text).toContain('Ada Aster');
     expect(wake.text).not.toContain('94');
     expect(wake.choices.map((c) => c.label)).toEqual(['Let’s do it. How?']);

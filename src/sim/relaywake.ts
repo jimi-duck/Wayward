@@ -4,7 +4,7 @@ import type { Bulwark } from './field';
 import { laneBack, relayKey, relayOf } from './breakout';
 import { painted, SAM_RELAY } from './postjump';
 import { ADA } from '../content/story';
-import { CORE_FIRST } from '../content/script/core';
+import { CORE_FIRST, CORE_SHIPS } from '../content/script/core';
 import { topSpeed } from './ship';
 import { Traffic } from './traffic';
 import { wardenRelays } from './evidence';
@@ -89,12 +89,14 @@ export class RelayWake {
       // (its own notice says the gate is open: the gate's "open · fly through" would say it twice)
       this.w.holdNoted = 'open';
       this.w.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Warden key accepted', reason: 'Jump Gate open', main: true });
-      // ADA-1 hears the network again, and the first record back is the night they shut it: the 94% (sentient-ship plan; it was
-      // in the old letter). The Wall has it at once; then Sam
-      this.w.flags.add('clue_reserves');
-      this.w.radioLines('core_first', tr(ADA), 'core', [tr(CORE_FIRST)], 2);
-      // (queued before the hauler's lane line, 6 s after the key: Sam's word follows ADA-1's at once)
+      // (queued before the hauler's line: Sam's word follows the key)
       this.w.radioLines('sam_relay', tr('Sam Okoro'), 'miners', [tr(SAM_RELAY)], 5);
+    }
+    // the moment she connects, ADA-1 hears an old report: the 94% (the Wall has it at once), then the ships the uplink drew
+    // (owner's copy and order, 28 November 2026)
+    if (r.stage === 1 && b.def.first) {
+      this.w.flags.add('clue_reserves');
+      this.w.radioLines('core_first', tr(ADA), 'core', [tr(CORE_FIRST), tr(CORE_SHIPS)], 1);
     }
     // (elsewhere the last stage is told by the stop's own row: "Warden key accepted", content/script/arrivals.ts)
     // a split relay: this mast is awake, the next is marked (the core wakes on the third)

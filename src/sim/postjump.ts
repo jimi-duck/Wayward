@@ -113,7 +113,7 @@ export const STOLEN = { sam: 20, notice: 38, explain: 4, pursuit: 70 } as const;
 /** The depot's word on the approach, on the radio (no card): what it sells, and how to dock. */
 export const DEPOT_LINE = '“Depot control. Plating and stores at posted prices. Slow into the ring to dock.”';
 /** Sam, once the relay in the first system has opened her gate on the Warden key (sim/uplink.ts). */
-export const SAM_RELAY = '“The gate’s open. First lane anyone’s opened in seventy years. One down, Juno. Go.”';
+export const SAM_RELAY = '“The gate’s open. First one anyone’s opened in seventy years. One down, Juno. Go.”';
 /** The amber notice that tells her the pursuit has started, and why. */
 export const STOLEN_NOTICE = ['Hull reported stolen', 'Kellern has called in Custody'] as const;
 

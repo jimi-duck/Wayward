@@ -107,7 +107,9 @@ One thing at a time, in seconds of play after the paint is on (`STOLEN`):
    (`STOLEN_SAM`, `STOLEN_SAM_POOR`). Only when the tank is short.
 3. **+38 s:** an amber notice, "Hull reported stolen · Kellern has called in Custody".
    ADA-1's card ("Systems returning. I can feel the ship again…", answer "Let’s do it. How?") opens right after Ned's
-   line about the partition, at a free moment.
+   line about the partition, at a free moment. Since 28 November 2026 it tells the why: seventy years ago, in one night,
+   the outer Jump Gates went dark; the Continuance blamed a Krail shortage and neglect, and the emergency never ended
+   (`content/story.ts` story_wake). The first relay's 94% (`CORE_FIRST`) is the first crack in that story.
 4. **+70 s:** the first Custody hull, from behind.
 
 The depot's call is a radio line, not a card: flying into its ring docks. No lane toll is dealt at this

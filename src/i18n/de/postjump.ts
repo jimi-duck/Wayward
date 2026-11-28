@@ -32,7 +32,7 @@ export const POSTJUMP: Record<string, string> = {
   'or mine Cyrite': 'oder Cyrit abbauen',
   'Fill the tank: buy fluid at the depot or mine Cyrite': 'Tank füllen: Fluid am Depot kaufen oder Cyrit abbauen',
   'Wake the Warden relay by the Jump Gate': 'Weck das Warden-Relais am Sprungtor',
-  '“The gate’s open. First lane anyone’s opened in seventy years. One down, Juno. Go.”': '„Das Tor ist offen. Die erste Bahn, die seit siebzig Jahren jemand geöffnet hat. Eins geschafft, Juno. Los.“',
+  '“The gate’s open. First one anyone’s opened in seventy years. One down, Juno. Go.”': '„Das Tor ist offen. Das erste, das seit siebzig Jahren jemand geöffnet hat. Eins geschafft, Juno. Los.“',
   // one voice at a time (owner 2026-10-31): the Wanted explainer as a hint line
   'Wanted rises while you fight or linger · bottom right': 'Die Fahndung steigt, wenn du kämpfst oder trödelst · unten rechts',
   '“Depot control. Plating and stores at posted prices. Slow into the ring to dock.”': '„Depotkontrolle. Panzerung und Vorräte zu festen Preisen. Langsam in den Ring, dann docken wir dich an.“',
@@ -72,7 +72,7 @@ export const POSTJUMP: Record<string, string> = {
   'Reprogrammed · repainted · renamed': 'Umprogrammiert · lackiert · umbenannt',
   'Autopilot overridden · the helm is yours': 'Autopilot überschrieben · das Steuer gehört dir',
   'Autopilot overridden': 'Autopilot überschrieben',
-  'Lane Control shut out': 'Bahnkontrolle ausgesperrt',
+  'Gate Control shut out': 'Torkontrolle ausgesperrt',
   '“You must be Juno. Ned here. Sam said you’d come, and I owe him one. Ease her into the ring and I’ll do the rest. No charge.”': '„Du musst Juno sein. Hier Ned. Sam hat gesagt, du kommst, und ich schulde ihm was. Schieb sie in den Ring, den Rest mach ich. Kostet nichts.“',
   'Ned’s yard · work done': 'Neds Werft · erledigt',
   'Reprogrammed · Repainted · Renamed': 'Umprogrammiert · Lackiert · Umbenannt',

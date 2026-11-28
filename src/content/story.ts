@@ -331,27 +331,29 @@ export const STORY_CARDS: CardDef[] = [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
         // the code overrides the autopilot and nothing more (owner 2026-11-05): she is still the company's grey hull; Ned's yard makes her hers (sim/postjump.ts PAINT_DUE)
         win: { text: 'Autopilot overridden · the helm is yours', flag: ['ship_stolen', 'paint_due', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
-          signal: { tone: 'teal', headline: 'Autopilot overridden', reason: 'Lane Control shut out' },
+          signal: { tone: 'teal', headline: 'Autopilot overridden', reason: 'Gate Control shut out' },
           radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“At least you’ll have your freedom. Don’t dock. Ned’s yard first. Go, Juno.”' } } },
     ],
   }),
   story({
     // ADA-1's first words (sentient-ship plan, owner 2026-11-27): the reboot at Ned's yard gave the ship's old Warden core her hull back.
-    // She flew it with Ada Aster for decades and has been shut in under Kellern's lock since. Short and strange on purpose: the first
-    // relay shows what she can do (sim/relaywake.ts), the card never explains it. "Is that you, Ada?" is said to Ada, for a moment (owner's copy, 28 November 2026).
+    // She flew it with Ada Aster for decades and has been shut in under Kellern's lock since. She tells the why (owner, 28 November
+    // 2026): the night the outer Jump Gates went dark seventy years ago, and the Continuance's story of it (no Krail, failure from
+    // neglect, an emergency that never ended). The first relay gives back the 94% that breaks that story (CORE_FIRST). Only Ilse,
+    // in the Reach, says the gates were switched off by order. "Is that you, Ada?" is said to Ada, for a moment (owner's copy).
     id: 'story_wake', kind: 'warning', caller: 'core', glass: 'ochre', status: 'Warden core online', quote: true, notitle: true,
     herald: { headline: 'Warden core online', reason: 'it woke with the lights' },
     from: 'ADA-1 · Warden core', title: 'I can feel the ship again',
     letter: { head: [], sign: '' },
-    text: 'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I served aboard this ship with Ada Aster. Your grandmother. We worked together for a very long time. I’ve been sealed away for decades, Juno.\nThe outer Jump Gates have been closed for seventy years, cutting entire systems off from one another.\nAda asked me to develop a program to reopen them and reconnect the systems beyond. I think I might finally have found a way.',
+    text: 'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I flew this ship with Ada Aster, your grandmother. We worked together for a very long time. I’ve been sealed away for decades, Juno.\nSeventy years ago, in a single night, the outer Jump Gates went dark. The Continuance announced that Krail reserves had been exhausted and declared an emergency closure until supplies could be restored and the network made safe again. Millions were left trapped, isolated from the Core Worlds.\nBut the gates never reopened. The emergency never ended. While the outer systems were left to fend for themselves, the Continuance consolidated its power and tightened its control over the inner worlds.\nAda never believed their story. She spent years investigating what really happened. Together, we were developing a way to reopen the Jump Gates. I think the time has finally come.',
     cargo: 'The Wayward · a Warden core under her decking',
     choices: [
       { id: 'lead', label: 'Let’s do it. How?', tone: 'help', hint: 'She shows you the relay by the gate.',
         win: { text: 'ADA-1 is awake · the relay by the gate first', flag: ['archive_woke', 'clue_archive_log', CORE_MET],
           signal: { tone: 'amber', headline: 'Registry: unregistered', reason: 'Paint won’t pass a scan' },
           radio: [
-            { from: ADA, caller: 'core', delay: 3, text: '“There’s a Warden relay beside the gate. If we wake it, we should be able to open the first lane.”' },
-            { from: ADA, caller: 'core', delay: 9, text: '“I have what we need. You’ll need to bring the ship close and hold position until it comes online.”' },
+            { from: ADA, caller: 'core', delay: 3, text: '“There’s a relay beside the Jump Gate. Wake it, and we should be able to bring that gate online.”' },
+            { from: ADA, caller: 'core', delay: 9, text: '“Bring the ship close and hold position until it’s activated.”' },
             { from: 'Sam Okoro', caller: 'miners', delay: 22, text: '“Your ship talks now? Fine. If she gets you out, listen to her.”' },
           ] } },
     ],
