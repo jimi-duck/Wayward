@@ -75,6 +75,6 @@ export function uplinkWave(stage: number, tier: WaveTier): readonly WaveRow[] {
 export const LANE_LINES = [
   '“Gate’s live? First time in years. Whoever lit it, thank you.”',
   '“That gate’s been dark since my mother flew it. Who woke it?”',
-  '“Lane’s open! Haulers, form up. We’re going through.”',
+  '“Gate’s open! Haulers, form up. We’re going through.”',
   '“Warden signal on the gate. I haven’t seen that since I was a boy.”',
 ] as const;

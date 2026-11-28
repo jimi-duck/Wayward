@@ -11,19 +11,19 @@ export const CORE: Record<string, string> = {
   // her first words, at Ringhold
   'ADA-1 wakes · Ada’s key in her core': 'ADA-1 wacht auf · Adas Schlüssel in ihrem Kern',
   'I can feel the ship again': 'Ich spüre das Schiff wieder',
-  'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I served aboard this ship with Ada Aster. Your grandmother. We worked together for a very long time. I’ve been sealed away for decades, Juno.\nThe outer Jump Gates have been closed for seventy years, cutting entire systems off from one another.\nAda asked me to develop a program to reopen them and reconnect the systems beyond. I think I might finally have found a way.':
-    'Systeme kommen zurück. Ich spüre das Schiff wieder… Bist du das, Ada?\nNein. Natürlich nicht. Ich bin ADA-1. Ich habe mit Ada Aster auf diesem Schiff gedient. Deiner Großmutter. Wir haben sehr lange zusammengearbeitet. Ich war jahrzehntelang weggesperrt, Juno.\nDie äußeren Sprungtore sind seit siebzig Jahren geschlossen und trennen ganze Systeme voneinander.\nAda hat mich gebeten, ein Programm zu entwickeln, das sie wieder öffnet und die Systeme dahinter verbindet. Ich glaube, ich habe endlich einen Weg gefunden.',
+  'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I flew this ship with Ada Aster, your grandmother, for a very long time. I’ve been sealed away for decades.\nSeventy years ago, in one night, the outer Jump Gates went dark. The Continuance said the Krail had run out and the gates had failed from neglect. An emergency, until things recovered. Nothing recovered. The emergency never ended, and the worlds beyond were abandoned.\nAda never believed it. I hid what she knew in the gates’ relays.\nShe asked me to open them again. I think I’ve finally found a way.':
+    'Systeme kommen zurück. Ich spüre das Schiff wieder… Bist du das, Ada?\nNein. Natürlich nicht. Ich bin ADA-1. Ich bin dieses Schiff sehr lange mit Ada Aster geflogen, deiner Großmutter. Ich war jahrzehntelang weggesperrt.\nVor siebzig Jahren sind in einer Nacht die äußeren Sprungtore erloschen. Die Continuance sagte, das Krail sei aufgebraucht und die Tore seien aus Vernachlässigung ausgefallen. Ein Notstand, bis sich alles erholt. Nichts hat sich erholt. Der Notstand endete nie, und die Welten dahinter wurden aufgegeben.\nAda hat das nie geglaubt. Was sie wusste, habe ich in den Relais der Tore versteckt.\nSie hat mich gebeten, die Tore wieder zu öffnen. Ich glaube, ich habe endlich einen Weg gefunden.',
   'Let’s do it. How?': 'Machen wir’s. Wie?',
   'She shows you the relay by the gate.': 'Sie zeigt dir das Relais am Tor.',
   'ADA-1 is awake · the relay by the gate first': 'ADA-1 ist wach · zuerst das Relais am Tor',
-  '“There’s a Warden relay beside the gate. If we wake it, we should be able to open the first lane.”':
-    '„Neben dem Tor steht ein Warden-Relais. Wenn wir es wecken, können wir die erste Bahn öffnen.“',
-  '“I have what we need. You’ll need to bring the ship close and hold position until it comes online.”':
-    '„Ich habe, was wir brauchen. Aber du musst das Schiff nah heranbringen und die Position halten, bis das Relais online ist.“',
+  '“There’s a Warden relay beside the gate. Wake it, and the gate opens. The first in seventy years.”':
+    '„Neben dem Tor steht ein Warden-Relais. Weck es, und das Tor geht auf. Das erste seit siebzig Jahren.“',
+  '“I have what we need. Bring the ship close and hold position until the relay comes online.”':
+    '„Ich habe, was wir brauchen. Bring das Schiff nah heran und halte die Position, bis das Relais online ist.“',
   '“Your ship talks now? Fine. If she gets you out, listen to her.”':
     '„Dein Schiff redet jetzt? Gut. Wenn sie dich rausbringt, hör auf sie.“',
-  '“I can hear them again. First thing back: Krail reserves, the night they shut the lanes. Ninety-four per cent.”':
-    '„Ich höre sie wieder. Das Erste, was zurückkommt: Krail-Reserven in der Nacht, als sie die Bahnen schlossen. Vierundneunzig Prozent.“',
+  '“I hear them again. Krail reserves, the night the gates went dark. Ninety-four per cent. There was no shortage.”':
+    '„Ich höre sie wieder. Krail-Reserven in der Nacht, als die Tore erloschen. Vierundneunzig Prozent. Es gab keinen Mangel.“',
 
   // the one-time card for a save that read Gran's old letter
   'ADA-1 · the ship’s Warden core': 'ADA-1 · der Warden-Kern des Schiffs',

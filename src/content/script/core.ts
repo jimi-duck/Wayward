@@ -17,7 +17,7 @@ import { after, card, flag, free } from './kit';
 // think…", then "I don't think Ada would agree with me."
 
 /** Her first words back on the network, as the first relay wakes (sim/relaywake.ts): the record the old letter used to carry. */
-export const CORE_FIRST = '“I can hear them again. First thing back: Krail reserves, the night they shut the lanes. Ninety-four per cent.”';
+export const CORE_FIRST = '“I hear them again. Krail reserves, the night the gates went dark. Ninety-four per cent. There was no shortage.”';
 
 /** Set when Juno let her rest at the Seam (the old implant's flag): she says nothing after it. */
 export const RESTING = 'implant_burned';

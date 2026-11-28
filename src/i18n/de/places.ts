@@ -6,7 +6,7 @@ export const PLACES_DE: Record<string, string> = {
   'Hauler captain': 'Frachterkapitän',
   '“Gate’s live? First time in years. Whoever lit it, thank you.”': '„Das Tor ist an? Zum ersten Mal seit Jahren. Wer auch immer das war: danke.“',
   '“That gate’s been dark since my mother flew it. Who woke it?”': '„Das Tor ist dunkel, seit meine Mutter da durchgeflogen ist. Wer hat es geweckt?“',
-  '“Lane’s open! Haulers, form up. We’re going through.”': '„Die Bahn ist offen! Frachter, aufschließen. Wir fliegen durch.“',
+  '“Gate’s open! Haulers, form up. We’re going through.”': '„Das Tor ist offen! Frachter, aufschließen. Wir fliegen durch.“',
   '“Warden signal on the gate. I haven’t seen that since I was a boy.”': '„Warden-Signal am Tor. Das hab ich seit meiner Kindheit nicht mehr gesehen.“',
   'Wake the relay': 'Weck das Relais',
   'Waking the relay': 'Relais wird geweckt',
