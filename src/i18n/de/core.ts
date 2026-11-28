@@ -11,19 +11,21 @@ export const CORE: Record<string, string> = {
   // her first words, at Ringhold
   'ADA-1 wakes · Ada’s key in her core': 'ADA-1 wacht auf · Adas Schlüssel in ihrem Kern',
   'I can feel the ship again': 'Ich spüre das Schiff wieder',
-  'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I flew this ship with Ada Aster, your grandmother, for a very long time. I’ve been sealed away for decades.\nSeventy years ago, in one night, the outer Jump Gates went dark. The Continuance said the Krail had run out and the gates had failed from neglect.\nAn emergency, until things recovered. Nothing recovered. The emergency never ended, and the worlds beyond were abandoned.\nAda never believed it. I hid what she knew in the gates’ relays.\nShe asked me to open them again. I think I’ve finally found a way.':
-    'Systeme kommen zurück. Ich spüre das Schiff wieder… Bist du das, Ada?\nNein. Natürlich nicht. Ich bin ADA-1. Ich bin dieses Schiff sehr lange mit Ada Aster geflogen, deiner Großmutter. Ich war jahrzehntelang weggesperrt.\nVor siebzig Jahren sind in einer Nacht die äußeren Sprungtore erloschen. Die Continuance sagte, das Krail sei aufgebraucht und die Tore seien aus Vernachlässigung ausgefallen.\nEin Notstand, bis sich alles erholt. Nichts hat sich erholt. Der Notstand endete nie, und die Welten dahinter wurden aufgegeben.\nAda hat das nie geglaubt. Was sie wusste, habe ich in den Relais der Tore versteckt.\nSie hat mich gebeten, die Tore wieder zu öffnen. Ich glaube, ich habe endlich einen Weg gefunden.',
+  'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I flew this ship with Ada Aster, your grandmother. We worked together for a very long time. I’ve been sealed away for decades, Juno.\nSeventy years ago, in a single night, the outer Jump Gates went dark. The Continuance announced that Krail reserves had been exhausted and declared an emergency closure until supplies could be restored and the network made safe again. Millions were left trapped, isolated from the Core Worlds.\nBut the gates never reopened. The emergency never ended. While the outer systems were left to fend for themselves, the Continuance consolidated its power and tightened its control over the inner worlds.\nAda never believed their story. She spent years investigating what really happened. Together, we were developing a way to reopen the Jump Gates. I think the time has finally come.':
+    'Systeme kommen zurück. Ich spüre das Schiff wieder… Bist du das, Ada?\nNein. Natürlich nicht. Ich bin ADA-1. Ich bin dieses Schiff mit Ada Aster geflogen, deiner Großmutter. Wir haben sehr lange zusammengearbeitet. Ich war jahrzehntelang weggesperrt, Juno.\nVor siebzig Jahren sind in einer einzigen Nacht die äußeren Sprungtore erloschen. Die Continuance verkündete, die Krail-Reserven seien erschöpft, und rief eine Notschließung aus, bis die Versorgung wiederhergestellt und das Netz wieder sicher sei. Millionen saßen fest, abgeschnitten von den Kernwelten.\nAber die Tore öffneten nie wieder. Der Notstand endete nie. Während die äußeren Systeme sich selbst überlassen blieben, festigte die Continuance ihre Macht und zog die Kontrolle über die inneren Welten an.\nAda hat ihre Geschichte nie geglaubt. Sie hat jahrelang untersucht, was wirklich geschah. Zusammen haben wir an einem Weg gearbeitet, die Sprungtore wieder zu öffnen. Ich glaube, die Zeit ist endlich gekommen.',
   'Let’s do it. How?': 'Machen wir’s. Wie?',
   'She shows you the relay by the gate.': 'Sie zeigt dir das Relais am Tor.',
   'ADA-1 is awake · the relay by the gate first': 'ADA-1 ist wach · zuerst das Relais am Tor',
-  '“There’s a Warden relay beside the gate. Wake it, and the gate opens. The first in seventy years.”':
-    '„Neben dem Tor steht ein Warden-Relais. Weck es, und das Tor geht auf. Das erste seit siebzig Jahren.“',
-  '“I have what we need. Bring the ship close and hold position until the relay comes online.”':
-    '„Ich habe, was wir brauchen. Bring das Schiff nah heran und halte die Position, bis das Relais online ist.“',
+  '“There’s a relay beside the Jump Gate. Wake it, and we should be able to bring that gate online.”':
+    '„Neben dem Sprungtor steht ein Relais. Weck es, dann sollten wir das Tor wieder in Betrieb nehmen können.“',
+  '“Bring the ship close and hold position until it’s activated.”':
+    '„Bring das Schiff nah heran und halte die Position, bis es aktiviert ist.“',
   '“Your ship talks now? Fine. If she gets you out, listen to her.”':
     '„Dein Schiff redet jetzt? Gut. Wenn sie dich rausbringt, hör auf sie.“',
-  '“I hear them again. Krail reserves, the night the gates went dark. Ninety-four per cent. There was no shortage.”':
-    '„Ich höre sie wieder. Krail-Reserven in der Nacht, als die Tore erloschen. Vierundneunzig Prozent. Es gab keinen Mangel.“',
+  '“I’m receiving an old report. This is from before the Jump Gates went dark. Krail reserves… Ninety-four per cent. There was no shortage, Juno. The Continuance knew.”':
+    '„Ich empfange einen alten Bericht. Er stammt aus der Zeit, bevor die Sprungtore erloschen. Krail-Reserven… vierundneunzig Prozent. Es gab keinen Mangel, Juno. Die Continuance wusste es.“',
+  '“I’m detecting incoming ships. They’ve noticed the relay coming back online. Juno, hold position. We need to finish the connection before they shut it down!”':
+    '„Ich orte anfliegende Schiffe. Sie haben bemerkt, dass das Relais wieder online geht. Juno, halt die Position. Wir müssen die Verbindung herstellen, bevor sie sie abschalten!“',
 
   // the one-time card for a save that read Gran's old letter
   'ADA-1 · the ship’s Warden core': 'ADA-1 · der Warden-Kern des Schiffs',

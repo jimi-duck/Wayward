@@ -345,15 +345,15 @@ export const STORY_CARDS: CardDef[] = [
     herald: { headline: 'Warden core online', reason: 'it woke with the lights' },
     from: 'ADA-1 · Warden core', title: 'I can feel the ship again',
     letter: { head: [], sign: '' },
-    text: 'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I flew this ship with Ada Aster, your grandmother, for a very long time. I’ve been sealed away for decades.\nSeventy years ago, in one night, the outer Jump Gates went dark. The Continuance said the Krail had run out and the gates had failed from neglect.\nAn emergency, until things recovered. Nothing recovered. The emergency never ended, and the worlds beyond were abandoned.\nAda never believed it. I hid what she knew in the gates’ relays.\nShe asked me to open them again. I think I’ve finally found a way.',
+    text: 'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I flew this ship with Ada Aster, your grandmother. We worked together for a very long time. I’ve been sealed away for decades, Juno.\nSeventy years ago, in a single night, the outer Jump Gates went dark. The Continuance announced that Krail reserves had been exhausted and declared an emergency closure until supplies could be restored and the network made safe again. Millions were left trapped, isolated from the Core Worlds.\nBut the gates never reopened. The emergency never ended. While the outer systems were left to fend for themselves, the Continuance consolidated its power and tightened its control over the inner worlds.\nAda never believed their story. She spent years investigating what really happened. Together, we were developing a way to reopen the Jump Gates. I think the time has finally come.',
     cargo: 'The Wayward · a Warden core under her decking',
     choices: [
       { id: 'lead', label: 'Let’s do it. How?', tone: 'help', hint: 'She shows you the relay by the gate.',
         win: { text: 'ADA-1 is awake · the relay by the gate first', flag: ['archive_woke', 'clue_archive_log', CORE_MET],
           signal: { tone: 'amber', headline: 'Registry: unregistered', reason: 'Paint won’t pass a scan' },
           radio: [
-            { from: ADA, caller: 'core', delay: 3, text: '“There’s a Warden relay beside the gate. Wake it, and the gate opens. The first in seventy years.”' },
-            { from: ADA, caller: 'core', delay: 9, text: '“I have what we need. Bring the ship close and hold position until the relay comes online.”' },
+            { from: ADA, caller: 'core', delay: 3, text: '“There’s a relay beside the Jump Gate. Wake it, and we should be able to bring that gate online.”' },
+            { from: ADA, caller: 'core', delay: 9, text: '“Bring the ship close and hold position until it’s activated.”' },
             { from: 'Sam Okoro', caller: 'miners', delay: 22, text: '“Your ship talks now? Fine. If she gets you out, listen to her.”' },
           ] } },
     ],

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../src/content/script';
-import { CORE_ROWS, CORE_FIRST } from '../src/content/script/core';
+import { CORE_ROWS, CORE_FIRST, CORE_SHIPS } from '../src/content/script/core';
 import { ADA, CORE_MET, STORY_CARDS, WAKE_BEAT } from '../src/content/story';
 import type { CardDef } from '../src/sim/comms';
 
@@ -10,7 +10,7 @@ import type { CardDef } from '../src/sim/comms';
 const words = (s: string): number => s.replace(/[“”"·]/g, ' ').trim().split(/\s+/).filter(Boolean).length;
 /** Every line ADA-1 says: her script rows, her cards' radio, and the first relay's record. */
 function herLines(): string[] {
-  const out: string[] = [CORE_FIRST];
+  const out: string[] = [CORE_FIRST, CORE_SHIPS];
   for (const r of SCRIPT) if ('radio' in r.do && r.do.radio.caller === 'core') out.push(r.do.radio.text);
   for (const c of STORY_CARDS as CardDef[]) for (const ch of c.choices ?? []) for (const o of [ch.win, ch.lose])
     for (const rd of [o?.radio ?? []].flat()) if (rd.caller === 'core') out.push(...[rd.text].flat());
@@ -22,7 +22,8 @@ describe('ADA-1, the Warden core', () => {
     const lines = herLines();
     expect(lines.length).toBeGreaterThan(1);
     for (const l of lines) {
-      expect(words(l), l).toBeLessThanOrEqual(20);
+      // (the owner's own lines at the first relay run longer, 28 November 2026)
+      expect(words(l), l).toBeLessThanOrEqual(l === CORE_FIRST || l === CORE_SHIPS ? 30 : 20);
       // never the Voice's capitals (a word of four or more capitals)
       expect(/\b[A-Z]{4,}\b/.test(l.replace(/ADA-1|KRAIL/g, '')), l).toBe(false);
       expect(/\bpilot\b/i.test(l), l).toBe(false);
@@ -40,7 +41,8 @@ describe('ADA-1, the Warden core', () => {
     expect(wake.caller).toBe('core');
     expect(wake.from).toBe(ADA);
     // the owner's own copy (28 November 2026), under the written-document cap
-    expect(words(wake.text)).toBeLessThan(110);
+    // the owner's own copy (28 November 2026): it tells the why, so it runs longer than a document
+    expect(words(wake.text)).toBeLessThan(160);
     expect(wake.choices).toHaveLength(1);
     const win = wake.choices[0]!.win!;
     expect(win.flag).toEqual(expect.arrayContaining(['archive_woke', CORE_MET]));

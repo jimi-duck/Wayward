@@ -17,7 +17,9 @@ import { after, card, flag, free } from './kit';
 // think…", then "I don't think Ada would agree with me."
 
 /** Her first words back on the network, as the first relay wakes (sim/relaywake.ts): the record the old letter used to carry. */
-export const CORE_FIRST = '“I hear them again. Krail reserves, the night the gates went dark. Ninety-four per cent. There was no shortage.”';
+export const CORE_FIRST = '“I’m receiving an old report. This is from before the Jump Gates went dark. Krail reserves… Ninety-four per cent. There was no shortage, Juno. The Continuance knew.”';
+/** ADA-1 as the first relay's waves come for it (owner's copy, 28 November 2026). */
+export const CORE_SHIPS = '“I’m detecting incoming ships. They’ve noticed the relay coming back online. Juno, hold position. We need to finish the connection before they shut it down!”';
 
 /** Set when Juno let her rest at the Seam (the old implant's flag): she says nothing after it. */
 export const RESTING = 'implant_burned';

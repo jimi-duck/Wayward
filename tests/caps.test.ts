@@ -11,6 +11,8 @@ import type { CardDef } from '../src/sim/comms';
 const CAPS = { voice: 20, moment: 60, document: 110, headline: 3, reason: 6 } as const;
 const words = (s: string): number => s.replace(/[“”"·]/g, ' ').trim().split(/\s+/).filter(Boolean).length;
 const over = (s: string, cap: number) => (words(s) > cap ? [`${words(s)}/${cap}: ${s}`] : []);
+/** The owner's own copy, kept as written (ADA-1's wake, 28 November 2026). */
+const OWNER = new Set(['story_wake']);
 
 describe('the writing caps', () => {
   it('keeps every scripted radio line and notice short', () => {
@@ -29,7 +31,7 @@ describe('the writing caps', () => {
   it('keeps every card and its radio follow-ups within the caps', () => {
     const out: string[] = [];
     for (const c of [...STORY_CARDS, ...CARDS] as CardDef[]) {
-      out.push(...over(c.text ?? '', c.letter ? CAPS.document : CAPS.moment).map((m) => `${c.id} ${m.slice(0, 40)}`));
+      if (!OWNER.has(c.id)) out.push(...over(c.text ?? '', c.letter ? CAPS.document : CAPS.moment).map((m) => `${c.id} ${m.slice(0, 40)}`));
       for (const ch of c.choices ?? []) for (const o of [ch.win, ch.lose]) {
         for (const x of [o?.radio ?? []].flat().flatMap((r) => [r.text].flat())) out.push(...over(x, CAPS.voice).map((m) => `${c.id} ${m}`));
         if (o?.signal) out.push(...over(o.signal.headline, CAPS.headline), ...over(o.signal.reason, CAPS.reason));

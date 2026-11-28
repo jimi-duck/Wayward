@@ -151,7 +151,7 @@ describe('a shut Jump Gate says why, from afar', () => {
     expect(w.flags.has('relay_first')).toBe(true);
     expect(most).toBeGreaterThanOrEqual(2);
     expect(notices).toEqual(expect.arrayContaining(['Relay waking', 'Relay dish turning', 'Warden key accepted']));
-    // ADA-1 hears the network again, and the first record back is the 94%; then Sam (sentient-ship plan)
+    // ADA-1 hears an old report the moment she connects: the 94%, then the ships; Sam follows the key (owner, 28 November 2026)
     expect(w.flags.has('clue_reserves')).toBe(true);
     for (let i = 0; i < Math.round(45 / STEP); i++) { w.ship.invuln = 1; w.step(STEP, input()); for (const e of w.events) if (e.type === 'ping') pings.push(e.id); w.events.length = 0; }
     expect(pings.some((p) => p.includes('core_first'))).toBe(true);
@@ -159,8 +159,13 @@ describe('a shut Jump Gate says why, from afar', () => {
     expect(pings.findIndex((p) => p.includes('core_first'))).toBeLessThan(pings.findIndex((p) => p.includes('sam_relay')));
     // the lane is live: hulls come through the gate, and one of them says so
     expect(w.traffic!.arrived).toBeGreaterThanOrEqual(2);
-    fly(w, 12);
-    for (const e of w.events) if (e.type === 'ping') pings.push(e.id);
+    // (a hauler's line is colour: it waits out a card that comes first, so give it the time a player would)
+    for (let i = 0; i < Math.round(40 / STEP) && !pings.some((p) => p.includes('lane_open')); i++) {
+      if (w.phase === 'comms') { w.answer(0); continue; }
+      w.ship.invuln = 1; w.step(STEP, input());
+      for (const e of w.events) if (e.type === 'ping') pings.push(e.id);
+      w.events.length = 0;
+    }
     expect(pings.some((p) => p.includes('lane_open'))).toBe(true);
     expect(w.gateWhy).toBe('');
   });

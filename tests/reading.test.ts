@@ -11,7 +11,7 @@ import { CARDS } from '../src/content/cards';
 
 const CAP = { title: 7, from: 10, text: 32, line: 15, read: 14, label: 8, hint: 19, win: 16, lose: 13 };
 /** Lines already over their cap, held at today's length, and the owner's own copy (the opening handover, 2026-10-23). */
-const LEGACY: Record<string, number> = { 'title story_raiders': 8 };
+const LEGACY: Record<string, number> = { 'title story_raiders': 8, 'text story_wake#2': 47 };
 
 const words = (s: string) => s.trim().split(/\s+/).length;
 
@@ -48,6 +48,7 @@ describe('the reading budget', () => {
     for (const c of CARDS) {
       const add = (part: string, s: unknown, id: string) => { if (typeof s === 'string') live.set(`${part} ${id}`, words(s)); };
       add('title', c.title, c.id); add('text', c.text, c.id);
+      if (c.quote) c.text.split('\n').forEach((l, i) => add('text', l, i ? `${c.id}#${i}` : c.id));
       for (const ch of c.choices) { add('label', ch.label, `${c.id}:${ch.id}`); add('hint', ch.hint, `${c.id}:${ch.id}`); add('win', ch.win?.text, `${c.id}:${ch.id}`); }
     }
     const stale = Object.entries(LEGACY).filter(([k, n]) => (live.get(k) ?? 0) > n || (live.get(k) ?? 0) <= CAP[k.split(' ')[0] as keyof typeof CAP]);
