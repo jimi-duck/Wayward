@@ -296,7 +296,7 @@ export const DIRECTION: Record<string, string> = {
   'the pickets lose your heading': 'die Posten verlieren deinen Kurs',
   'Heading dark': 'Kurs dunkel',
   'the Offices hear nothing more': 'die Offices hören nichts mehr',
-  '“Survey reading from Ashdeep: Thren pressure tracks the extraction rate, year on year. It’s in the file they buried.”': '„Messung der Vermessung aus Ashdeep: Der Thren-Druck folgt der Abbaurate, Jahr für Jahr. Steht in der Akte, die sie begraben haben.“',
+  '“Survey reading from Ashdeep. Thren pressure rises with the mining rate, year on year. They knew it before the gates closed. It’s in the file they buried.”': '„Messung des Vermessungsamts aus Ashdeep. Der Thren-Druck steigt mit der Abbaurate, Jahr für Jahr. Sie wussten es, bevor die Tore schlossen. Es steht in der Akte, die sie begraben haben.“',
   // HUD goals (playtest 2026-11-14)
   'opens in {t}': 'öffnet in {t}',
   'Relay mast': 'Relaismast',

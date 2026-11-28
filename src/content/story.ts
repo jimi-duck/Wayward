@@ -716,7 +716,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_witnesses', handover: true, kind: 'rumour', caller: 'guild',
     from: 'Old Mirren · keeper of the free ports’ list', title: 'Forty names',
-    text: '“My mother took the minutes that night. Forty people in the room. She kept the list in a box. Read it, then decide who to tell.”',
+    text: '“My mother took the minutes the night they closed the gates. Forty people in the room, deciding who would be cut off. She kept the list in a box. Read it, then decide who to tell.”',
     cargo: 'A ledger-keeper’s skiff · a locked box',
     choices: [
       { id: 'swear', label: 'Take the list', tone: 'help', hint: 'The names go in the file.', win: { text: 'She lets you read it · the witnesses go in the file', flag: ['frag_witnesses', 'clue_sig_ports', 'forty_held'], standing: { guild: 1 } } },

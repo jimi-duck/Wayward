@@ -280,7 +280,7 @@ const YARDS_ROWS: Row[] = [
 const PORTS_ROWS: Row[] = [
   notice('fs_notice', 'f_saltquay', arrive(), 'teal', 'Saltquay', 'the Free Ports · everyone trades'),
   objective('fs_objective', 'f_saltquay', arrive(), 'Next: Duarte Harbour', 'The Tollgate · 6 jumps'),
-  radio('fs_officer', 'f_saltquay', free(10), 'Checkpoint officer · Offices of Peace', 'custody', '“Inspector Ashgrove has been reassigned. I’m told you know why. Registry, please.”', { if: { has: ['ashgrove_met'] } }),
+  radio('fs_officer', 'f_saltquay', free(10), 'Checkpoint officer · Offices of Peace', 'custody', '“Inspector Ashgrove has been reassigned after the Narrows. I’m told you know why. Registry, please, and slowly.”', { if: { has: ['ashgrove_met'] } }),
   objective('fs_gate', 'f_saltquay', leave(), 'Jump to Duarte Harbour'),
 
   // 2 · Duarte Harbour (hub): Ines Duarte's berth
@@ -292,7 +292,7 @@ const PORTS_ROWS: Row[] = [
   // 3 · Penny Cross (work): the Survey's tell, confirmed: it answers a full tank
   notice('fp_notice', 'f_penny', arrive(), 'teal', 'Penny Cross', 'Gutter claim'),
   objective('fp_objective', 'f_penny', arrive(), 'Penny Cross · something answers a full tank'),
-  analyst('fp_survey', 'f_penny', 'job_something_dark_won', '“It answers only when your tank is full. Every time. I think you’ve worked out what that means.”', { wall: 'clue_cyrite' }),
+  analyst('fp_survey', 'f_penny', 'job_something_dark_won', '“It answers only when your hold is full of Cyrite. Every time. I think you’ve worked out what that means, and why they closed the gates.”', { wall: 'clue_cyrite' }),
   notice('fp_wall', 'f_penny', after('fp_survey'), 'teal', 'The Wall', 'Cyrite draws them'),
   // Pike's dead drop moved here from Kessler's Wreck, whose two story cards leave no room for a job (owner, 6 November 2026)
   pike('fp_pike_lost', 'f_penny', 'job_dead_drop_lost', '“Pickets at a drop only four people knew. One of them’s me. I’m checking the other three.”'),
@@ -343,7 +343,7 @@ const HOLLOWS_ROWS: Row[] = [
   notice('ha_act', 'h_ashdeep', arrive(6), 'white', 'Act III', 'what the file is worth'),
   objective('ha_objective', 'h_ashdeep', arrive(), 'Next: Hollowforge', 'The Seam · 6 jumps'),
   // the black-hole job is cut (story direction plan): its reading folds into the Thren story here
-  radio('ha_reading', 'h_ashdeep', free(20), ANALYST[0], ANALYST[1], '“Survey reading from Ashdeep: Thren pressure tracks the extraction rate, year on year. It’s in the file they buried.”'),
+  radio('ha_reading', 'h_ashdeep', free(20), ANALYST[0], ANALYST[1], '“Survey reading from Ashdeep. Thren pressure rises with the mining rate, year on year. They knew it before the gates closed. It’s in the file they buried.”'),
   objective('ha_gate', 'h_ashdeep', leave(), 'Jump to Hollowforge'),
 
   // 2 · Hollowforge (hub): the Thren speak, the Voice translating
@@ -352,7 +352,7 @@ const HOLLOWS_ROWS: Row[] = [
   notice('hf_scope', 'h_forge', free(6), 'white', 'Scope pattern', 'it repeats when you move', { wall: 'saw_thren' }),
   main('hf_thren', 'h_forge', { on: 'place', place: 'hf_pattern' }, 'story_thren'),
   // the foundry's relay (spaceways plan, step 6): loud, the Thren follow its noise; woken fast and fought, or drifting and quiet
-  radio('hf_relay_say', 'h_forge', after('hf_objective', 8), ADA, 'core', '“It sings when it wakes. Drift slow and I’ll keep it quiet.”', { main: true }),
+  radio('hf_relay_say', 'h_forge', after('hf_objective', 8), ADA, 'core', '“This relay sings when it wakes, Juno, and the Thren will hear it. Drift slow and I’ll keep it quiet.”', { main: true }),
   { id: 'hf_relay', stop: 'h_forge', on: relay(), wall: 'relay_h_forge', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the foundry’s gate is open' } }, main: true, urgent: true },
   objective('hf_gate', 'h_forge', leave(), 'Jump to Coldvault'),
 
@@ -394,7 +394,7 @@ const LAST_ROWS: Row[] = [
   notice('ll_notice', 'l_lastlight', arrive(), 'teal', 'Lastlight', 'the Last Lanes · the Threshold ahead'),
   objective('ll_objective', 'l_lastlight', arrive(), 'Next: The Last Toll', 'The Threshold · 7 jumps'),
   // the last relay before the Threshold (spaceways plan, step 6): every relay she woke answers it, and it wakes the faster for each
-  radio('ll_relay_say', 'l_lastlight', after('ll_objective', 8), SAM[0], SAM[1], '“Every relay you’ve lit is listening, Juno. Wake this one and they’ll all push.”', { main: true }),
+  radio('ll_relay_say', 'l_lastlight', after('ll_objective', 8), SAM[0], SAM[1], '“Every relay you’ve lit is listening, Juno, all the way back to Cerro. Wake this one and they’ll all push with you.”', { main: true }),
   { id: 'll_relay', stop: 'l_lastlight', on: relay(), wall: 'relay_l_lastlight', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the last gate is open' } }, main: true, urgent: true },
   objective('ll_gate', 'l_lastlight', leave(), 'Jump to the Last Toll'),
 

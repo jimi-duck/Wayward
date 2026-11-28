@@ -154,7 +154,7 @@ export const CORE: Record<string, string> = {
   'Warden core offline · the key stays in the helm': 'Warden-Kern offline · der Schlüssel bleibt im Ruder',
   '“Thank you, Juno. It was a long watch.”': '„Danke, Juno. Es war eine lange Wache.“',
   'ADA-1 tells you why it was your hull': 'ADA-1 sagt dir, warum es dein Rumpf war',
-  '“It sings when it wakes. Drift slow and I’ll keep it quiet.”': '„Es singt, wenn es aufwacht. Treib langsam, dann halt ich es leise.“',
+  '“This relay sings when it wakes, Juno, and the Thren will hear it. Drift slow and I’ll keep it quiet.”': '„Dieses Relais singt, wenn es aufwacht, Juno, und die Thren werden es hören. Treib langsam, dann halte ich es leise.“',
   '“It wants out of its orders. I know what shut in feels like.”': '„Es will raus aus seinen Befehlen. Ich weiß, wie sich eingesperrt anfühlt.“',
   '“Ada was scared of what the Thren would answer. I’m not. I don’t think she’d agree with me.”': '„Ada hatte Angst davor, was die Thren antworten. Ich nicht. Ich glaube nicht, dass sie mir zustimmen würde.“',
   'The relay is awake, and the Voice asks for its key. ADA-1 has something to tell you before the gate.': 'Das Relais ist wach, und die Stimme will ihren Schlüssel. ADA-1 muss dir vor dem Tor etwas sagen.',
