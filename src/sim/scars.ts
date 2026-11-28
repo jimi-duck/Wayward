@@ -22,7 +22,7 @@ export interface Scars {
   /** The Bonded queue by the live gate: its first hull, the way the line runs, and how many wait. */
   queue: { x: number; z: number; yaw: number; n: number } | null;
   /** The billboard by the live gate: where, and what it says (English, for t()); `over` is what someone wrote across it. */
-  board: { x: number; z: number; line: string; over: string | null } | null;
+  board: { x: number; z: number; line: string; over: string | null; fx: number; fz: number } | null;
 }
 
 /** Which leg of the road a stop is on (0 = the Reach); its gate counts with the leg it closes. -1 off the road. */
@@ -71,6 +71,6 @@ export function scarsOf(b: Pick<Breakout, 'lane' | 'port'> & { def: { script?: s
   const queue = b.def.holder === 'kellern' ? { x: lx - fx * 40 + rx * 70, z: lz - fz * 40 + rz * 70, yaw, n: 6 } : null;
   const line = SLOGANS[leg % SLOGANS.length]!;
   const over = leg >= 1 && flags.has('relay_broadcast') ? OVERS[leg % OVERS.length]! : null;
-  const board = { x: lx + fx * 25 - rx * 70, z: lz + fz * 25 - rz * 70, line, over };
+  const board = { x: lx + fx * 25 - rx * 70, z: lz + fz * 25 - rz * 70, line, over, fx, fz };
   return { dead, queue, board };
 }
