@@ -88,8 +88,10 @@ anyway. Every line takes its turn on the floor.
 ## The Warden relay (owner, 24 November 2026)
 
 From the paint on, the Jump Gate holds ("wake the relay") until she wakes the Warden relay that stands beside it
-(`relayOf`, the same mast and spot as a road gate's; flag `relay_first`, `relayKey` in `sim/breakout.ts`). The archive's letter
-says why: she was built as a Warden tender, her core still holds a Warden key, and Kellern locked her gate. It is the uplink
+(`relayOf`, the same mast and spot as a road gate's; flag `relay_first`, `relayKey` in `sim/breakout.ts`). ADA-1 says why
+(her first card, `story_wake`, then her radio line): she flew this ship with Ada, her core still holds Ada's keys, and she
+has watched that relay's signal for years without being able to answer it. When it wakes she gives back her first
+memory, the 94% (`CORE_FIRST`, `clue_reserves`). It is the uplink
 of every road relay (`sim/uplink.ts`, docs/ROAD.md): 36 s inside its 45-unit ring in three stages, each of the first two
 sending two Custody patrol fighters (`uplinkWave(stage, -1)`), the first fight after Cerro's raiders. This lifts the quiet
 rule below for this fight only. The third stage is told here (there is no stop script): "Warden key accepted · Jump Gate
@@ -104,7 +106,8 @@ One thing at a time, in seconds of play after the paint is on (`STOLEN`):
 2. **+20 s:** Sam names the short tank: the depot if she can pay, the veined rock if not
    (`STOLEN_SAM`, `STOLEN_SAM_POOR`). Only when the tank is short.
 3. **+38 s:** an amber notice, "Hull reported stolen · Kellern has called in Custody".
-   The archive opens right after Ned's line about the partition, at a free moment.
+   ADA-1's card ("Systems returning. I can hear the ship again…", answer "Finish what?") opens right after Ned's
+   line about the partition, at a free moment.
 4. **+70 s:** the first Custody hull, from behind.
 
 The depot's call is a radio line, not a card: flying into its ring docks. No lane toll is dealt at this

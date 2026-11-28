@@ -48,7 +48,8 @@ is one of four kinds.
 A Moment is drawn in one of three templates (`ui/comms.ts`), all Neon Glass:
 
 - **Document**: a written message. A mail head (To, From, Kept in), the
-  writer's paragraphs and sign-off, one action. The archive and Ada's notes.
+  writer's paragraphs and sign-off, one action. Ada's notes; ADA-1's two cards
+  (her wake and the Seam) use it in ochre with no mail head.
 - **Channel**: a person speaking. Their face, name and role, then their
   words in quotes. Any card from someone with a portrait.
 - **Decision**: a situation. A title and one line of context, the read
@@ -134,7 +135,7 @@ Hover and focus brighten the glow and tint the fill, pressed tints it more,
 | Role | Rim | Halo | Use |
 |---|---|---|---|
 | Cyan (default) | `#B4E4EE` | `40,150,190` | Systems, radio, documents, Work Bay, archive |
-| Ochre | `#FFDEA0` | `210,140,40` | WAYWARD identity, Sam's private channel, Take the helm, a Lane Control status |
+| Ochre | `#FFDEA0` | `210,140,40` | WAYWARD identity, ADA-1 (the `core` caller: a ring-of-lamps core pulse where signal bars would be), Sam's private channel, Take the helm, a Lane Control status |
 | Red | `#FFBEB9` | `210,60,60` | Breach, threat, Refuse, debt, a run that ends |
 
 Add `ochre` or `red` to `.ng` or `.ng-n`. A sheet in the `alert` state is red.
