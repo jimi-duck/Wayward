@@ -128,6 +128,14 @@ nested glass.
 player plans on, not a pop-up, so it has no Neon Glass frame or glass: a dark field with thin teal corner brackets, and
 a plain dark panel for the next stop. Its colours still come from the tokens. See `docs/CHART.md`.
 
+**Exception: the start-up screen** (`#calib`, `ui/calib.ts`; owner's brief 28 November 2026). The canopy's optical
+calibration on every launch, not a pop-up: a dark vignette pool over the held world, four thin alignment brackets that
+pulse inset in amber and snap out to the screen's edges in teal, a faint measuring grid (about 12%), a reticle with a
+tick ring, pitch ladder and a sweep that turns with the progress, and a 20-segment gauge that steps in leaps with a mono
+percentage. Its status lines are the visor's checks, never screens, windows or devices (the drawing size reads as the
+visor's `GRID`). At 100% it flashes teal and irises out. Only transform and opacity move, since it runs while the game
+measures its frames; with reduced motion nothing turns or pulses and the brackets start locked. No sound: the game has none.
+
 Classes: `.ng` is a panel (every `.sheet > .panel`, the pause card and the
 job call get it automatically); add `.card` for a small one. `.ng-n` is
 nested glass for buttons, choice rows and thumbnails: the same chamfer and

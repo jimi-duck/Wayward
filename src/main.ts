@@ -6,6 +6,7 @@ import { Input } from './input/input';
 import { PAUSE_KEYS } from './input/keyboard';
 import { CAMERA_VIEWS, ZOOMS, type CameraView } from './render/camera';
 import { QualityGovernor, keptTier, saveTier, tierIndex } from './render/quality';
+import { CalibScreen } from './ui/calib';
 import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { DOCK_SETTLE_MS, Sector } from './render/sector';
 import { setLeanGeometry } from './render/lean';
@@ -705,7 +706,7 @@ function boot(review: typeof import('./review') | null): void {
     {
       layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), brk: el('brk'), roll: el('roll'),
     },
-    () => (started ? (calib >= 0 ? undefined : photo ? setPhoto(false) : panelOpen() ? undefined : settingsOpen() ? showSettings(false) : logOpen() ? showLog(false) : setPaused(!loop.paused)) : menuEnter()),
+    () => (started ? (calib >= 0 || calibLeaving ? undefined : photo ? setPhoto(false) : panelOpen() ? undefined : settingsOpen() ? showSettings(false) : logOpen() ? showLog(false) : setPaused(!loop.paused)) : menuEnter()),
     () => openBay(),
   );
 
@@ -812,7 +813,8 @@ function boot(review: typeof import('./review') | null): void {
    * a quick verdict from the governor on real frames, so a device with nothing kept finds its tier and size unseen and one
    * with a kept setting confirms it. It lifts once the verdict comes with no step waiting.
    */
-  let calib = -1, calibReady = false, calibAt = 0;
+  let calib = -1, calibReady = false, calibAt = 0, calibLeaving = false;
+  const calibScreen = new CalibScreen();
   const calibrate = () => {
     if (dev) return;
     calib = 0;
@@ -827,16 +829,13 @@ function boot(review: typeof import('./review') | null): void {
       applyQuality();
     }
     loop.paused = true;
-    el('cb-t').textContent = t('Initialising');
-    el('cb-s').textContent = t('Bringing ship systems online');
-    el('cb-i').style.width = '0%';
-    el('calib').classList.add('on');
+    calibLeaving = false;
+    calibScreen.show();
     const ready = () => {
       if (calib < 0) return;
       calibReady = true;
       calibAt = performance.now();
       quality.hold(CALIB_GRACE);
-      el('cb-s').textContent = t('Tuning ship systems to this device');
     };
     void Promise.race([booted.then(() => warmRounds()), new Promise((r) => setTimeout(r, CALIB_WARM_MAX * 1000))]).then(ready, ready);
   };
@@ -849,19 +848,22 @@ function boot(review: typeof import('./review') | null): void {
     if (calibReady && sector.drawing && quality.sample(dt)) applyQuality();
     // the bar: the warm-up fills the first part, the measuring the rest
     const p = calibReady ? 0.4 + 0.54 * Math.min(1, calib / CALIB_TYPICAL) : 0.4 * Math.min(1, calib / 2);
-    el('cb-i').style.width = `${Math.round(p * 100)}%`;
+    calibScreen.set(p, renderer.domElement.width, renderer.domElement.height);
     // the cap is wall time from the end of the warm-up: a device too slow to judge quickly still gets to play
     if (calibReady && ((calib > CALIB_MIN && quality.quiet) || performance.now() - calibAt > CALIB_MEASURE_MAX * 1000)) calibrated();
   };
   const calibrated = () => {
     calib = -1;
     quality.quick = false;
-    el('cb-i').style.width = '100%';
-    el('calib').classList.remove('on');
-    // back to what the launch asked for: the how-to card in the Arcade, flight in a new journey
-    loop.paused = document.documentElement.classList.contains('paused') || panelOpen();
-    input.reset();
     keepTier();
+    // the ready flash holds the world a moment longer; then, as the screen irises out, back to what the launch asked
+    // for: the how-to card in the Arcade, flight in a new journey
+    calibLeaving = true;
+    calibScreen.ready(() => {
+      calibLeaving = false;
+      loop.paused = document.documentElement.classList.contains('paused') || panelOpen();
+      input.reset();
+    });
   };
   loop.minInterval = saver || quality.thirty ? 1 / 30 : 0;
   // the player's device settings: touch layout, auto-fire, the stick, the compact HUD, the camera view (ui/prefs.ts)

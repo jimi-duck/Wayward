@@ -49,8 +49,21 @@
     <!-- the end of a jump: the view goes to pale teal as the ship runs into the light (main.ts) -->
     <div id="warp" aria-hidden="true"></div>
     <!-- Ned's yard: the ship shut down, the view dimmed, a rebooting loader (ui/hud.ts reboot) -->
-    <!-- a device's first run: the start-up screen while the game finds the quality this device can carry (main.ts calibrate) -->
-    <div id="calib" role="status" aria-live="polite"><div class="rb-box"><b id="cb-t"></b><span class="rb-bar"><i id="cb-i"></i></span><span id="cb-s"></span></div></div>
+    <!-- every launch: the canopy's optical calibration while the shaders warm and the game finds its quality (ui/calib.ts) -->
+    <div id="calib" role="status" aria-live="polite">
+      <i class="cb-grid"></i><i class="cb-k tl"></i><i class="cb-k tr"></i><i class="cb-k bl"></i><i class="cb-k br"></i>
+      <div class="cb-c">
+        <svg id="cb-r" class="cb-r" viewBox="-160 -100 320 200" aria-hidden="true">
+          <path class="cb-x" d="M0 -62v34M0 28v34M-62 0h34M28 0h34"/>
+          <path class="cb-dia" d="M-6 -16L6 -16L16 -6L16 6L6 16L-6 16L-16 6L-16 -6Z" transform="rotate(45)"/><circle class="cb-dot" r="1.6"/>
+          <circle class="cb-spin" r="52"/><circle class="cb-arc-bed" r="70"/>
+          <circle id="cb-arc" class="cb-arc" r="70" pathLength="100" transform="rotate(-90)"/>
+          <g id="cb-sw" class="cb-sw"><path class="cb-wedge" d="M0 0L0 -89A89 89 0 0 1 22 -86Z"/><path class="cb-hand" d="M0 -40V-93M-4 -98L0 -92L4 -98"/><circle class="cb-pivot" r="98"/></g>
+        </svg>
+        <div class="cb-txt"><b id="cb-t"></b><span id="cb-s"></span><span id="cb-g"></span>
+          <span class="cb-bar"><span class="cb-br">[</span><span id="cb-i" class="cb-segs"></span><span class="cb-br">]</span><b id="cb-p">00%</b></span></div>
+      </div>
+    </div>
     <div id="reboot" aria-hidden="true"><div class="rb-box"><b id="rb-t"></b><span class="rb-bar"><i id="rb-i"></i></span><span id="rb-s"></span></div></div>
 
     <!-- The HUD's icons: the brand's line set (24px grid, square caps, 45°). -->
