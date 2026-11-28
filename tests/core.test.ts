@@ -39,14 +39,15 @@ describe('ADA-1, the Warden core', () => {
     const wake = STORY_CARDS.find((c) => c.id === WAKE_BEAT)!;
     expect(wake.caller).toBe('core');
     expect(wake.from).toBe(ADA);
-    expect(words(wake.text)).toBeLessThan(50);
+    // the owner's own copy (28 November 2026), under the written-document cap
+    expect(words(wake.text)).toBeLessThan(110);
     expect(wake.choices).toHaveLength(1);
     const win = wake.choices[0]!.win!;
     expect(win.flag).toEqual(expect.arrayContaining(['archive_woke', CORE_MET]));
     expect(win.flag).not.toContain('clue_reserves');
     // she speaks first, then Sam
     const radio = [win.radio ?? []].flat();
-    expect(radio.map((r) => r.caller)).toEqual(['core', 'miners']);
+    expect(radio.map((r) => r.caller)).toEqual(['core', 'core', 'miners']);
     expect(CORE_FIRST).toContain('Ninety-four');
   });
 

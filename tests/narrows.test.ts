@@ -75,8 +75,11 @@ describe('the Narrows', () => {
   const inOrder = (log: string[]) => {
     const at = (s: string) => log.findIndex((l) => l.startsWith(s));
     for (const o of ORDER) expect(at(o), `${o} in ${log.join(' | ')}`).toBeGreaterThanOrEqual(0);
-    const idx = ORDER.map(at);
-    expect([...idx].sort((a, b) => a - b)).toEqual(idx);
+    // the radio and the notices are two channels (sim/floor.ts): each keeps its order round the cards, and a line may pass a notice
+    for (const ch of ['say:', 'notice:']) {
+      const idx = ORDER.filter((o) => o.startsWith(ch) || o.startsWith('card:')).map(at);
+      expect([...idx].sort((a, b) => a - b)).toEqual(idx);
+    }
   };
 
   it('plays one scene in order: locked, the key, the gate down, the Patience, the way out', () => {

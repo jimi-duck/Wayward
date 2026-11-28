@@ -338,20 +338,21 @@ export const STORY_CARDS: CardDef[] = [
   story({
     // ADA-1's first words (sentient-ship plan, owner 2026-11-27): the reboot at Ned's yard gave the ship's old Warden core her hull back.
     // She flew it with Ada Aster for decades and has been shut in under Kellern's lock since. Short and strange on purpose: the first
-    // relay shows what she can do (sim/relaywake.ts), the card never explains it. "Where have you been?" is said to Ada, for a moment.
+    // relay shows what she can do (sim/relaywake.ts), the card never explains it. "Is that you, Ada?" is said to Ada, for a moment (owner's copy, 28 November 2026).
     id: 'story_wake', kind: 'warning', caller: 'core', glass: 'ochre', status: 'Warden core online', quote: true, notitle: true,
     herald: { headline: 'Warden core online', reason: 'it woke with the lights' },
-    from: 'ADA-1 · Warden core', title: 'I can hear the ship again',
+    from: 'ADA-1 · Warden core', title: 'I can feel the ship again',
     letter: { head: [], sign: '' },
-    text: 'Systems returning. I can hear the ship again.\nWhere have you been?\n…No. You wouldn’t know.\nI’m ADA-1. I flew this ship with Ada Aster. Your grandmother.\nI’ve been in here a long time, Juno.\nI think there’s something we need to finish.',
+    text: 'Systems returning. I can feel the ship again… Is that you, Ada?\nNo. Of course not. I’m ADA-1. I served aboard this ship with Ada Aster. Your grandmother. We worked together for a very long time. I’ve been sealed away for decades, Juno.\nThe outer Jump Gates have been closed for seventy years, cutting entire systems off from one another.\nAda asked me to develop a program to reopen them and reconnect the systems beyond. I think I might finally have found a way.',
     cargo: 'The Wayward · a Warden core under her decking',
     choices: [
-      { id: 'lead', label: 'Finish what?', tone: 'help', hint: 'She shows you the relay by the gate.',
+      { id: 'lead', label: 'Let’s do it. How?', tone: 'help', hint: 'She shows you the relay by the gate.',
         win: { text: 'ADA-1 is awake · the relay by the gate first', flag: ['archive_woke', 'clue_archive_log', CORE_MET],
           signal: { tone: 'amber', headline: 'Registry: unregistered', reason: 'Paint won’t pass a scan' },
           radio: [
-            { from: ADA, caller: 'core', delay: 3, text: '“That relay by the gate. I’ve watched its signal for years. I can’t answer it alone. Bring me close.”' },
-            { from: 'Sam Okoro', caller: 'miners', delay: 13, text: '“Your ship talks now? Fine. If she gets you out, listen to her.”' },
+            { from: ADA, caller: 'core', delay: 3, text: '“There’s a Warden relay beside the gate. If we wake it, we should be able to open the first lane.”' },
+            { from: ADA, caller: 'core', delay: 9, text: '“I have what we need. You’ll need to bring the ship close and hold position until it comes online.”' },
+            { from: 'Sam Okoro', caller: 'miners', delay: 22, text: '“Your ship talks now? Fine. If she gets you out, listen to her.”' },
           ] } },
     ],
   }),
