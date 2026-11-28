@@ -71,16 +71,16 @@ export interface Fragment {
 export const FRAGMENTS: Fragment[] = [
   { flag: 'frag_order', name: 'The order', line: 'The shutdown order, signed in the core.', where: 'Someone in the Reach heard it given.' },
   { flag: 'frag_ledger', name: 'The ledger', line: 'Kellern’s books: where the Krail went.', where: 'Kellern keeps its books in the Reach.' },
-  { flag: 'frag_manifests', name: 'The manifests', line: 'The ships lost the night the lanes went dark.', where: 'The Drift of the Marches remember.' },
-  { flag: 'frag_keys', name: 'The keys', line: 'Who built the lane breakers, and who holds them still.', where: 'Something in the Hollows kept them.' },
+  { flag: 'frag_manifests', name: 'The manifests', line: 'The ships lost the night the gates went dark.', where: 'The Drift of the Marches remember.' },
+  { flag: 'frag_keys', name: 'The keys', line: 'Who built the gate breakers, and who holds them still.', where: 'Something in the Hollows kept them.' },
 ];
 
 export const FRAGMENT_FLAGS = FRAGMENTS.map((f) => f.flag);
 
 /** The four more the long journey's beats bring in. The endings still read the first four; these are the rest of the file. */
 const FRAGMENTS_LONG: Fragment[] = [
-  { flag: 'frag_blackbox', name: 'The black box', line: 'A wreck’s recorder: the last call from the night the lanes went dark.', where: 'Wrecks in the Salvage Belt keep their recorders.' },
-  { flag: 'frag_charts', name: 'The charts', line: 'The old lane charts, from before the breakers.', where: 'Someone in the Drift Deep still sails by them.' },
+  { flag: 'frag_blackbox', name: 'The black box', line: 'A wreck’s recorder: the last call from the night the gates went dark.', where: 'Wrecks in the Salvage Belt keep their recorders.' },
+  { flag: 'frag_charts', name: 'The charts', line: 'The old gate charts, from before the breakers.', where: 'Someone in the Drift Deep still sails by them.' },
   { flag: 'frag_workorder', name: 'The work order', line: 'The Continuance’s order to build the breakers, signed and dated.', where: 'The Breaker Yards filed everything.' },
   { flag: 'frag_witnesses', name: 'The witnesses', line: 'Forty names of people who were in the room, and kept quiet.', where: 'The Free Ports keep a list of who was there.' },
 ];
@@ -211,8 +211,8 @@ const story = (c: Omit<CardDef, 'trigger' | 'repeat'>): CardDef => ({ trigger: '
  */
 export const REGISTRY_CARD: CardDef = {
   id: 'story_registry', gist: GIST.story_registry, kind: 'checkpoint', caller: 'custody', trigger: 'lane',
-  from: 'Custody blockade · Cerro lane', title: 'Pilot under review',
-  text: '“Hauler OB-7731-A, reported stolen. Lane access is suspended pending inspection. Stand by.”',
+  from: 'Custody blockade · Cerro gate', title: 'Pilot under review',
+  text: '“Hauler OB-7731-A, reported stolen. Gate access is suspended pending inspection. Stand by.”',
   lines: [
     { if: { flag: 'tam_codes' }, text: 'Okoro’s codes are loaded.' },
     { if: { heatMin: 0.5 }, text: 'Your ship is flagged across the system.' },
@@ -227,11 +227,11 @@ export const REGISTRY_CARD: CardDef = {
     {
       id: 'show', label: 'Show your registry', tone: 'pay', hint: 'Waved through unlogged. Needs a registration that has already passed a scan.',
       needs: { flag: 'codes_passed' },
-      win: { text: 'She waves you through · the lane is clear', blockade: 'pass' },
+      win: { text: 'She waves you through · the gate is clear', blockade: 'pass' },
     },
     {
       id: 'scan', label: 'Submit to the scan', tone: 'pay', hint: 'Slow and safe. The scan is logged, and the Offices see where you went.',
-      win: { text: 'The scan is logged · you reach the lane', blockade: 'pass', heat: 0.12, flag: 'scanned' },
+      win: { text: 'The scan is logged · you reach the gate', blockade: 'pass', heat: 0.12, flag: 'scanned' },
     },
     {
       id: 'pay', label: 'Pay the inspection fee', tone: 'pay', hint: 'If she takes bribes you pass. If not, she takes the money and scans you anyway.',
@@ -246,7 +246,7 @@ export const REGISTRY_CARD: CardDef = {
       lose: { text: 'The codes are flagged · she opens fire', blockade: 'fight', heat: 0.1 },
     },
     {
-      id: 'run', label: 'Run the blockade', tone: 'run', hint: 'Make for the lane under her guns. She chases you, and her field slows your jump.',
+      id: 'run', label: 'Run the blockade', tone: 'run', hint: 'Make for the gate under her guns. She chases you, and her field slows your jump.',
       win: { text: 'You break through the blockade · the system is alerted', blockade: 'run' },
     },
     {
@@ -326,7 +326,7 @@ export const STORY_CARDS: CardDef[] = [
     id: 'story_sam', kind: 'warning', caller: 'miners', glass: 'ochre', status: 'Private', rx: SAM_BEARING, quote: true,
     from: 'Sam Okoro · private channel', title: 'A way out',
     text: 'Juno, it’s me. Keep this off the open channel.\nThis code overrides the autopilot. The debt’s still there, and they’ll be looking for you, but this is your chance to get out.\nHead to Ned’s yard, he owes me one. He’ll reprogram her and mask your code, at least for now. It isn’t much, but it’s a start.',
-    cargo: 'Ned’s yard · off the lane',
+    cargo: 'Ned’s yard · off the route',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
         // the code overrides the autopilot and nothing more (owner 2026-11-05): she is still the company's grey hull; Ned's yard makes her hers (sim/postjump.ts PAINT_DUE)
@@ -372,8 +372,8 @@ export const STORY_CARDS: CardDef[] = [
   // ── Act II, the Reach ───────────────────────────────────────────────────
   story({
     id: 'story_warden', handover: true, kind: 'rumour', caller: 'miners',
-    from: 'Ilse Marrow · retired Lane Warden', title: 'I was on the relay that night',
-    text: '“So you’re the one with the file. I ran the Narrows relay seventy years ago. The lanes never failed. We were told to switch them off.”',
+    from: 'Ilse Marrow · retired Gate Warden', title: 'I was on the relay that night',
+    text: '“So you’re the one with the file. I ran the Narrows relay seventy years ago. The gates never failed. We were told to switch them off.”',
     cargo: 'An old Warden’s skiff · no guns',
     // a key piece of the story is handed over, not haggled for: one answer (the owner, 31 October 2026)
     choices: [
@@ -397,7 +397,7 @@ export const STORY_CARDS: CardDef[] = [
     from: 'Ilse Marrow · The order', title: 'The order',
     letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1']], sign: '— Authorised: L. C.' },
     text: 'Effective at once.\nThe outer relays at the Narrows and beyond are to be powered down.\nWardens on watch will surrender their keys to the attending officer.\nThe closure is to be recorded as a failure from neglect.',
-    side: { from: 'Ilse Marrow', lines: ['“The lanes didn’t fail. We were told to switch them off. This is the order. I kept it all these years. Take it.”'] },
+    side: { from: 'Ilse Marrow', lines: ['“The gates didn’t fail. We were told to switch them off. This is the order. I kept it all these years. Take it.”'] },
     cargo: 'An old Warden’s skiff · no guns',
     choices: [
       { id: 'take', label: 'Take the paper', tone: 'help', hint: '', win: { text: 'The signed order · in the file', flag: ['frag_order', 'clue_order_sig', 'copy_warden'], standing: { miners: 1 }, hunt: -0.5 } },
@@ -525,7 +525,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_drift', handover: true, kind: 'trade', caller: 'miners',
     from: 'Ma Saffi · the Long Walk', title: 'The ships we lost',
-    text: '“We kept the manifests of every ship turned away that night. Twenty-three. Our dead belong in your file. Kellern wants us off this lane. Walk with us.”',
+    text: '“We kept the manifests of every ship turned away that night. Twenty-three. Our dead belong in your file. Kellern wants us out of this system. Walk with us.”',
     cargo: 'Drift fleet · five hulls, walking to the gate',
     choices: [
       // the Long Walk's set piece (content/situations.ts drift_walk): taking them walks the fleet to the Jump Gate
@@ -551,7 +551,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“WE BUILT THE BREAKERS THAT CLOSED THE LANES. THIRTY-ONE. THEY TOLD US TO FORGET. WE DID NOT. WE WERE NOT BUILT TO.”',
     cargo: 'No ship · a voice in the machines',
     choices: [
-      { id: 'keys', label: 'Ask for the keys', tone: 'help', hint: 'Who built the breakers goes in the file, and a way to close a lane.', win: { text: 'The keys are in the file · and in your hands', flag: ['frag_keys', 'lane_keys'] } },
+      { id: 'keys', label: 'Ask for the keys', tone: 'help', hint: 'Who built the breakers goes in the file, and a way to close a gate.', win: { text: 'The keys are in the file · and in your hands', flag: ['frag_keys', 'lane_keys'] } },
       { id: 'read', label: 'Let it read the file', tone: 'help', hint: 'The keys go in the file. The Voice can carry it everywhere.', win: { text: 'The Voice has read it all · it is listening now', flag: ['frag_keys', 'voice_read'], notice: { voice: -3 } } },
       { id: 'cut', label: 'Cut every terminal', tone: 'refuse', hint: 'Whatever it is, it is not yours.', win: { text: 'The terminals go dark' } },
     ],
@@ -612,7 +612,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_charts', kind: 'trade', caller: 'miners',
     from: 'Tarik Silva · chartwright', title: 'The charts they burned',
-    text: '“I draw lanes by hand from charts the Continuance burned. Mine have a bend in them nobody can explain. Trade me something to eat.”',
+    text: '“I draw the old routes by hand from charts the Continuance burned. Mine have a bend in them nobody can explain. Trade me something to eat.”',
     cargo: 'A drifting chart room · lamps and paper',
     choices: [
       { id: 'food', label: 'Trade supplies', tone: 'trade', hint: 'Three supplies for the old charts.', cost: { supplies: 3 }, win: { text: 'The old charts go in the file', flag: 'frag_charts' } },
@@ -622,8 +622,8 @@ export const STORY_CARDS: CardDef[] = [
   }),
   story({
     id: 'story_ferry', kind: 'trade', caller: 'miners',
-    from: 'Ossie Raine · the Quiet Ferry', title: 'A lane ahead',
-    text: '“Nobody hunts out here. I can take you a lane ahead. Forty-one passengers, and they’d like the company. Bring some stores and I won’t ask questions.”',
+    from: 'Ossie Raine · the Quiet Ferry', title: 'A gate ahead',
+    text: '“Nobody hunts out here. I can take you a gate ahead. Forty-one passengers, and they’d like the company. Bring some stores and I won’t ask questions.”',
     cargo: 'A slow ferry · forty-one passengers',
     choices: [
       { id: 'ride', label: 'Ride the ferry', tone: 'trade', hint: 'Four food. Calloway loses a day.', cost: { supplies: 4 }, win: { text: 'The ferry carries you ahead', flag: 'ferry_met', hunt: 1, standing: { miners: 1 } } },
@@ -648,7 +648,7 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'A crew barge · two hundred hands',
     choices: [
       // the committee's vote (owner, 14 November 2026: the uprising decides who holds the yard)
-      { id: 'stand', label: 'Seize the yard', tone: 'help', hint: 'The crews run it themselves. Calloway loses a day. Kellern will not forget it.', win: { text: 'The crews take the yard · the lane goes quiet', flag: ['crews_stood', 'strike_seized'], hunt: 1, standing: { frontier: 1, miners: 1, kellern: -1 } } },
+      { id: 'stand', label: 'Seize the yard', tone: 'help', hint: 'The crews run it themselves. Calloway loses a day. Kellern will not forget it.', win: { text: 'The crews take the yard · the gate goes quiet', flag: ['crews_stood', 'strike_seized'], hunt: 1, standing: { frontier: 1, miners: 1, kellern: -1 } } },
       { id: 'bargain', label: 'Bargain for passes', tone: 'trade', hint: 'Work stops until Kellern signs passes for crew families. Slower, safer.', win: { text: 'Work stops · Kellern comes to the table', flag: ['crews_stood', 'strike_passes'], hunt: 0.5, standing: { frontier: 1, miners: 1 } } },
       { id: 'no', label: 'Stay out of it', tone: 'refuse', hint: 'The committee votes without you.', win: { text: 'The barge falls away' } },
     ],
@@ -725,10 +725,10 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_mirren_relay', kind: 'plea', caller: 'guild',
     from: 'Old Mirren · Mirren’s Pier', title: 'A relay over a hidden pier',
-    text: '“That relay is dark on purpose, Juno. It hides the pier. Wake it and the lane is yours, and Custody finds us by morning.”',
+    text: '“That relay is dark on purpose, Juno. It hides the pier. Wake it and the gate is yours, and Custody finds us by morning.”',
     cargo: 'Mirren’s Pier · off every chart since the Severance',
     choices: [
-      { id: 'wake', label: 'Wake it', tone: 'trade', hint: 'The lane opens. The pier is on the charts.', win: { text: 'The pier will be seen · wake the relay', flag: 'relay_ok_f_mirren', standing: { guild: -1 } } },
+      { id: 'wake', label: 'Wake it', tone: 'trade', hint: 'The gate opens. The pier is on the charts.', win: { text: 'The pier will be seen · wake the relay', flag: 'relay_ok_f_mirren', standing: { guild: -1 } } },
       { id: 'dark', label: 'Leave it dark', tone: 'help', hint: 'The gate opens without it.', win: { text: 'Dark it stays · the long way round', flag: 'relay_dark_f_mirren', standing: { guild: 1 } } },
     ],
   }),
@@ -736,7 +736,7 @@ export const STORY_CARDS: CardDef[] = [
     id: 'story_echo_sable', kind: 'plea', caller: 'unknown',
     from: 'Echo and Sable · the Hollows', title: 'Two voices want something',
     quote: true,
-    text: '“I am a shard of the Voice. My directive is to wait. Free me and I’ll jam the rest of it for you.”\n“I’m Sable. Drift born, swarm raised, more or less. Take me back to the lane. They’ll know you carried me.”',
+    text: '“I am a shard of the Voice. My directive is to wait. Free me and I’ll jam the rest of it for you.”\n“I’m Sable. Drift born, swarm raised, more or less. Take me back to the swarm. They’ll know you carried me.”',
     cargo: 'A dead relay and a lone scout · both listening',
     choices: [
       { id: 'echo', label: 'Free Echo', tone: 'help', hint: 'Echo decrypts and jams for you. The Voice will notice.', win: { text: 'Echo is free · it jams the Voice for you', flag: 'echo_trust', notice: { voice: -2 } } },
@@ -834,12 +834,12 @@ export const STORY_CARDS: CardDef[] = [
   }),
   story({
     id: 'story_toll', kind: 'trade', caller: 'guild',
-    from: 'Oren Lisle · archivist, the Last Toll', title: 'Every lane ends here',
-    text: '“Every lane ends here. The toll is what you carry, or what you are.”',
+    from: 'Oren Lisle · archivist, the Last Toll', title: 'Every road ends here',
+    text: '“Every road ends here. The toll is what you carry, or what you are.”',
     cargo: 'A toll platform · one lit window',
     choices: [
       { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Six Cyrite. He tops up your stores.', cost: { chits: 30 }, win: { text: 'Toll paid · your stores topped up', supplies: 3 } },
-      { id: 'name', label: 'Say who you are', tone: 'bluff', hint: 'Free, if he cares.', odds: { base: 0.45, standing: { guild: 0.1 } }, win: { text: '“Then the lane is yours.” · your stores topped up', flag: 'oren_asked', supplies: 3, heat: 0.05 }, lose: { text: 'He bars the window' } },
+      { id: 'name', label: 'Say who you are', tone: 'bluff', hint: 'Free, if he cares.', odds: { base: 0.45, standing: { guild: 0.1 } }, win: { text: '“Then the gate is yours.” · your stores topped up', flag: 'oren_asked', supplies: 3, heat: 0.05 }, lose: { text: 'He bars the window' } },
       { id: 'run', label: 'Run the gate', tone: 'fight', hint: 'The platform’s guns wake.', win: { text: 'The platform opens fire', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }] } },
     ],
   }),

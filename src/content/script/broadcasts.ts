@@ -31,7 +31,7 @@ export const BROADCAST_ROWS: Row[] = [
 
   // ── the Marches: the relays she woke carry the core's band out ──
   say('cps_wake', 'm_wake', '“This is Commissioner Aurel Thane, Office of Public Record. Juno Aster is armed and dangerous. Do not assist her.”'),
-  say('cps_kessel', 'm_kessel', '“The outer worlds failed through their own neglect. The Continuance grieves them. The lanes stay closed for your safety.”'),
+  say('cps_kessel', 'm_kessel', '“The outer worlds failed through their own neglect. The Continuance grieves them. The gates stay closed for your safety.”'),
   say('cps_tamsin', 'm_tamsin', '“A bounty stands on the stolen hauler OB-7731-A. Bring her in alive. Her debt is owed to us all.”'),
   say('cps_gannet', 'm_gannet', '“Holdfast councils are unlicensed. Contracts signed with them are void. Kellern remains your only lawful buyer.”'),
 
@@ -55,5 +55,5 @@ export const BROADCAST_ROWS: Row[] = [
   say('cps_forge', 'h_forge', '“Signal degraded. Public Service cannot be guaranteed beyond this point. Turn back. Turn back.”'),
 
   // ── the Last Lanes ──
-  say('cps_toll', 'l_toll', '“Commissioner Thane. The Scatter’s terrorist nears the last lane. If she opens it, what follows is on her.”'),
+  say('cps_toll', 'l_toll', '“Commissioner Thane. The Scatter’s terrorist nears the last gate. If she opens it, what follows is on her.”'),
 ];

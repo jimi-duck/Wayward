@@ -22,8 +22,7 @@ describe('ADA-1, the Warden core', () => {
     const lines = herLines();
     expect(lines.length).toBeGreaterThan(1);
     for (const l of lines) {
-      // (the owner's own lines at the first relay run longer, 28 November 2026)
-      expect(words(l), l).toBeLessThanOrEqual(l === CORE_FIRST || l === CORE_SHIPS ? 30 : 20);
+      expect(words(l), l).toBeLessThanOrEqual(32);
       // never the Voice's capitals (a word of four or more capitals)
       expect(/\b[A-Z]{4,}\b/.test(l.replace(/ADA-1|KRAIL/g, '')), l).toBe(false);
       expect(/\bpilot\b/i.test(l), l).toBe(false);

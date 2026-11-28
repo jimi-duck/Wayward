@@ -58,7 +58,7 @@ export const NOTE_CARDS: CardDef[] = [
     'Thirty-one breakers, built at Yard Nine. Signed for by Kellern, the Guild and the Offices of Peace.',
     'The Survey Office sent the engineer, and it wasn’t a person. You’ll meet it.',
     'The rescue ships were built too. Then broken up, right here, for breaker plate.',
-    'Now the part I’ve been putting off. The readings that made the case for closing the lanes were mine.',
+    'Now the part I’ve been putting off. The readings that made the case for closing the gates were mine.',
     'I carried them into that room myself.',
     'Find the room. The free ports kept the names.',
   ]),
@@ -68,10 +68,10 @@ export const NOTE_CARDS: CardDef[] = [
     'He signed, on a promise of ships. Three in that room made sure the ships never sailed: Kellern’s chair, the Offices’ director, the Survey’s chief.',
     'The same order struck every Charter in the Scatter. No passage, no rescue. All legal.',
     'I watched him sign and said nothing. I’ve been saying it to relays ever since.',
-    'Go where the lanes began. Ask what’s waiting there.',
+    'Go where the gates began. Ask what’s waiting there.',
   ]),
-  note(7, { gist: 'Ada’s seventh note · what the lanes are', from: 'Recovered by ADA-1 · Ada’s memory 7 of 8', title: 'Ada’s memory 7 of 8', kept: 'The Seam relay, Warden channel', close: 'Ada’s memory 7 of 8 · on the Wall' }, [
-    'The lanes aren’t ours. We found them and hung lamps on them. Cyrite is what the Thren leave behind, like coral on a reef.',
+  note(7, { gist: 'Ada’s seventh note · what the gates are', from: 'Recovered by ADA-1 · Ada’s memory 7 of 8', title: 'Ada’s memory 7 of 8', kept: 'The Seam relay, Warden channel', close: 'Ada’s memory 7 of 8 · on the Wall' }, [
+    'The gates aren’t ours. We found them and hung lamps on them. Cyrite is what the Thren leave behind, like coral on a reef.',
     'We burn it to cross their home, and they come for it, the way you’d come for your own bones.',
     'Dig less and they settle. My readings showed that too. Nobody in the room asked about that page.',
     'The Voice was built to talk to them. My key is one of three that tell it what to say. I never used it. I was scared of the answer.',
@@ -145,7 +145,7 @@ export const NOTE_8 = {
     answer: 'You could have asked me.',
     lines: [
       'Juno. If my tender brought you here, it found you. I asked it to look after my family if it ever could. I’m sorry. That wasn’t fair to either of you.',
-      'I helped shut these lanes. This relay holds the last of what we worked out, the tender and I: how to wake the whole network at once. I never got to use it.',
+      'I helped shut these gates. This relay holds the last of what we worked out, the tender and I: how to wake the whole network at once. I never got to use it.',
       'The keys would have worked in any hand. Whatever you do at that gate, do it because you chose to. I’ve had enough of people signing things for other people.',
       'Tell it I said thank you. It’ll pretend not to care.',
     ],

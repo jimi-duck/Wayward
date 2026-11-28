@@ -245,7 +245,7 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
   if (fleet) said.push(t('Draper’s tender holds behind her, with the Offices’ fleet.'));
   // the road's last lines (docs/overhaul/SCRIPT_EN_DE.md §11): after your history with her, before the last word
   if (has('sig_used') && has('field_dropped')) said.push(t('“Ten years. He asked for ten years. I have spent mine making sure nobody needed them.”'));
-  if (has('thread_survey_3') || has('noor_met')) said.push(t('“You have seen them now. Open the lanes and they follow every full tank home.”'));
+  if (has('thread_survey_3') || has('noor_met')) said.push(t('“You have seen them now. Open the gates and they follow every full hold home.”'));
   if (has('seam_key_given')) said.push(t('“And you gave the keys to a machine that can’t say no.”'));
   if (has('draper_recorded')) said.push(t('“You recorded him. Good. He will still try to sell you.”'));
   said.push(t('“The Threshold is behind me. Power down.”'));
@@ -305,9 +305,9 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
   }
   if (uses(d, 'dark')) {
     choices.push({
-      id: 'dark', label: 'Go dark in the lane’s shadow', tone: 'bluff', hint: t('You’ve done it {times}. Her sweep is tuned for it.', { times: times(uses(d, 'dark')) }),
+      id: 'dark', label: 'Go dark in the gate’s shadow', tone: 'bluff', hint: t('You’ve done it {times}. Her sweep is tuned for it.', { times: times(uses(d, 'dark')) }),
       needs: { fitted: ['ut_scanner', 'tech_office'] }, odds: { base: 0.6, heat: -0.2, learn: 'dark' },
-      win: { text: 'Dark · you drift into the lane and spool cold', blockade: 'pass' },
+      win: { text: 'Dark · you drift into the gate’s shadow, cold', blockade: 'pass' },
       lose: { text: 'Her sweep finds you at once · weapons hot', calloway: 'fight', blockade: 'pass' },
     });
   }

@@ -51,7 +51,7 @@ export const ARRIVAL_ROWS: Row[] = [
   objective('sd_gate', 'slowdoor', flag('warden_note_4'), 'Jump to Cutton', 'Find who built the fence. The yards remember.'),
 
   // ── Arrival 5 · the Breaker: the machine itself ──
-  objective('br_obj', 'breaker', arrive(), 'The Breaker', 'A lane breaker, still standing'),
+  objective('br_obj', 'breaker', arrive(), 'The Breaker', 'A gate breaker, still standing'),
   notice('br_serial', 'breaker', arrive(6), 'white', 'Hull serial', 'BY9-001 · the first one', { wall: 'saw_serial' }),
   radio('br_marit', 'breaker', free(4), 'Marit Voss', 'frontier', '“Crews are off the cranes. Nobody’s stopping you today. Fly slow. They want to see you.”', { if: { has: ['strike_held'] } }),
   radio('br_hester', 'breaker', after('br_marit', 4), 'Hester Vane', 'miners', '“Told you I keep a list. Look out your port side. That’s the list.”', { if: { has: ['thread_crews_4'] } }),
@@ -77,7 +77,7 @@ export const ARRIVAL_ROWS: Row[] = [
   radio('tg_cal', 'tollgate', flag('warden_note_6'), 'Governor Idris Calloway', 'calloway', '“Ten years. Nobody ever told me he asked.”', { if: { has: ['field_talked'] } }),
   radio('tg_brook', 'tollgate', after('tg_cal', 3), 'Adam Brook', 'kellern', '“Halvard Brook was my grandfather. For my father, I said. It was for him too.”', { if: { has: ['brook_free'] } }),
   radio('tg_brook_b', 'tollgate', flag('warden_note_6'), 'Adam Brook', 'kellern', '“Halvard Brook was my grandfather. For my father, I said. It was for him too.”', { if: { has: ['brook_free'], not: ['field_talked'] } }),
-  objective('tg_gate', 'tollgate', flag('warden_note_6'), 'Jump to Ashdeep', 'Go where the lanes began. Ask what’s waiting there.'),
+  objective('tg_gate', 'tollgate', flag('warden_note_6'), 'Jump to Ashdeep', 'Go where the gates began. Ask what’s waiting there.'),
 
   // ── Arrival 7 · the Seam: the Voice is the relay. It asks for the key; then ADA-1 asks what she is to Juno ──
   objective('se_obj', 'seam', arrive(), 'Open the Seam', 'The relay is awake'),

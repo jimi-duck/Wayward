@@ -14,8 +14,8 @@ is one of four kinds.
 
 | Kind | What it is | Pauses | Cap | Aim, first 15 minutes |
 |---|---|---|---|---|
-| Moment | a card: a turn in the story to read or decide | yes | 60 words (a written document 110) | 7 at most |
-| Voice | a person on the radio | no | 20 words | 10 at most |
+| Moment | a card: a turn in the story to read or decide | yes | 100 words (a written document 160) | 7 at most |
+| Voice | a person on the radio | no | 32 words | 10 at most |
 | Signal | a notice: what just changed | no | headline 3 words, reason 6 | 6 at most |
 | Ambient | the objective, a hint line, the HUD | no | one line | always there |
 

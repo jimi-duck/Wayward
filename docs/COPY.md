@@ -47,18 +47,29 @@ the player picks German (or `?lang=de`); it no longer follows the browser.
   what it costs, what might go wrong and what happens next. Mystery belongs in
   the world, not in the controls.
 
-The comms reading caps are in `tests/reading.test.ts` (text 32 words, hint 19,
-label 8, win 16, lose 13, read 14), wide enough for a line to state its cost
-and risk.
+## The owner's voice (28 November 2026)
 
-On top of those, one voice at a time (`tests/caps.test.ts`): a radio line is 20
-words at most, a card's text 60 (a written document, Ada's notes,
-110), a notice's headline 3 words and its reason 6. The middle dot does not count.
+The owner wrote ADA-1's wake and the first relay's lines (`story_wake`, `CORE_FIRST`, `CORE_SHIPS`) as the
+pattern for every card and radio line in the Story. What that copy does:
+
+- **Says the why.** A line tells what is happening, why it matters and what it means for Juno, in whole sentences.
+  It names who did what and when ("Seventy years ago, in a single night…", "The Continuance knew.").
+- **People talk to Juno.** By name, warmly or not; feeling shows ("I think the time has finally come.").
+- **The world is concrete.** The Continuance, the Core Worlds, the outer systems, Krail, the Jump Gates: named,
+  never hinted at.
+- **Tension in the moment.** A line under fire says what is coming and what to do ("Juno, hold position. We need to
+  finish the connection before they shut it down!").
+- **Jump Gates, never lanes.** Travel is by Jump Gate. Kept as names: the Last Lanes, the Arcade's Lane Wardens.
+
+The caps were widened for it. Reading caps (`tests/reading.test.ts`): a paragraph of a card 50 words, hint 19,
+label 8, win 16, lose 13, read 14. One voice at a time (`tests/caps.test.ts`): a radio line 32 words, a card's
+text 100 (a written document, Ada's notes, 160), a notice's headline 3 words and its reason 6. The middle dot does
+not count. Short is still fine where the moment is short.
 
 ## ADA-1's voice
 
 Plain and dry, kind underneath. "I", sentence case, contractions; never capitals (those are the Voice's). "Juno",
-never "pilot". 20 words a line, two a stop at most, never in a fight and never before the stop's own card; she never
+never "pilot". 32 words a line, two a stop at most, never in a fight and never before the stop's own card; she never
 names a button. Her habit changes over the road: "Ada used to say…", then "I used to think…", then "I don't think Ada
 would agree with me." German: she says du; "Warden core" is "Warden-Kern". Ada is "grandmother" ("Großmutter"), never
 "Gran". `tests/core.test.ts` holds the rules.

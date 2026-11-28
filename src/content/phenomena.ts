@@ -74,7 +74,7 @@ export const PLACES: Record<PlaceId, PlaceDef> = {
     kinds: ['mining', 'transit', 'contested', 'port'], regions: [0, 2], weight: 1.1, far: false,
   },
   convoy: {
-    id: 'convoy', name: 'Convoy lane', blurb: 'Freighters run through here on a schedule, heavy with Cyrite.', plays: 'convoy',
+    id: 'convoy', name: 'Convoy route', blurb: 'Freighters run through here on a schedule, heavy with Cyrite.', plays: 'convoy',
     text: 'Freighters crossing, heavy with Cyrite', reward: 'cyrite', done: 'Cyrite from the convoy’s holds',
     kinds: ['port', 'contested', 'mining'], regions: [0, 1], weight: 0.9, far: false,
   },

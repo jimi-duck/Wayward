@@ -74,10 +74,10 @@ describe('consequences', () => {
     const was = j.hunt.delay;
     const out = endSortie(j, result(j));
     expect(j.hunt.delay).toBeGreaterThanOrEqual(was + 1);
-    expect(out.lines.some((l) => l.includes('A lane closes behind you'))).toBe(true);
+    expect(out.lines.some((l) => l.includes('A gate closes behind you'))).toBe(true);
     expect(j.carry.flags).toContain(KEYS_NOTED);
     plot(j, options(j)[0]!.to.id);
-    expect(endSortie(j, result(j)).lines.some((l) => l.includes('A lane closes behind you'))).toBe(false);
+    expect(endSortie(j, result(j)).lines.some((l) => l.includes('A gate closes behind you'))).toBe(false);
   });
 
   it('say in the log where the Holdfast pact bites', () => {

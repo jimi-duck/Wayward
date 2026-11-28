@@ -39,7 +39,7 @@ export const NS = 'http://www.w3.org/2000/svg';
 /** The map is drawn in screen pixels: its box is measured when it is drawn. */
 const FALLBACK = { w: 640, h: 320 };
 export const KIND_WORD: Record<SystemKind, string> = {
-  home: 'Home', port: 'Port', mining: 'Mining', contested: 'Contested', transit: 'Transit', gate: 'Gate', edge: 'The last lane',
+  home: 'Home', port: 'Port', mining: 'Mining', contested: 'Contested', transit: 'Transit', gate: 'Gate', edge: 'The last gate',
 };
 /** A lane's style, in words (sim/lanes.ts). */
 const STANCE_WORD: Record<Stance, string> = { quiet: 'Quiet', watched: 'Watched', hostile: 'Hostile' };
@@ -607,7 +607,7 @@ export class ChartPanel {
       if (isSel) g.append(svg('circle', { cx: x, cy: y, r: r + 7, class: 'ch-ring' }));
       if (role === 'here') g.append(svg('circle', { cx: x, cy: y, r: r + 6, class: 'ch-ring here' }));
       if (role !== 'net') {
-        const tag = role === 'here' ? t('Here') : role === 'gate' ? t(n.kind === 'edge' ? 'The last lane' : 'Goal') : '';
+        const tag = role === 'here' ? t('Here') : role === 'gate' ? t(n.kind === 'edge' ? 'The last gate' : 'Goal') : '';
         // a name, with the tag under it; the days only for the lane that is selected. It is placed (and kept inside the
         // box and clear of every node) once it is in the page and can be measured.
         const lab = svg('g', { class: 'ch-lab' });

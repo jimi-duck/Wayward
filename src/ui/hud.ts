@@ -118,11 +118,11 @@ interface LogLine { el: HTMLParagraphElement; text: string; at: number; kind: st
 
 /** What the top-left label calls the sector while an event is on. */
 const KIND_NAME: Record<SystemKind, string> = {
-  home: 'Kellern yards', mining: 'Mining system', port: 'Port system', transit: 'Transit', contested: 'Contested', gate: 'Gate', edge: 'The last lane',
+  home: 'Kellern yards', mining: 'Mining system', port: 'Port system', transit: 'Transit', contested: 'Contested', gate: 'Gate', edge: 'The last gate',
 };
 
 const SECTOR_NAME: Record<EncounterId, string> = {
-  rich_field: 'Mineral-rich field', distress: 'Distress call', convoy: 'Convoy lane', ion_storm: 'Ion storm', nebula: 'Nebula',
+  rich_field: 'Mineral-rich field', distress: 'Distress call', convoy: 'Convoy route', ion_storm: 'Ion storm', nebula: 'Nebula',
   derelict: 'Derelict hulk', anomaly: 'Spatial anomaly', skirmish: 'Skirmish', scene: 'Situation',
 };
 
@@ -294,7 +294,7 @@ export class Hud {
           break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
         case 'spool': this.banner(t('Jump Gate'), t('Jump drive charging'), t('Fly through the gate'), 1.6, 'calm'); break;
-        case 'jumped': this.jumpedRun = world.run; this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
+        case 'jumped': this.jumpedRun = world.run; this.banner(t('Jump'), t('Through the gate'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
         case 'pickup': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'power': this.note(world, `${t(POWER_LABEL[e.kind])} · ${t(POWER_HINT[e.kind])}`, 'gain'); break;
         case 'plasmaDown': this.note(world, t('Plasma torpedo shot down')); break;
@@ -763,7 +763,7 @@ export class Hud {
       const s = world.ship;
       const dl = Math.hypot(bk.lane.x - s.x, bk.lane.z - s.z);
       if (bk.jumpT >= 0) {
-        text($('obj-t'), t('Jump')); text($('obj-left'), ''); ticks($('obj-p'), 1, 30); text($('obj-s'), t('Into the lane'));
+        text($('obj-t'), t('Jump')); text($('obj-left'), ''); ticks($('obj-p'), 1, 30); text($('obj-s'), t('Through the gate'));
       } else if (bk.spool > 0) {
         text($('obj-t'), t('Jump drive')); text($('obj-left'), `${Math.max(0, bk.spoolNeed - bk.spool).toFixed(1)}s`);
         ticks($('obj-p'), bk.spool / bk.spoolNeed, 30); text($('obj-s'), t(world.spoolKnockT > 0 ? 'Hit · the drive lost charge · break contact' : 'Jump drive charging · fly through the gate'));

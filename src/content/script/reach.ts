@@ -60,7 +60,7 @@ export const REACH: Row[] = [
   card('hr_hand', '*', { on: 'flag', flag: 'clue_order_sig' }, 'story_handwriting', { if: { not: ['ada_named', 'ilse_met'] }, holdsJob: true }),
   // her relay: Ilse points to it once the paper is aboard, and the gate waits for it (spaceways plan, step 4)
   { id: 'hr_relay_say', stop: 'halden', on: { on: 'after', row: 'hr_paper', delay: 4 }, do: { radio: { from: ILSE, caller: 'miners', text: '“The relay by your gate was ours. Let Ada’s core talk to it, and Halden trades again.”' } } },
-  lit('hr_relay', 'halden', 'Halden’s lane is open'),
+  lit('hr_relay', 'halden', 'Halden’s gate is open'),
   objective('hr_gate', 'halden', { on: 'leave' }, 'Jump to Tallyhouse'),
 
   // ── Stop 3 · Tallyhouse (turn) ──
@@ -80,17 +80,17 @@ export const REACH: Row[] = [
   objective('ml_gate', 'marlow', { on: 'leave' }, 'Jump to Miners’ Gap'),
 
   // ── Stop 4 · Miners’ Gap (work under pressure) ──
-  notice('bf_notice', 'branford', { on: 'arrive', delay: 2 }, 'teal', 'Miners’ Gap', 'contested lane · Hester’s crews'),
-  objective('bf_objective', 'branford', { on: 'arrive', delay: 2 }, 'Miners’ Gap · the lane to Copperline', 'Toll beacon · on the scope'),
+  notice('bf_notice', 'branford', { on: 'arrive', delay: 2 }, 'teal', 'Miners’ Gap', 'contested gate · Hester’s crews'),
+  objective('bf_objective', 'branford', { on: 'arrive', delay: 2 }, 'Miners’ Gap · the gate to Copperline', 'Toll beacon · on the scope'),
   // Hester's opener: the beacon is on her crews' lane, and the job's call follows
-  { id: 'bf_hester', stop: 'branford', on: { on: 'arrive', delay: 6 }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. Our lane’s shut twice: a toll beacon, and your relay buried under our spoil rock.”' } } },
+  { id: 'bf_hester', stop: 'branford', on: { on: 'arrive', delay: 6 }, do: { radio: { from: 'Hester', caller: 'miners', text: '“Hester, rig boss. Our gate’s shut twice: a toll beacon, and your relay buried under our spoil rock.”' } } },
   // Hester's crews, step 1: her three results (flags from sim/stage.ts)
   hester('bf_hester_won', 'job_pirate_toll_won', '“I owe you one. I’m writing your name down.”'),
   hester('bf_hester_lost', 'job_pirate_toll_lost', '“You tried. More than most.”'),
   hester('bf_hester_no', 'job_pirate_toll_declined', '“Understood. We’ll find another way. We always do.”'),
   sam('bf_sam', 'branford', { on: 'free' }, '“Net’s spreading behind you. Don’t stop long.”'),
   // the buried relay: a spoil rock sits on the mast (sim/world.ts stepTwist); Hester's opener says so
-  lit('bf_relay', 'branford', 'Hester’s lane is open'),
+  lit('bf_relay', 'branford', 'Hester’s gate is open'),
   objective('bf_gate', 'branford', { on: 'leave' }, 'Jump to Copperline'),
 
   // ── Stop 5 · Copperline (reckoning) ──
@@ -101,6 +101,6 @@ export const REACH: Row[] = [
   card('cl_brook', 'copperline', { on: 'after', row: 'cl_sam', delay: 6 }, 'story_brook_road', { if: { has: ['brook_met'] }, main: true }),
   card('cl_brook_no', 'copperline', { on: 'after', row: 'cl_sam', delay: 6 }, 'story_brook_declined', { if: { not: ['brook_met'] }, main: true }),
   // the guarded relay: two patrol fighters sit on the mast (sim/world.ts stepTwist)
-  lit('cl_relay', 'copperline', 'the last lane before the Narrows'),
+  lit('cl_relay', 'copperline', 'the last gate before the Narrows'),
   objective('cl_gate', 'copperline', { on: 'leave' }, 'Jump to the Narrows'),
 ];

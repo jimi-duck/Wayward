@@ -46,7 +46,7 @@ const MARCHES_ROWS: Row[] = [
   // Kessel's relay (spaceways plan, step 6): given, if the moot stood with her (content/road.ts LEG_RELAYS)
   radio('mk_relay_given', 'm_kessel', flag('story_moot'), 'Councillor Oduya', 'miners', '“Our crews are on the dead relay by your gate. Keep Custody off them while they wake it.”', { if: { has: ['pact_holdfast'] }, main: true }),
   radio('mk_relay_own', 'm_kessel', flag('story_moot'), 'Councillor Oduya', 'miners', '“There’s a dead relay by your gate. Wake it yourself. Kessel won’t stand in your way.”', { if: { not: ['pact_holdfast'] }, main: true }),
-  { id: 'mk_relay', stop: 'm_kessel', on: relay(), wall: 'relay_m_kessel', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'Kessel’s lane is open' } }, main: true, urgent: true },
+  { id: 'mk_relay', stop: 'm_kessel', on: relay(), wall: 'relay_m_kessel', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'Kessel’s gate is open' } }, main: true, urgent: true },
   objective('mk_gate', 'm_kessel', leave(), 'Jump to Tamsin Field'),
 
   // 3 · Tamsin Field (work): the Account's first call (Wanted: Alive); Calloway only watches here (content/script/arc.ts)
@@ -65,7 +65,7 @@ const MARCHES_ROWS: Row[] = [
   radio('walk_boat', 'm_walk', after('walk_wren', 4), 'Ma Saffi', 'miners', '“Anka’s boat came through. Forty-one names. You kept them.”', { if: { has: ['lifeboat_saved'] } }),
   // what was Low Harrow's (cut 22 November 2026): a scored hull in the fleet, Wren's rule about full tanks, Hester's call for Gannet
   notice('walk_hull', 'm_walk', after('walk_saffi', 30), 'white', 'Drift hull', 'scored in long parallel lines', { wall: 'saw_scored' }),
-  radio('walk_rule', 'm_walk', after('walk_hull', 2), 'Wren Saffi', 'miners', '“Don’t run a lane full. They follow the full ones. Everybody knows that.”', { if: { full: false } }),
+  radio('walk_rule', 'm_walk', after('walk_hull', 2), 'Wren Saffi', 'miners', '“Don’t cross a gate full. They follow the full ones. Everybody knows that.”', { if: { full: false } }),
   radio('walk_rule_full', 'm_walk', after('walk_hull', 2), 'Wren Saffi', 'miners', '“You’re running heavy. I’d vent some, if I were you. Ma would just stare.”', { if: { full: true } }),
   // the count, said once the walk is over: a hull lost stays lost
   radio('walk_cost', 'm_walk', flag('drift_walk_cost'), 'Wren Saffi', 'miners', '“Not all of us. Ma will read more names this year.”'),
@@ -127,7 +127,7 @@ const BELT_ROWS: Row[] = [
   radio('bk_after', 'b_kessler', after('bk_wall', 2), 'Dov Kessler', 'miners', '“Granddaughter. Hm. I’ll paint her name on the gate.”'),
   // Aster's relay in Kessler's yard (spaceways plan, step 6): Dov points to it once the wreck has spoken
   radio('bk_relay_say', 'b_kessler', flag('aster_reached'), 'Dov Kessler', 'miners', '“That dead relay by the gate was the Aster’s. Wake it before you go. She’d want that.”'),
-  { id: 'bk_relay', stop: 'b_kessler', on: relay(), wall: 'relay_b_kessler', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the Aster’s lane is open' } }, main: true, urgent: true },
+  { id: 'bk_relay', stop: 'b_kessler', on: relay(), wall: 'relay_b_kessler', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the Aster’s gate is open' } }, main: true, urgent: true },
   objective('bk_gate', 'b_kessler', leave(), 'Jump to Kiln'),
 
   // 5 · Saltmarsh (breather): the first sighting, a river of motes; it turns toward a full tank
@@ -161,7 +161,7 @@ const DEEP_ROWS: Row[] = [
 
   // 2 · the Quiet Ferry (hub): Ossie Raine; Quiet Line 5, Quill's race
   notice('df_notice', 'd_ferry', arrive(), 'teal', 'The Quiet Ferry', 'forty-one passengers · stores, no questions'),
-  objective('df_objective', 'd_ferry', arrive(), 'The Quiet Ferry · a lane ahead, no questions'),
+  objective('df_objective', 'd_ferry', arrive(), 'The Quiet Ferry · a gate ahead, no questions'),
   main('df_ossie', 'd_ferry', { on: 'place', place: 'df_ferry' }, 'story_ferry'),
   quill('df_quill_lost', 'd_ferry', 'job_finders_keepers_lost', '“Nice hull. Slow, though. Next time I’ll wait for you at the finish.”'),
   quill('df_quill_won', 'd_ferry', 'job_finders_keepers_won', '“Who taught you to fly like that? Nobody? Figures.”'),
@@ -170,10 +170,10 @@ const DEEP_ROWS: Row[] = [
   // 3 · Lantern Mile (work): the Survey, something in the dark, moving toward the lanes
   notice('dm_notice', 'd_lantern', arrive(), 'teal', 'Lantern Mile', 'a claim with lamps on it'),
   objective('dm_objective', 'd_lantern', arrive(), 'Lantern Mile · a warm object, moving'),
-  analyst('dm_survey', 'd_lantern', 'job_something_dark_won', '“Your warm object has moved four hundred metres since yesterday. Toward the lane. I’d like you to look again.”'),
+  analyst('dm_survey', 'd_lantern', 'job_something_dark_won', '“Your warm object has moved four hundred metres since yesterday. Toward the gate. I’d like you to look again.”'),
   // the claim's relay (spaceways plan, step 6): jammed by the warm thing's static, woken between the bursts
   radio('dm_relay_say', 'd_lantern', after('dm_objective', 8), ANALYST[0], ANALYST[1], '“There’s a Warden relay on this claim. Whatever’s warm out there jams it in bursts. Work between them.”', { main: true }),
-  { id: 'dm_relay', stop: 'd_lantern', on: relay(), wall: 'relay_d_lantern', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'Lantern Mile’s lane is open' } }, main: true, urgent: true },
+  { id: 'dm_relay', stop: 'd_lantern', on: relay(), wall: 'relay_d_lantern', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'Lantern Mile’s gate is open' } }, main: true, urgent: true },
   objective('dm_gate', 'd_lantern', leave(), 'Jump to Ninth Fold'),
 
   // 4 · Ninth Fold (turn): Corin Ashe aboard the ferry; the Account's payroll, which is Hester's crews' wages
@@ -353,7 +353,7 @@ const HOLLOWS_ROWS: Row[] = [
   main('hf_thren', 'h_forge', { on: 'place', place: 'hf_pattern' }, 'story_thren'),
   // the foundry's relay (spaceways plan, step 6): loud, the Thren follow its noise; woken fast and fought, or drifting and quiet
   radio('hf_relay_say', 'h_forge', after('hf_objective', 8), ADA, 'core', '“It sings when it wakes. Drift slow and I’ll keep it quiet.”', { main: true }),
-  { id: 'hf_relay', stop: 'h_forge', on: relay(), wall: 'relay_h_forge', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the foundry’s lane is open' } }, main: true, urgent: true },
+  { id: 'hf_relay', stop: 'h_forge', on: relay(), wall: 'relay_h_forge', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the foundry’s gate is open' } }, main: true, urgent: true },
   objective('hf_gate', 'h_forge', leave(), 'Jump to Coldvault'),
 
   // 3 · Coldvault (work): Kellern's tug comes for the registry (the Account's last step)
@@ -375,8 +375,8 @@ const HOLLOWS_ROWS: Row[] = [
   radio('hm_sable', 'h_cairn', settle(), 'Sable', 'unknown', '“Nobody human. They’ve drawn it for longer than there have been people.”', { if: { has: ['sable_trust'] } }),
 
   // 6 · Ghostcinder (pressure): the swarm lane; machines letting swarms through the gates
-  notice('hg_notice', 'h_cinder', arrive(), 'red', 'Ghostcinder', 'swarm lane · Thren in numbers'),
-  objective('hg_objective', 'h_cinder', arrive(), 'Ghostcinder · the swarm lane'),
+  notice('hg_notice', 'h_cinder', arrive(), 'red', 'Ghostcinder', 'swarm gate · Thren in numbers'),
+  objective('hg_objective', 'h_cinder', arrive(), 'Ghostcinder · the swarm gate'),
   objective('hg_gate', 'h_cinder', leave(), 'Jump to Gaunt Watch'),
 
   // 7 · Gaunt Watch (reckoning): Noor Haddad, the Survey buyer, who holds the third key
@@ -395,12 +395,12 @@ const LAST_ROWS: Row[] = [
   objective('ll_objective', 'l_lastlight', arrive(), 'Next: The Last Toll', 'The Threshold · 7 jumps'),
   // the last relay before the Threshold (spaceways plan, step 6): every relay she woke answers it, and it wakes the faster for each
   radio('ll_relay_say', 'l_lastlight', after('ll_objective', 8), SAM[0], SAM[1], '“Every relay you’ve lit is listening, Juno. Wake this one and they’ll all push.”', { main: true }),
-  { id: 'll_relay', stop: 'l_lastlight', on: relay(), wall: 'relay_l_lastlight', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the last lane is open' } }, main: true, urgent: true },
+  { id: 'll_relay', stop: 'l_lastlight', on: relay(), wall: 'relay_l_lastlight', do: { notice: { tone: 'teal', headline: 'Warden key accepted', reason: 'the last gate is open' } }, main: true, urgent: true },
   objective('ll_gate', 'l_lastlight', leave(), 'Jump to the Last Toll'),
 
   // 2 · the Last Toll (hub): Oren Lisle's toll
   notice('lt_notice', 'l_toll', arrive(), 'teal', 'The Last Toll', 'a toll platform · one lit window'),
-  objective('lt_objective', 'l_toll', arrive(), 'The Last Toll · every lane ends here'),
+  objective('lt_objective', 'l_toll', arrive(), 'The Last Toll · every road ends here'),
   main('lt_toll', 'l_toll', free(6), 'story_toll'),
   objective('lt_gate', 'l_toll', leave(), 'Jump to Thin Gap'),
 
