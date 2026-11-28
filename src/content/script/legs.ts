@@ -217,7 +217,7 @@ const YARDS_ROWS: Row[] = [
   // Calloway's question at Cutton is cut (story direction plan): her best scene is the Tollgate
   // the cradle crew (standalone): Joss answers
   radio('yc_joss', 'y_cutton', flag('job_cradle_crew_won'), 'Joss Peller', 'miners', '“Forty, Juno. I counted them twice. Kellern sealed them in that cradle and called it a lockdown. Thank you.”'),
-  radio('yc_joss_fuel', 'y_cutton', flag('job_cradle_crew_fuel'), 'Joss Peller', 'miners', '“You took the fuel and left us. Fine. We’ll remember.”'),
+  radio('yc_joss_fuel', 'y_cutton', flag('job_cradle_crew_fuel'), 'Joss Peller', 'miners', '“You took our stores and left us sealed in. Fine. We’ll remember, Wayward.”'),
   objective('yc_gate', 'y_cutton', leave(), 'Jump to Yard Nine'),
 
   // 2 · Yard Nine (hub): Ben Anand and the first work order; Quiet Line 6, the Needle, where Quill joins
@@ -264,7 +264,7 @@ const YARDS_ROWS: Row[] = [
   radio('yt_hester', 'y_torch', flag('crews_stood'), HESTER[0], HESTER[1], '“Every crew you helped is standing at the Breaker. I didn’t ask them. That’s the point.”', { if: { has: ['thread_crews_3'] } }),
   // the cradle's echo, and Hester's rig
   radio('yt_cradle', 'y_torch', after('yt_marit', 3), 'Marit Voss', 'frontier', '“Forty of your people walked out at Cutton. They’re in our crews now.”', { if: { has: ['cradle_freed'] } }),
-  radio('yt_cradle_cold', 'y_torch', after('yt_marit', 3), 'Marit Voss', 'frontier', '“Forty stayed sealed at Cutton while you took their fuel. The crews know.”', { if: { has: ['cradle_fuel'] } }),
+  radio('yt_cradle_cold', 'y_torch', after('yt_marit', 3), 'Marit Voss', 'frontier', '“Forty stayed sealed at Cutton while you took their stores. The crews know.”', { if: { has: ['cradle_fuel'] } }),
   hester('yt_rig', 'y_torch', 'job_kill_zone_won', '“My rig held at Stillwater. That’s why my crews could come.”', { if: { has: ['rig_held'] } }),
   hester('yt_hester_won', 'y_torch', 'job_kill_zone_won', '“Crossing’s open. My people can get to the Breaker now.”'),
   objective('yt_gate', 'y_torch', leave(), 'Jump to Davit Dock'),

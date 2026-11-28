@@ -19,7 +19,7 @@ const act = (variant: string, n: number, a: WardAct, temper: Temper, tag: string
 export const MISSIONS: SituationDef[] = [
   // ══ combat ═══════════════════════════════════════════════════════════════
   {
-    id: 'pirate_toll', name: 'Break the Pirate Toll', blurb: 'A toll beacon is blocking the lane, and the Gutter denies placing it.', group: 'frontier',
+    id: 'pirate_toll', name: 'Break the Pirate Toll', blurb: 'A toll beacon is blocking the gate, and the Gutter denies placing it.', group: 'frontier',
     kinds: ['transit', 'mining', 'contested'], regions: [0, 3], weight: 1.4,
     prop: 'beacon',
     actors: [
@@ -30,12 +30,12 @@ export const MISSIONS: SituationDef[] = [
     ],
     card: 'sc_toll', at: 30, hail: 480, accept: ['break'],
     goal: { kind: 'destroy', hold: 0, limit: 150, line: 'Break the toll crew', spoil: 0.7 },
-    win: { text: 'Toll beacon destroyed · the lane is open', chits: 110, standing: { frontier: 1, miners: 1 }, notice: { gutter: 1 } },
+    win: { text: 'Toll beacon destroyed · the gate is open', chits: 110, standing: { frontier: 1, miners: 1 }, notice: { gutter: 1 } },
     lose: { text: 'The toll remains · its crew now recognise your ship', heat: 0.05 },
     ignore: { text: 'You take another route and leave the toll in place' },
     after: {
-      won: { text: 'The toll is gone · supplies cost less on this lane', market: { supplies: 0.85, days: 12 }, flag: 'toll_broken' },
-      lost: { text: 'The toll remains · prices rise on this lane', market: { supplies: 1.2, days: 8 } },
+      won: { text: 'The toll is gone · supplies cost less here', market: { supplies: 0.85, days: 12 }, flag: 'toll_broken' },
+      lost: { text: 'The toll remains · prices rise here', market: { supplies: 1.2, days: 8 } },
     },
   },
   {
@@ -48,7 +48,7 @@ export const MISSIONS: SituationDef[] = [
     card: 'sc_tanker', at: 30, hail: 500, accept: ['strike'],
     goal: { kind: 'strike', hold: 0, limit: 170, line: 'Cripple the tanker, do not sink it', spoil: 0.4 },
     threat: { variant: 'scout', n: 2, after: 25, say: '“Escort reinforcements. Finish it quick.”' },
-    win: { text: 'The tanker is disabled · you strip its fuel tanks', chits: 150, supplies: 3, notice: { custody: 1 }, heat: 0.08, flag: 'tanker_taken' },
+    win: { text: 'The tanker is disabled · you strip its cargo hold', chits: 150, supplies: 3, notice: { custody: 1 }, heat: 0.08, flag: 'tanker_taken' },
     lose: { text: 'The tanker escapes' },
     ignore: { text: 'You let the tanker pass' },
     after: {
@@ -81,7 +81,7 @@ export const MISSIONS: SituationDef[] = [
     lose: { text: 'The rig is lost · the crew’s distress call cuts out' },
     ignore: { text: 'You leave the crew to defend the rig alone' },
     after: {
-      won: { text: 'The rig held · its crew now help keep the lane open', flag: 'rig_held', stallNear: 2, market: { supplies: 0.85, days: 10 } },
+      won: { text: 'The rig held · its crew now help keep the gate open', flag: 'rig_held', stallNear: 2, market: { supplies: 0.85, days: 10 } },
       lost: { text: 'The rig is lost · nobody sends another crew', market: { cyrite: 1.15, days: 10 }, flag: 'rig_lost' },
     },
   },
@@ -123,7 +123,7 @@ export const MISSIONS: SituationDef[] = [
     win: { text: 'Medicine delivered · no patrol saw you', chits: 130, standing: { gutter: 2 } },
     lose: { text: 'The patrol detects you and turns to intercept', standing: { gutter: -1 }, notice: { custody: 2 } },
     ignore: { text: 'You take another route around the patrol' },
-    after: { won: { text: 'Medicine reached the hospice ring · the Gutter remembers', flag: 'drop_made' }, lost: { text: 'The patrol caught the drop · the lane is under tighter watch', pushNear: 0.5 } },
+    after: { won: { text: 'Medicine reached the hospice ring · the Gutter remembers', flag: 'drop_made' }, lost: { text: 'The patrol caught the drop · the gate is under tighter watch', pushNear: 0.5 } },
   },
 
   // ══ second batch ════════════════════════════════════════════════════════
@@ -196,7 +196,7 @@ export const MISSIONS: SituationDef[] = [
     win: { text: 'Patrol codes recorded · families walk the checkpoint tonight', chits: 150, standing: { frontier: 1 }, flag: 'codes_copied' },
     lose: { text: 'The patrol detects you and turns to intercept', notice: { custody: 2 }, standing: { custody: -1 } },
     ignore: { text: 'You keep clear of the patrol' },
-    after: { won: { text: 'The patrol’s codes are exposed · the Net will take longer to respond here', stallNear: 2, flag: 'codes_copied' }, lost: { text: 'The patrol catches a ship copying its codes · security tightens on the lane', pushNear: 0.5 } },
+    after: { won: { text: 'The patrol’s codes are exposed · the Net will take longer to respond here', stallNear: 2, flag: 'codes_copied' }, lost: { text: 'The patrol catches a ship copying its codes · security tightens on the gate', pushNear: 0.5 } },
   },
   {
     id: 'be_bait', name: 'Draw Them Out', blurb: 'A Guild gunship needs Custody’s pickets drawn off the Forty’s pier.', group: 'frontier',
@@ -207,7 +207,7 @@ export const MISSIONS: SituationDef[] = [
     win: { text: 'The pickets are defeated · the gunship pays you for the diversion', chits: 160, standing: { guild: 1, custody: -1 }, notice: { custody: 1 } },
     lose: { text: 'The pickets escape · the gunship is not pleased' },
     ignore: { text: 'You leave the patrol in place' },
-    after: { won: { text: 'The pickets were drawn out and defeated · the lane is safer', stallNear: 1 } },
+    after: { won: { text: 'The pickets were drawn out and defeated · the gate is safer', stallNear: 1 } },
   },
   {
     id: 'dead_drop', name: 'The Dead Drop', blurb: 'A package waits at a beacon, but someone may be watching the drop point.', group: 'frontier',
@@ -224,13 +224,13 @@ export const MISSIONS: SituationDef[] = [
     after: { won: { text: 'A package was taken from this drop point', flag: 'drop_fetched' } },
   },
   {
-    id: 'long_walk', name: 'Escort the Hauler', blurb: 'A damaged hauler is too slow to reach the lane without an escort.', group: 'frontier',
+    id: 'long_walk', name: 'Escort the Hauler', blurb: 'A damaged hauler is too slow to reach the gate without an escort.', group: 'frontier',
     kinds: ['transit', 'mining', 'contested'], regions: [1, 6], weight: 1.0,
     actors: [act('freighter', 1, 'lead', 'meek', 'Hauler Dunne', { from: 'ahead', pace: 0.55 })],
     card: 'sc_long_walk', at: 25, hail: 9999, accept: ['escort'],
     goal: { kind: 'follow', hold: 55, limit: 160, line: 'Walk the hauler to the Jump Gate' },
     threat: { variant: 'raptor', n: 2, after: 30 },
-    win: { text: 'The hauler reaches the lane · the crew pays what it can', chits: 120, supplies: 2, standing: { miners: 1, frontier: 1 } },
+    win: { text: 'The hauler reaches the gate · the crew pays what it can', chits: 120, supplies: 2, standing: { miners: 1, frontier: 1 } },
     lose: { text: 'You lose the hauler before it reaches safety', standing: { miners: -1 } },
     ignore: { text: 'You leave the hauler to make the journey alone' },
     after: { won: { text: 'The damaged hauler made it through · the crew tells others what you did', flag: 'hauler_saved' } },
@@ -251,7 +251,7 @@ export const MISSIONS: SituationDef[] = [
 
   // ══ fourth batch ════════════════════════════════════════════════════════
   {
-    id: 'something_dark', name: 'The Warm Object', blurb: 'An uncharted object is moving toward the lane, and it answers a full tank.', group: 'corporate',
+    id: 'something_dark', name: 'The Warm Object', blurb: 'An uncharted object is moving toward the gate, and it answers a full hold.', group: 'corporate',
     kinds: ['mining', 'transit', 'contested'], regions: [2, 7], weight: 0.9,
     prop: 'object',
     card: 'sc_dark', at: 30, hail: 520, accept: ['probe'],
@@ -296,7 +296,7 @@ export const MISSIONS: SituationDef[] = [
     win: { text: 'The filter is running again · the settlement pays what it can', chits: 120, standing: { miners: 2, frontier: 1 }, flag: 'filter_fixed' },
     lose: { text: 'The last filter fails before the parts arrive' },
     ignore: { text: 'You leave the settlement to manage alone' },
-    after: { won: { text: 'The settlement kept its air supply · they will remember your help', stallNear: 2, flag: 'filter_fixed' }, lost: { text: 'The settlement lost its air supply · the lane goes quiet', market: { supplies: 1.15, days: 8 } } },
+    after: { won: { text: 'The settlement kept its air supply · they will remember your help', stallNear: 2, flag: 'filter_fixed' }, lost: { text: 'The settlement lost its air supply · the gate goes quiet', market: { supplies: 1.15, days: 8 } } },
   },
   {
     id: 'the_witness', name: 'Get the Witness Out', blurb: 'A witness has evidence against Custody, and they want the witness silenced.', group: 'corporate',
@@ -366,13 +366,13 @@ export const MISSIONS: SituationDef[] = [
     after: { won: { text: 'A ransom crew lost its prize at the Exchange', flag: 'ransom_ended' } },
   },
   {
-    id: 'tarik_bend', name: 'Tarik’s Bend', blurb: 'A bent lane that only Tarik’s charts describe.', group: 'frontier',
+    id: 'tarik_bend', name: 'Tarik’s Bend', blurb: 'A bent route that only Tarik’s charts describe.', group: 'frontier',
     kinds: ['port'], regions: [3, 3], weight: 0,
     actors: [act('freighter', 1, 'lead', 'meek', 'Tarik’s skiff', { from: 'ahead', pace: 1.3 })],
     card: 'sc_bend', at: 25, hail: 9999, accept: ['follow'],
     goal: { kind: 'follow', hold: 35, limit: 120, line: 'Follow Tarik’s skiff through the bend' },
-    threat: { variant: 'scout', n: 2, after: 14, say: '“Gutter scouts in the bend. Somebody else wants this lane.”' },
-    win: { text: 'Through the bend · Tarik’s lane is on your chart', chits: 110, standing: { miners: 1 }, flag: 'bend_followed' },
+    threat: { variant: 'scout', n: 2, after: 14, say: '“Gutter scouts in the bend. Somebody else wants this route.”' },
+    win: { text: 'Through the bend · Tarik’s route is on your chart', chits: 110, standing: { miners: 1 }, flag: 'bend_followed' },
     lose: { text: 'You lose the skiff in the bend' },
     ignore: { text: 'Tarik flies the bend alone' },
     after: { won: { text: 'Tarik’s bend is flown again · the Holdfast use it', flag: 'bend_followed' } },
@@ -405,18 +405,18 @@ export const MISSIONS: SituationDef[] = [
     after: { won: { text: 'Kellern’s tug lost its registry key here', flag: 'key_taken' } },
   },
   {
-    id: 'sables_crossing', name: 'Sable’s Crossing', blurb: 'Sable wants to go home through a swarm lane.', group: 'unknown',
+    id: 'sables_crossing', name: 'Sable’s Crossing', blurb: 'Sable wants to go home through a swarm gate.', group: 'unknown',
     kinds: ['transit'], regions: [6, 6], weight: 0,
     // only if she took Sable on at Palecairn (story_echo_sable)
     needs: 'sable_trust',
     actors: [act('scout', 1, 'lead', 'meek', 'Sable', { from: 'ahead', pace: 1.2 })],
     card: 'sc_sable', at: 30, hail: 9999, accept: ['follow'],
-    goal: { kind: 'follow', hold: 35, limit: 130, line: 'Stay on Sable’s wing through the swarm lane' },
+    goal: { kind: 'follow', hold: 35, limit: 130, line: 'Stay on Sable’s wing through the swarm gate' },
     threat: { variant: 'drone', n: 2, after: 16, say: '“Foundry drones. They don’t want her home.”' },
     win: { text: 'Sable is home · the swarm closes round her', chits: 140, notice: { thren: -2 }, flag: 'sable_home' },
     lose: { text: 'You lose Sable in the swarm' },
     ignore: { text: 'Sable goes on alone' },
-    after: { won: { text: 'Sable flew home through the swarm lane', flag: 'sable_home' } },
+    after: { won: { text: 'Sable flew home through the swarm gate', flag: 'sable_home' } },
   },
   {
     id: 'ring_centre', name: 'The Ring’s Centre', blurb: 'Noor wants the centre of the dead relays, from three more readings.', group: 'corporate',
@@ -438,7 +438,7 @@ export const MISSION_CARDS: CardDef[] = [
   mission({
     id: 'sc_toll', kind: 'job', caller: 'miners', tier: 'important',
     from: 'Dispatch · mining guild', title: 'Break the Pirate Toll',
-    text: '“A toll beacon on our lane, four ships, one captain. Drop the captain and the rest may scatter.”',
+    text: '“Mining guild dispatch. Pirates have put a toll beacon on our gate, Wayward: four ships, one captain. Every hauler pays or turns back, and our crews can’t afford either. Drop the captain and the rest may scatter.”',
     thread: { chip: 'Hester’s crews', line: '“Break it, and my crews eat this month.”' },
     lines: [{ if: { flag: 'gutter_cold' }, text: 'Two Gutter scouts sit with them. They heard who sold their drop.' }],
     cargo: 'A toll beacon · four hulls at the gate',
@@ -452,7 +452,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_tanker', kind: 'job', caller: 'gutter', tier: 'important',
     thread: { chip: 'Account · Hester’s crews ↓', line: 'Her filters are for Breakwater.' },
     from: 'A fixer · for Kellern Recovery', title: 'The Heavy Tanker',
-    text: '“Kellern wants a loaded tanker. Two escorts. Kill her engines, not her hull. Then take the cargo.”',
+    text: '“I’m calling for Kellern Recovery, and I don’t ask questions. They want a loaded tanker, two escorts. Kill her engines, not her hull, then take the cargo. Kellern pays well, and nobody out here will check.”',
     cargo: 'A tanker · slow, heavy, two escorts',
     choices: [
       { id: 'strike', label: 'Attack the tanker', tone: 'trade', hint: 'Disable its engines, then move close to secure the cargo. If you destroy it, the cargo is lost.', win: { text: 'Heading to the tanker' } },
@@ -464,7 +464,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_wanted', kind: 'job', caller: 'custody', tier: 'important',
     thread: { chip: 'The Account', line: '“Ms Aster. Your breach balance stands at 800 CR. This bounty takes 250 off it. Alive, please.”' },
     from: 'Kellern Recovery · through a Custody broker', title: 'Wanted: Alive',
-    text: '“Brannock ran from a Kellern debt camp. Kellern pays the bounty, double if she lives. Disable her engines without destroying the ship.”',
+    text: '“Brannock ran from a Kellern debt camp, owing the same kind of debt they hold over you. Kellern pays the bounty, double if she lives. Disable her engines without destroying the ship.”',
     cargo: 'A runner · fast for her size, one drive',
     choices: [
       { id: 'bring', label: 'Capture Brannock', tone: 'trade', hint: 'Disable her engines, then close in and hold position to secure the capture.', win: { text: 'Heading to the runner' } },
@@ -476,7 +476,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_shift', kind: 'plea', caller: 'miners', tier: 'important',
     thread: { chip: 'Hester’s crews', line: '“My rig, my mother’s name on it. I’m not leaving.”' },
     from: 'Rig foreman · Hester', title: 'Hold the Last Shift',
-    text: '“Raiders are coming for the rig. Forty of us aboard. Hold them 75 seconds and the Guild patrol is here. Guns up.”',
+    text: '“Juno, it’s Hester. Raiders are coming for my rig, and Kellern won’t lift a finger to stop them. Forty of us aboard. Hold them off for 75 seconds and the Guild patrol gets here. Guns up.”',
     cargo: 'A rig · forty crew, no guns',
     choices: [
       { id: 'stand', label: 'Defend the mining rig', tone: 'help', hint: 'Hold the rig 75 seconds. Drawing raiders off counts too.', win: { text: 'You turn for the rig' } },
@@ -499,7 +499,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_hole', kind: 'job', caller: 'office', tier: 'important',
     from: 'Survey Office · open contract', title: 'The Point of No Return',
     text: '“Three readings round the black hole, each closer. Nav will fail and the core burns. The closer you get, the more the Office pays.”',
-    cargo: 'A black hole · bends the lane',
+    cargo: 'A black hole · bends the light',
     choices: [
       { id: 'go', label: 'Survey the black hole', tone: 'help', hint: 'Hold inside each marked ring to take a reading. Turn back at any time; closer readings pay more.', win: { text: 'Heading to the black hole' } },
       { id: 'sell', label: 'Sell the coordinates', tone: 'trade', hint: 'Earn 60 Cyrite for the location, without risking your ship.', win: { text: 'Coordinates sold · 60 Cyrite received', chits: 300 } },
@@ -509,7 +509,7 @@ export const MISSION_CARDS: CardDef[] = [
   mission({
     id: 'sc_declare', kind: 'job', caller: 'gutter', tier: 'important',
     from: 'A runner · no name', title: 'Nothing to Declare',
-    text: '“Custody holds the hospice ring’s medicine at the patrol line. Three ships sweeping. Slip between them, hold at the drop, then leave.”',
+    text: '“Custody is holding the hospice ring’s medicine at the patrol line, Wayward. People are dying while it sits there. Three ships sweeping. Slip between them, hold at the drop, then get out.”',
     thread: { chip: 'Quiet Line', line: '“Pike says you’ve got reasons to keep quiet.”' },
     cargo: 'A patrol · three hulls, a crate of medicine',
     choices: [
@@ -522,7 +522,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_kill_zone', kind: 'job', caller: 'guild', tier: 'important',
     thread: { chip: 'Hester’s crews', line: '“The guns at the yard point at my crews. Take them out.”' },
     from: 'Guild dispatch', title: 'Clear the Crossing',
-    text: '“Raiders hold the crossing to the Breaker. Break them all and the Guild pays.”',
+    text: '“Raiders hold the crossing to the Breaker, and nobody gets through, crews or cargo. Break them all and the Guild pays, Wayward.”',
     lines: [{ if: { flag: 'crews_stood' }, text: 'Hester’s crews hold half the crossing. Three raiders are left.' }],
     cargo: 'A crossing · raiders, some of them heavy',
     choices: [
@@ -535,7 +535,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_missing', kind: 'distress', caller: 'miners', tier: 'important',
     thread: { chip: 'Hester’s crews', line: '“Nine people, gone quiet at Gannet. Bring them home.”' },
     from: 'Union clerk', title: 'The Missing Shift',
-    text: '“Nine miners have gone quiet since yesterday. Their last beacon came from the wreck field. Bring a supply, in case they made it.”',
+    text: '“Nine miners have gone quiet since yesterday, and Kellern won’t send anyone to look. Their last beacon came from the wreck field. Bring a supply, in case they made it.”',
     cargo: 'A wreck · one faint beacon',
     choices: [
       { id: 'search', label: 'Search the wreck field', tone: 'help', hint: 'Bring 1 supply, fly to their last beacon and hold close. Short? Half pay.', win: { text: 'Heading to the wreck' } },
@@ -546,7 +546,7 @@ export const MISSION_CARDS: CardDef[] = [
   mission({
     id: 'sc_follow', kind: 'job', caller: 'frontier', tier: 'routine',
     from: 'A prospector', title: 'Follow the Cyrite Vein',
-    text: '“I found a vein, and the Gutter found me. Stay on my wing until I’m there and I’ll share it.”',
+    text: '“I found a Cyrite vein, the first in years out here, and the Gutter found me. Stay on my wing until I’m there and I’ll share it.”',
     cargo: 'A prospector · slow, sure of herself',
     choices: [
       { id: 'follow', label: 'Guard the prospector', tone: 'help', hint: 'Stay on her wing to the vein. Keep the Gutter scouts off her.', win: { text: 'She leads the way' } },
@@ -558,7 +558,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_wreck', kind: 'job', caller: 'office', tier: 'routine',
     thread: { chip: 'The Survey', line: '“Survey Office. Your scope logs are worth money to us. The wreck at the Graveyard first. Careful questions, good pay.”' },
     from: 'Salvage broker', title: 'The Wreck That Remembered',
-    text: '“A derelict still holds a flight log. Recover an intact copy and the Offices will pay. Someone else is trying to erase it.”',
+    text: '“A derelict out here still holds a flight log from the night the gates closed. Recover an intact copy and the Offices will pay. Someone else is trying to erase it.”',
     cargo: 'A wreck · its log still powered',
     choices: [
       { id: 'read', label: 'Recover the flight log', tone: 'help', hint: 'Move close and hold steady until the copy finishes.', win: { text: 'Heading to the wreck' } },
@@ -569,7 +569,7 @@ export const MISSION_CARDS: CardDef[] = [
   mission({
     id: 'sc_distance', kind: 'job', caller: 'frontier', tier: 'important',
     from: 'A Quiet Line runner', title: 'Listen to the Loop',
-    text: '“Four Custody ships loop this checkpoint. Their codes let families walk past it. Record the loop from inside both rings.”',
+    text: '“Four Custody ships loop this checkpoint, Wayward. Bonded families get stopped there and sent back. Their patrol codes would let people walk past it. Record the loop from inside both rings.”',
     cargo: 'A checkpoint · four hulls, one slow loop',
     choices: [
       { id: 'record', label: 'Record the loop', tone: 'help', hint: 'Hold inside each marked ring for a reading. Keep your guns cold.', win: { text: 'Heading to the checkpoint' } },
@@ -602,11 +602,11 @@ export const MISSION_CARDS: CardDef[] = [
   mission({
     id: 'sc_long_walk', kind: 'plea', caller: 'miners', tier: 'important',
     from: 'Hauler Dunne', title: 'Escort the Hauler',
-    text: '“I’ve got one working drive and half my speed. Get me to the lane and my crew will pay what they can. Raiders will come, though.”',
+    text: '“I’ve got one working drive and half my speed. Get me to the gate and my crew will pay what they can. Raiders will come, though.”',
     cargo: 'A hauler · one drive, slow, heavy',
     choices: [
       { id: 'escort', label: 'Escort the hauler', tone: 'help', hint: 'Stay beside the hauler and match its slower pace. Raiders arrive in about 30 seconds.', win: { text: 'She limps ahead, and you fall in beside her' } },
-      { id: 'tow', label: 'Tow the hauler', tone: 'help', hint: 'Requires a tractor beam. Tow her to the lane at once; her crew gives 3 supplies.', needs: { fitted: 'md_tractor' }, win: { text: 'Hauler in tow · 3 supplies from her crew', supplies: 3, standing: { miners: 1 } } },
+      { id: 'tow', label: 'Tow the hauler', tone: 'help', hint: 'Requires a tractor beam. Tow her to the gate at once; her crew gives 3 supplies.', needs: { fitted: 'md_tractor' }, win: { text: 'Hauler in tow · 3 supplies from her crew', supplies: 3, standing: { miners: 1 } } },
       { id: 'no', label: 'Decline the escort', tone: 'refuse', hint: 'Keep moving and leave the hauler to its own route.', win: { text: 'Dunne closes the channel' } },
     ],
   }),
@@ -624,7 +624,7 @@ export const MISSION_CARDS: CardDef[] = [
   mission({
     id: 'sc_dark', kind: 'job', caller: 'office', tier: 'important',
     from: 'Survey Office', title: 'The Warm Object',
-    text: '“An uncharted object, warm, moving toward the lane. It answers only when your tank is full. Two readings, as close as you dare.”',
+    text: '“Survey Office. An uncharted object, warm, moving toward the gate. It answers only when your hold is full of Cyrite. Nothing out here should do that. Two readings, as close as you dare.”',
     cargo: 'An object · dark, warm, no transponder',
     choices: [
       { id: 'probe', label: 'Survey the object', tone: 'help', hint: 'Hold inside each marked ring to record a reading. The closer ring pays more.', win: { text: 'Heading to the object' } },
@@ -660,7 +660,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_filter', kind: 'plea', caller: 'miners', tier: 'important',
     lines: [{ if: { flag: 'tanker_taken' }, text: '“The tanker with our new filters never came. Someone took her at Sallow Port.”' }],
     from: 'Settlement steward', title: 'One Filter Left',
-    text: '“Our last air filter is dying. Two supplies of parts in ninety seconds, or we start counting breaths.”',
+    text: '“Breakwater settlement. Our last air filter is dying, and since the gates closed nobody sends parts. Two supplies of parts in ninety seconds, or we start counting breaths.”',
     cargo: 'A settlement · lamps low, a filter running hot',
     choices: [
       { id: 'bring', label: 'Deliver the filter parts', tone: 'help', hint: 'Bring 2 supplies within 90 seconds. Short? You are paid for what you bring.', win: { text: 'Heading to the settlement' } },
@@ -672,7 +672,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_witness', kind: 'plea', caller: 'frontier', tier: 'important',
     thread: { chip: 'Quiet Line', line: '“Pike’s witness. Get them out and the Line owes you.”' },
     from: 'Brother Orrin', title: 'Get the Witness Out',
-    text: '“I kept the log of what Custody did at Northfold. They know. Keep me alive for a minute.”',
+    text: '“I kept the log of what Custody did at Northfold. They know, and they’re coming to make sure nobody reads it. Keep me alive for a minute.”',
     cargo: 'A freighter · a log nobody should have',
     choices: [
       { id: 'guard', label: 'Protect the witness', tone: 'help', hint: 'Keep the witness alive for 60 seconds. Two waves of pickets.', win: { text: 'Heading to the freighter' } },
@@ -708,7 +708,7 @@ export const MISSION_CARDS: CardDef[] = [
   mission({
     id: 'sc_lifeboat', kind: 'distress', caller: 'miners', tier: 'important',
     from: 'Anka Mor · a Drift lifeboat', title: 'The Lifeboat at Wake',
-    text: '“Raiders have our lifeboat. Forty-one aboard, my daughter among them. They want a ransom we can’t pay. Keep them off us until the lane.”',
+    text: '“Raiders have our lifeboat. Forty-one aboard, my daughter among them. They want a ransom we can’t pay. Keep them off us until the gate.”',
     cargo: 'A lifeboat · lamps low, two raiders circling',
     choices: [
       { id: 'defend', label: 'Defend the lifeboat', tone: 'help', hint: 'Hold the raiders off her for 60 seconds. More are coming.', win: { text: 'You turn for the lifeboat' } },
@@ -731,12 +731,12 @@ export const MISSION_CARDS: CardDef[] = [
   mission({
     id: 'sc_bend', kind: 'job', caller: 'miners', tier: 'routine',
     from: 'Tarik Silva · the chart room', title: 'Tarik’s Bend',
-    text: '“There’s a bent lane here no chart shows but mine. I fly it once a year to keep it true. Fly it with me.”',
+    text: '“There’s a bent route here no chart shows but mine. I fly it once a year to keep it true. Fly it with me.”',
     lines: [{ if: { flag: 'rig_held' }, text: '“Hester’s rig held. Her people use this bend. No fare for you.”' }],
     cargo: 'A skiff · old, patched, sure of the way',
     choices: [
-      { id: 'follow', label: 'Fly the bend with Tarik', tone: 'help', hint: 'Stay on his wing through the bend. Others want this lane.', win: { text: 'Tarik leads the way' } },
-      { id: 'sell', label: 'Sell the bend to the Gutter', tone: 'trade', hint: 'The Gutter pay 47 Cyrite for Tarik’s lane. He will know.', win: { text: '47 Cyrite received · the Gutter have Tarik’s lane', chits: 235, standing: { miners: -1, gutter: 1 }, flag: 'bend_sold' } },
+      { id: 'follow', label: 'Fly the bend with Tarik', tone: 'help', hint: 'Stay on his wing through the bend. Others want this route.', win: { text: 'Tarik leads the way' } },
+      { id: 'sell', label: 'Sell the bend to the Gutter', tone: 'trade', hint: 'The Gutter pay 47 Cyrite for Tarik’s route. He will know.', win: { text: '47 Cyrite received · the Gutter have Tarik’s route', chits: 235, standing: { miners: -1, gutter: 1 }, flag: 'bend_sold' } },
       { id: 'no', label: 'Not this time', tone: 'refuse', hint: 'Tarik flies it alone.', win: { text: 'Tarik shrugs and goes' } },
     ],
   }),
@@ -747,7 +747,7 @@ export const MISSION_CARDS: CardDef[] = [
     cargo: 'A Custody cradle · workers sealed in its frame, lights still on',
     choices: [
       { id: 'cut', label: 'Cut the workers free', tone: 'help', hint: 'Hold at the frame until it opens. Custody cutters will come.', win: { text: 'You turn for the frame' } },
-      { id: 'fuel', label: 'Take the fuel and leave them', tone: 'trade', hint: 'The cradle’s fuel is worth 52 Cyrite. The frame stays shut.', win: { text: 'Fuel aboard · 52 Cyrite · the frame stays shut', chits: 260, standing: { custody: 1, miners: -1 }, flag: 'cradle_fuel' } },
+      { id: 'fuel', label: 'Take the stores and leave them', tone: 'trade', hint: 'The cradle’s stores are worth 52 Cyrite. The frame stays shut.', win: { text: 'Stores aboard · 52 Cyrite · the frame stays shut', chits: 260, standing: { custody: 1, miners: -1 }, flag: 'cradle_fuel' } },
       { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Leave the cradle as it is.', win: { text: 'Joss stops calling' } },
     ],
   }),
@@ -767,11 +767,11 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_sable', kind: 'plea', caller: 'unknown', tier: 'important',
-    from: 'Sable · the swarm lane', title: 'Sable’s Crossing',
-    text: '“This is my lane. The swarm knows me; the drones don’t. Stay on my wing and keep your guns down until I’m home.”',
+    from: 'Sable · the swarm gate', title: 'Sable’s Crossing',
+    text: '“This is my way home. The swarm knows me; the drones don’t. Stay on my wing and keep your guns down until I’m home.”',
     cargo: 'A lone scout · and a swarm, waiting',
     choices: [
-      { id: 'follow', label: 'Take Sable home', tone: 'help', hint: 'Stay on her wing through the swarm lane. Drones will come.', win: { text: 'Sable leads the way' } },
+      { id: 'follow', label: 'Take Sable home', tone: 'help', hint: 'Stay on her wing through the swarm gate. Drones will come.', win: { text: 'Sable leads the way' } },
       { id: 'sell', label: 'Sell her position', tone: 'trade', hint: 'The Offices pay 75 Cyrite for a swarm-raised pilot.', win: { text: '75 Cyrite received · the Offices know where she is', chits: 375, notice: { thren: 2 }, flag: 'sable_sold' } },
       { id: 'no', label: 'Let her go alone', tone: 'refuse', hint: 'She knows the way.', win: { text: 'Sable flies on alone' } },
     ],
